@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "Mesen-S is a high-accuracy SNES/GB/GBC core with full SGB and achievement support. While quite accurate, this core is also pretty fast, making it a good, general-purpose SNES core. Along with bsnes/hd-beta and up-to-date Snes9x, this core is a great first choice for most users.",
+        "zh": "[Mesen-S] 是一款高精度的 SNES/GB/GBC 核心，完整支持 SGB 和成就系统。它虽然精度很高，但速度也不错，是通用型 SNES 核心的好选择。结合 bsnes/hd-beta 和最新版 Snes9x，这个核心对大多数用户来说是很好的首选。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv3",
+            "file_name": "gpl-3.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/Mesen-S"
+}

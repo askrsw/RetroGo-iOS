@@ -1,0 +1,193 @@
+/* 
+  Localizable.strings
+  RetroGo
+
+  Created by haharsw on 2026/2/10.
+  
+*/
+
+"cancel" = "Cancel";
+"ok" = "OK";
+"skip" = "Skip";
+"info" = "Infomation";
+"error" = "Error";
+"warning" = "Warning";
+"refresh" = "Refresh";
+"tags" = "Tags";
+"delete" = "Delete";
+"red" = "Red";
+"orange" = "Orange";
+"yellow" = "Yellow";
+"green" = "Green";
+"blue" = "Blue";
+"purple" = "Purple";
+"gray" = "Gray";
+
+"gamepage_save_state" = "Save State";
+"gamepage_input_state_name" = "Please input the name of the state";
+"gamepage_name_state" = "the name of the state";
+"gamepage_state_saved" = "State %@ saved.";
+"gamepage_state_save_failed" = "State %@ save failed.";
+"gamepage_autosave" = "Auto Save";
+
+"gamestate_load_state" = "Load State";
+"gamestate_empty_tip" = "No game saves yet :)";
+"gamestate_state_loaded" = "State %@ loaded.";
+"gamestate_state_load_failed" = "Failed to load state %@.";
+
+// MARK: - objc stuff
+
+"gamesetting_title" = "Game Settings";
+"setting_input_remap_file_name" = "Please enter the remap file name";
+"setting_name_remap" = "Remap File Name";
+"setting_more_port_control" = "More Port Controls";
+"setting_input_shader_preset_file_name" = "Please enter the shader preset file name";
+"setting_name_shader_preset" = "Shader Preset File Name";
+"setting_no_shader_preset_file_to_delete" = "No shader preset file to delete";
+"setting_input_cheat_file_name" = "Please enter the cheat file name";
+"setting_name_cheat" = "Cheat File Name";
+
+// MARK: - AppSetting
+
+"appsetting_use_system_homepage" = "Use System Homepage";
+"appsetting_language_follow_system" = "Language Follows System";
+"appsetting_ui_haptic_feedback" = "UI Haptic Feedback";
+"appsetting_ingame_haptic_feedback" = "In-Game Haptic Feedback";
+"appsetting_about" = "About Retro Go";
+
+// MARK: - Homepage
+
+"homepage_main_title" = "Retro Go";
+"homepage_second" = "s";
+"homepage_minute" = "m";
+"homepage_hour" = "h";
+"homepage_yesterday" = "Yesterday";
+"homepage_beforeyesterday" = "The day before yesterday";
+"homepage_import_game" = "Import Game";
+"homepage_import_rom_file" = "Import ROM File";
+"homepage_import_rom_file_desc" = "Multiple files can be imported at once.";
+"homepage_import_rom_folder" = "Import ROM Folder";
+"homepage_import_rom_folder_desc" = "Keep the folder structure after importing.";
+"homepage_import_folder_exists" = "Folder already exists";
+"homepage_import_folder_exists_path" = "Folder %@ already exists.";
+"homepage_import_folder_merge" = "Merge";
+"homepage_import_folder_skipped" = "Folder %@ was skipped.";
+"homepage_import_folder_skipped_finish" = "Folder %@ was skipped, import finished.";
+"homepage_import_cancelled" = "Game import cancelled.";
+"homepage_import_file_exists" = "File already exists";
+"homepage_import_file_exists_path" = "File %@ already exists.";
+"homepage_import_file_skipped" = "File %@ was skipped.";
+"homepage_import_finished" = "Game import finished.";
+"homepage_import_completed" = "Successfully imported 1 ROM, game import completed.";
+"homepage_import_completed_s" = "Successfully imported %d ROMs, game import completed.";
+"homepage_import_importing" = "Importing";
+"homepage_import_folder_checking" = "Checking folder: %@";
+"homepage_import_file_checking" = "Checking file: %@";
+"homepage_import_file_copying" = "Copying file: %@";
+"homepage_import_success" = "Import Successful";
+"homepage_import_error_enumerator_build_failed" = "Failed to build enumerator.";
+"homepage_import_error_unique_key_create_failed" = "Failed to create a unique key.";
+"homepage_import_error_parent_folder_not_exist" = "Parent folder %@ does not exist.";
+"homepage_import_error_rom_file_read_failed" = "Failed to read ROM file: %@.";
+"homepage_import_error_folder_create_failed" = "Failed to create folder %@.";
+"homepage_import_error_file_copy_failed" = "Failed to copy file %@.";
+"homepage_import_error_database_save_failed" = "Failed to save data to the database.";
+"homepage_import_exist_same_name_folder_with_file" = "A folder with the same name as %@ already exists, unable to import the file %@.";
+"homepage_import_exist_same_name_file_with_folder" = "A file with the same name as %@ already exists, unable to import the folder %@.";
+"homepage_rename_success" = "Rename successful.";
+"homepage_rename_failed" = "Rename failed.";
+"homepage_play" = "Play";
+"homepage_rename" = "Rename";
+"homepage_delete" = "Delete";
+"homepage_info" = "Info";
+"homepage_empty_tip" = "The game library is empty. Please click the add button in the top right corner to load game ROMs. You need to obtain game ROMs through other means and save them to the local file system.";
+"homepage_parent_folder" = "Parent";
+"homepage_root_folder" = "Root Folder";
+"homepage_jump" = "Jump To";
+"homepage_enter" = "Enter";
+"homepage_delete_confirm_file" = "Are you sure you want to delete the game file? (This action cannot be undone)";
+"homepage_delete_confirm_folder" = "Are you sure you want to delete the game folder, including all its subfolders and files? (This action cannot be undone)";
+"homepage_delete_item_success" = "Successfully deleted %@.";
+"homepage_delete_item_failed" = "Failed to delete %@.";
+"homepage_delete_deleting" = "Deleting";
+"homepage_delete_folder" = "Folder: ";
+"homepage_delete_file" = "File: ";
+"homepage_move_file_success" = "Successfully moved file %@.";
+"homepage_move_folder_success" = "Successfully moved folder %@.";
+"homepage_move_file_failed" = "Failed to move file %@.";
+"homepage_move_folder_failed" = "Failed to move folder %@.";
+"homepage_move_forbidden_title" = "Operation Forbidden";
+"homepage_move_forbidden_detail" = "In the folder %@, a file or folder with the same name as %@ already exists. Unable to move %@.";
+"homepage_all_tags" = "All Tags";
+"homepage_add_custom_tag" = "Add Custom Tag";
+"homepage_edit_tag" = "Edit Tag";
+"homepage_new_tag" = "Add New Tag";
+"homepage_tag_title_cannot_null" = "Tag name cannot be empty.";
+"homepage_no_tag" = "No Tag";
+"homepage_config_icon" = "Icon";
+"homepage_config_list" = "List";
+"homepage_config_tree" = "Tree";
+"homepage_config_name" = "Name";
+"homepage_config_last_play" = "Last Play";
+"homepage_config_add_date" = "Add Date";
+"homepage_config_game_duration" = "Game Duration";
+"homepage_config_by_folder" = "By Folder";
+"Homepage_config_by_tag" = "By Tag";
+"homepage_config_by_core" = "By Core";
+"homepage_add_date_colon" = "Add Date: ";
+"homepage_last_play_colon" = "Last Play: ";
+"homepage_game_duration_colon" = "Game Duration: ";
+"homepage_unidentified_core" = "Unidentified Core";
+"homepage_asign_core" = "Assign Core";
+"homepage_select_core" = "Select Core";
+"homepage_matched_core" = "Recommended Cores";
+"homepage_other_core" = "All Cores";
+"homepage_matched_core_tip" = "✅ These cores officially support this file format and usually provide the best experience.";
+"homepage_other_core_tip" = "⚠️ These cores are not designed for this file format. Forcing them to run may result in a crash or black screen.";
+"homepage_folder_core_tip" = "Sets the preferred core for this folder. Items with specific assignments will keep their settings, while others will inherit this one.";
+"homepage_assign_core_success" = "Core assigned successfully.";
+"homepage_assign_core_failed" = "Failed to assign core.";
+"homepage_import_for_folder" = "Import...";
+"homepage_new_folder" = "New Folder";
+"homepage_new_folder_success" = "Folder created successfully.";
+"homepage_new_folder_failed" = "Failed to create folder!";
+"homepage_game_count" = "%d Games";
+"homepage_move_to" = "Move to ...";
+"homepage_same_folder" = "Target is the same as the current location.";
+"homepage_descendant_folder" = "Cannot move a folder into its own subfolder.";
+
+// MARK: - CorePage
+
+"coreinfo_full_name" = "Full Name: ";
+"coreinfo_manufacturer" = "Manufacturer: ";
+"coreinfo_system_name" = "System Name: ";
+"coreinfo_extensions" = "Extensions:   ";
+"coreinfo_support_no_content" = "Supports Standalone Run: ";
+"coreinfo_start_core" = "Start Core";
+"coreinfo_firmwares" = "Firmwares";
+"coreinfo_developers" = "Developers: ";
+"coreinfo_licenses" = "Licenses: ";
+"coreinfo_system_id" = "System ID: ";
+"coreinfo_descrption" = "Description: ";
+"coreinfo_srcurl" = "Source Code: ";
+"coreinfo_firmware_name" = "Name: ";
+"coreinfo_firmware_path" = "Path: ";
+"coreinfo_firmware_md5" = "MD5: ";
+"coreinfo_firmware_optional" = "Optional";
+"coreinfo_firmware_required" = "Required";
+"coreinfo_firmware_missed" = "Missed";
+"coreinfo_firmware_invalid" = "Invalid";
+"coreinfo_firmware_ready" = "Ready";
+"coreinfo_firmware_unmatched_file" = "File name mismatch. Please select the file named \"%@\".";
+"coreinfo_firmware_matching_file" = "Checking for file \"%@\"...";
+"coreinfo_firmware_import_success" = "Successfully matched and imported %d firmware files.";
+"coreinfo_firmware_import_zero" = "No matching firmware files found.";
+"coreinfo_firmware_read_dir_failed" = "Failed to read directory: %@";
+"coreinfo_firmware_mame_tip" = "The MAME core supports thousands of hardware types. If a game fails to run, please import the corresponding BIOS firmware. Tap [ plus ] to import a single file, tap [ folder ] to batch import a folder (excluding subdirectories). Note: files with duplicate names will be overwritten.";
+"coreinfo_firmware_mame_already_imported" = "List of imported firmware files (swipe left to delete): ";
+"coreinfo_firmware_ppsspp_foot_tip" = "The interface assets required for PPSSPP (such as ppge_atlas.zim) are sourced from the official open-source project and are built-in. These files comply with open-source licenses and do not contain any proprietary firmware. If files are corrupted, you can try to Restore them.";
+"coreinfo_firmware_ppsspp_reload_word" = "Restore";
+"coreinfo_firmware_ppsspp_importing" = "Importing PPSSPP resource files.";
+"coreinfo_firmware_ppsspp_imported" = "Successfully imported PPSSPP resource files.";
+"coreinfo_firmware_ppsspp_import_failed" = "Failed to import PPSSPP resource files!";
+"corelist_core_list" = "Core List";

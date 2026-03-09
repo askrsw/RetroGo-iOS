@@ -1,0 +1,17 @@
+{
+    "desc": {
+        "en": "'MAME - Current' is compatible with the latest MAME ROM sets. MAME is the most compatible emulator in the world, and it can run almost any game from any platform (though running console games through this core requires additional steps). Its high compatibility makes it a good option for most users. If you cannot run this core full speed, the year-stamped forks are faster at the cost of reduced accuracy, but FBNeo is typically a better choice for speed vs accuracy, as long as it supports the game(s) in question.",
+        "zh": "[MAME - Current] 核心兼容最新的 MAME ROM 套件。MAME 是世界上兼容性最强的模拟器，几乎可以运行任何平台上的任何游戏（尽管通过此核心运行家用机游戏需要额外步骤）。出色的兼容性使其成为大多数用户的首选。如果该核心无法全速运行，您可以尝试以年份命名的旧版分支（速度更快但精度较低）；但在追求速度与精度的平衡时，只要游戏受支持，FBNeo 通常是更好的选择。"
+    },
+    "licenses": [
+        {
+            "show_name": "MAME License & Credits",
+            "file_name": "mame-license.txt"
+        },
+        {
+            "show_name": "GPLv2+",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/mame"
+}

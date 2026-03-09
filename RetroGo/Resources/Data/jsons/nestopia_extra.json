@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "The libretro port of Nestopia is based on the most up-to-date code from the Nestopia JG project, with overclocking added as an additional feature. This emulator is quite fast and extremely accurate, with very high compatibility. In general, this core is a good choice for most users on desktop and mobile platforms.",
+        "zh": "[Nestopia] 的 Libretro 移植版基于 Nestopia UE 项目的最新代码，并额外增加了超频功能。该模拟器速度很快，精度极高，兼容性也非常出色。总的来说，对于桌面和移动平台上的大多数用户而言，这都是一个非常均衡的优秀选择。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/nestopia"
+}

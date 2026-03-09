@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "A port of the excellent and advanced Playstation Portable (PSP) emulator PPSSPP to libretro. This core runs very fast and is usable on every very modest hardware, while still supporting many advanced features and APIs to provide increased resolution, texture filtering, etc. Aside from the normal libretro frontend features, this core also supports its own native cheats and high-res texture packs by placing them in the core's directory structure that gets created in the frontend's 'saves' directory.",
+        "zh": "[PPSSPP] 是优秀且先进的 PSP 模拟器 PPSSPP 的 Libretro 移植版。该核心运行极快，即使在配置非常普通的硬件上也能流畅使用，同时支持许多高级功能和 API，如提高分辨率、纹理过滤等。除标准的 Libretro 前端功能外，该核心还支持原生的金手指和高清纹理包，您只需将相关文件放入前端“save”目录下自动创建的核心目录结构中即可生效。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/ppsspp"
+}

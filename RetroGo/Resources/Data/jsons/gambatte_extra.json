@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "A port of the Gambatte Game Boy emulator to libretro. One of the very first libretro cores, this core is reasonably accurate (enough to run all but a scant handful of games with no visible bugs) and blisteringly fast. While Gearboy and SameBoy cores have surpassed it in accuracy, Gambatte is still an excellent choice on low-power systems that cannot handle the more-accurate newcomers while maintaining full speed.",
+        "zh": "[Gambatte] 是 Game Boy 模拟器 Gambatte 的 Libretro 移植版。作为最早期的 Libretro 核心之一，它拥有相当不错的精度（足以运行绝大多数游戏且无明显 BUG）以及极快的运行速度。虽然 Gearboy 和 SameBoy 在精度上已经超越了它，但在无法全速运行这些高精度新核心的低功耗设备上，Gambatte 仍然是一个绝佳的选择。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/gambatte-libretro"
+}

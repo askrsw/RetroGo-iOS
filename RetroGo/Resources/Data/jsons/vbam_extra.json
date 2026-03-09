@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "An up-to-date libretro port of the venerable Game Boy Advance emulator, VisualBoy Advance-Merged. In addition to Game Boy Advance, this core also supports Game Boy, Game Boy Color and Super Game Boy (borders and palette, only). Most users should start with this VBA-M core and only fall back to the older VBA-Next core if they need the additional performance boost at the cost of reduced accuracy and compatibility.",
+        "zh": "[VBA-M] 是经典 GBA 模拟器 VisualBoy Advance-Merged (VBA-M) 的最新 Libretro 移植版。除了 Game Boy Advance 外，该核心还支持 Game Boy、Game Boy Color 以及 Super Game Boy（仅支持边框和调色板）。建议大多数用户首先使用此 VBA-M 核心，只有在因设备性能不足、愿意牺牲精度和兼容性以换取速度时，才考虑回退到较旧的 VBA-Next 核心。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/vbam-libretro"
+}

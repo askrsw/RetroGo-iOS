@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<p-contents>
+    <p-section id="about_intro" bottompadding="10" toppadding="5" block="true">
+        <p-paragraph>
+            ::b(RetroGo)b:: is a high-performance iOS emulator frontend based on the RetroArch/Libretro framework. We have redefined the mobile interaction logic using native UIKit to provide an immersive retro gaming experience while strictly adhering to the accuracy and compatibility requirements of various simulation cores.
+        </p-paragraph>
+    </p-section>
+    <p-section id="about_open_source" bottompadding="15" toppadding="10" block="true">
+        <p-title level="3" underline="false">Open Source and License</p-title>
+        <p-paragraph>
+            RetroGo believes in the power of the open-source community. This project is open-sourced under the ::b(GNU GPLv3)b:: license. You can access our GitHub repository to obtain the source code, contribute to the project, or submit feedback: ::link(https://github.com/askrsw/RetroGo-iOS)link::.
+        </p-paragraph>
+    </p-section>
+    <p-section id="about_cores" bottompadding="15" toppadding="10" block="true">
+        <p-title level="3" underline="false">Core Components</p-title>
+        <p-paragraph>
+            This application integrates multiple authorized Libretro cores. Each core independently follows its original open-source license (including GPLv2, GPLv3, LGPL, MIT, BSD, etc.). For a detailed list of cores and their corresponding license texts, please refer to the "Core List" page within the app.
+        </p-paragraph>
+    </p-section>
+    <p-section id="about_policies" bottompadding="15" toppadding="10" block="true">
+        <p-title level="3" underline="false">Legal</p-title>
+        <p-paragraph>
+            By using this app, you agree to our ::link(Privacy Policy|https://matrix4x4.com/retrogo/policy)link:: and ::link(Terms of Use|https://matrix4x4.com/retrogo/eula)link::.
+        </p-paragraph>
+    </p-section>
+    <p-section id="about_content" bottompadding="15" toppadding="10" block="true">
+        <p-title level="3" underline="false">Content and Disclaimer</p-title>
+        <p-paragraph>
+            RetroGo is provided only as a general-purpose game engine frontend. We ::b(do not bundle, provide, or distribute)b:: any copyrighted game images (ROMs) or system firmware (BIOS).
+        </p-paragraph>
+        <p-paragraph>
+            Users are responsible for ensuring that the content they load is legally authorized and complies with local laws and regulations. RetroGo is not affiliated with any game console manufacturers or software publishers.
+        </p-paragraph>
+    </p-section>
+    <p-section id="about_thanks" block="true">
+        <p-title level="3" underline="false">Acknowledgments</p-title>
+        <p-paragraph>
+            Sincere thanks to the RetroArch/Libretro team and the thousands of core contributors worldwide. It is the spirit of open source that allows classic digital culture to endure on modern devices.
+        </p-paragraph>
+    </p-section>
+    <p-section id="about_icp" bottompadding="10" toppadding="0" block="true">
+        <p-paragraph align="center" fontsize="12" bottompadding="10" toppadding="0">
+            ::link(鲁ICP备2023034487号-9A|https://beian.miit.gov.cn)link::
+        </p-paragraph>
+        <p-paragraph align="center" fontsize="12" bottompadding="0" toppadding="0">
+            Copyright © 2026 haharsw. All Rights Reserved.
+        </p-paragraph>
+    </p-section>
+</p-contents>

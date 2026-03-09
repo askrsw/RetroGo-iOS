@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "A significantly modified fork of Mednafen's Playstation emulator, this core differs from the -HW version by focusing on software rendering (i.e., instead of hardware-accelerated rendering). The software renderer is more accurate than the OpenGL and Vulkan renderers used in the -HW core, but it lacks some of the cosmetic options and performs any internal resolution increases on the CPU instead of the GPU, which is very demanding (devices with fast CPUs may reach 2x scale but nothing can maintain full speed at 4x at the time of this writing). Both varieties of Beetle-PSX are more accurate than PCSX-ReARMed but also significantly slower, so they are generally a better choice for higher-specced devices that can benefit from the additional features and accuracy while maintaining full speed. The Beetle-PSX cores are also very particular about requiring BIOS images, so make sure you have the correct BIOS files available and make sure they are named exactly as the core expects.",
+        "zh": "[Beetle PSX] 是 Mednafen PlayStation 模拟器的经过大量修改的分支。与 -HW 版本不同，此核心专注于软件渲染（而非硬件加速）。虽然软件渲染比 -HW 核心使用的 OpenGL 或 Vulkan 渲染器更精确，但它缺少部分画面美化选项，并且通过 CPU 而非 GPU 来计算内部分辨率提升，这对性能要求极高（即便是目前拥有高性能 CPU 的设备可能也只能维持 2 倍分辨率，很难在 4 倍下保持全速）。两种版本的 Beetle-PSX 精度都高于 PCSX-ReARMed，但速度也显著更慢，因此对于能够全速运行并受益于其额外特性和高精度的中高端设备来说，通常是更好的选择。Beetle-PSX 核心对 BIOS 文件要求非常严格，请务必确保您拥有正确的 BIOS 文件，并且文件名必须与核心要求的完全一致。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/beetle-psx-libretro"
+}

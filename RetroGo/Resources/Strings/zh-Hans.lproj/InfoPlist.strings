@@ -1,0 +1,14 @@
+/* 
+  InfoPlist.strings
+  RetroGo
+
+  Created by haharsw on 2026/2/10.
+  
+*/
+
+CFBundleDisplayName = "Retro Go";
+
+NSPhotoLibraryAddUsageDescription = "保存游戏截图到系统相册，如果不被允许，将无法保存截图到相册。";
+NSLocalNetworkUsageDescription = "应用需要网络访问权限，用来实现多人联网游戏功能。否则多人联网功能不可用";
+NSCameraUsageDescription = "用于扫描二维码或游戏封面。";
+NSLocationWhenInUseUsageDescription = "用于本地多人联机设备发现。";

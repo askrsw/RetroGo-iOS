@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "An up-to-date port of the Mupen64Plus N64 emulator, ported to libretro. It uses up-to-date GLideN64 plugin as its default graphics plug, though the high-accuracy Angrylion and ParaLLEl-RDP plugins are also available. This core is a good first choice for most users and should generally work better than the ParaLLEl-N64 core, which is mainly useful for its support for legacy graphics plugins that can run on older/low-power devices that are too weak for the modern plugins.",
+        "zh": "[Mupen64Plus-Next] 是 Mupen64Plus N64 模拟器最新的 Libretro 移植版。它默认使用最新的 GLideN64 作为图形插件，同时也支持高精度的 Angrylion 和 ParaLLEl-RDP 插件。对于大多数用户来说，这是首选的核心，其表现通常优于 ParaLLEl-N64 核心（后者主要用于兼容那些无法运行现代插件的老旧/低功耗设备上的遗留图形插件）。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/mupen64plus-libretro-nx"
+}

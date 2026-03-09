@@ -1,0 +1,14 @@
+/* 
+  InfoPlist.strings
+  RetroGo
+
+  Created by haharsw on 2026/2/10.
+  
+*/
+
+CFBundleDisplayName = "Retro Go";
+
+NSPhotoLibraryAddUsageDescription = "Save game screenshots to the photo library. If not allowed, you will not be able to save screenshots to the library.";
+NSLocalNetworkUsageDescription =  "The app requires network access to implement multiplayer gaming. Otherwise, multiplayer functionality is unavailable.";
+NSCameraUsageDescription = "Used for scanning QR codes or game covers.";
+NSLocationWhenInUseUsageDescription = "Used for local multiplayer discovery.";

@@ -1,0 +1,14 @@
+//
+//  Main.xcconfig
+//  RetroGo
+//
+//  Created by haharsw on 2026/2/10.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+// 开源贡献者请复制此文件为 Main.xcconfig 并填入自己的信息
+
+PRODUCT_BUNDLE_IDENTIFIER = com.example.retrogo
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
