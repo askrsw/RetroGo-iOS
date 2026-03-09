@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <Group
+      location = "group:Vendor"
+      name = "Vendor">
+      <FileRef
+         location = "group:YYKit">
+      </FileRef>
+      <FileRef
+         location = "group:MoltenVK.xcframework">
+      </FileRef>
+   </Group>
+   <Group
+      location = "group:RetroArch"
+      name = "RetroArch">
+      <FileRef
+         location = "group:RetroMain">
+      </FileRef>
+      <FileRef
+         location = "group:RetroCommon">
+      </FileRef>
+      <FileRef
+         location = "group:RetroDeps">
+      </FileRef>
+      <FileRef
+         location = "group:RetroBase">
+      </FileRef>
+   </Group>
+   <FileRef
+      location = "group:RetroGo.xcodeproj">
+   </FileRef>
+</Workspace>

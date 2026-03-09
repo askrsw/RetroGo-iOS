@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "A port of the PCSX-ReARMed fork to libretro. This emulator is a technical marvel and runs incredibly well on 32-bit ARM CPUs, though it is also a good choice for other low-powered hardware that cannot run Beetle-PSX/-HW or Swanstation at full speed. However, this core has no support for increased internal resolution, texture filtering, etc., so users who want those features would be better served by the other cores.",
+        "zh": "[PCSX ReARMed] 是 PCSX-ReARMed 分支的 Libretro 移植版。这款模拟器堪称技术奇迹，在 32 位 ARM CPU 上运行效果极佳；对于无法全速运行 Beetle-PSX/-HW 或 Swanstation 的其他低功耗硬件来说，它也是一个不错的选择。不过，该核心不支持提高内部分辨率、纹理过滤等功能，因此如果您需要这些特性，建议使用其他核心。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/pcsx_rearmed"
+}

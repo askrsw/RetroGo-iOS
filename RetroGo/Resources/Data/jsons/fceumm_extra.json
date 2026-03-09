@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "FCEUmm libretro is based on the FCEUmm (mappers modified) fork of the FCEU emulator. It is very fast and supports many mappers, including those for weird, obscure bootleg carts. It is tightly integrated with libretro features, which makes it a good choice for users seeking advanced frontend functionality, such as runahead and rollback netplay. While most NES emulators are lightweight, FCEUmm's particularly low resource requirements make it a good option for mobile, low-power/embedded and console targets.",
+        "zh": "[FCEUmm] 是基于 FCEU 模拟器的 FCEUmm（Mapper 修改版）分支开发的 Libretro 核心。它运行极快，支持大量 Mapper，包括那些古怪冷门的盗版卡带。它与 Libretro 特性高度集成，支持超前运行（Runahead）和回滚式联机（Rollback Netplay）等高级前端功能。虽然大多数 NES 模拟器都很轻量，但 FCEUmm 极低的资源占用使其成为移动设备、低功耗/嵌入式设备及游戏主机平台的绝佳选择。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/libretro-fceumm"
+}

@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "A port of the mature and well-known DOSBox emulator to libretro with a goal of simplicty and ease of use. This core includes a streamlined workflow for launching games directly from ZIP archives (including disk images therein) with automated mapping of controls to gamepads and a native onscreen keyboard. This is a good core for most users who just want to play games and are not looking for a traditional DOS experience.",
+        "zh": "[DOSBox-Pure] 是将成熟知名的 DOSBox 模拟器移植到 Libretro 的版本，注重简洁易用。该核心简化了工作流，支持直接从 ZIP 压缩包（包括其中的磁盘镜像）启动游戏，并自动将控制映射到手柄，还内置了原生的屏幕键盘。对于只是想玩游戏而不需要传统 DOS 命令行体验的大多数用户来说，这是一个极佳的选择。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/dosbox-pure"
+}

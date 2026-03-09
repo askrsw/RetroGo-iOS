@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "A port of the Yabause Sega Saturn emulator to libretro. This core is software rendered and does not support cosmetic enhancements such as increased internal resolution, unlike the Kronos and YabaSanshiro cores. Likewise, it is not focused on accuracy, so Beetle-Saturn is a better choice for users with powerful devices. In general, most users will be better served by those other cores and should only fall back to this one if all other cores fail for whatever reason.",
+        "zh": "[Yabause] 是世嘉土星（Sega Saturn）模拟器 Yabause 的 Libretro 移植版。该核心使用软件渲染，与 Kronos 和 YabaSanshiro 核心不同，它不支持提高内部分辨率等画面增强功能。同样，它也不专注于高精度模拟，因此对于拥有高性能设备的用户，Beetle-Saturn 是更好的选择。总体而言，大多数用户使用其他核心体验会更好，只有当其他核心都因故无法运行时，才建议回退使用此核心。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/yabause"
+}

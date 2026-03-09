@@ -1,0 +1,13 @@
+{
+    "desc": {
+        "en": "A remake of the libretro melonDS core that prioritizes standalone parity, reliability, and usability. This core closely follows the feature set of standalone melonDS; it features OpenGL-accelerated upscaling, multiple screen layouts, and Wi-Fi emulation. Based on melonDS commit f6692df.",
+        "zh": "[melonDS DS] 是 libretro melonDS 核心的重制版，优先追求功能与独立版一致，并注重稳定性与易用性。该核心紧跟独立版 melonDS 的功能特性，支持 OpenGL 加速画面提升、多种屏幕布局以及 Wi-Fi 模拟。基于 melonDS 提交版本 f6692df。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv3+",
+            "file_name": "gpl-3.0.txt"
+        }
+    ],
+    "src-url": "https://github.com/libretro/melonDS"
+}

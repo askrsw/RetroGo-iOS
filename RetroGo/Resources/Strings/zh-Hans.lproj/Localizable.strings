@@ -1,0 +1,193 @@
+/* 
+  Localizable.strings
+  RetroGo
+
+  Created by haharsw on 2026/2/10.
+  
+*/
+
+"cancel" = "取消";
+"ok" = "确定";
+"skip" = "跳过";
+"info" = "信息";
+"error" = "错误";
+"warning" = "警告";
+"refresh" = "刷新";
+"tags" = "标签";
+"delete" = "删除";
+"red" = "红色";
+"orange" = "橙色";
+"yellow" = "黄色";
+"green" = "绿色";
+"blue" = "蓝色";
+"purple" = "紫色";
+"gray" = "灰色";
+
+"gamepage_save_state" = "保存存档";
+"gamepage_input_state_name" = "请输入存档名称";
+"gamepage_name_state" = "存档名称";
+"gamepage_state_saved" = "存档 %@ 已保存。";
+"gamepage_state_save_failed" = "存档 %@ 失败。";
+"gamepage_autosave" = "自动存档";
+"gamestate_load_state" = "读取存档";
+"gamestate_empty_tip" = "还没有存档 :)";
+"gamestate_state_loaded" = "存档 %@ 已加载。";
+"gamestate_state_load_failed" = "存档 %@ 加载失败。";
+
+
+// MARK: - objc stuff
+
+"gamesetting_title" = "游戏设置";
+"setting_input_remap_file_name" = "请输入重映射文件名称";
+"setting_name_remap" = "重映射文件名称";
+"setting_more_port_control" = "更多端口设置";
+"setting_input_shader_preset_file_name" = "请输入着色器预设文件名称";
+"setting_name_shader_preset" = "着色器预设文件名称";
+"setting_no_shader_preset_file_to_delete" = "没有需要删除的着色器预设文件";
+"setting_input_cheat_file_name" = "请输入金手指文件名称";
+"setting_name_cheat" = "金手指文件名称";
+
+// MARK: - AppSetting
+
+"appsetting_use_system_homepage" = "使用系统首页";
+"appsetting_language_follow_system" = "语言跟随系统";
+"appsetting_ui_haptic_feedback" = "界面触感反馈";
+"appsetting_ingame_haptic_feedback" = "游戏震动反馈";
+"appsetting_about" = "关于 Retro Go";
+
+// MARK: - Homepage
+
+"homepage_main_title" = "Retro Go";
+"homepage_second" = "秒";
+"homepage_minute" = "分钟";
+"homepage_hour" = "小时";
+"homepage_yesterday" = "昨天";
+"homepage_beforeyesterday" = "前天";
+"homepage_import_game" = "导入游戏";
+"homepage_import_rom_file" = "导入 Rom 文件";
+"homepage_import_rom_file_desc" = "可同时导入多个文件。";
+"homepage_import_rom_folder" = "导入 Rom 文件夹";
+"homepage_import_rom_folder_desc" = "导入后保持目录结构。";
+"homepage_import_folder_exists" = "目录已存在";
+"homepage_import_folder_exists_path" = "目录 %@ 已存在。";
+"homepage_import_folder_merge" = "合并";
+"homepage_import_folder_skipped" = "目录 %@ 已跳过。";
+"homepage_import_folder_skipped_finish" = "目录 %@ 已跳过，导入结束。";
+"homepage_import_cancelled" = "游戏导入已取消。";
+"homepage_import_file_exists" = "文件已存在";
+"homepage_import_file_exists_path" = "文件 %@ 已存在。";
+"homepage_import_file_skipped" = "文件 %@ 已跳过。";
+"homepage_import_finished" = "游戏导入结束。";
+"homepage_import_completed" = "成功导入一个 Rom， 游戏导入完成。";
+"homepage_import_completed_s" = "成功导入 %d 个 Rom， 游戏导入完成。";
+"homepage_import_importing" = "正在导入";
+"homepage_import_folder_checking" = "正在检查目录：%@";
+"homepage_import_file_checking" = "正在检查文件：%@";
+"homepage_import_file_copying" = "正在复制文件：%@";
+"homepage_import_success" = "导入成功";
+"homepage_import_error_enumerator_build_failed" = "构建枚举器失败。";
+"homepage_import_error_unique_key_create_failed" = "创建唯一键失败。";
+"homepage_import_error_parent_folder_not_exist" = "父目录 %@ 不存在。";
+"homepage_import_error_rom_file_read_failed" = "读取 ROM 文件失败：%@";
+"homepage_import_error_folder_create_failed" = "创建目录 %@ 失败。";
+"homepage_import_error_file_copy_failed" = "复制文件 %@ 失败。";
+"homepage_import_error_database_save_failed" = "保存数据到数据库失败。";
+"homepage_import_exist_same_name_folder_with_file" = "已存在与 %@ 同名的目录，无法导入文件 %@。";
+"homepage_import_exist_same_name_file_with_folder" = "已存在与 %@ 同名的文件，无法导入目录 %@。";
+"homepage_rename_success" = "重命名成功。";
+"homepage_rename_failed" = "重命名失败。";
+"homepage_play" = "开始游戏";
+"homepage_rename" = "重命名";
+"homepage_delete" = "删除";
+"homepage_info" = "信息";
+"homepage_empty_tip" = "游戏库为空，请点击右上角添加按钮加载游戏 ROM。你需要通过其它途径获得游戏 ROM 并保存到本地文件系统。";
+"homepage_parent_folder" = "上一级目录";
+"homepage_root_folder" = "根目录";
+"homepage_jump" = "跳转到";
+"homepage_enter" = "进入";
+"homepage_delete_confirm_file" = "确定删除游戏文件（不可撤销）？";
+"homepage_delete_confirm_folder" = "确定删除游戏目录及其所有子目录和文件（操作不可撤销）？";
+"homepage_delete_item_success" = "删除 %@ 成功。";
+"homepage_delete_item_failed" = "删除 %@ 失败。";
+"homepage_delete_deleting" = "正在删除";
+"homepage_delete_folder" = "目录：";
+"homepage_delete_file" = "文件：";
+"homepage_move_file_success" = "移动文件 %@ 成功。";
+"homepage_move_folder_success" = "移动目录 %@ 成功。";
+"homepage_move_file_failed" = "移动文件 %@ 失败。";
+"homepage_move_folder_failed" = "移动目录 %@ 失败。";
+"homepage_move_forbidden_title" = "禁止操作";
+"homepage_move_forbidden_detail" = "在目录 %@ 存在与 %@ 同名的文件或目录，无法移动 %@。";
+"homepage_all_tags" = "全部标签";
+"homepage_add_custom_tag"  = "添加自定义标签";
+"homepage_edit_tag" = "编辑标签";
+"homepage_new_tag" = "新建标签";
+"homepage_tag_title_cannot_null" = "标签名称不可为空。";
+"homepage_no_tag" = "无标签";
+"homepage_config_icon" = "图标";
+"homepage_config_list" = "列表";
+"homepage_config_tree" = "树";
+"homepage_config_name" = "名称";
+"homepage_config_last_play" = "上次游戏";
+"homepage_config_add_date" = "添加时间";
+"homepage_config_game_duration" = "游戏时长";
+"homepage_config_by_folder" = "目录";
+"Homepage_config_by_tag" = "游戏标签";
+"homepage_config_by_core" = "核心类型";
+"homepage_add_date_colon" = "添加时间：";
+"homepage_last_play_colon" = "上次游戏：";
+"homepage_game_duration_colon" = "游戏时长：";
+"homepage_unidentified_core" = "待关联核心";
+"homepage_asign_core" = "指定核心";
+"homepage_select_core" = "选择核心";
+"homepage_matched_core" = "推荐核心";
+"homepage_other_core" = "所有核心";
+"homepage_matched_core_tip" = "✅ 这些核心官方支持该游戏文件格式，通常能获得最佳体验。";
+"homepage_other_core_tip" = "⚠️ 这些核心并非为此文件类型设计，强制运行可能会失败或出现黑屏。";
+"homepage_folder_core_tip" = "设置此文件夹的首选核心。子文件夹或文件若有单独设置，将按其自身设置执行，否则将继承此设置。";
+"homepage_assign_core_success" = "指定核心成功。";
+"homepage_assign_core_failed" = "指定核心成功。";
+"homepage_import_for_folder" = "导入...";
+"homepage_new_folder" = "新建目录";
+"homepage_new_folder_success" = "新建目录成功。";
+"homepage_new_folder_failed" = "新建目录失败！";
+"homepage_game_count" = "%d 个游戏";
+"homepage_move_to" = "移动到...";
+"homepage_same_folder" = "目标文件夹与当前位置相同。";
+"homepage_descendant_folder" = "无法将文件夹移动到它自己的子文件夹中。";
+
+// MARK: - CorePage
+
+"coreinfo_full_name" = "全名：";
+"coreinfo_manufacturer" = "出品商：";
+"coreinfo_system_name" = "系统名称：";
+"coreinfo_extensions" = "支持格式：";
+"coreinfo_support_no_content" = "支持独立运行：";
+"coreinfo_start_core" = "启动核心";
+"coreinfo_firmwares" = "固件（BIOS）";
+"coreinfo_developers" = "开发者：";
+"coreinfo_licenses" = "开源协议：";
+"coreinfo_system_id" = "系统ID：";
+"coreinfo_descrption" = "核心说明：";
+"coreinfo_srcurl" = "源码地址：";
+"coreinfo_firmware_name" = "文件名称：";
+"coreinfo_firmware_path" = "文件路径：";
+"coreinfo_firmware_md5" = "MD5: ";
+"coreinfo_firmware_optional" = "可选";
+"coreinfo_firmware_required" = "必需";
+"coreinfo_firmware_missed" = "缺失";
+"coreinfo_firmware_invalid" = "无效";
+"coreinfo_firmware_ready" = "就绪";
+"coreinfo_firmware_unmatched_file" = "文件名称不匹配，请选择文件“%@”";
+"coreinfo_firmware_matching_file" = "正在匹配文件“%@”";
+"coreinfo_firmware_import_success" = "成功匹配并导入了 %d 个固件文件。";
+"coreinfo_firmware_import_zero" = "未找到匹配的固件文件。";
+"coreinfo_firmware_read_dir_failed" = "读取目录失败：%@";
+"coreinfo_firmware_mame_tip" = "MAME 核心支持数千种硬件，若游戏无法运行，请导入对应的 BIOS 固件。点击 [ plus ] 导入单个文件，点击 [ folder ] 批量导入文件夹（不含子目录）。注意，重名文件将被覆盖。";
+"coreinfo_firmware_mame_already_imported" = "已导入的固件文件列表（左滑可删除）：";
+"coreinfo_firmware_ppsspp_foot_tip" = "PPSSPP 所需的界面资源（如 ppge_atlas.zim）源自官方开源项目并已内置。这些文件符合开源版权协议，不含任何私有固件。若文件损坏，您可以尝试恢复。";
+"coreinfo_firmware_ppsspp_reload_word" = "恢复";
+"coreinfo_firmware_ppsspp_importing" = "正在导入 PPSSPP 的资源文件。";
+"coreinfo_firmware_ppsspp_imported" = "成功导入 PPSSPP 的资源文件。";
+"coreinfo_firmware_ppsspp_import_failed" = "导入 PPSSPP 资源文件失败！";
+"corelist_core_list" = "核心列表";
