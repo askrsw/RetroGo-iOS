@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RetroArchViewController : UIViewController
 @property(nonatomic, strong, readonly) UIView *hudView;
+@property(nonatomic, strong, readonly) UIView *overlayView;
 
 - (void)showInGameMessage:(EmuInGameMessage *)message NS_SWIFT_NAME(showInGameMessage(_:));
 @end

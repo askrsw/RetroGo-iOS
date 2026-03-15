@@ -264,12 +264,12 @@ extension RetroRomCoreSelectViewController: UITableViewDelegate {
         switch action {
             case .runRomWithUrl(let url):
                 dismiss(animated: true) {
-                    RetroArchX.shared().playGame(romUrl: url, core: core)
+                    RetroArchX.playGame(romUrl: url, core: core)
                 }
                 checkCellCheckMark = false
             case .runRomWithItem(let item):
                 dismiss(animated: true) {
-                    RetroArchX.shared().playGame(romItem: item, core: core)
+                    RetroArchX.playGame(romItem: item, core: core)
                 }
                 checkCellCheckMark = true
             case .assignCoreForFile(let item):

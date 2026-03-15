@@ -32,14 +32,18 @@ import RACoordinator
 final class GamePageViewController: RetroArchViewController {
     static private(set) weak var instance: GamePageViewController?
 
-    private let inGameInfoView = InGameInfoView(frame: .zero)
+    let inGameInfoView = InGameInfoView(frame: .zero)
+    private(set) lazy var myHudView = GamePageHudView(holder: self)
 
-    private let romItem: RetroRomFileItem?
-    private let romUrl: URL?
-    private let core: EmuCoreInfoItem
-    private let startTime: Date
+    let romItem: RetroRomFileItem?
+    let romUrl: URL?
+    let core: EmuCoreInfoItem
+    let startTime: Date
 
-    private var startDate: Date?
+    private(set) var startDate: Date?
+
+    private var myLoadingView: GamePageLoadingView?
+    private var loaded = false
 
     init(romUrl: URL?, core: EmuCoreInfoItem) {
         self.romItem  = nil
@@ -112,19 +116,29 @@ final class GamePageViewController: RetroArchViewController {
         }
     }
 
+    override var hudView: UIView {
+        myHudView
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        RetroArchX.shared().start(romUrl?.path(percentEncoded: false), core: core)
+        RetroArchX.shared().start(romUrl?.path(percentEncoded: false), core: core) { [unowned self] success in
+            loaded = true
+            myLoadingView?.uninstall()
+            myLoadingView = nil
 
-        if AppSettings.shared.autoSaveLoadState, let coreId = RetroArchX.shared().currentCoreItem?.coreId {
-            let name = getAutoSaveStateName()
-            let stateFolder = AppConfig.shared.statesFolder + coreId
-            let autoPath = "\(stateFolder)/\(name).state"
-            RetroArchX.shared().loadState(from: autoPath)
+            myHudView.configLoadSaveStateButons()
+
+            startDate = Date()
+
+            if AppSettings.shared.autoSaveLoadState, let coreId = RetroArchX.shared().currentCoreItem?.coreId {
+                let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: romItem)
+                let stateFolder = AppConfig.shared.statesFolder + coreId
+                let autoPath = "\(stateFolder)/\(name).state"
+                RetroArchX.shared().loadState(from: autoPath)
+            }
         }
-
-        configHud()
 
         view.addSubview(inGameInfoView)
         inGameInfoView.snp.makeConstraints { make in
@@ -133,21 +147,15 @@ final class GamePageViewController: RetroArchViewController {
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-10)
             make.height.greaterThanOrEqualTo(25)
         }
-
-        startDate = Date()
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
 
-//        let width  = view.width
-//        let height = view.height
-//        let safeAreaInsets = view.safeAreaInsets
-//        let x = safeAreaInsets.left + 20
-//        let h = 25.0
-//        let y = height - safeAreaInsets.bottom - h
-//        let w = width - x - 20 - safeAreaInsets.right
-//        inGameInfoView.frame = CGRect(x: x, y: y, width: w, height: h)
+        if !loaded {
+            myLoadingView = GamePageLoadingView(frame: .zero)
+            myLoadingView?.install()
+        }
     }
 
     override func showInGameMessage(_ message: EmuInGameMessage) {
@@ -156,110 +164,6 @@ final class GamePageViewController: RetroArchViewController {
 }
 
 extension GamePageViewController {
-    private func configHud() {
-        let closeImage  = UIImage(systemName: "xmark.circle")
-        let closeButton = UIButton(type: .system)
-        closeButton.tintColor = UIColor.label
-        closeButton.setImage(closeImage, for: .normal)
-        closeButton.addTarget(self, action: #selector(closeAction), for: .touchUpInside)
-        closeButton.sizeToFit()
-        hudView.addSubview(closeButton)
-        closeButton.snp.makeConstraints { make in
-            make.leading.equalTo(hudView.safeAreaLayoutGuide.snp.leading).offset(20)
-            make.centerY.equalToSuperview()
-            make.size.equalTo(closeButton.size)
-        }
-
-        var lastTrailing: ConstraintItem = hudView.safeAreaLayoutGuide.snp.trailing
-
-        let coreInfoImage  = UIImage(systemName: "cpu")
-        let coreInfoButton = UIButton(type: .system)
-        coreInfoButton.tintColor = .label
-        coreInfoButton.setImage(coreInfoImage, for: .normal)
-        coreInfoButton.addTarget(self, action: #selector(coreInfoAction), for: .touchUpInside)
-        coreInfoButton.sizeToFit()
-        hudView.addSubview(coreInfoButton)
-        coreInfoButton.snp.makeConstraints { make in
-            make.trailing.equalTo(lastTrailing).offset(-20)
-            make.centerY.equalToSuperview()
-            make.size.equalTo(coreInfoButton.size)
-        }
-        lastTrailing = coreInfoButton.snp.leading
-
-        let restartImage  = UIImage(systemName: "arrow.clockwise.circle")
-        let restartButton = UIButton(type: .system)
-        restartButton.tintColor = .label
-        restartButton.setImage(restartImage, for: .normal)
-        restartButton.addTarget(self, action: #selector(restartAction), for: .touchUpInside)
-        restartButton.sizeToFit()
-        hudView.addSubview(restartButton)
-        restartButton.snp.makeConstraints { make in
-            make.trailing.equalTo(lastTrailing).offset(-20)
-            make.centerY.equalToSuperview()
-            make.size.equalTo(restartButton.size)
-        }
-        lastTrailing = restartButton.snp.leading
-
-        let snapImage  = UIImage(systemName: "photo.circle")
-        let snapButton = UIButton(type: .system)
-        snapButton.tintColor = .label
-        snapButton.setImage(snapImage, for: .normal)
-        snapButton.addTarget(self, action: #selector(snapAction), for: .touchUpInside)
-        snapButton.sizeToFit()
-        hudView.addSubview(snapButton)
-        snapButton.snp.makeConstraints { make in
-            make.trailing.equalTo(lastTrailing).offset(-20)
-            make.centerY.equalToSuperview()
-            make.size.equalTo(snapButton.size)
-        }
-        lastTrailing = snapButton.snp.leading
-
-        if(RetroArchX.shared().isCurrentCoreSupportsSavestate()) {
-            let loadImage  = UIImage(systemName: "arrowshape.up.circle")
-            let loadButton = UIButton(type: .system)
-            loadButton.tintColor = .label
-            loadButton.setImage(loadImage, for: .normal)
-            loadButton.addTarget(self, action: #selector(loadStateAction), for: .touchUpInside)
-            loadButton.sizeToFit()
-            hudView.addSubview(loadButton)
-            loadButton.snp.makeConstraints { make in
-                make.trailing.equalTo(lastTrailing).offset(-20)
-                make.centerY.equalToSuperview()
-                make.size.equalTo(loadButton.size)
-            }
-            lastTrailing = loadButton.snp.leading
-
-            let saveImage  = UIImage(systemName: "arrowshape.down.circle")
-            let saveButton = UIButton(type: .system)
-            saveButton.tintColor = .label
-            saveButton.setImage(saveImage, for: .normal)
-            saveButton.addTarget(self, action: #selector(saveStateAction), for: .touchUpInside)
-            saveButton.sizeToFit()
-            hudView.addSubview(saveButton)
-            saveButton.snp.makeConstraints { make in
-                make.trailing.equalTo(lastTrailing).offset(-20)
-                make.centerY.equalToSuperview()
-                make.size.equalTo(saveButton.size)
-            }
-            lastTrailing = saveButton.snp.leading
-        }
-    }
-
-    private func getAutoSaveStateName() -> String {
-        let name: String
-        if let sha256 = romItem?.sha256 {
-            name = "auto_\(sha256)"
-        } else if let coreInfoItem = RetroArchX.shared().currentCoreItem {
-            name = "auto_\(coreInfoItem.coreId)"
-        } else {
-            name = RetroRomGameStateItem.stateAutoSaveName
-        }
-        return name
-    }
-}
-
-extension GamePageViewController {
-
     @objc
     private func appWillResignActive() {
         if Self.instance == self {
@@ -271,7 +175,7 @@ extension GamePageViewController {
             }
 
             if AppSettings.shared.autoSaveLoadState {
-                let name = getAutoSaveStateName()
+                let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: romItem)
                 _ = RetroRomFileManager.shared.saveState(rawName: name, showName: nil, sha256: romItem?.sha256, romKey: romItem?.key, autoSave: true)
                 romItem?.pulseImage = !(romItem?.pulseImage ?? false)
             }
@@ -298,99 +202,24 @@ extension GamePageViewController {
         }
         showInGameMessage(message)
     }
+}
 
-    @objc
-    private func snapAction() {
-        let nowString = DateFormatter.yyyyMMddHHmmss().string(from: Date())
-        let pngName  = "snap-\(nowString).png"
-        let snapPath = AppConfig.shared.snapshotFolder + pngName
-        RetroArchX.shared().saveScreenshot(to: snapPath)
-    }
-
-    @objc
-    private func saveStateAction() {
-        guard RetroArchX.shared().isCurrentCoreSupportsSavestate() else {
+extension RetroArchX {
+    static func playGame(romUrl: URL?, core: EmuCoreInfoItem) {
+        guard let currentViewController = UIViewController.currentActive() else {
             return
         }
-
-        let title = Bundle.localizedString(forKey: "gamepage_save_state")
-        let message = Bundle.localizedString(forKey: "gamepage_input_state_name")
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addTextField { textField in
-            let nowString = DateFormatter.yyyyMMddHHmmss().string(from: Date())
-            textField.placeholder = Bundle.localizedString(forKey: "gamepage_name_state")
-            textField.text = nowString
-        }
-        let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { _ in
-            RetroArchX.shared().resume()
-        }
-        alert.addAction(cancelAction)
-        let okAction = UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default) { [weak self] _ in
-            let now = Date()
-            let rawName = DateFormatter.yyyyMMddHHmmss().string(from: now)
-            let showName = alert.textFields?.first?.text ?? ""
-            let ret = RetroRomFileManager.shared.saveState(rawName: rawName, showName: showName, sha256: self?.romItem?.sha256, romKey: self?.romItem?.key, autoSave: false)
-            if ret {
-                let str = String(format: Bundle.localizedString(forKey: "gamepage_state_saved"), showName)
-                let msg = EmuInGameMessage(message: str, title: nil, type: .info, duration: 3.5, priority: 0)
-                self?.inGameInfoView.showMessage(msg)
-            } else {
-                let str = String(format: Bundle.localizedString(forKey: "gamepage_state_save_failed"), showName)
-                let msg = EmuInGameMessage(message: str, title: nil, type: .error, duration: 3.5, priority: 0)
-                self?.inGameInfoView.showMessage(msg)
-            }
-            RetroArchX.shared().resume()
-        }
-        alert.addAction(okAction)
-
-        RetroArchX.shared().pause()
-        alert.view.tintColor = .label
-        present(alert, animated: true)
+        let controller = GamePageViewController(romUrl: romUrl, core: core)
+        controller.modalPresentationStyle = .fullScreen
+        currentViewController.present(controller, animated: true)
     }
 
-    @objc
-    private func loadStateAction() {
-        guard RetroArchX.shared().isCurrentCoreSupportsSavestate() else {
+    static func playGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
+        guard let currentViewController = UIViewController.currentActive() else {
             return
         }
-
-        guard
-            let currentCoreItem = RetroArchX.shared().currentCoreItem,
-            let romPath = RetroArchX.shared().getCurrentRomPath(),
-            let sha256 = FileManager.default.sha256ForFile(atPath: romPath) else {
-            return
-        }
-
-        let items = RetroRomFileManager.shared.getGameStateItems(coreId: currentCoreItem.coreId, sha256: sha256) ?? []
-        let controller = GameStateListViewController(gameStateItems: items, showClose: true)
-        let naviController = UINavigationController(rootViewController: controller)
-        present(naviController, animated: true)
-    }
-
-    @objc
-    private func restartAction() {
-        RetroArchX.shared().restart()
-    }
-
-    @objc
-    private func coreInfoAction() {
-        let coreInfoViewController = RetroRomCoreInfoViewController(coreInfoItem: core, showCloseButton: true, interactive: false)
-        let navController = UINavigationController(rootViewController: coreInfoViewController)
-        present(navController, animated: true)
-    }
-
-    @objc
-    private func closeAction() {
-        Self.instance = nil
-
-        if AppSettings.shared.autoSaveLoadState {
-            let name = getAutoSaveStateName()
-            _ = RetroRomFileManager.shared.saveState(rawName: name, showName: nil, sha256: romItem?.sha256, romKey: romItem?.key, autoSave: true)
-            romItem?.pulseImage = !(romItem?.pulseImage ?? false)
-        }
-
-        RetroArchX.shared().close()
-        romUrl?.stopAccessingSecurityScopedResource()
-        dismiss(animated: true)
+        let controller = GamePageViewController(romItem: romItem, core: core)
+        controller.modalPresentationStyle = .fullScreen
+        currentViewController.present(controller, animated: true)
     }
 }

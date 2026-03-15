@@ -23,7 +23,7 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-import Foundation
+import RACoordinator
 
 struct RetroRomGameStateItem {
     let rawName: String
@@ -58,5 +58,17 @@ struct RetroRomGameStateItem {
 
 extension RetroRomGameStateItem {
     static let stateAutoSaveName = "auto_save"
+
+    static func getAutoSaveStateName(romItem: RetroRomFileItem?) -> String {
+        let name: String
+        if let sha256 = romItem?.sha256 {
+            name = "auto_\(sha256)"
+        } else if let coreInfoItem = RetroArchX.shared().currentCoreItem {
+            name = "auto_\(coreInfoItem.coreId)"
+        } else {
+            name = RetroRomGameStateItem.stateAutoSaveName
+        }
+        return name
+    }
 }
 

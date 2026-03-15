@@ -15,7 +15,6 @@
 		AB55BC682F3B80C500569A84 /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC672F3B80C300569A84 /* NotificationNames.swift */; };
 		AB55BC6A2F3B80D800569A84 /* Vibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC692F3B80D700569A84 /* Vibration.swift */; };
 		AB55BC6C2F3B84DA00569A84 /* IconRender.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC6B2F3B84D500569A84 /* IconRender.swift */; };
-		AB55BC6F2F3B852D00569A84 /* RetroArchX+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC6E2F3B852900569A84 /* RetroArchX+Extension.swift */; };
 		AB55BC712F3B8A6900569A84 /* UIColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC702F3B8A6600569A84 /* UIColor+Extension.swift */; };
 		AB55BC742F3B8A9A00569A84 /* AppToastManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC732F3B8A9800569A84 /* AppToastManager.swift */; };
 		AB55BC762F3B8AEC00569A84 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC752F3B8AEB00569A84 /* AppConfig.swift */; };
@@ -28,11 +27,14 @@
 		AB7720652F3B1B31004F5B75 /* RACoordinator in Frameworks */ = {isa = PBXBuildFile; productRef = AB7720642F3B1B31004F5B75 /* RACoordinator */; };
 		AB7720672F3B1B33004F5B75 /* ObjcHelper in Frameworks */ = {isa = PBXBuildFile; productRef = AB7720662F3B1B33004F5B75 /* ObjcHelper */; };
 		AB7720692F3B2EB3004F5B75 /* MyApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7720682F3B2EB3004F5B75 /* MyApplication.swift */; };
+		AB79E7492F659FA5007C480E /* GamePageHudView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB79E7482F659FA5007C480E /* GamePageHudView.swift */; };
+		AB79E74B2F65CFAA007C480E /* GamePageLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB79E74A2F65CFA4007C480E /* GamePageLoadingView.swift */; };
 		AB7CA0662F3B057100EFACA9 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = AB7CA0652F3B057100EFACA9 /* Data */; };
 		AB7CA06A2F3B05F000EFACA9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AB7CA0682F3B05F000EFACA9 /* InfoPlist.strings */; };
 		AB7CA06F2F3B067400EFACA9 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AB7CA06D2F3B067400EFACA9 /* Localizable.strings */; };
 		AB803A1A2F3B38D300DE8D33 /* IQKeyboardManagerSwift in Frameworks */ = {isa = PBXBuildFile; productRef = AB803A192F3B38D300DE8D33 /* IQKeyboardManagerSwift */; };
 		AB8B7EC02F4D4A7F00A56A64 /* RetroRomLocationSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B7EBF2F4D4A7F00A56A64 /* RetroRomLocationSelector.swift */; };
+		AB8D11682F665CC400948717 /* XMLTextRenderKit in Frameworks */ = {isa = PBXBuildFile; productRef = AB8D11672F665CC400948717 /* XMLTextRenderKit */; };
 		AB90A1F12F3DE2520078C74E /* RetroRomCoreSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB90A1F02F3DE24B0078C74E /* RetroRomCoreSelectViewController.swift */; };
 		AB997ED02F4AEC00009F47AC /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = AB997ECE2F4AEC00009F47AC /* Localizable.stringsdict */; };
 		ABB34DCA2F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = ABB34DC92F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy */; };
@@ -145,7 +147,6 @@
 		AB55BC672F3B80C300569A84 /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
 		AB55BC692F3B80D700569A84 /* Vibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibration.swift; sourceTree = "<group>"; };
 		AB55BC6B2F3B84D500569A84 /* IconRender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconRender.swift; sourceTree = "<group>"; };
-		AB55BC6E2F3B852900569A84 /* RetroArchX+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RetroArchX+Extension.swift"; sourceTree = "<group>"; };
 		AB55BC702F3B8A6600569A84 /* UIColor+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Extension.swift"; sourceTree = "<group>"; };
 		AB55BC732F3B8A9800569A84 /* AppToastManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppToastManager.swift; sourceTree = "<group>"; };
 		AB55BC752F3B8AEB00569A84 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
@@ -155,6 +156,8 @@
 		AB55BC892F3BA0B400569A84 /* RetroRomFolderItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderItem.swift; sourceTree = "<group>"; };
 		AB69E2FD2F4EB4D800C532EE /* RetroRomEmptyTipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomEmptyTipView.swift; sourceTree = "<group>"; };
 		AB7720682F3B2EB3004F5B75 /* MyApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyApplication.swift; sourceTree = "<group>"; };
+		AB79E7482F659FA5007C480E /* GamePageHudView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageHudView.swift; sourceTree = "<group>"; };
+		AB79E74A2F65CFA4007C480E /* GamePageLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageLoadingView.swift; sourceTree = "<group>"; };
 		AB7CA0652F3B057100EFACA9 /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Data; sourceTree = "<group>"; };
 		AB7CA0692F3B05F000EFACA9 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AB7CA06B2F3B060300EFACA9 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
@@ -241,6 +244,7 @@
 				ABDAD2782F3BB429004100A9 /* YYText in Frameworks */,
 				AB651F182F5AD51A007550AA /* XMLTextRenderKit in Frameworks */,
 				AB803A1A2F3B38D300DE8D33 /* IQKeyboardManagerSwift in Frameworks */,
+				AB8D11682F665CC400948717 /* XMLTextRenderKit in Frameworks */,
 				ABDAD26B2F3BB0AA004100A9 /* PanModal in Frameworks */,
 				ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */,
 			);
@@ -252,7 +256,6 @@
 		AB55BC6D2F3B851D00569A84 /* Extension */ = {
 			isa = PBXGroup;
 			children = (
-				AB55BC6E2F3B852900569A84 /* RetroArchX+Extension.swift */,
 				AB55BC702F3B8A6600569A84 /* UIColor+Extension.swift */,
 			);
 			path = Extension;
@@ -281,7 +284,7 @@
 		AB55BC7A2F3B8BB100569A84 /* GamePage */ = {
 			isa = PBXGroup;
 			children = (
-				ABDAD2AA2F3BBBDD004100A9 /* InGameInfo */,
+				ABDAD2AA2F3BBBDD004100A9 /* View */,
 				ABDAD2AB2F3BBBE8004100A9 /* GameState */,
 				AB55BC7B2F3B8BC200569A84 /* GamePageViewController.swift */,
 			);
@@ -514,12 +517,14 @@
 			path = AppSetting;
 			sourceTree = "<group>";
 		};
-		ABDAD2AA2F3BBBDD004100A9 /* InGameInfo */ = {
+		ABDAD2AA2F3BBBDD004100A9 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				AB79E74A2F65CFA4007C480E /* GamePageLoadingView.swift */,
 				ABDAD2AC2F3BBBF6004100A9 /* InGameInfoView.swift */,
+				AB79E7482F659FA5007C480E /* GamePageHudView.swift */,
 			);
-			path = InGameInfo;
+			path = View;
 			sourceTree = "<group>";
 		};
 		ABDAD2AB2F3BBBE8004100A9 /* GameState */ = {
@@ -559,6 +564,7 @@
 				ABDAD26A2F3BB0AA004100A9 /* PanModal */,
 				ABDAD2772F3BB429004100A9 /* YYText */,
 				AB651F172F5AD51A007550AA /* XMLTextRenderKit */,
+				AB8D11672F665CC400948717 /* XMLTextRenderKit */,
 			);
 			productName = RetroGo;
 			productReference = ABD42B502F3A5EFC008B1771 /* RetroGo.app */;
@@ -595,7 +601,7 @@
 				ABDAD2582F3BAA8C004100A9 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 				ABDAD2662F3BABF5004100A9 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				ABDAD2692F3BB0AA004100A9 /* XCRemoteSwiftPackageReference "PanModal" */,
-				AB651F162F5AD51A007550AA /* XCLocalSwiftPackageReference "../../Repos/OpenSource/XMLTextRenderKit" */,
+				AB8D11662F665CC400948717 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ABD42B512F3A5EFC008B1771 /* Products */;
@@ -629,6 +635,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB79E74B2F65CFAA007C480E /* GamePageLoadingView.swift in Sources */,
 				ABDAD2902F3BB8C7004100A9 /* RetroRomFileBrowser.swift in Sources */,
 				ABDAD24E2F3BA375004100A9 /* RetroRomFileItem.swift in Sources */,
 				AB55BC6A2F3B80D800569A84 /* Vibration.swift in Sources */,
@@ -649,7 +656,6 @@
 				ABDAD2A52F3BBAE7004100A9 /* SystemDocumentBrowser.swift in Sources */,
 				AB55BC742F3B8A9A00569A84 /* AppToastManager.swift in Sources */,
 				ABDAD2882F3BB5B6004100A9 /* RetroRomCoreInfoViewCell.swift in Sources */,
-				AB55BC6F2F3B852D00569A84 /* RetroArchX+Extension.swift in Sources */,
 				ABDAD26F2F3BB0FA004100A9 /* RetroRomFileBrowserConfigView.swift in Sources */,
 				AB55BC642F3B804600569A84 /* DefaultKeys.swift in Sources */,
 				ABDAD2A02F3BBA3B004100A9 /* HomePageViewController.swift in Sources */,
@@ -660,6 +666,7 @@
 				ABDAD2522F3BA9D7004100A9 /* RetroRomGameStateItem.swift in Sources */,
 				ABDAD27E2F3BB4DC004100A9 /* RetroRomSectionHeaderView.swift in Sources */,
 				ABDAD2AD2F3BBBF8004100A9 /* InGameInfoView.swift in Sources */,
+				AB79E7492F659FA5007C480E /* GamePageHudView.swift in Sources */,
 				ABDAD26D2F3BB0D1004100A9 /* GameImportSelector.swift in Sources */,
 				ABDAD2502F3BA9BA004100A9 /* RetroRomFileTag.swift in Sources */,
 				ABDAD2822F3BB558004100A9 /* RetroRomCoreFirmwareFooterView.swift in Sources */,
@@ -741,7 +748,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -770,6 +777,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -787,7 +798,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -816,6 +827,10 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -975,13 +990,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		AB651F162F5AD51A007550AA /* XCLocalSwiftPackageReference "../../Repos/OpenSource/XMLTextRenderKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../Repos/OpenSource/XMLTextRenderKit;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -997,6 +1005,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 8.0.2;
+			};
+		};
+		AB8D11662F665CC400948717 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/askrsw/XMLTextRenderKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 		ABDAD2582F3BAA8C004100A9 /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
@@ -1047,6 +1063,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AB803A182F3B38D300DE8D33 /* XCRemoteSwiftPackageReference "IQKeyboardManager" */;
 			productName = IQKeyboardManagerSwift;
+		};
+		AB8D11672F665CC400948717 /* XMLTextRenderKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AB8D11662F665CC400948717 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */;
+			productName = XMLTextRenderKit;
 		};
 		ABDAD2592F3BAA8C004100A9 /* SQLite */ = {
 			isa = XCSwiftPackageProductDependency;

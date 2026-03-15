@@ -19,6 +19,15 @@
 * **关联说明**：本项目与 ESP32 设备上的 [retro-go 固件](https://github.com/ducalex/retro-go) **没有任何** 关联、支持或所属关系。这是一个独立的 iOS 移动端应用程序。
 * **内容说明**：本项目是一个纯粹的技术工具，**不内置、不提供、亦不分发** 任何受版权保护的游戏镜像（ROM）或系统固件（BIOS）。
 
+## 🖼️ App截图
+
+![RetroGo Screenshot 1](Screenshot/iphone01.png)
+![RetroGo Screenshot 2](Screenshot/iphone02.png)
+![RetroGo Screenshot 3](Screenshot/iphone03.png)
+![RetroGo Screenshot 4](Screenshot/iphone04.png)
+![RetroGo Screenshot 5](Screenshot/iphone05.png)
+![RetroGo Screenshot 6](Screenshot/iphone06.png)
+
 ## ✨ 功能特性
 
 * **原生 iOS UI**：采用 UIKit 构建，提供响应迅速、符合系统直觉的导航与设置体验。

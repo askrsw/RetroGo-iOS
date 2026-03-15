@@ -191,3 +191,5 @@
 "coreinfo_firmware_ppsspp_imported" = "Successfully imported PPSSPP resource files.";
 "coreinfo_firmware_ppsspp_import_failed" = "Failed to import PPSSPP resource files!";
 "corelist_core_list" = "Core List";
+
+"gamepage_game_loading" = "Loading game...";

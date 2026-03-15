@@ -26,6 +26,7 @@
 import UIKit
 import SnapKit
 import ObjcHelper
+import RACoordinator
 import XMLTextRenderKit
 
 final class AppSettingViewController: UIViewController {
@@ -218,6 +219,8 @@ extension AppSettingViewController: UITableViewDelegate {
 extension AppSettingViewController {
     private func showCoreList() {
         Vibration.selection.vibrate()
+
+        guard RetroArchX.shared().initialized else { return }
 
         let controller = EmuCoreListViewController()
         navigationController?.pushViewController(controller, animated: true)

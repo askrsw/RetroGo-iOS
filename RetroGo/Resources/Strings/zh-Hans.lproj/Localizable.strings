@@ -191,3 +191,5 @@
 "coreinfo_firmware_ppsspp_imported" = "成功导入 PPSSPP 的资源文件。";
 "coreinfo_firmware_ppsspp_import_failed" = "导入 PPSSPP 资源文件失败！";
 "corelist_core_list" = "核心列表";
+
+"gamepage_game_loading" = "游戏加载中......";

@@ -36,7 +36,6 @@
 #endif
 
 @implementation RetroArchViewController {
-    UIView *d_hudView;
     UIView *d_renderView;
     apple_view_type_t d_vt;
     NSArray<NSLayoutConstraint *> *d_viewConstraints;
@@ -97,14 +96,24 @@
     return apple->mouse_grabbed;
 }
 
+- (void)loadView {
+    [super loadView];
+
+    self.hudView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.hudView];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 
     self.view.backgroundColor = UIColor.systemBackgroundColor;
 
-    d_hudView = [[UIView alloc] initWithFrame:CGRectZero];
-    d_hudView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:d_hudView];
+    [NSLayoutConstraint activateConstraints:@[
+        [self.hudView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [self.hudView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+        [self.hudView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
+        [self.hudView.heightAnchor constraintEqualToConstant:44]
+    ]];
 
 #ifdef HAVE_MFI
     [self initMouseHandler];
@@ -127,7 +136,7 @@
 #pragma mark - Interface
 
 - (UIView *)hudView {
-    return d_hudView;
+    return nil;
 }
 
 - (void)showInGameMessage:(EmuInGameMessage *)message { }
@@ -174,21 +183,13 @@
 
     if(d_layoutViewSize.width < d_layoutViewSize.height) {
         d_viewConstraints = @[
-            [d_hudView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-            [d_hudView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-            [d_hudView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-            [d_hudView.heightAnchor constraintEqualToConstant:44],
-            [d_renderView.topAnchor constraintEqualToAnchor:d_hudView.bottomAnchor],
+            [d_renderView.topAnchor constraintEqualToAnchor:self.hudView.bottomAnchor],
             [d_renderView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
             [d_renderView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
             [d_renderView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]
         ];
     } else {
         d_viewConstraints = @[
-            [d_hudView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-            [d_hudView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-            [d_hudView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-            [d_hudView.heightAnchor constraintEqualToConstant:44],
             [d_renderView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
             [d_renderView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
             [d_renderView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
@@ -275,7 +276,7 @@ void *glkitview_init(void);
     [d_renderView addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
     d_renderView.userInteractionEnabled = YES;
     d_renderView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view insertSubview:d_renderView belowSubview:d_hudView];
+    [self.view insertSubview:d_renderView belowSubview:self.hudView];
 
     d_layoutViewSize = self.view.frame.size;
     [self updateMyViewConstraints];
