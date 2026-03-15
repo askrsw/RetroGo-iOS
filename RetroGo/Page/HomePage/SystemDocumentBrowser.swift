@@ -65,12 +65,12 @@ extension SystemDocumentBrowser {
 
 extension SystemDocumentBrowser: UIDocumentBrowserViewControllerDelegate {
     func documentBrowser(_ controller: UIDocumentBrowserViewController, didPickDocumentURLs documentURLs: [URL]) {
-        guard let url = documentURLs.first else {
+        guard RetroArchX.shared().initialized, let url = documentURLs.first else {
             return
         }
 
         if let core = RetroRomCoreManager.shared.getRunningCore(url) {
-            RetroArchX.shared().playGame(romUrl: url, core: core)
+            RetroArchX.playGame(romUrl: url, core: core)
         } else {
             let controller = RetroRomCoreSelectViewController(action: .runRomWithUrl(url: url))
             let navController = UINavigationController(rootViewController: controller)

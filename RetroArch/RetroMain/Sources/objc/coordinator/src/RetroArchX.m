@@ -31,17 +31,24 @@
 #import <retroarch_door.h>
 #import <utils/verbosity.h>
 #import <cocoa_input.h>
+#import <UIKit+Extensions.h>
+#import <CoreFoundation/CoreFoundation.h>
 
 #define SHOW_CORE_ROM_TYPE_INFO 0
+
+NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
 @implementation RetroArchX {
     NSArray<UTType *> *d_allSupportedExtensions;
     NSArray<EmuCoreInfoItem *> *d_coreItems;
 
     CADisplayLink *d_displayLink;
-
     NSInteger d_pauseCounter;
+
+    BOOL d_initialized;
 }
+
+@synthesize initialized = d_initialized;
 
 + (instancetype)shared {
     static RetroArchX *instance = nil;
@@ -55,22 +62,40 @@
 - (instancetype)init {
     self = [super init];
     if(self != nil) {
-        // open log
-        verbosity_enable();
-        verbosity_set_log_level(0);
-
-        //set language
-        unsigned language = frontend_driver_get_user_language();
-        msg_hash_set_uint(MSG_HASH_USER_LANGUAGE, language);
-
-        char arguments[]   = "retroarch";
-        char       *argv[] = {arguments,   NULL};
-        int argc           = 1;
-        rarch_main(argc, argv, NULL, false);
-
-        [self findAllSupportedExtensions];
-
         d_pauseCounter = 0;
+        d_initialized = NO;
+
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+            double init_start = CFAbsoluteTimeGetCurrent();
+
+            // open log
+            verbosity_enable();
+            verbosity_set_log_level(0);
+            RARCH_LOG("[RetroArchX] init start\n");
+
+            //set language
+            unsigned language = frontend_driver_get_user_language();
+            msg_hash_set_uint(MSG_HASH_USER_LANGUAGE, language);
+
+            char arguments[]   = "retroarch";
+            char       *argv[] = {arguments,   NULL};
+            int argc           = 1;
+            RARCH_LOG("[RetroArchX] rarch_main begin (t=%.3fs)\n", CFAbsoluteTimeGetCurrent() - init_start);
+            rarch_main(argc, argv, NULL, false);
+            RARCH_LOG("[RetroArchX] rarch_main end (t=%.3fs)\n", CFAbsoluteTimeGetCurrent() - init_start);
+
+            RARCH_LOG("[RetroArchX] findAllSupportedExtensions begin (t=%.3fs)\n", CFAbsoluteTimeGetCurrent() - init_start);
+            [self findAllSupportedExtensions];
+            RARCH_LOG("[RetroArchX] findAllSupportedExtensions end (t=%.3fs)\n", CFAbsoluteTimeGetCurrent() - init_start);
+
+            d_initialized = YES;
+            RARCH_LOG("[RetroArchX] init done (t=%.3fs)\n", CFAbsoluteTimeGetCurrent() - init_start);
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[NSNotificationCenter defaultCenter] postNotificationName:RetroArchXReadyNotification object:self];
+                RARCH_LOG("[RetroArchX] posted ready notification\n");
+            });
+        });
     }
     return self;
 }
@@ -168,45 +193,54 @@
 
 #pragma mark - Core Control
 
-- (BOOL)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        command_event(CMD_EVENT_AUDIO_START, NULL);
-    });
+- (void)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core completion:(nullable void (^)(BOOL success))completion {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        content_ctx_info_t content_info;
+        NSString *corePath = core.corePath;
+        NSString *finalRomPath = [core checkIsMameCore:romPath];
 
-    content_ctx_info_t content_info;
-    NSString *corePath = core.corePath;
-    romPath = [core checkIsMameCore: romPath];
+        content_info.argc         = 0;
+        content_info.argv         = NULL;
+        content_info.args         = NULL;
+        content_info.environ_get  = NULL;
+        content_info.init_drivers = true;
 
-    content_info.argc         = 0;
-    content_info.argv         = NULL;
-    content_info.args         = NULL;
-    content_info.environ_get  = NULL;
-    content_info.init_drivers = true;
+        BOOL load_ret = NO;
 
-    BOOL load_ret = NO;
-    if(romPath != nil) {
-        load_ret = task_push_load_content_with_new_core_from_menu(corePath.UTF8String,  romPath.UTF8String, &content_info, CORE_TYPE_PLAIN, NULL, NULL);
-    } else {
-        // @ref: action_ok_start_core in menu_cbs_ok.c
-        path_clear(RARCH_PATH_CONTENT);
-        path_clear(RARCH_PATH_BASENAME);
-        path_set(RARCH_PATH_CORE, corePath.UTF8String);
-        if (!string_is_equal(corePath.UTF8String, path_get(RARCH_PATH_CORE_LAST)))
-           path_set(RARCH_PATH_CORE_LAST, corePath.UTF8String);
-        command_event(CMD_EVENT_LOAD_CORE, NULL);
-        runloop_set_current_core_type(CORE_TYPE_PLAIN, true);
-        load_ret = task_push_start_current_core(&content_info);
-    }
-
-    if(load_ret) {
-        d_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(step:)];
-        if (@available(iOS 15.0, tvOS 15.0, *)) {
-            [d_displayLink setPreferredFrameRateRange:CAFrameRateRangeDefault];
+        if(finalRomPath != nil) {
+            // 这个函数内部包含了 dlopen 和大量的 IO 操作
+            load_ret = task_push_load_content_with_new_core_from_menu(corePath.UTF8String, finalRomPath.UTF8String, &content_info, CORE_TYPE_PLAIN, NULL, NULL);
+        } else {
+            path_clear(RARCH_PATH_CONTENT);
+            path_clear(RARCH_PATH_BASENAME);
+            path_set(RARCH_PATH_CORE, corePath.UTF8String);
+            command_event(CMD_EVENT_LOAD_CORE, NULL);
+            runloop_set_current_core_type(CORE_TYPE_PLAIN, true);
+            load_ret = task_push_start_current_core(&content_info);
         }
-        [d_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-    }
 
-    return load_ret;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if(load_ret) {
+                // 开启音频延时逻辑
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                    command_event(CMD_EVENT_AUDIO_START, NULL);
+                });
+
+                // 开启主线程渲染循环
+                if (!self->d_displayLink) {
+                    self->d_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(step:)];
+                    if (@available(iOS 15.0, tvOS 15.0, *)) {
+                        [self->d_displayLink setPreferredFrameRateRange:CAFrameRateRangeDefault];
+                    }
+                    [self->d_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+                }
+            }
+
+            if (completion) {
+                completion(load_ret);
+            }
+        });
+    });
 }
 
 - (BOOL)close {

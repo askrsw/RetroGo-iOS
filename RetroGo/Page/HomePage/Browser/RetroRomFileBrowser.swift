@@ -107,9 +107,9 @@ extension RetroRomFileBrowser {
     func startGame(_ item: RetroRomFileItem, core: EmuCoreInfoItem? = nil) {
         guard RetroArchX.shared().canRunOnThisDevice(), RetroRomHomePageState.shared.couldShowItemMenu else { return }
         if let core = core, core != .noneCore() {
-            RetroArchX.shared().playGame(romItem: item, core: core)
+            RetroArchX.playGame(romItem: item, core: core)
         } else if let core = RetroRomCoreManager.shared.getRunningCore(item) {
-            RetroArchX.shared().playGame(romItem: item, core: core)
+            RetroArchX.playGame(romItem: item, core: core)
         } else {
             let holder = HomePageViewController.instance
             let controller = RetroRomCoreSelectViewController(action: .runRomWithItem(item: item))

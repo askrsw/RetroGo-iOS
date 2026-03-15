@@ -30,10 +30,13 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSString * const RetroArchXReadyNotification;
+
 @interface RetroArchX : NSObject
 @property(nonatomic, copy, readonly) NSArray<UTType *> *allSupportedExtensions;
 @property(nonatomic, copy, readonly) NSArray<EmuCoreInfoItem *> *allCores;
 @property(nonatomic, copy, nullable, readonly) EmuCoreInfoItem *currentCoreItem;
+@property(nonatomic, assign, readonly) BOOL initialized;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)shared;
@@ -45,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)getCurrentRomPath;
 - (BOOL)canRunOnThisDevice;
 
-- (BOOL)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core;
+- (void)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core completion:(nullable void (^)(BOOL success))completion;
 - (BOOL)close;
 - (BOOL)pause;
 - (BOOL)resume;

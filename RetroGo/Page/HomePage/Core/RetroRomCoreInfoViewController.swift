@@ -214,7 +214,7 @@ extension RetroRomCoreInfoViewController {
             let item: Item = .runCore(tip: tip, value: value) { [weak self] in
                 guard let self = self else { return }
                 let coreInfoItem = coreInfoItem
-                RetroArchX.shared().playGame(romUrl: nil, core: coreInfoItem)
+                RetroArchX.playGame(romUrl: nil, core: coreInfoItem)
             }
             basicItems.append(item)
         }

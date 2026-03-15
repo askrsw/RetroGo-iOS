@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, readonly) NSArray<UTType *> *allSupportedExtensions;
 @property(nonatomic, copy, readonly) NSArray<EmuCoreInfoItem *> *allCores;
 @property(nonatomic, copy, nullable, readonly) EmuCoreInfoItem *currentCoreItem;
+@property(nonatomic, assign, readonly) BOOL initialized;
 
 + (instancetype)shared;
 - (instancetype)init NS_UNAVAILABLE;
@@ -47,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)canRunOnThisDevice;
 
 #pragma mark - Core Control
-- (BOOL)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core;
+- (void)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core completion:(nullable void (^)(BOOL success))completion;
 - (BOOL)close;
 - (BOOL)pause;
 - (BOOL)resume;

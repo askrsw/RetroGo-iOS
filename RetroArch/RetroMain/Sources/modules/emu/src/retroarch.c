@@ -61,6 +61,11 @@
 #include <ctype.h>
 #include <math.h>
 #include <locale.h>
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#include <dispatch/dispatch.h>
+#include <pthread.h>
+#endif
 
 #include <boolean.h>
 #include <clamping.h>
@@ -1517,7 +1522,11 @@ void drivers_init(
       *camera_st                  = camera_state_get_ptr();
    location_driver_state_t
       *location_st                = location_state_get_ptr();
-   bool video_is_threaded         = VIDEO_DRIVER_IS_THREADED_INTERNAL(video_st);
+#if defined(__APPLE__) && defined(TARGET_OS_IOS)
+   __block bool video_is_threaded = VIDEO_DRIVER_IS_THREADED_INTERNAL(video_st);
+#else
+   bool video_is_threaded = VIDEO_DRIVER_IS_THREADED_INTERNAL(video_st);
+#endif
    gfx_display_t *p_disp          = disp_get_ptr();
 
    /* Content av_info based automatic swap interval must be set early. */
@@ -1535,10 +1544,29 @@ void drivers_init(
 #ifdef HAVE_VIDEO_FILTER
       video_driver_filter_free();
 #endif
+#if defined(__APPLE__) && defined(TARGET_OS_IOS)
+      video_st->frame_cache_data  = NULL;
+      /* Metal init must run on the main thread on iOS. */
+      if (!pthread_main_np())
+      {
+         dispatch_sync(dispatch_get_main_queue(), ^{
+            if (!video_driver_init_internal(&video_is_threaded,
+                     verbosity_enabled))
+               retroarch_fail(1, "video_driver_init_internal()");
+         });
+      }
+      else
+      {
+         if (!video_driver_init_internal(&video_is_threaded,
+                  verbosity_enabled))
+            retroarch_fail(1, "video_driver_init_internal()");
+      }
+#else
       video_st->frame_cache_data  = NULL;
       if (!video_driver_init_internal(&video_is_threaded,
                verbosity_enabled))
          retroarch_fail(1, "video_driver_init_internal()");
+#endif
 
       if (   !(video_st->flags & VIDEO_FLAG_CACHE_CONTEXT_ACK)
             && hwr->context_reset)
