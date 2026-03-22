@@ -68,9 +68,9 @@ To ensure a seamless build process for version 1.0:
     Open `RetroGo.xcodeproj`. Xcode will automatically resolve Swift Package Manager dependencies.
 
 3.  **Signing**
-    * Select the target in the Project Navigator.
-    * Go to **Signing & Capabilities**.
-    * Configure your Apple Developer Team (Personal Teams are supported).
+    * This project uses `Main.xcconfig` for build settings (bundle identifier and team ID).
+    * `Main.xcconfig` is **gitignored**. Rename `Main.xcconfig.sample` in the repository root to `Main.xcconfig` and fill in your own values.
+    * After that, open the project and verify the settings in **Signing & Capabilities**.
 
 4.  **Run**
     Connect your device and press `Cmd + R`.

@@ -40,6 +40,8 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
 @implementation RetroArchX {
     NSArray<UTType *> *d_allSupportedExtensions;
+    NSSet<NSString *> *d_allExtensionsSet;
+
     NSArray<EmuCoreInfoItem *> *d_coreItems;
 
     CADisplayLink *d_displayLink;
@@ -109,6 +111,10 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
 - (NSArray<UTType *> *)allSupportedExtensions {
     return d_allSupportedExtensions;
+}
+
+- (NSSet<NSString *> *)allExtensionsSet {
+    return d_allExtensionsSet;
 }
 
 - (NSArray<EmuCoreInfoItem *> *)allCores {
@@ -456,7 +462,8 @@ bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
 
         for(int j = 0; j < extensions->size; j++) {
             char *value = extensions->elems[j].data;
-            [set addObject:@(value)];
+            NSString *strValue = @(value).lowercaseString;
+            [set addObject:strValue];
 
 #if SHOW_CORE_ROM_TYPE_INFO
             [dict[@(info->core_name)] addObject:@(value)];
@@ -486,6 +493,7 @@ bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
     NSLog(@"Dynamic Types: %@", [dynamicTypes componentsJoinedByString:@","]);
 #endif // SHOW_CORE_ROM_TYPE_INFO
 
+    d_allExtensionsSet       = [set copy];
     d_allSupportedExtensions = [array copy];
 }
 

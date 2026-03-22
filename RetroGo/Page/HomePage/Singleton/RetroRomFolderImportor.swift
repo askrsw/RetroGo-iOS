@@ -25,6 +25,7 @@
 
 import UIKit
 import ObjcHelper
+import RACoordinator
 
 enum RetroRomImportMessage {
     case enumeratorBuildFailed
@@ -94,6 +95,7 @@ final class RetroRomFolderImportor: Thread {
 
         let fileManager = FileManager.default
         let rootPath = rootUrl.path(percentEncoded: false)
+        let supportedExtensions = RetroArchX.shared().allExtensionsSet
         if let enumerator = fileManager.enumerator(atPath: rootPath) {
             for case let filePath as String in enumerator {
                 if filePath.hasPrefix(".DS_Store") || filePath.hasSuffix(".DS_Store") {
@@ -105,6 +107,10 @@ final class RetroRomFolderImportor: Thread {
                 }
 
                 let fileUrl = rootUrl.appendingPathComponent(filePath)
+                let ext = fileUrl.pathExtension.lowercased()
+                if !supportedExtensions.contains(ext) {
+                    continue
+                }
                 if fileManager.urlIsDirectory(fileUrl) {
                     if !makeSubFolderItem(filePath) {
                         return
