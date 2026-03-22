@@ -32,9 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RetroArchX : NSObject
 @property(nonatomic, strong, nullable, readonly) CADisplayLink *displayLink;
-@property(nonatomic, copy, readonly) NSArray<UTType *> *allSupportedExtensions;
-@property(nonatomic, copy, readonly) NSArray<EmuCoreInfoItem *> *allCores;
-@property(nonatomic, copy, nullable, readonly) EmuCoreInfoItem *currentCoreItem;
+@property(nonatomic, strong, readonly) NSArray<UTType *> *allSupportedExtensions;
+@property(nonatomic, strong, readonly) NSSet<NSString *> *allExtensionsSet;
+@property(nonatomic, strong, readonly) NSArray<EmuCoreInfoItem *> *allCores;
+@property(nonatomic, strong, nullable, readonly) EmuCoreInfoItem *currentCoreItem;
 @property(nonatomic, assign, readonly) BOOL initialized;
 
 + (instancetype)shared;

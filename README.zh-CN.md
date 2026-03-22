@@ -68,9 +68,9 @@
     直接双击打开 `RetroGo.xcodeproj`。Xcode 会自动解析 Swift Package Manager 依赖。
 
 3.  **签名配置**
-    * 在项目导航栏选择 Target。
-    * 进入 **Signing & Capabilities** 选项卡。
-    * 配置您的 Apple 开发者 Team（支持个人免费账号）。
+    * 本项目通过 `Main.xcconfig` 管理构建设置（bundle id 与 team id）。
+    * `Main.xcconfig` 已加入 **gitignore**。请将根目录的 `Main.xcconfig.sample` 重命名为 `Main.xcconfig` 并填入你的信息。
+    * 然后在 Xcode 中检查 **Signing & Capabilities** 配置是否正确。
 
 4.  **构建并运行**
     连接您的 iPhone/iPad，按下 `Cmd + R` 即可开始构建。

@@ -8,7 +8,7 @@
 // Configuration settings file format documentation can be found at:
 // https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
 
-// 开源贡献者请复制此文件为 Main.xcconfig 并填入自己的信息
+// Open source contributors: Please copy this file as Main.xcconfig and fill in your own information.
 
 PRODUCT_BUNDLE_IDENTIFIER = com.example.retrogo
 DEVELOPMENT_TEAM = YOUR_TEAM_ID
