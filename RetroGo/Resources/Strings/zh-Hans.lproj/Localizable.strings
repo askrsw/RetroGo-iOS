@@ -168,6 +168,7 @@
 "coreinfo_developers" = "开发者：";
 "coreinfo_licenses" = "开源协议：";
 "coreinfo_system_id" = "系统ID：";
+"coreinfo_core_id" = "核心ID：";
 "coreinfo_descrption" = "核心说明：";
 "coreinfo_srcurl" = "源码地址：";
 "coreinfo_firmware_name" = "文件名称：";
@@ -193,3 +194,5 @@
 "corelist_core_list" = "核心列表";
 
 "gamepage_game_loading" = "游戏加载中......";
+
+"gamesetting_title" = "游戏设置";

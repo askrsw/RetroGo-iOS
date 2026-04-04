@@ -1,0 +1,277 @@
+{
+    "platform_id": "default",
+    "version": 1,
+    "portrait_ref_size": { "width": 430, "height": 795 },
+    "landscape_ref_size": { "width": 814, "height": 366 },
+    "retroarch_source": "gamepads/neo-retropad/neo-retropad.cfg",
+    "elements": [
+        {
+            "id": "left-dpad",
+            "type": "dpad",
+            "portrait_rect": {
+                "insets": { "left": 25, "bottom": 230 },
+                "size": { "width": 130, "height": 130 }
+            },
+            "landscape_rect": {
+                "insets": { "left": 22.5, "bottom": 110 },
+                "size": { "width": 130, "height": 130 }
+            },
+            "shape": "rect",
+            "binds": ["UP", "DOWN", "LEFT", "RIGHT"],
+            "is_hidden": false,
+            "allows_combining": true
+        },
+        {
+            "id": "left-stick",
+            "type": "stick",
+            "portrait_rect": {
+                "insets": { "left": 25, "bottom": 230 },
+                "size": { "width": 130, "height": 130 }
+            },
+            "landscape_rect": {
+                "insets": { "left": 22.5, "bottom": 110 },
+                "size": { "width": 130, "height": 130 }
+            },
+            "shape": "circle",
+            "binds": ["UP", "DOWN", "LEFT", "RIGHT", "ANALOG_LEFT"],
+            "is_hidden": true,
+            "allows_combining": false
+        },
+        {
+            "id": "digital-analog-switch",
+            "type": "digital-analog-switch",
+            "portrait_rect": {
+                "insets": { "left": 25, "bottom": 360 },
+                "size": { "width": 20, "height": 20 }
+            },
+            "landscape_rect": {
+                "insets": { "left": 25, "bottom": 240 },
+                "size": { "width": 20, "height": 20 }
+            },
+            "shape": "circle",
+            "binds": ["DIGITAL-ANALOG-SWITCH"],
+            "is_hidden": false,
+            "allows_combining": false
+        },
+        {
+            "id": "a",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "right": 25, "bottom": 275 },
+                "size": { "width": 50, "height": 50 }
+            },
+            "landscape_rect": {
+                "insets": { "right": 25, "bottom": 155 },
+                "size": { "width": 50, "height": 50 }
+            },
+            "shape": "circle",
+            "title": "A",
+            "binds": ["A"],
+            "is_hidden": false,
+            "allows_combining": true
+        },
+        {
+            "id": "b",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "right": 70, "bottom": 230 },
+                "size": { "width": 50, "height": 50 }
+            },
+            "landscape_rect": {
+                "insets": { "right": 70, "bottom": 110 },
+                "size": { "width": 50, "height": 50 }
+            },
+            "shape": "circle",
+            "title": "B",
+            "binds": ["B"],
+            "is_hidden": false,
+            "allows_combining": true
+        },
+        {
+            "id": "x",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "right": 70, "bottom": 320 },
+                "size": { "width": 50, "height": 50 }
+            },
+            "landscape_rect": {
+                "insets": { "right": 70, "bottom": 200 },
+                "size": { "width": 50, "height": 50 }
+            },
+            "shape": "circle",
+            "title": "X",
+            "binds": ["X"],
+            "is_hidden": false,
+            "allows_combining": true
+        },
+        {
+            "id": "y",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "right": 115, "bottom": 275 },
+                "size": { "width": 50, "height": 50 }
+            },
+            "landscape_rect": {
+                "insets": { "right": 115, "bottom": 155 },
+                "size": { "width": 50, "height": 50 }
+            },
+            "shape": "circle",
+            "title": "Y",
+            "binds": ["Y"],
+            "is_hidden": false,
+            "allows_combining": true
+        },
+        {
+            "id": "select",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "center_x": -85, "bottom": 175 },
+                "size": { "width": 70, "height": 25 }
+            },
+            "landscape_rect": {
+                "insets": { "center_x": -100, "bottom": 35 },
+                "size": { "width": 70, "height": 25 }
+            },
+            "shape": "capsule",
+            "title": "SELECT",
+            "binds": ["SELECT"],
+            "is_hidden": false,
+            "allows_combining": false
+        },
+        {
+            "id": "start",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "center_x": 15, "bottom": 175 },
+                "size": { "width": 70, "height": 25 }
+            },
+            "landscape_rect": {
+                "insets": { "center_x": 30, "bottom": 35 },
+                "size": { "width": 70, "height": 25 }
+            },
+            "shape": "capsule",
+            "title": "START",
+            "binds": ["START"],
+            "is_hidden": false,
+            "allows_combining": false
+        },
+        {
+            "id": "l1",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "left": 20, "bottom": 160 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "landscape_rect": {
+                "insets": { "left": 20, "bottom": 30 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "shape": "rect",
+            "title": "L1",
+            "binds": ["L1"],
+            "is_hidden": false,
+            "allows_combining": false
+        },
+        {
+            "id": "l2",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "left": 70, "bottom": 120 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "landscape_rect": {
+                "insets": { "left": 70, "bottom": 30 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "shape": "rect",
+            "title": "L2",
+            "binds": ["L2"],
+            "is_hidden": false,
+            "allows_combining": false
+        },
+        {
+            "id": "l3",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "left": 120, "bottom": 80 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "landscape_rect": {
+                "insets": { "left": 120, "bottom": 30 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "shape": "rect",
+            "title": "L3",
+            "binds": ["L3"],
+            "is_hidden": false,
+            "allows_combining": false
+        },
+        {
+            "id": "r1",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "right": 20, "bottom": 160 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "landscape_rect": {
+                "insets": { "right": 20, "bottom": 30 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "shape": "rect",
+            "title": "R1",
+            "binds": ["R1"],
+            "is_hidden": false,
+            "allows_combining": false
+        },
+        {
+            "id": "r2",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "right": 70, "bottom": 120 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "landscape_rect": {
+                "insets": { "right": 70, "bottom": 30 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "shape": "rect",
+            "title": "R2",
+            "binds": ["R2"],
+            "is_hidden": false,
+            "allows_combining": false
+        },
+        {
+            "id": "r3",
+            "type": "button",
+            "portrait_rect": {
+                "insets": { "right": 120, "bottom": 80 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "landscape_rect": {
+                "insets": { "right": 120, "bottom": 30 },
+                "size": { "width": 35, "height": 35 }
+            },
+            "shape": "rect",
+            "title": "R3",
+            "binds": ["R3"],
+            "is_hidden": false,
+            "allows_combining": false
+        },
+        {
+            "id": "overlay-collapse",
+            "type": "overlay-collapse",
+            "portrait_rect": {
+                "insets": { "right": 25, "bottom": 50 },
+                "size": { "width": 20, "height": 20 }
+            },
+            "landscape_rect": {
+                "insets": { "right": 25, "bottom": 85 },
+                "size": { "width": 20, "height": 20 }
+            },
+            "shape": "circle",
+            "binds": ["OVERLAY-COLLAPSE"],
+            "is_hidden": false,
+            "allows_combining": false
+        }
+    ]
+}

@@ -115,6 +115,7 @@ typedef struct
    char *user_path;
    char *assets_path;
    char *firmwares_path;
+   char *overlay_path;
 } core_info_t;
 
 /* A subset of core_info parameters required for

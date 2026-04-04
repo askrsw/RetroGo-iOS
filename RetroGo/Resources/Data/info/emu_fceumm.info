@@ -28,6 +28,8 @@ hw_render = "false"
 needs_fullpath = "false"
 disk_control = "false"
 database = "Nintendo - Nintendo Entertainment System|Nintendo - Family Computer Disk System"
+overlay = "gamepads/Named_Overlays/Sony - PlayStation.cfg"
+# overlay = "gamepads/Named_Overlays/Sony - PlayStation Portable.cfg"
 
 # BIOS / Firmware
 firmware_count = 3

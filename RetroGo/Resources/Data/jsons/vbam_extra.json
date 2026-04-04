@@ -9,5 +9,8 @@
             "file_name": "gpl-2.0.txt"
         }
     ],
-    "src-url": "https://github.com/libretro/vbam-libretro"
+    "src_url": "https://github.com/libretro/vbam-libretro",
+    "supports_analog": false,
+    "notes": "GBA core. Analog stick can be used for tilt/gyro sensors in certain games, but not implemented in current version.",
+    "overlay": "gba"
 }

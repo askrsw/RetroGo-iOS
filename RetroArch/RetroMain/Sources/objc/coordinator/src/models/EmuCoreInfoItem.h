@@ -60,6 +60,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL isHidden;
 @property(nonatomic, assign) NSInteger itemCount;
 
+@property(nonatomic, assign, readonly) BOOL supportsAnalog;
+@property(nonatomic, copy, nullable, readonly) NSString *overlayName;
+
 - (instancetype)init NS_UNAVAILABLE;
 + (NSArray<EmuCoreInfoItem *> *)findAllCores;
 + (instancetype)noneCore;

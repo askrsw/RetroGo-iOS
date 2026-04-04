@@ -661,6 +661,13 @@ static const char *input_overlay_path(bool want_osk)
    core_info_get_current_core(&core_info);
    if (core_info)
    {
+      if(!string_is_empty(core_info->overlay_path))
+      {
+         fill_pathname_join_special(system_overlay_path, settings->paths.directory_overlay, core_info->overlay_path, sizeof(system_overlay_path));
+         if (path_is_valid(system_overlay_path))
+            return system_overlay_path;
+      }
+
       if (core_info->databases_list && core_info->databases_list->size == 1)
       {
          fill_pathname_join_special_ext(system_overlay_path,

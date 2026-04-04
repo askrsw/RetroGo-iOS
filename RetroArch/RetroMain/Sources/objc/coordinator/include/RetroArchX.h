@@ -30,7 +30,35 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+NS_ENUM(int, RetroArchJoypadCode) {
+    RetroArchJoypadCodeNone   = -1,
+    RetroArchJoypadCodeB      = 0,  /* RETRO_DEVICE_ID_JOYPAD_B */
+    RetroArchJoypadCodeY      = 1,  /* RETRO_DEVICE_ID_JOYPAD_Y */
+    RetroArchJoypadCodeSelect = 2,  /* RETRO_DEVICE_ID_JOYPAD_SELECT */
+    RetroArchJoypadCodeStart  = 3,  /* RETRO_DEVICE_ID_JOYPAD_START */
+    RetroArchJoypadCodeUp     = 4,  /* RETRO_DEVICE_ID_JOYPAD_UP */
+    RetroArchJoypadCodeDown   = 5,  /* RETRO_DEVICE_ID_JOYPAD_DOWN */
+    RetroArchJoypadCodeLeft   = 6,  /* RETRO_DEVICE_ID_JOYPAD_LEFT */
+    RetroArchJoypadCodeRight  = 7,  /* RETRO_DEVICE_ID_JOYPAD_RIGHT */
+    RetroArchJoypadCodeA      = 8,  /* RETRO_DEVICE_ID_JOYPAD_A */
+    RetroArchJoypadCodeX      = 9,  /* RETRO_DEVICE_ID_JOYPAD_X */
+    RetroArchJoypadCodeL1     = 10, /* RETRO_DEVICE_ID_JOYPAD_L */
+    RetroArchJoypadCodeR1     = 11, /* RETRO_DEVICE_ID_JOYPAD_R */
+    RetroArchJoypadCodeL2     = 12, /* RETRO_DEVICE_ID_JOYPAD_L2 */
+    RetroArchJoypadCodeR2     = 13, /* RETRO_DEVICE_ID_JOYPAD_R2 */
+    RetroArchJoypadCodeL3     = 14, /* RETRO_DEVICE_ID_JOYPAD_L3 */
+    RetroArchJoypadCodeR3     = 15, /* RETRO_DEVICE_ID_JOYPAD_R3 */
+};
+
+NS_ENUM(unsigned, RetroArchJoypadAxis) {
+    RetroArchJoypadAxisLeftX  = 0,
+    RetroArchJoypadAxisLeftY  = 1,
+    RetroArchJoypadAxisRightX = 2,
+    RetroArchJoypadAxisRightY = 3
+};
+
 extern NSString * const RetroArchXReadyNotification;
+typedef void (^RetroArchXEmuFrameCallback)(void);
 
 @interface RetroArchX : NSObject
 @property(nonatomic, strong, readonly) NSArray<UTType *> *allSupportedExtensions;
@@ -49,11 +77,18 @@ extern NSString * const RetroArchXReadyNotification;
 - (nullable NSString *)getCurrentRomPath;
 - (BOOL)canRunOnThisDevice;
 
+- (void)sendJoypadCode:(enum RetroArchJoypadCode)code down:(BOOL)down;
+- (void)sendJoypadAxis:(enum RetroArchJoypadAxis)axis value:(CGFloat)value;
+- (nullable NSString *)addEmuFrameCallback:(nullable RetroArchXEmuFrameCallback)callback;
+- (void)removeEmuFrameCallbackForToken:(nullable NSString *)token;
+- (void)setTurboMultiplier:(NSInteger)multiplier;
+
 - (void)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core completion:(nullable void (^)(BOOL success))completion;
 - (BOOL)close;
 - (BOOL)pause;
 - (BOOL)resume;
 - (BOOL)restart;
+- (BOOL)mute:(BOOL)mute;
 - (BOOL)saveStateTo:(NSString *)folder imageFolder:(nullable NSString *)imageFolder name:(NSString *)name;
 - (BOOL)loadStateFrom:(NSString *)path;
 - (BOOL)saveScreenshotTo:(NSString *)path;

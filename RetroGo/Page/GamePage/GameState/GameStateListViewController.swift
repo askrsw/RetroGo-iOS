@@ -67,7 +67,7 @@ final class GameStateListViewController: UIViewController {
 
         if showClose {
             navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark.circle"), landscapeImagePhone: UIImage(systemName: "xmark.circle"), style: .plain, target: self, action: #selector(closeAction(_:)))
-            navigationItem.leftBarButtonItem?.tintColor = .label
+            navigationItem.leftBarButtonItem?.tintColor = .mainColor
         }
 
         tableView.dataSource = self

@@ -64,6 +64,7 @@ final class RetroRomCoreInfoViewController: UIViewController {
 
         if showCloseButton {
             navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark.circle"), style: .plain, target: self, action: #selector(closeAction))
+            navigationItem.leftBarButtonItem?.tintColor = .mainColor
         }
 
         _ = collectionView
@@ -251,6 +252,11 @@ extension RetroRomCoreInfoViewController {
         if let desc = coreInfoItem.getLocalDesc(Bundle.currentSimpleLanguageKey()) {
             let tip = Bundle.localizedString(forKey: "coreinfo_descrption")
             descItems.append(.normal(tip: tip, value: desc))
+        }
+
+        do {
+            let tip = Bundle.localizedString(forKey: "coreinfo_core_id")
+            descItems.append(.normal(tip: tip, value: coreInfoItem.coreId))
         }
 
         if let systemId = coreInfoItem.systemID {

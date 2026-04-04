@@ -87,10 +87,7 @@ RETRO_BEGIN_DECLS
 #define FILE_PATH_BACKUP_EXTENSION ".bak"
 #if defined(RARCH_MOBILE)
 #define FILE_PATH_DEFAULT_OVERLAY "gamepads/neo-retropad/neo-retropad.cfg"
-#define FILE_PATH_DEFAULT_OSK_OVERLAY1 "modular-keyboard/opaque/big.cfg"
-#define FILE_PATH_DEFAULT_OSK_OVERLAY2 "commodore/plus4.cfg"
-#define FILE_PATH_DEFAULT_OSK_OVERLAY3 "qwerty/qwerty.cfg"
-#define FILE_PATH_DEFAULT_OSK_OVERLAY4 "US-101/US-101.cfg"
+#define FILE_PATH_DEFAULT_OSK_OVERLAY "modular/modular-big.cfg"
 #endif
 #define FILE_PATH_CORE_INFO_CACHE "core_info.cache"
 #define FILE_PATH_CORE_INFO_CACHE_REFRESH "core_info.refresh"

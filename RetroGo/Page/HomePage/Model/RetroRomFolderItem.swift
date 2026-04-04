@@ -33,10 +33,10 @@ final class RetroRomFolderItem: RetroRomBaseItem {
 
     var expand: Bool = false
 
-    init(key: String, rawName: String, showName: String? = nil, parent: String, createAt: Date, updateAt: Date, preferSystem: String? = nil, preferCore: String? = nil, preferIcon: String? = nil, subFolderKeys: Set<String> = [], subFileKeys: Set<String> = []) {
+    init(key: String, rawName: String, showName: String? = nil, parent: String, createAt: Date, updateAt: Date, preferCore: String? = nil, preferIcon: String? = nil, subFolderKeys: Set<String> = [], subFileKeys: Set<String> = []) {
         self.subFolderKeys = subFolderKeys
         self.subFileKeys   = subFileKeys
-        super.init(key: key, rawName: rawName, showName: showName, parent: parent, createAt: createAt, updateAt: updateAt, preferSystem: preferSystem, preferCore: preferCore, preferIcon: preferIcon)
+        super.init(key: key, rawName: rawName, showName: showName, parent: parent, createAt: createAt, updateAt: updateAt, preferCore: preferCore, preferIcon: preferIcon)
     }
 
     var isRoot: Bool {
@@ -141,7 +141,7 @@ final class RetroRomFolderItem: RetroRomBaseItem {
     }
 
     func updateSubItemKeys() {
-        if let subs = RetroRomFileManager.shared.getFolderSubItemKeys(key) {
+        if let subs = Retro​Rom​Persistence.shared.getFolderSubItemKeys(key) {
             subFolderKeys = subs.folderKeys
             subFileKeys   = subs.fileKeys
         }

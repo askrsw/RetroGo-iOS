@@ -32,12 +32,12 @@ import RACoordinator
 final class GamePageViewController: RetroArchViewController {
     static private(set) weak var instance: GamePageViewController?
 
-    let inGameInfoView = InGameInfoView(frame: .zero)
+    let inGameInfoView = GamePageInGameInfoView(frame: .zero)
     private(set) lazy var myHudView = GamePageHudView(holder: self)
+    private(set) lazy var myOverlayView = GamePageOverlayView(coreInfoItem: core)
 
     let romItem: RetroRomFileItem?
     let romUrl: URL?
-    let core: EmuCoreInfoItem
     let startTime: Date
 
     private(set) var startDate: Date?
@@ -48,9 +48,8 @@ final class GamePageViewController: RetroArchViewController {
     init(romUrl: URL?, core: EmuCoreInfoItem) {
         self.romItem  = nil
         self.romUrl   = romUrl
-        self.core = core
         self.startTime = Date()
-        super.init()
+        super.init(core: core)
         Self.instance = self
 
         _ = self.romUrl?.startAccessingSecurityScopedResource()
@@ -66,9 +65,8 @@ final class GamePageViewController: RetroArchViewController {
     init(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
         self.romItem   = romItem
         self.romUrl    = URL(fileURLWithPath: romItem.fullPath!)
-        self.core      = core
         self.startTime = Date()
-        super.init()
+        super.init(core: core)
         Self.instance = self
 
         _ = self.romUrl?.startAccessingSecurityScopedResource()
@@ -120,6 +118,10 @@ final class GamePageViewController: RetroArchViewController {
         myHudView
     }
 
+    override var overlayView: UIView {
+        myOverlayView
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -137,6 +139,16 @@ final class GamePageViewController: RetroArchViewController {
                 let stateFolder = AppConfig.shared.statesFolder + coreId
                 let autoPath = "\(stateFolder)/\(name).state"
                 RetroArchX.shared().loadState(from: autoPath)
+            }
+
+            if core.coreId == "dosbox-pure" {
+                self.useRetroArchOverlay = true
+                self.useSpriteKitOverlay = false
+            } else {
+                let useRetroArchOverlay = self.useRetroArchOverlay
+                let useSpriteKitOverlay = self.useSpriteKitOverlay
+                self.useRetroArchOverlay = useRetroArchOverlay
+                self.useSpriteKitOverlay = useSpriteKitOverlay
             }
         }
 
@@ -159,7 +171,13 @@ final class GamePageViewController: RetroArchViewController {
     }
 
     override func showInGameMessage(_ message: EmuInGameMessage) {
-        inGameInfoView.showMessage(message)
+        if Thread.isMainThread {
+            inGameInfoView.showMessage(message)
+        } else {
+            DispatchQueue.main.async { [unowned self] in
+                inGameInfoView.showMessage(message)
+            }
+        }
     }
 }
 

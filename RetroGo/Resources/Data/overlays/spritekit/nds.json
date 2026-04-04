@@ -1,0 +1,190 @@
+{
+    "platform_id": "nds",
+    "version": 1,
+    "portrait_ref_size": { "width": 430, "height": 795 },
+    "landscape_ref_size": { "width": 814, "height": 366 },
+    "portrait_polar_anchor": { "right": 35, "bottom": 80 },
+    "landscape_polar_anchor": { "right": 35, "bottom": 50 },
+    "retroarch_source": "gamepads/Named_Overlays/Nintendo - Nintendo DS.cfg",
+    "elements": [
+        {
+            "id": "left-dpad",
+            "type": "dpad",
+            "geometry": {
+                "size": { "width": 130, "height": 130 },
+                "plain_portrait_layout": { "left": 25, "bottom": 110 },
+                "plain_landscape_layout": { "left": 22.5, "bottom": 75 }
+            }
+        },
+        {
+            "id": "left-stick",
+            "type": "stick",
+            "geometry": {
+                "size": { "width": 130, "height": 130 },
+                "plain_portrait_layout": { "left": 25, "bottom": 110 },
+                "plain_landscape_layout": { "left": 22.5, "bottom": 75 }
+            },
+            "meta": {
+                "is_hidden": true
+            }
+        },
+        {
+            "id": "digital-analog-switch",
+            "type": "digital-analog-switch",
+            "geometry": {
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "left": 25, "bottom": 95 },
+                "plain_landscape_layout": { "left": 25, "bottom": 60 }
+            }
+        },
+        {
+            "id": "a",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 25, "bottom": 115 },
+                "plain_landscape_layout": {"right": 25, "bottom": 80 },
+                "polar_portrait_layout": { "theta": -270, "radius": 80 },
+                "polar_landscape_layout": { "theta": -270, "radius": 80 }
+            },
+            "meta": {
+                "title": "A",
+                "binds": ["A"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "b",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 100, "bottom": 115 },
+                "plain_landscape_layout": { "right": 100, "bottom": 80 },
+                "polar_portrait_layout": { "theta": -220, "radius": 80 },
+                "polar_landscape_layout": { "theta": -220, "radius": 80 }
+            },
+            "meta": {
+                "title": "B",
+                "binds": ["B"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "x",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 25, "bottom": 185 },
+                "plain_landscape_layout": { "right": 25, "bottom": 150 },
+                "polar_portrait_layout": { "theta": -260, "radius": 140 },
+                "polar_landscape_layout": { "theta": -260, "radius": 140 }
+            },
+            "meta": {
+                "title": "X",
+                "binds": ["X"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "y",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 100, "bottom": 185 },
+                "plain_landscape_layout": { "right": 100, "bottom": 150 },
+                "polar_portrait_layout": { "theta": -230, "radius": 140 },
+                "polar_landscape_layout": { "theta": -230, "radius": 140 }
+            },
+            "meta": {
+                "title": "Y",
+                "binds": ["Y"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "l",
+            "type": "button",
+            "geometry": {
+                "shape": "rounded",
+                "size": { "width": 50, "height": 30 },
+                "plain_portrait_layout": { "left": 25, "bottom": 260 },
+                "plain_landscape_layout": { "left": 25, "bottom": 240 }
+            },
+            "meta": {
+                "title": "L",
+                "binds": ["L1"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "r",
+            "type": "button",
+            "geometry": {
+                "shape": "rounded",
+                "size": { "width": 50, "height": 30 },
+                "plain_portrait_layout": { "right": 25, "bottom": 260 },
+                "plain_landscape_layout": { "right": 25, "bottom": 240 }
+            },
+            "meta": {
+                "title": "R",
+                "binds": ["R1"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "select",
+            "type": "button",
+            "geometry": {
+                "shape": "capsule",
+                "size": { "width": 70, "height": 25 },
+                "plain_portrait_layout": { "center_x": -85, "bottom": 67.5 },
+                "plain_landscape_layout": { "center_x": -100, "bottom": 35 }
+            },
+            "meta": {
+                "title": "SELECT",
+                "binds": ["SELECT"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "start",
+            "type": "button",
+            "geometry": {
+                "shape": "capsule",
+                "size": { "width": 70, "height": 25 },
+                "plain_portrait_layout": { "center_x": 15, "bottom": 67.5 },
+                "plain_landscape_layout": { "center_x": 30, "bottom": 35 }
+            },
+            "meta": {
+                "title": "START",
+                "binds": ["START"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "nds-layout-button",
+            "type": "nds-layout-button",
+            "geometry": {
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "right": 80, "bottom": 70 },
+                "plain_landscape_layout": { "right": 80, "bottom": 40 }
+            },
+            "meta": {
+                "binds": ["R2", "R3"]
+            }
+        },
+        {
+            "id": "overlay-collapse",
+            "type": "overlay-collapse",
+            "geometry": {
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "right": 25, "bottom": 70 },
+                "plain_landscape_layout": { "right": 25, "bottom": 40 }
+            }
+        }
+    ]
+}

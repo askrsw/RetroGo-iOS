@@ -1,0 +1,195 @@
+{
+    "platform_id": "snes",
+    "version": 1,
+    "portrait_ref_size": { "width": 430, "height": 795 },
+    "landscape_ref_size": { "width": 814, "height": 366 },
+    "portrait_polar_anchor": { "right": 35, "bottom": 150 },
+    "landscape_polar_anchor": { "right": 35, "bottom": 50 },
+    "retroarch_source": "gamepads/Named_Overlays/Nintendo - Super Nintendo Entertainment System.cfg",
+    "elements": [
+        {
+            "id": "left-dpad",
+            "type": "dpad",
+            "geometry": {
+                "size": { "width": 130, "height": 130 },
+                "plain_portrait_layout": { "left": 25, "bottom": 210 },
+                "plain_landscape_layout": { "left": 22.5, "bottom": 75 }
+            }
+        },
+        {
+            "id": "left-stick",
+            "type": "stick",
+            "geometry": {
+                "size": { "width": 130, "height": 130 },
+                "plain_portrait_layout": { "left": 25, "bottom": 210 },
+                "plain_landscape_layout": { "left": 22.5, "bottom": 75 }
+            },
+            "meta": {
+                "is_hidden": true
+            }
+        },
+        {
+            "id": "digital-analog-switch",
+            "type": "digital-analog-switch",
+            "geometry": {
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "left": 25, "bottom": 340 },
+                "plain_landscape_layout": { "left": 25, "bottom": 205 }
+            }
+        },
+        {
+            "id": "a",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 25, "bottom": 215 },
+                "plain_landscape_layout": { "right": 25, "bottom": 80 },
+                "polar_portrait_layout": { "theta": -265, "radius": 100 },
+                "polar_landscape_layout": { "theta": -265, "radius": 100 }
+            },
+            "meta": {
+                "title": "A",
+                "binds": ["A"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "b",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 100, "bottom": 215 },
+                "plain_landscape_layout": { "right": 100, "bottom": 80 },
+                "polar_portrait_layout": { "theta": -225, "radius": 100 },
+                "polar_landscape_layout": { "theta": -225, "radius": 100 }
+            },
+            "meta": {
+                "title": "B",
+                "binds": ["B"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "x",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 25, "bottom": 285 },
+                "plain_landscape_layout": { "right": 25, "bottom": 150 },
+                "polar_portrait_layout": { "theta": -257.5, "radius": 170 },
+                "polar_landscape_layout": { "theta": -257.5, "radius": 170 }
+            },
+            "meta": {
+                "title": "X",
+                "binds": ["X"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "y",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 100, "bottom": 285 },
+                "plain_landscape_layout": { "right": 100, "bottom": 150 },
+                "polar_portrait_layout": { "theta": -232.5, "radius": 170 },
+                "polar_landscape_layout": { "theta": -232.5, "radius": 170 }
+            },
+            "meta": {
+                "title": "Y",
+                "binds": ["Y"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "a-b",
+            "type": "button",
+            "geometry": {
+                "shape": "capsule",
+                "size": { "width": 50, "height": 35 },
+                "plain_portrait_layout": { "right": 170, "bottom": 215 },
+                "plain_landscape_layout": { "right": 170, "bottom": 80 }
+            },
+            "meta": {
+                "title": "AB",
+                "binds": ["A", "B"],
+                "is_turbo": true,
+                "is_turbo_auto_keep": false
+            }
+        },
+        {
+            "id": "l",
+            "type": "button",
+            "geometry": {
+                "shape": "rounded",
+                "size": { "width": 60, "height": 40 },
+                "plain_portrait_layout": { "left": 25, "bottom": 390 },
+                "plain_landscape_layout": { "left": 25, "bottom": 255 }
+            },
+            "meta": {
+                "title": "L",
+                "binds": ["L1"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "r",
+            "type": "button",
+            "geometry": {
+                "shape": "rounded",
+                "size": { "width": 60, "height": 40 },
+                "plain_portrait_layout": { "right": 25, "bottom": 390 },
+                "plain_landscape_layout": { "right": 25, "bottom": 255 }
+            },
+            "meta": {
+                "title": "R",
+                "binds": ["R1"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "select",
+            "type": "button",
+            "geometry": {
+                "shape": "capsule",
+                "size": { "width": 70, "height": 25 },
+                "plain_portrait_layout": { "center_x": -85, "bottom": 137.5 },
+                "plain_landscape_layout": { "center_x": -100, "bottom": 35 }
+            },
+            "meta": {
+                "title": "SELECT",
+                "binds": ["SELECT"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "start",
+            "type": "button",
+            "geometry": {
+                "shape": "capsule",
+                "size": { "width": 70, "height": 25 },
+                "plain_portrait_layout": { "center_x": 15, "bottom": 137.5 },
+                "plain_landscape_layout": { "center_x": 30, "bottom": 35 }
+            },
+            "meta": {
+                "title": "START",
+                "binds": ["START"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "overlay-collapse",
+            "type": "overlay-collapse",
+            "geometry": {
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "right": 25, "bottom": 140 },
+                "plain_landscape_layout": { "right": 25, "bottom": 40 }
+            }
+        }
+    ]
+}
+

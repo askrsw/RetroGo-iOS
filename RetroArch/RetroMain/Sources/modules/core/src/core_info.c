@@ -42,7 +42,7 @@
 /* Core Info Cache START */
 /*************************/
 
-#define CORE_INFO_CACHE_VERSION "1.2"
+#define CORE_INFO_CACHE_VERSION "1.3"
 #define CORE_INFO_CACHE_DEFAULT_CAPACITY 8
 
 /* TODO/FIXME: Apparently rzip compression is an issue on UWP */
@@ -179,6 +179,10 @@ static bool CCJSONObjectMemberHandler(void *context,
                         pCtx->current_string_val      = &pCtx->core_info->notes;
                         pCtx->current_string_list_val = &pCtx->core_info->notes_list;
                      }
+                     break;
+                  case 'o':
+                     if (string_is_equal(pValue, "overlay"))
+                        pCtx->current_string_val      = &pCtx->core_info->overlay_path;
                      break;
                   case 'p':
                      if (string_is_equal(pValue, "permissions"))
@@ -447,6 +451,7 @@ void core_info_copy(core_info_t *src, core_info_t *dst)
        strdup(src->user_path) : NULL;
    dst->assets_path               = src->assets_path          ? strdup(src->assets_path) : NULL;
    dst->firmwares_path            = src->firmwares_path       ? strdup(src->firmwares_path) : NULL;
+   dst->overlay_path              = src->overlay_path         ? strdup(src->overlay_path) : NULL;
 
    dst->categories_list           = src->categories_list           ? string_list_clone(src->categories_list)           : NULL;
    dst->databases_list            = src->databases_list            ? string_list_clone(src->databases_list)            : NULL;
@@ -550,6 +555,9 @@ static void core_info_transfer(core_info_t *src, core_info_t *dst)
 
    dst->firmwares_path            = src->firmwares_path;
    src->firmwares_path            = NULL;
+
+   dst->overlay_path              = src->overlay_path;
+   src->overlay_path              = NULL;
 
    dst->required_hw_api           = src->required_hw_api;
    src->required_hw_api           = NULL;
@@ -1035,6 +1043,17 @@ static bool core_info_cache_write(core_info_cache_list_t *list, const char *info
       rjsonwriter_add_string(writer, info->description);
       rjsonwriter_raw(writer, ",", 1);
       rjsonwriter_raw(writer, "\n", 1);
+
+      if (info->overlay_path && !string_is_empty(info->overlay_path))
+      {
+         rjsonwriter_add_spaces(writer, 6);
+         rjsonwriter_add_string(writer, "overlay");
+         rjsonwriter_raw(writer, ":", 1);
+         rjsonwriter_raw(writer, " ", 1);
+         rjsonwriter_add_string(writer, info->overlay_path);
+         rjsonwriter_raw(writer, ",", 1);
+         rjsonwriter_raw(writer, "\n", 1);
+      }
 
       if (info->firmware_count > 0)
       {
@@ -1795,6 +1814,14 @@ static void core_info_parse_config_file(
             string_split(info->databases, "|");
    }
 
+   entry = config_get_entry(conf, "overlay");
+
+   if (entry && !string_is_empty(entry->value))
+   {
+      info->overlay_path = entry->value;
+      entry->value = NULL;
+   }
+
    entry = config_get_entry(conf, "notes");
 
    if (entry && !string_is_empty(entry->value))
@@ -1840,7 +1867,6 @@ static void core_info_parse_config_file(
    if (config_get_bool(conf, "is_experimental",
             &tmp_bool))
       info->is_experimental = tmp_bool;
-
 
    /* Savestate support level is slightly more complex,
     * since it is a value derived from two configuration
@@ -1965,16 +1991,24 @@ void core_info_free(core_info_t* info)
 
    free(info->core_file_id.str);
 
-   if(info->user_path) {
+   if(info->user_path)
+   {
       free(info->user_path);
    }
 
-   if(info->assets_path) {
+   if(info->assets_path)
+   {
       free(info->assets_path);
    }
 
-   if(info->firmwares_path) {
+   if(info->firmwares_path)
+   {
       free(info->firmwares_path);
+   }
+
+   if(info->overlay_path)
+   {
+      free(info->overlay_path);
    }
 }
 
@@ -2347,6 +2381,7 @@ bool core_info_init_current_core(void)
    current->user_path                     = NULL;
    current->assets_path                   = NULL;
    current->firmwares_path                = NULL;
+   current->overlay_path                  = NULL;
 
    p_coreinfo->current                    = current;
    return true;

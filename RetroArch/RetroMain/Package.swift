@@ -116,10 +116,11 @@ let defines: [CSetting] = [
     .define("HAVE_UPDATE_ASSETS"),
     .define("HAVE_UPDATE_CORE_INFO"),
     .define("HAVE_ONLINE_UPDATER", .when(platforms: [.iOS, .tvOS])),
+    .define("SHOW_RETROARCH_OVERLAY", to: "0")
 ]
 
 let package = Package(
-    name: "RetroArch",
+    name: "RetroMain",
     defaultLocalization: "en",
     platforms: [ .iOS(.v15) ],
     products: [

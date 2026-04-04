@@ -46,6 +46,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
     CADisplayLink *d_displayLink;
     NSInteger d_pauseCounter;
+    NSMutableDictionary<NSString *, RetroArchXEmuFrameCallback> *d_emuFrameCallbacks;
 
     BOOL d_initialized;
 }
@@ -66,14 +67,12 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     if(self != nil) {
         d_pauseCounter = 0;
         d_initialized = NO;
+        d_emuFrameCallbacks = [NSMutableDictionary dictionary];
 
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-            double init_start = CFAbsoluteTimeGetCurrent();
-
             // open log
             verbosity_enable();
             verbosity_set_log_level(0);
-            RARCH_LOG("[RetroArchX] init start\n");
 
             //set language
             unsigned language = frontend_driver_get_user_language();
@@ -82,20 +81,14 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
             char arguments[]   = "retroarch";
             char       *argv[] = {arguments,   NULL};
             int argc           = 1;
-            RARCH_LOG("[RetroArchX] rarch_main begin (t=%.3fs)\n", CFAbsoluteTimeGetCurrent() - init_start);
             rarch_main(argc, argv, NULL, false);
-            RARCH_LOG("[RetroArchX] rarch_main end (t=%.3fs)\n", CFAbsoluteTimeGetCurrent() - init_start);
 
-            RARCH_LOG("[RetroArchX] findAllSupportedExtensions begin (t=%.3fs)\n", CFAbsoluteTimeGetCurrent() - init_start);
             [self findAllSupportedExtensions];
-            RARCH_LOG("[RetroArchX] findAllSupportedExtensions end (t=%.3fs)\n", CFAbsoluteTimeGetCurrent() - init_start);
 
             d_initialized = YES;
-            RARCH_LOG("[RetroArchX] init done (t=%.3fs)\n", CFAbsoluteTimeGetCurrent() - init_start);
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[NSNotificationCenter defaultCenter] postNotificationName:RetroArchXReadyNotification object:self];
-                RARCH_LOG("[RetroArchX] posted ready notification\n");
             });
         });
     }
@@ -301,9 +294,24 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     }
 }
 
+- (BOOL)mute:(BOOL)mute {
+    bool *muteEnable = audio_get_bool_ptr(AUDIO_ACTION_MUTE_ENABLE);
+    if(muteEnable != NULL) {
+        *muteEnable = mute;
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
 -(void)step:(CADisplayLink*)target {
     if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateActive) {
         return;
+    }
+
+    NSArray<RetroArchXEmuFrameCallback> *callbacks = d_emuFrameCallbacks.allValues.copy;
+    for (RetroArchXEmuFrameCallback callback in callbacks) {
+        callback();
     }
 
     int ret = runloop_iterate();
@@ -401,6 +409,52 @@ bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
     [self resume];
 
     return ret;
+}
+
+- (void)sendJoypadCode:(enum RetroArchJoypadCode)code down:(BOOL)down {
+    if (code < 0 || code >= RARCH_BIND_LIST_END) {
+        return;
+    }
+
+    virtual_joypad_set_button(0, (unsigned)code, down);
+}
+
+- (void)sendJoypadAxis:(enum RetroArchJoypadAxis)axis value:(CGFloat)value {
+    if (axis > RetroArchJoypadAxisRightY) {
+        return;
+    }
+
+    CGFloat clamped = value;
+    if (clamped > 1.0) {
+        clamped = 1.0;
+    } else if (clamped < -1.0) {
+        clamped = -1.0;
+    }
+
+    int16_t intValue = (int16_t)(clamped * 0x7fff);
+    virtual_joypad_set_axis(0, (unsigned)axis, intValue);
+}
+
+- (nullable NSString *)addEmuFrameCallback:(nullable RetroArchXEmuFrameCallback)callback {
+    if (callback == nil) {
+        return nil;
+    }
+
+    NSString *token = NSUUID.UUID.UUIDString;
+    d_emuFrameCallbacks[token] = [callback copy];
+    return token;
+}
+
+- (void)removeEmuFrameCallbackForToken:(nullable NSString *)token {
+    if (token.length == 0) {
+        return;
+    }
+
+    [d_emuFrameCallbacks removeObjectForKey:token];
+}
+
+- (void)setTurboMultiplier:(NSInteger)multiplier {
+    (void)multiplier;
 }
 
 #pragma mark - RetroArch Utils

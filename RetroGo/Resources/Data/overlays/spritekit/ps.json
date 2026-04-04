@@ -1,0 +1,201 @@
+{
+    "platform_id": "ps",
+    "version": 1,
+    "portrait_ref_size": { "width": 430, "height": 795 },
+    "landscape_ref_size": { "width": 814, "height": 366 },
+    "portrait_polar_anchor": { "right": 35, "bottom": 150 },
+    "landscape_polar_anchor": { "right": 35, "bottom": 50 },
+    "retroarch_source": "gamepads/Named_Overlays/Sony - PlayStation.cfg",
+    "elements": [
+        {
+            "id": "left-dpad",
+            "type": "dpad",
+            "geometry": {
+                "size": { "width": 130, "height": 130 },
+                "plain_portrait_layout": { "left": 25, "bottom": 230 },
+                "plain_landscape_layout": { "left": 22.5, "bottom": 80 }
+            }
+        },
+        {
+            "id": "left-stick",
+            "type": "stick",
+            "geometry": {
+                "size": { "width": 130, "height": 130 },
+                "plain_portrait_layout": { "left": 25, "bottom": 230 },
+                "plain_landscape_layout": { "left": 22.5, "bottom": 80 }
+            },
+            "meta": {
+                "is_hidden": true
+            }
+        },
+        {
+            "id": "digital-analog-switch",
+            "type": "digital-analog-switch",
+            "geometry": {
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "left": 25, "bottom": 360 },
+                "plain_landscape_layout": { "left": 25, "bottom": 210 }
+            }
+        },
+        {
+            "id": "a",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 20, "bottom": 270 },
+                "plain_landscape_layout": { "right": 20, "bottom": 150 }
+            },
+            "meta": {
+                "ps_action_button_icon": "circle",
+                "binds": ["A"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "b",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 60, "bottom": 225 },
+                "plain_landscape_layout": { "right": 60, "bottom": 105 }
+            },
+            "meta": {
+                "ps_action_button_icon": "cross",
+                "binds": ["B"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "x",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 60, "bottom": 315 },
+                "plain_landscape_layout": { "right": 60, "bottom": 195 }
+            },
+            "meta": {
+                "ps_action_button_icon": "triangle",
+                "binds": ["X"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "y",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 100, "bottom": 270 },
+                "plain_landscape_layout": { "right": 100, "bottom": 150 }
+            },
+            "meta": {
+                "ps_action_button_icon": "square",
+                "binds": ["Y"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "l1",
+            "type": "button",
+            "geometry": {
+                "shape": "rounded",
+                "size": { "width": 58, "height": 28 },
+                "plain_portrait_layout": { "left": 10, "bottom": 438 },
+                "plain_landscape_layout": { "left": 10, "bottom": 295 }
+            },
+            "meta": {
+                "title": "L1",
+                "binds": ["L1"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "l2",
+            "type": "button",
+            "geometry": {
+                "shape": "rounded",
+                "size": { "width": 58, "height": 28 },
+                "plain_portrait_layout": { "left": 78, "bottom": 424 },
+                "plain_landscape_layout": { "left": 78, "bottom": 281 }
+            },
+            "meta": {
+                "title": "L2",
+                "binds": ["L2"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "r1",
+            "type": "button",
+            "geometry": {
+                "shape": "rounded",
+                "size": { "width": 58, "height": 28 },
+                "plain_portrait_layout": { "right": 10, "bottom": 438 },
+                "plain_landscape_layout": { "right": 10, "bottom": 295 }
+            },
+            "meta": {
+                "title": "R1",
+                "binds": ["R1"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "r2",
+            "type": "button",
+            "geometry": {
+                "shape": "rounded",
+                "size": { "width": 58, "height": 28 },
+                "plain_portrait_layout": { "right": 78, "bottom": 424 },
+                "plain_landscape_layout": { "right": 78, "bottom": 281 }
+            },
+            "meta": {
+                "title": "R2",
+                "binds": ["R2"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "select",
+            "type": "button",
+            "geometry": {
+                "shape": "capsule",
+                "size": { "width": 70, "height": 25 },
+                "plain_portrait_layout": { "center_x": -80, "bottom": 385 },
+                "plain_landscape_layout": { "center_x": -55, "bottom": 35 }
+            },
+            "meta": {
+                "title": "SELECT",
+                "binds": ["SELECT"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "start",
+            "type": "button",
+            "geometry": {
+                "shape": "capsule",
+                "size": { "width": 70, "height": 25 },
+                "plain_portrait_layout": { "center_x": 10, "bottom": 385 },
+                "plain_landscape_layout": { "center_x": 55, "bottom": 35 }
+            },
+            "meta": {
+                "title": "START",
+                "binds": ["START"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "overlay-collapse",
+            "type": "overlay-collapse",
+            "geometry": {
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "right": 25, "bottom": 170 },
+                "plain_landscape_layout": { "right": 25, "bottom": 40 }
+            }
+        }
+    ]
+}
+

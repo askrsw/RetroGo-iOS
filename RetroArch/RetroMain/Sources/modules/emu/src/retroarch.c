@@ -122,6 +122,7 @@
 #endif
 
 #include <utils/config.def.h>
+#include <input/virtual_joypad.h>
 
 #include "location_driver.h"
 
@@ -1705,6 +1706,14 @@ void drivers_init(
    if (flags & DRIVER_MIDI_MASK)
       midi_driver_init(settings);
 
+   {  /* Initialize virtual joypad driver */
+      input_driver_state_t *inputState = input_state_get_ptr();
+      void *inputData = inputState ? inputState->current_data : NULL;
+      joypad_driver_reinit(inputData, "virtual");
+      input_config_set_device_joypad_driver(0, "virtual");
+      virtual_joypad_set_connected(0, true);
+   }
+
 #ifdef HAVE_LAKKA
    cpu_scaling_driver_init();
 #endif
@@ -1762,7 +1771,11 @@ void driver_uninit(int flags, enum driver_lifetime_flags lifetime_flags)
       video_st->data = NULL;
 
    if ((flags & DRIVER_INPUT_MASK))
+   {
+      virtual_joypad_set_connected(0, false);
+      virtual_joypad_reset_all();
       input_state_get_ptr()->current_data = NULL;
+   }
 
    if ((flags & DRIVER_AUDIO_MASK))
       audio_state_get_ptr()->context_audio_data = NULL;
@@ -7403,8 +7416,10 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
    if(init_drivers) {
       drivers_init(settings, DRIVERS_CMD_ALL, (enum driver_lifetime_flags)0, verbosity_enabled);
 #ifdef HAVE_OVERLAY
+#if SHOW_RETROARCH_OVERLAY
       input_overlay_unload();
       input_overlay_init();
+#endif
 #endif
    }
 #ifdef HAVE_CONFIGFILE

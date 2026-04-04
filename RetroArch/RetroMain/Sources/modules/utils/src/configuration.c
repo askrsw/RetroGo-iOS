@@ -2565,7 +2565,7 @@ void config_set_defaults(void *data)
       if(string_is_empty(settings->paths.path_osk_overlay))
          fill_pathname_join_special(settings->paths.path_osk_overlay,
                settings->paths.directory_osk_overlay,
-               FILE_PATH_DEFAULT_OSK_OVERLAY2,
+               FILE_PATH_DEFAULT_OSK_OVERLAY,
                sizeof(settings->paths.path_osk_overlay));
    }
 #endif // HAVE_OVERLAY

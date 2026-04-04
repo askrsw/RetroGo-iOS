@@ -32,12 +32,18 @@ final class GamePageHudView: UIView {
     private weak var holder: GamePageViewController?
 
     let closeButton = UIButton(type: .system)
+    let settingButton = UIButton(type: .system)
     let infoButton = UIButton(type: .system)
     let restartButton = UIButton(type: .system)
     let snapButton = UIButton(type: .system)
     private(set) lazy var loadStateButton = UIButton(type: .system)
     private(set) lazy var saveStateButton = UIButton(type: .system)
 
+    let pauseResumeButton = UIButton(type: .system)
+    let muteButton = UIButton(type: .system)
+
+    private var isGamePaused = false
+    private var isGameMuted = false
     private lazy var lastTrailing: ConstraintItem = safeAreaLayoutGuide.snp.trailing
 
     init(holder: GamePageViewController) {
@@ -96,6 +102,19 @@ extension GamePageHudView {
             make.size.equalTo(closeButton.size)
         }
 
+        let settingImage = UIImage(systemName: "gear.circle")
+        settingButton.setImage(settingImage, for: .normal)
+        settingButton.tintColor = .label
+        settingButton.addTarget(self, action: #selector(settingAction), for: .touchUpInside)
+        settingButton.sizeToFit()
+        addSubview(settingButton)
+        settingButton.snp.makeConstraints { make in
+            make.trailing.equalTo(lastTrailing).offset(-20)
+            make.centerY.equalToSuperview()
+            make.size.equalTo(settingButton.size)
+        }
+        lastTrailing = settingButton.snp.leading
+
         let infoImage  = UIImage(systemName: "cpu")
         infoButton.tintColor = .label
         infoButton.setImage(infoImage, for: .normal)
@@ -134,12 +153,48 @@ extension GamePageHudView {
             make.size.equalTo(snapButton.size)
         }
         lastTrailing = snapButton.snp.leading
+
+        pauseResumeButton.tintColor = .label
+        pauseResumeButton.addTarget(self, action: #selector(pauseResumeAction), for: .touchUpInside)
+        updatePauseResumeButtonAppearance()
+        pauseResumeButton.sizeToFit()
+        addSubview(pauseResumeButton)
+        pauseResumeButton.snp.makeConstraints { make in
+            make.trailing.equalTo(lastTrailing).offset(-20)
+            make.centerY.equalToSuperview()
+            make.size.equalTo(pauseResumeButton.size)
+        }
+        lastTrailing = pauseResumeButton.snp.leading
+
+//        muteButton.tintColor = .label
+//        muteButton.addTarget(self, action: #selector(muteAction), for: .touchUpInside)
+//        updateMuteButtonAppearance()
+//        muteButton.sizeToFit()
+//        addSubview(muteButton)
+//        muteButton.snp.makeConstraints { make in
+//            make.trailing.equalTo(lastTrailing).offset(-20)
+//            make.centerY.equalToSuperview()
+//            make.size.equalTo(muteButton.size)
+//        }
+//        lastTrailing = muteButton.snp.leading
+    }
+
+    private func updatePauseResumeButtonAppearance() {
+        let imageName = isGamePaused ? "play.circle" : "pause.circle"
+        pauseResumeButton.setImage(UIImage(systemName: imageName), for: .normal)
+    }
+
+    private func updateMuteButtonAppearance() {
+        let imageName = isGameMuted ? "speaker.slash.circle" : "speaker.wave.2.circle"
+        muteButton.setImage(UIImage(systemName: imageName), for: .normal)
     }
 }
 
 extension GamePageHudView {
     @objc
     private func saveStateAction() {
+        Vibration.selection.vibrate()
+        
         guard RetroArchX.shared().isCurrentCoreSupportsSavestate() else {
             return
         }
@@ -152,8 +207,10 @@ extension GamePageHudView {
             textField.placeholder = Bundle.localizedString(forKey: "gamepage_name_state")
             textField.text = nowString
         }
-        let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { _ in
+        let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [weak self] _ in
             RetroArchX.shared().resume()
+            self?.isGamePaused = false
+            self?.updatePauseResumeButtonAppearance()
         }
         alert.addAction(cancelAction)
         let okAction = UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default) { [weak self] _ in
@@ -172,16 +229,22 @@ extension GamePageHudView {
                 holder?.inGameInfoView.showMessage(msg)
             }
             RetroArchX.shared().resume()
+            self.isGamePaused = false
+            self.updatePauseResumeButtonAppearance()
         }
         alert.addAction(okAction)
 
         RetroArchX.shared().pause()
+        isGamePaused = true
+        updatePauseResumeButtonAppearance()
         alert.view.tintColor = .label
         holder?.present(alert, animated: true)
     }
 
     @objc
     private func loadStateAction() {
+        Vibration.selection.vibrate()
+
         guard RetroArchX.shared().isCurrentCoreSupportsSavestate() else {
             return
         }
@@ -193,7 +256,7 @@ extension GamePageHudView {
             return
         }
 
-        let items = RetroRomFileManager.shared.getGameStateItems(coreId: currentCoreItem.coreId, sha256: sha256) ?? []
+        let items = Retro​Rom​Persistence.shared.getGameStateItems(coreId: currentCoreItem.coreId, sha256: sha256) ?? []
         let controller = GameStateListViewController(gameStateItems: items, showClose: true)
         let naviController = UINavigationController(rootViewController: controller)
         holder?.present(naviController, animated: true)
@@ -201,6 +264,8 @@ extension GamePageHudView {
 
     @objc
     private func snapAction() {
+        Vibration.selection.vibrate()
+
         let nowString = DateFormatter.yyyyMMddHHmmss().string(from: Date())
         let pngName  = "snap-\(nowString).png"
         let snapPath = AppConfig.shared.snapshotFolder + pngName
@@ -208,12 +273,49 @@ extension GamePageHudView {
     }
 
     @objc
+    private func pauseResumeAction() {
+        Vibration.selection.vibrate()
+
+        let success: Bool
+        if isGamePaused {
+            success = RetroArchX.shared().resume()
+            if success {
+                isGamePaused = false
+            }
+        } else {
+            success = RetroArchX.shared().pause()
+            if success {
+                isGamePaused = true
+            }
+        }
+
+        if success {
+            updatePauseResumeButtonAppearance()
+        }
+    }
+
+    @objc
+    private func muteAction() {
+        Vibration.selection.vibrate()
+
+        let nextMuted = !isGameMuted
+        if RetroArchX.shared().mute(nextMuted) {
+            isGameMuted = nextMuted
+            updateMuteButtonAppearance()
+        }
+    }
+
+    @objc
     private func restartAction() {
+        Vibration.selection.vibrate()
+
         RetroArchX.shared().restart()
     }
 
     @objc
     private func coreInfoAction() {
+        Vibration.selection.vibrate()
+
         if let coreInfoItem = RetroArchX.shared().currentCoreItem {
             let controller = RetroRomCoreInfoViewController(coreInfoItem: coreInfoItem, showCloseButton: true, interactive: false)
             let navController = UINavigationController(rootViewController: controller)
@@ -222,7 +324,18 @@ extension GamePageHudView {
     }
 
     @objc
+    private func settingAction() {
+        Vibration.selection.vibrate()
+
+        let controller = GameSettingViewController()
+        let naviController = UINavigationController(rootViewController: controller)
+        holder?.present(naviController, animated: true)
+    }
+
+    @objc
     private func closeAction() {
+        Vibration.selection.vibrate()
+
         if AppSettings.shared.autoSaveLoadState {
             let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: holder?.romItem)
             _ = RetroRomFileManager.shared.saveState(rawName: name, showName: nil, sha256: holder?.romItem?.sha256, romKey: holder?.romItem?.key, autoSave: true)
