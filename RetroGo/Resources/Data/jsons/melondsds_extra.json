@@ -9,5 +9,7 @@
             "file_name": "gpl-3.0.txt"
         }
     ],
-    "src-url": "https://github.com/libretro/melonDS"
+    "src_url": "https://github.com/libretro/melonDS",
+    "supports_analog": false,
+    "overlay": "nds"
 }

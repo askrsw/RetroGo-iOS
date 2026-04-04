@@ -468,7 +468,7 @@ extension RetroRomTagSelector: UITableViewDataSource, UITableViewDelegate {
                 cell?.check = true
             }
         } else {
-            guard let newId = RetroRomFileManager.shared.getUniqueFileTagId() else {
+            guard let newId = Retro​Rom​Persistence.shared.getUniqueFileTagId() else {
                 return
             }
 

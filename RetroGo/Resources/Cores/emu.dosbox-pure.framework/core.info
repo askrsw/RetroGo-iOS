@@ -15,6 +15,7 @@ systemid = "dos"
 
 # Libretro Features
 database = "DOS"
+overlay = "retroarch/dos/dos.cfg"
 supports_no_game = "true"
 savestate = "true"
 savestate_features = "serialized"

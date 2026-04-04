@@ -35,13 +35,13 @@ final class RetroRomFileItem: RetroRomBaseItem {
 
     private(set) var tagIdArray: [Int]
 
-    init(key: String, rawName: String, showName: String? = nil, parent: String, createAt: Date, updateAt: Date, preferSystem: String? = nil, preferCore: String? = nil, preferIcon: String? = nil, fileSize: Int, sha256: String?, lastPlayAt: Date? = nil,  playTime: Int = 0, tagIdArray: [Int] = []) {
+    init(key: String, rawName: String, showName: String? = nil, parent: String, createAt: Date, updateAt: Date, preferCore: String? = nil, preferIcon: String? = nil, fileSize: Int, sha256: String?, lastPlayAt: Date? = nil,  playTime: Int = 0, tagIdArray: [Int] = []) {
         self.fileSize   = fileSize
         self.sha256     = sha256
         self.lastPlayAt = lastPlayAt
         self.playTime   = playTime
         self.tagIdArray = tagIdArray
-        super.init(key: key, rawName: rawName, showName: showName, parent: parent, createAt: createAt, updateAt: updateAt, preferSystem: preferSystem, preferCore: preferCore, preferIcon: preferIcon)
+        super.init(key: key, rawName: rawName, showName: showName, parent: parent, createAt: createAt, updateAt: updateAt, preferCore: preferCore, preferIcon: preferIcon)
     }
 
     override var lastPlayDate: Date? {
@@ -150,14 +150,14 @@ final class RetroRomFileItem: RetroRomBaseItem {
 
     func updateLastPlayAt() {
         let now = Date()
-        if RetroRomFileManager.shared.updateLastPlayAt(key: key, date: now) {
+        if Retro​Rom​Persistence.shared.updateLastPlayAt(key: key, date: now) {
             lastPlayAt = now
             pulseText = !pulseText
         }
     }
 
     func updatePlayTime(seconds: Int) {
-        if RetroRomFileManager.shared.updatePlayTime(key: key, seconds: playTime + seconds) {
+        if Retro​Rom​Persistence.shared.updatePlayTime(key: key, seconds: playTime + seconds) {
             playTime += seconds
             pulseText = !pulseText
         }
@@ -169,7 +169,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
         let removed = oldTags.subtracting(newTags)
 
         if added.count > 0 || removed.count > 0 {
-            let ret = RetroRomFileManager.shared.updateRetroFileTags(romKey: key, addedTags: added, removedTags: removed)
+            let ret = Retro​Rom​Persistence.shared.updateRetroFileTags(romKey: key, addedTags: added, removedTags: removed)
             tagIdArray = Array(newTags).sorted()
             pulseText = !pulseText
             NotificationCenter.default.post(name: .fileTagFileChanged, object: self, userInfo: ["added": added, "removed": removed])

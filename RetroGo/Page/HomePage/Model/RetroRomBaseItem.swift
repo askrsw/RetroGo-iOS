@@ -39,7 +39,6 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
     private(set) var parent: String
     let createAt: Date
     private(set) var updateAt: Date
-    private(set) var preferSystem: String?
     private(set) var preferCore:String?
     private(set) var preferIcon: String?
 
@@ -49,14 +48,13 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
     @objc
     dynamic var pulseImage: Bool = false
 
-    init(key: String, rawName: String, showName: String?, parent: String, createAt: Date, updateAt: Date, preferSystem: String?, preferCore: String?, preferIcon: String?) {
+    init(key: String, rawName: String, showName: String?, parent: String, createAt: Date, updateAt: Date, preferCore: String?, preferIcon: String?) {
         self.key      = key
         self.rawName  = rawName
         self.showName = showName
         self.parent   = parent
         self.createAt = createAt
         self.updateAt = updateAt
-        self.preferSystem = preferSystem
         self.preferCore = preferCore
         self.preferIcon = preferIcon
     }
@@ -164,7 +162,7 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
     }
 
     func updateShowName(_ name: String) -> Bool {
-        if RetroRomFileManager.shared.updateShowName(name, key: key, isFolder: isFolder) {
+        if Retro​Rom​Persistence.shared.updateShowName(name, key: key, isFolder: isFolder) {
             showName = name
             pulseText = !pulseText
             return true
@@ -178,7 +176,7 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
     }
 
     func moveToFolder(_ folder: String) -> Bool {
-        if RetroRomFileManager.shared.updateItemParent(folder, key: key, isFolder: isFolder) {
+        if Retro​Rom​Persistence.shared.updateItemParent(folder, key: key, isFolder: isFolder) {
             let parentFolderItem = self.parentFolderItem
             if self.isFile {
                 parentFolderItem?.removeSubFileItemKey(key)
@@ -195,7 +193,16 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
     func assignCore(_ core: EmuCoreInfoItem) -> Bool {
         guard preferCore != core.coreId else { return true }
 
-        if RetroRomFileManager.shared.updateFilePreferCore(key: key, core: core.coreId) {
+        let result: Bool
+        if isFolder {
+            result = Retro​Rom​Persistence.shared.updateFolderPreferCore(key: key, core: core.coreId)
+        } else if isFile {
+            result = Retro​Rom​Persistence.shared.updateFilePreferCore(key: key, core: core.coreId)
+        } else {
+            result = false
+        }
+        
+        if result {
             preferCore = core.coreId
             return true
         } else {

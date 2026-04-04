@@ -9,5 +9,7 @@
             "file_name": "gpl-3.0.txt"
         }
     ],
-    "src-url": "https://github.com/libretro/Mesen"
+    "src_url": "https://github.com/libretro/Mesen",
+    "supports_analog": false,
+    "overlay": "nes"
 }

@@ -69,8 +69,10 @@ final class RetroRomFileImportor: Thread {
             guard url.startAccessingSecurityScopedResource() else {
                 continue
             }
-            defer { url.stopAccessingSecurityScopedResource() }
-            if !makeFileItem(url) {
+
+            let success = makeFileItem(url)
+            url.stopAccessingSecurityScopedResource()
+            if !success {
                 return
             }
         }
@@ -98,28 +100,34 @@ extension RetroRomFileImportor {
             guard url.startAccessingSecurityScopedResource() else {
                 continue
             }
-            defer { url.stopAccessingSecurityScopedResource() }
 
-            let fileName = url.lastPathComponent
-            if fileItems.contains(where: { $0.rawName == fileName }) {
-                let formatter = Bundle.localizedString(forKey: "homepage_import_file_copying")
-                let message = String(format: formatter, fileName)
-                let title = Bundle.localizedString(forKey: "homepage_import_importing")
-                indicatorView.activeMessage(message, title: title)
+            do {
+                defer { url.stopAccessingSecurityScopedResource() }
 
-                let dstPath = destinationRootPath + fileName
-                do {
-                    try fileManager.copyItem(atPath: url.path(percentEncoded: false), toPath: dstPath)
-                } catch {
-                    errorProcess(.fileCopyFailed(path: fileName))
-                    errorOccured = true
-                    break
+                let fileName = url.lastPathComponent
+                if fileItems.contains(where: { $0.rawName == fileName }) {
+                    let formatter = Bundle.localizedString(forKey: "homepage_import_file_copying")
+                    let message = String(format: formatter, fileName)
+                    let title = Bundle.localizedString(forKey: "homepage_import_importing")
+                    indicatorView.activeMessage(message, title: title)
+
+                    let dstPath = destinationRootPath + fileName
+                    do {
+                        try fileManager.copyItem(atPath: url.path(percentEncoded: false), toPath: dstPath)
+                    } catch {
+                        errorProcess(.fileCopyFailed(path: fileName))
+                        errorOccured = true
+                    }
                 }
+            }
+
+            if errorOccured {
+                break
             }
         }
 
         if !errorOccured {
-            if !RetroRomFileManager.shared.storeRomFiles(fileItems, folders: []) {
+            if !Retro​Rom​Persistence.shared.storeRomFiles(fileItems, folders: []) {
                 errorProcess(.saveToDatabaseFailed)
                 deleteFiles()
                 return
@@ -182,16 +190,16 @@ extension RetroRomFileImportor {
         }
 
         do {
-            guard let key = RetroRomFileManager.shared.getUniqueKey() else {
+            guard let key = Retro​Rom​Persistence.shared.getUniqueKey() else {
                 errorProcess(.uniqueKeyCreationFailed)
                 return false
             }
 
             let rawName = url.lastPathComponent
             let parent  = rootParent
-            let data = try Data(contentsOf: url)
-            let sha256 = (data as NSData).sha256Hash()
-            let fileSize = data.count
+            let sha256 = try (url as NSURL).computeSHA256String()
+            let resources = try url.resourceValues(forKeys: [.fileSizeKey])
+            let fileSize = resources.fileSize ?? 0
             let item = RetroRomFileItem(key: key, rawName: rawName, parent: parent, createAt: Date(), updateAt: Date(), fileSize: fileSize, sha256: sha256)
             fileItems.append(item)
             return true

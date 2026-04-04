@@ -40,7 +40,7 @@ protocol RetroRomSectionFileBrowser: RetroRomFileBrowser {
 
 extension RetroRomSectionFileBrowser {
     var couldShowEmptyTip: Bool {
-        let romCount = RetroRomFileManager.shared.getRomFileCount() ?? 0
+        let romCount = Retro​Rom​Persistence.shared.getRomFileCount() ?? 0
         return romCount == 0 && dataSource.snapshot().numberOfSections == 0
     }
 

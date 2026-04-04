@@ -168,6 +168,7 @@
 "coreinfo_developers" = "Developers: ";
 "coreinfo_licenses" = "Licenses: ";
 "coreinfo_system_id" = "System ID: ";
+"coreinfo_core_id" = "Core ID: ";
 "coreinfo_descrption" = "Description: ";
 "coreinfo_srcurl" = "Source Code: ";
 "coreinfo_firmware_name" = "Name: ";
@@ -193,3 +194,5 @@
 "corelist_core_list" = "Core List";
 
 "gamepage_game_loading" = "Loading game...";
+
+"gamesetting_title" = "Game Setting";

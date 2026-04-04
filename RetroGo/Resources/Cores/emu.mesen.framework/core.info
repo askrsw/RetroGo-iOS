@@ -28,6 +28,7 @@ hw_render = "false"
 needs_fullpath = "false"
 disk_control = "false"
 database = "Nintendo - Nintendo Entertainment System|Nintendo - Family Computer Disk System"
+overlay = "gamepads/Named_Overlays/Nintendo - Nintendo Entertainment System.cfg"
 
 # Firmware / BIOS
 firmware_count = 1

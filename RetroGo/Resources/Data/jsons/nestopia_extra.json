@@ -9,5 +9,7 @@
             "file_name": "gpl-2.0.txt"
         }
     ],
-    "src-url": "https://github.com/libretro/nestopia"
+    "src_url": "https://github.com/libretro/nestopia",
+    "supports_analog": false,
+    "overlay": "nes"
 }

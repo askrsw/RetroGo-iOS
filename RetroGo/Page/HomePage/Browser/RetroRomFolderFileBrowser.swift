@@ -35,8 +35,8 @@ protocol RetroRomFolderFileBrowser: RetroRomFileBrowser {
 
 extension RetroRomFolderFileBrowser {
     var couldShowEmptyTip: Bool {
-        let folderCount = RetroRomFileManager.shared.getFolderCount() ?? 0
-        let romCount = RetroRomFileManager.shared.getRomFileCount() ?? 0
+        let folderCount = Retro​Rom​Persistence.shared.getFolderCount() ?? 0
+        let romCount = Retro​Rom​Persistence.shared.getRomFileCount() ?? 0
         return folderCount + romCount == 0
     }
     
@@ -129,7 +129,7 @@ extension RetroRomFolderFileBrowser {
 
 extension RetroRomFolderFileBrowser {
     private func createNewFolder() {
-        guard let folder = RetroRomFileManager.shared.folderItem(key: folderKey), let uniqueKey = RetroRomFileManager.shared.getUniqueKey(folder) else {
+        guard let folder = RetroRomFileManager.shared.folderItem(key: folderKey), let uniqueKey = Retro​Rom​Persistence.shared.getUniqueKey(folder) else {
             return AppToastManager.shared.toast(Bundle.localizedString(forKey: "homepage_new_folder_failed"), context: .ui, level: .error, shouldVibrate: false)
         }
 
@@ -142,14 +142,12 @@ extension RetroRomFolderFileBrowser {
                 return AppToastManager.shared.toast(Bundle.localizedString(forKey: "homepage_new_folder_failed"), context: .ui, level: .error, shouldVibrate: false)
             }
 
-            if !RetroRomFileManager.shared.storeRomFiles([], folders: [newFolder]) {
+            if !Retro​Rom​Persistence.shared.storeRomFiles([], folders: [newFolder]) {
                 try? FileManager.default.removeItem(atPath: fullPath)
                 return AppToastManager.shared.toast(Bundle.localizedString(forKey: "homepage_new_folder_failed"), context: .ui, level: .error, shouldVibrate: false)
             } else {
                 folder.addSubItemKeys(newFolderKeys: [newFolder.key], newFileKeys: [])
-
                 AppToastManager.shared.toast(Bundle.localizedString(forKey: "homepage_new_folder_success"), context: .ui, level: .success)
-
                 showNewFolderItem(newFolder.key)
             }
         }

@@ -155,7 +155,7 @@ static void frontend_darwin_get_env(int *argc, char *argv[],
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_ASSETS], bundle_path_buf, "Data/assets", sizeof(g_defaults.dirs[DEFAULT_DIR_ASSETS]));
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_CORE_INFO], bundle_path_buf, "Data/info", sizeof(g_defaults.dirs[DEFAULT_DIR_CORE_INFO]));
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_OVERLAY], bundle_path_buf, "Data/overlays", sizeof(g_defaults.dirs[DEFAULT_DIR_OVERLAY]));
-   fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_OSK_OVERLAY], g_defaults.dirs[DEFAULT_DIR_OVERLAY], "keyboards", sizeof(g_defaults.dirs[DEFAULT_DIR_OSK_OVERLAY]));
+   fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_OSK_OVERLAY], g_defaults.dirs[DEFAULT_DIR_OVERLAY], "retroarch/keyboards", sizeof(g_defaults.dirs[DEFAULT_DIR_OSK_OVERLAY]));
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SHADER], bundle_path_buf, "Data/shaders", sizeof(g_defaults.dirs[DEFAULT_DIR_SHADER]));
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_USER_SHADER], g_defaults.dirs[DEFAULT_DIR_MAIN_CONFIG], "shader", sizeof(g_defaults.dirs[DEFAULT_DIR_USER_SHADER]));
    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SAVESTATE], g_defaults.dirs[DEFAULT_DIR_START], "states", sizeof(g_defaults.dirs[DEFAULT_DIR_SAVESTATE]));

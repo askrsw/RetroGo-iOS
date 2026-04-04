@@ -185,7 +185,7 @@ extension RetroRomFolderImportor {
 
         let folders = folderItemPaths.map({ folderItems[$0]! })
         let files = fileItemPaths.map({ fileItems[$0]! })
-        if !RetroRomFileManager.shared.storeRomFiles(files, folders: folders) {
+        if !Retro​Rom​Persistence.shared.storeRomFiles(files, folders: folders) {
             deleteFolderFiles()
             errorProcess(.saveToDatabaseFailed)
         } else {
@@ -264,7 +264,7 @@ extension RetroRomFolderImportor {
         }
 
         do {
-            guard let key = RetroRomFileManager.shared.getUniqueKey() else {
+            guard let key = Retro​Rom​Persistence.shared.getUniqueKey() else {
                 errorProcess(.uniqueKeyCreationFailed)
                 return false
             }
@@ -352,7 +352,7 @@ extension RetroRomFolderImportor {
                 }
             }
         } else {
-            guard let key = RetroRomFileManager.shared.getUniqueKey() else {
+            guard let key = Retro​Rom​Persistence.shared.getUniqueKey() else {
                 errorProcess(.uniqueKeyCreationFailed)
                 return false
             }
@@ -402,7 +402,7 @@ extension RetroRomFolderImportor {
                 return false
             }
         } else {
-            guard let rootKey = RetroRomFileManager.shared.getUniqueKey() else {
+            guard let rootKey = Retro​Rom​Persistence.shared.getUniqueKey() else {
                 errorProcess(.uniqueKeyCreationFailed)
                 return false
             }

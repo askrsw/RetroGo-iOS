@@ -69,8 +69,8 @@ final class RetroRomTreeFileBrowser: UIView, RetroRomFileBrowser {
     }
 
     var couldShowEmptyTip: Bool {
-        let folderCount = RetroRomFileManager.shared.getFolderCount() ?? 0
-        let romCount = RetroRomFileManager.shared.getRomFileCount() ?? 0
+        let folderCount = Retro​Rom​Persistence.shared.getFolderCount() ?? 0
+        let romCount = Retro​Rom​Persistence.shared.getRomFileCount() ?? 0
         return folderCount + romCount == 0
     }
 
@@ -450,7 +450,7 @@ extension RetroRomTreeFileBrowser: UIContextMenuInteractionDelegate {
     }
 
     func performCreateNewFolder(under folder: RetroRomFolderItem) {
-        guard let uniqueKey = RetroRomFileManager.shared.getUniqueKey(folder) else {
+        guard let uniqueKey = Retro​Rom​Persistence.shared.getUniqueKey(folder) else {
             return AppToastManager.shared.toast(Bundle.localizedString(forKey: "homepage_new_folder_failed"), context: .ui, level: .error, shouldVibrate: false)
         }
 
@@ -463,7 +463,7 @@ extension RetroRomTreeFileBrowser: UIContextMenuInteractionDelegate {
                 return AppToastManager.shared.toast(Bundle.localizedString(forKey: "homepage_new_folder_failed"), context: .ui, level: .error, shouldVibrate: false)
             }
 
-            if !RetroRomFileManager.shared.storeRomFiles([], folders: [newFolder]) {
+            if !Retro​Rom​Persistence.shared.storeRomFiles([], folders: [newFolder]) {
                 try? FileManager.default.removeItem(atPath: fullPath)
                 return AppToastManager.shared.toast(Bundle.localizedString(forKey: "homepage_new_folder_failed"), context: .ui, level: .error, shouldVibrate: false)
             } else {

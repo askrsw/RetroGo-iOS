@@ -25,6 +25,7 @@
 
 #import "RetroArchViewController.h"
 #import "../RetroArchX.h"
+#import "../models/EmuCoreInfoItem.h"
 #import <cocoa_input.h>
 #import <gfx/metal_common.h>
 #import <retroarch_door.h>
@@ -36,6 +37,7 @@
 #endif
 
 @implementation RetroArchViewController {
+    EmuCoreInfoItem *d_core;
     UIView *d_renderView;
     apple_view_type_t d_vt;
     NSArray<NSLayoutConstraint *> *d_viewConstraints;
@@ -43,17 +45,28 @@
 
     BOOL d_shouldLockCurrentInterfaceOrientation;
     UIInterfaceOrientation d_lockInterfaceOrientation;
+
+    BOOL d_useRetroArchOverlay;
+    BOOL d_useSpriteKitOverlay;
 }
 
-- (instancetype)init {
+@synthesize useRetroArchOverlay = d_useRetroArchOverlay;
+@synthesize useSpriteKitOverlay = d_useSpriteKitOverlay;
+@synthesize core                = d_core;
+
+- (instancetype)initWithCore:(EmuCoreInfoItem *)core {
     self = [super initWithNibName:nil bundle:nil];
     if(self != nil) {
+        d_core = core;
         d_shouldLockCurrentInterfaceOrientation = NO;
         d_lockInterfaceOrientation = UIInterfaceOrientationUnknown;
 
         apple_platform = self;
 
         d_layoutViewSize = CGSizeZero;
+
+        d_useRetroArchOverlay = NO;
+        d_useSpriteKitOverlay = YES;
     }
     return self;
 }
@@ -101,6 +114,9 @@
 
     self.hudView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.hudView];
+
+    self.overlayView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view insertSubview:self.overlayView belowSubview:self.hudView];
 }
 
 - (void)viewDidLoad {
@@ -112,7 +128,11 @@
         [self.hudView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
         [self.hudView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
         [self.hudView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [self.hudView.heightAnchor constraintEqualToConstant:44]
+        [self.hudView.heightAnchor constraintEqualToConstant:44],
+        [self.overlayView.topAnchor constraintEqualToAnchor:self.hudView.bottomAnchor],
+        [self.overlayView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+        [self.overlayView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
+        [self.overlayView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
     ]];
 
 #ifdef HAVE_MFI
@@ -121,16 +141,35 @@
 }
 
 - (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
     [self setNeedsUpdateOfHomeIndicatorAutoHidden];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    
-    if(!CGSizeEqualToSize(size, d_layoutViewSize)) {
-        d_layoutViewSize = size;
-        [self updateMyViewConstraints];
-    }
+
+    [coordinator animateAlongsideTransition:^(__unused id<UIViewControllerTransitionCoordinatorContext> context) {
+        CGSize resolvedSize = self.view.safeAreaLayoutGuide.layoutFrame.size;
+        if (CGSizeEqualToSize(resolvedSize, CGSizeZero)) {
+            resolvedSize = self.view.bounds.size;
+        }
+
+        if (!CGSizeEqualToSize(resolvedSize, d_layoutViewSize)) {
+            d_layoutViewSize = resolvedSize;
+            [self updateMyViewConstraints];
+        }
+        [self.view layoutIfNeeded];
+    } completion:^(__unused id<UIViewControllerTransitionCoordinatorContext> context) {
+        CGSize resolvedSize = self.view.safeAreaLayoutGuide.layoutFrame.size;
+        if (CGSizeEqualToSize(resolvedSize, CGSizeZero)) {
+            resolvedSize = self.view.bounds.size;
+        }
+
+        if (!CGSizeEqualToSize(resolvedSize, d_layoutViewSize)) {
+            d_layoutViewSize = resolvedSize;
+            [self updateMyViewConstraints];
+        }
+    }];
 }
 
 #pragma mark - Interface
@@ -139,7 +178,26 @@
     return nil;
 }
 
+- (UIView *)overlayView {
+    return nil;
+}
+
 - (void)showInGameMessage:(EmuInGameMessage *)message { }
+
+- (void)setUseRetroArchOverlay:(BOOL)useRetroArchOverlay {
+    d_useRetroArchOverlay = useRetroArchOverlay;
+
+    if(useRetroArchOverlay) {
+        input_overlay_init();
+    } else {
+        input_overlay_unload();
+    }
+}
+
+- (void)setUseSpriteKitOverlay:(BOOL)useSpriteKitOverlay {
+    d_useSpriteKitOverlay = useSpriteKitOverlay;
+    self.overlayView.hidden = !useSpriteKitOverlay;
+}
 
 #pragma mark - Utils
 
@@ -179,7 +237,9 @@
 #endif // HAVE_MFI
 
 - (void)updateMyViewConstraints {
-    [NSLayoutConstraint deactivateConstraints:d_viewConstraints];
+    if(d_viewConstraints.count > 0) {
+        [NSLayoutConstraint deactivateConstraints:d_viewConstraints];
+    }
 
     if(d_layoutViewSize.width < d_layoutViewSize.height) {
         d_viewConstraints = @[
@@ -190,16 +250,17 @@
         ];
     } else {
         d_viewConstraints = @[
-            [d_renderView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+            [d_renderView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
             [d_renderView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
             [d_renderView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-            [d_renderView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
+            [d_renderView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
         ];
     }
 
     [NSLayoutConstraint activateConstraints:d_viewConstraints];
     [d_renderView layoutIfNeeded];
 }
+
 
 #pragma mark - ApplePlatform
 
@@ -276,7 +337,7 @@ void *glkitview_init(void);
     [d_renderView addInteraction:[[UIPointerInteraction alloc] initWithDelegate:self]];
     d_renderView.userInteractionEnabled = YES;
     d_renderView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view insertSubview:d_renderView belowSubview:self.hudView];
+    [self.view insertSubview:d_renderView belowSubview:self.overlayView];
 
     d_layoutViewSize = self.view.frame.size;
     [self updateMyViewConstraints];

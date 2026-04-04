@@ -911,7 +911,7 @@ static void skip(vorb *z, int n)
 static int set_file_offset(stb_vorbis *f, unsigned int loc)
 {
    f->eof = 0;
-   if (f->stream_start + loc >= f->stream_end || f->stream_start + loc < f->stream_start) {
+   if ((f->stream_start + loc) >= f->stream_end || (f->stream_start + loc) < f->stream_start) {
       f->stream = f->stream_end;
       f->eof = 1;
       return 0;

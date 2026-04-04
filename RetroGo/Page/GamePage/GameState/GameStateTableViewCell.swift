@@ -175,7 +175,7 @@ extension GameStateTableViewCell: UITextFieldDelegate {
             guard let item = self?.item else {
                 return
             }
-            if RetroRomFileManager.shared.updateGameStateShowName(name, coreId: item.coreId, sha256: item.sha256, fileName: item.rawName) {
+            if Retro​Rom​Persistence.shared.updateGameStateShowName(name, coreId: item.coreId, sha256: item.sha256, fileName: item.rawName) {
                 DispatchQueue.main.async {
                     if let parent = self?.viewController as? GameStateListViewController {
                         let item = RetroRomGameStateItem(rawName: item.rawName, coreId: item.coreId, showName: name, romKey: item.romKey, sha256: item.sha256, createAt: item.createAt)

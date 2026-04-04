@@ -358,7 +358,6 @@ NS_ASSUME_NONNULL_BEGIN
     if(d_extraInfo == nil) {
         d_extraInfo = [self loadExtraCoreInfo];
     }
-
     return d_extraInfo[@"desc"][language];
 }
 
@@ -373,7 +372,22 @@ NS_ASSUME_NONNULL_BEGIN
     if(d_extraInfo == nil) {
         d_extraInfo = [self loadExtraCoreInfo];
     }
-    return d_extraInfo[@"src-url"];
+    return d_extraInfo[@"src_url"];
+}
+
+- (BOOL)supportsAnalog {
+    if(d_extraInfo == nil) {
+        d_extraInfo = [self loadExtraCoreInfo];
+    }
+    NSNumber *obj = d_extraInfo[@"supports_analog"];
+    return [obj boolValue];
+}
+
+- (nullable NSString *)overlayName {
+    if(d_extraInfo == nil) {
+        d_extraInfo = [self loadExtraCoreInfo];
+    }
+    return d_extraInfo[@"overlay"];
 }
 
 // 完整的解压回调，支持空文件夹创建和父目录自动补全

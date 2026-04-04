@@ -380,21 +380,5 @@
 			</dict>
 		</dict>
 	</array>
-	<key>UIRequiresFullScreen</key>
-	<true/>
-	<key>UIUserInterfaceStyle</key>
-	<string>Dark</string>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>NSCameraUsageDescription</key>
-	<string>Camera Usage</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Location Usage</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Photo Library Usage</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>Local Network Usage</string>
 </dict>
 </plist>

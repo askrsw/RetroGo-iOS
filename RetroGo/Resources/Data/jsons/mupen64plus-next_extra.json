@@ -9,5 +9,7 @@
             "file_name": "gpl-2.0.txt"
         }
     ],
-    "src-url": "https://github.com/libretro/mupen64plus-libretro-nx"
+    "src_url": "https://github.com/libretro/mupen64plus-libretro-nx",
+    "supports_analog": true,
+    "overlay": "n64"
 }

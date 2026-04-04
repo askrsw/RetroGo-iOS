@@ -1106,6 +1106,7 @@ extern input_device_driver_t mfi_joypad;
 extern input_device_driver_t dos_joypad;
 extern input_device_driver_t rwebpad_joypad;
 extern input_device_driver_t test_joypad;
+extern input_device_driver_t virtual_joypad;
 
 extern retro_keybind_set input_config_binds[MAX_USERS];
 extern retro_keybind_set input_autoconf_binds[MAX_USERS];
