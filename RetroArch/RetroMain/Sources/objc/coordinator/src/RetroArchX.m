@@ -547,6 +547,8 @@ bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
     NSLog(@"Dynamic Types: %@", [dynamicTypes componentsJoinedByString:@","]);
 #endif // SHOW_CORE_ROM_TYPE_INFO
 
+    [set addObject:@"gdi"];
+
     d_allExtensionsSet       = [set copy];
     d_allSupportedExtensions = [array copy];
 }

@@ -88,6 +88,41 @@ To ensure a seamless build process for version 1.0:
 * **ICP Filing (China)**: 鲁ICP备2023034487号-9A
 * **Lead Developer**: haharsw (GitHub: [askrsw](https://github.com/askrsw))
 
+## 🚫 Distribution & App Store Policy Notice
+
+While RetroGo is released under the GNU General Public License v3.0 (GPLv3),
+we would like to clarify the following additional terms regarding distribution, branding, and App Store submissions:
+
+1. **Trademark & Branding**
+   The name "RetroGo", its logo, and associated branding elements are NOT licensed under GPLv3.
+   You are NOT permitted to use the name "RetroGo", its icon, or any confusingly similar branding
+   in redistributed versions without explicit permission.
+
+2. **App Store Redistribution**
+   Although GPLv3 allows redistribution, we strongly discourage publishing:
+   - Unmodified builds
+   - Simple rebrands ("wrapper" or "reskin" apps)
+   - Apps that provide no substantial added value
+
+3. **User Confusion & Impersonation**
+   Any distribution that may mislead users into believing it is an official release of RetroGo
+   will be considered a violation of our branding rights.
+
+4. **Enforcement**
+   We reserve the right to file complaints with platform providers (such as Apple App Store)
+   against applications that:
+   - Violate branding/trademark rights
+   - Cause user confusion
+   - Are considered spam, duplicate, or low-effort repackaging
+
+5. **Encouraged Use**
+   We welcome:
+   - Meaningful improvements
+   - Forks with clear differentiation
+   - Contributions back to the community
+
+By using this codebase, you agree to respect both the GPLv3 license and the above branding guidelines.
+
 ## 🤝 Acknowledgments
 
 * **[Libretro / RetroArch](https://www.libretro.com/)**: For the incredible API and core infrastructure.

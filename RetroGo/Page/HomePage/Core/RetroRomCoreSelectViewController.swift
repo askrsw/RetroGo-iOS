@@ -195,9 +195,9 @@ extension RetroRomCoreSelectViewController {
             let filePath: String?
             switch action {
                 case .assignCoreForFile(let item):
-                    filePath = item.fullPath
+                    filePath = item.entryPath
                 case .runRomWithItem(let item):
-                    filePath = item.fullPath
+                    filePath = item.entryPath
                 case .runRomWithUrl(let url):
                     filePath = url.path(percentEncoded: false)
                 default:

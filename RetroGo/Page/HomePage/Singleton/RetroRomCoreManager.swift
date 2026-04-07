@@ -133,7 +133,7 @@ final class RetroRomCoreManager {
     }
 
     func getRunningCore(_ item: RetroRomFileItem) -> EmuCoreInfoItem? {
-        guard let romPath = item.fullPath else { return nil }
+        guard let romPath = item.entryPath else { return nil }
 
         if let coreId = item.inheritedPreferCore, let core = core(coreId), core != .noneCore() {
             return core

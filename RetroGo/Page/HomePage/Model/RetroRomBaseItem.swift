@@ -121,18 +121,13 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
         RetroRomFileManager.shared.folderItem(key: parent)
     }
 
+    // 在父目录下的文件（夹）名
+    var baseName: String {
+        rawName
+    }
+
     var fullPath: String? {
-        if let folder = self as? RetroRomFolderItem, folder.isRoot {
-            return AppConfig.shared.romFolderPath
-        } else if let parentFolder = parentFolderItem {
-            if let parentPath = parentFolder.fullPath {
-                return parentPath + rawName + (isFolder ? "/" : "")
-            } else {
-                return nil
-            }
-        } else {
-            return nil
-        }
+        nil
     }
 
     var  inheritedPreferCore: String? {
@@ -142,14 +137,6 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
             return nil
         } else {
             return parentFolderItem?.inheritedPreferCore
-        }
-    }
-
-    var exists: Bool {
-        if let fullPath = fullPath {
-            return FileManager.default.fileExists(atPath: fullPath)
-        } else {
-            return false
         }
     }
 
