@@ -38,7 +38,7 @@ final class Retro​Rom​Persistence {
     func deleteFolderItem(_ key: String) -> Bool {
         do {
             let db = Self.sqlite
-            let alice = Self.folderInfoTable.filter(Self.key == key)
+            let alice = Self.romFolderTable.filter(Self.key == key)
             try db.run(alice.delete())
             return true
         } catch {
@@ -54,8 +54,12 @@ final class Retro​Rom​Persistence {
     func deleteFileItem(_ key: String) -> Bool {
         do {
             let db = Self.sqlite
-            let alice = Self.romInfoTable.filter(Self.key == key)
-            try db.run(alice.delete())
+            let alice1 = Self.romGameFileTable.filter(Self.key == key)
+            let alice2 = Self.romGameTable.filter(Self.key == key)
+            try db.transaction {
+                try db.run(alice1.delete())
+                try db.run(alice2.delete())
+            }
             return true
         } catch {
         #if DEBUG
@@ -70,7 +74,7 @@ final class Retro​Rom​Persistence {
     func getFolderCount() -> Int? {
         do {
             let db = Self.sqlite
-            let alice = Self.folderInfoTable.where(Self.key != "root")
+            let alice = Self.romFolderTable.where(Self.key != "root")
             let count = try db.scalar(alice.count)
             return count
         } catch {
@@ -86,8 +90,7 @@ final class Retro​Rom​Persistence {
     func getRomFileCount() -> Int? {
         do {
             let db = Self.sqlite
-            let alice = Self.romInfoTable
-            let count = try db.scalar(alice.count)
+            let count = try db.scalar(Self.romGameTable.count)
             return count
         } catch {
         #if DEBUG
@@ -119,6 +122,7 @@ final class Retro​Rom​Persistence {
                     lastPlayAt: row[Self.lastPlayAt],
                     playTime: row[Self.playTime],
                     tagIdArray: parseTagIds(row[Self.tagIdsText]),
+                    fileGroupType: row[Self.fileGroupType],
                 )
                 items.append(item)
             }
@@ -167,6 +171,7 @@ final class Retro​Rom​Persistence {
                         lastPlayAt: row[Self.lastPlayAt],
                         playTime: row[Self.playTime],
                         tagIdArray: parseTagIds(row[Self.tagIdsText]),
+                        fileGroupType: row[Self.fileGroupType],
                     )
                     allItems.append(item)
                 }
@@ -180,7 +185,6 @@ final class Retro​Rom​Persistence {
             #endif
         }
     }
-
 
     // 辅助方法：解析标签字符串
     private func parseTagIds(_ text: String?) -> [Int] {
@@ -296,6 +300,7 @@ final class Retro​Rom​Persistence {
                     lastPlayAt: row[Self.lastPlayAt],
                     playTime: row[Self.playTime],
                     tagIdArray: parseTagIds(row[Self.tagIdsText]),
+                    fileGroupType: row[Self.fileGroupType],
                 )
                 return item
             }
@@ -333,7 +338,7 @@ final class Retro​Rom​Persistence {
     func getAllFileItemKeys() -> Set<String>? {
         do {
             let db = Self.sqlite
-            let alice = Self.romInfoTable.select(Self.key)
+            let alice = Self.romGameTable.select(Self.key)
             var keys: Set<String> = []
             for row in try db.prepare(alice) {
                 let key = row[Self.key]
@@ -413,7 +418,7 @@ final class Retro​Rom​Persistence {
     func getFolderSubItemKeys(_ folderKey: String) -> (folderKeys: Set<String>, fileKeys: Set<String>)? {
         do {
             let db = Self.sqlite
-            let alice1 = Self.folderInfoTable.where(Self.parent == folderKey)
+            let alice1 = Self.romFolderTable.where(Self.parent == folderKey).select(Self.key)
             var subFolderKeys = Set<String>()
             for row in try db.prepare(alice1) {
                 let key = row[Self.key]
@@ -422,7 +427,7 @@ final class Retro​Rom​Persistence {
             if folderKey == "root" {
                 subFolderKeys.remove("root")
             }
-            let alice2 = Self.romInfoTable.where(Self.parent == folderKey)
+            let alice2 = Self.romGameTable.where(Self.parent == folderKey).select(Self.key)
             var subFileKeys = Set<String>()
             for row in try db.prepare(alice2) {
                 let key = row[Self.key]
@@ -439,7 +444,7 @@ final class Retro​Rom​Persistence {
         }
     }
 
-    func storeRomFiles(_ files:[RetroRomFileItem], folders: [RetroRomFolderItem]) -> Bool {
+    func storeRomFiles(_ files: [RetroRomFileItem], folders: [RetroRomFolderItem]) -> Bool {
         do {
             let db = Self.sqlite
             try db.transaction {
@@ -448,6 +453,9 @@ final class Retro​Rom​Persistence {
                 }
                 for file in files {
                     try db.run(file.insert)
+                    for sub in file.subItems {
+                        try db.run(sub.insert)
+                    }
                 }
             }
             return true
@@ -466,9 +474,9 @@ final class Retro​Rom​Persistence {
             let db = Self.sqlite
             let alice: SQLite.Table
             if isFolder {
-                alice = Self.folderInfoTable.filter(Self.key == key)
+                alice = Self.romFolderTable.filter(Self.key == key)
             } else {
-                alice = Self.romInfoTable.filter(Self.key == key)
+                alice = Self.romGameTable.filter(Self.key == key)
             }
             let update = alice.update(
                 Self.showName <- name
@@ -490,9 +498,9 @@ final class Retro​Rom​Persistence {
             let db = Self.sqlite
             let alice: SQLite.Table
             if isFolder {
-                alice = Self.folderInfoTable.filter(Self.key == key)
+                alice = Self.romFolderTable.filter(Self.key == key)
             } else {
-                alice = Self.romInfoTable.filter(Self.key == key)
+                alice = Self.romGameTable.filter(Self.key == key)
             }
             let update = alice.update(
                 Self.parent <- parent
@@ -512,7 +520,7 @@ final class Retro​Rom​Persistence {
     func updateLastPlayAt(key: String, date: Date) -> Bool {
         do {
             let db = Self.sqlite
-            let alice = Self.romInfoTable.filter(Self.key == key)
+            let alice = Self.romGameTable.filter(Self.key == key)
             let update = alice.update(
                 Self.lastPlayAt <- Date()
             )
@@ -531,7 +539,7 @@ final class Retro​Rom​Persistence {
     func updatePlayTime(key: String, seconds: Int) -> Bool {
         do {
             let db = Self.sqlite
-            let alice = Self.romInfoTable.filter(Self.key == key)
+            let alice = Self.romGameTable.filter(Self.key == key)
             let update = alice.update(
                 Self.playTime <- seconds
             )
@@ -550,7 +558,7 @@ final class Retro​Rom​Persistence {
     func updateFilePreferCore(key: String, core: String?) -> Bool {
         do {
             let db = Self.sqlite
-            let alice = Self.romInfoTable.filter(Self.key == key)
+            let alice = Self.romGameTable.filter(Self.key == key)
             let update = alice.update(
                 Self.preferCore <- core
             )
@@ -569,7 +577,7 @@ final class Retro​Rom​Persistence {
     func updateFolderPreferCore(key: String, core: String?) -> Bool {
         do {
             let db = Self.sqlite
-            let alice = Self.folderInfoTable.filter(Self.key == key)
+            let alice = Self.romFolderTable.filter(Self.key == key)
             let update = alice.update(
                 Self.preferCore <- core
             )
@@ -591,12 +599,12 @@ final class Retro​Rom​Persistence {
             let fileManager = FileManager.default
             while true {
                 let key = NSString.randomString(10, caseInsensitive: false)
-                let query1 = Self.folderInfoTable.filter(Self.key == key).limit(1)
+                let query1 = Self.romFolderTable.filter(Self.key == key).limit(1)
                 if (try db.pluck(query1)) != nil {
                     continue
                 }
 
-                let query2 = Self.romInfoTable.filter(Self.key == key).limit(1)
+                let query2 = Self.romGameTable.filter(Self.key == key).limit(1)
                 if (try db.pluck(query2)) != nil {
                     continue
                 }
@@ -639,7 +647,7 @@ final class Retro​Rom​Persistence {
     func deleteGameState(coreId: String, sha256: String?, fileName: String) -> Bool {
         do {
             let db = Self.sqlite
-            let alice = Self.stateInfoTable.filter(Self.coreId == coreId && Self.sha256 == sha256 && Self.rawName == fileName)
+            let alice = Self.romStateTable.filter(Self.coreId == coreId && Self.sha256 == sha256 && Self.rawName == fileName)
             try db.run(alice.delete())
             return true
         } catch {
@@ -656,13 +664,13 @@ final class Retro​Rom​Persistence {
             let db = Self.sqlite
             let alice: SQLite.Table
             if let coreId = coreId, let sha256 = sha256 {
-                alice = Self.stateInfoTable.filter(Self.coreId == coreId && Self.sha256 == sha256).order(Self.createAt.desc)
+                alice = Self.romStateTable.filter(Self.coreId == coreId && Self.sha256 == sha256).order(Self.createAt.desc)
             } else if let coreId = coreId {
-                alice = Self.stateInfoTable.filter(Self.coreId == coreId).order(Self.createAt.desc)
+                alice = Self.romStateTable.filter(Self.coreId == coreId).order(Self.createAt.desc)
             } else if let sha256 = sha256 {
-                alice = Self.stateInfoTable.filter(Self.sha256 == sha256).order(Self.createAt.desc)
+                alice = Self.romStateTable.filter(Self.sha256 == sha256).order(Self.createAt.desc)
             } else {
-                alice = Self.stateInfoTable.order(Self.createAt.desc)
+                alice = Self.romStateTable.order(Self.createAt.desc)
             }
             var items: [RetroRomGameStateItem] = []
             for row in try db.prepare(alice) {
@@ -691,9 +699,9 @@ final class Retro​Rom​Persistence {
             let db = Self.sqlite
             let alice: SQLite.Table
             if order {
-                alice = Self.stateInfoTable.filter(Self.romKey == romKey).order(Self.createAt.desc)
+                alice = Self.romStateTable.filter(Self.romKey == romKey).order(Self.createAt.desc)
             } else {
-                alice = Self.stateInfoTable.filter(Self.romKey == romKey)
+                alice = Self.romStateTable.filter(Self.romKey == romKey)
             }
             var items: [RetroRomGameStateItem] = []
             for row in try db.prepare(alice) {
@@ -720,7 +728,7 @@ final class Retro​Rom​Persistence {
     func updateGameStateShowName(_ showName: String, coreId: String, sha256: String?, fileName: String) -> Bool {
         do {
             let db = Self.sqlite
-            let alice = Self.stateInfoTable.filter(Self.coreId == coreId && Self.sha256 == sha256 && Self.rawName == fileName)
+            let alice = Self.romStateTable.filter(Self.coreId == coreId && Self.sha256 == sha256 && Self.rawName == fileName)
             try db.run(alice.update(Self.showName <- showName))
             return true
         } catch {
@@ -737,7 +745,7 @@ final class Retro​Rom​Persistence {
     private func getAllFileTagsFromDatabase() -> [RetroRomFileTag]? {
         do {
             let db = Self.sqlite
-            let alice = Self.tagInfoTable.order(Self.id)
+            let alice = Self.romTagTable.order(Self.id)
             var tags: [RetroRomFileTag] = []
             for row in try db.prepare(alice) {
                 let tag = RetroRomFileTag(
@@ -762,7 +770,7 @@ final class Retro​Rom​Persistence {
     func getAllFileTagIDs() -> [Int]? {
         do {
             let db = Self.sqlite
-            let alice = Self.tagInfoTable.order(Self.id)
+            let alice = Self.romTagTable.order(Self.id)
             var tags: [Int] = []
             for row in try db.prepare(alice) {
                 tags.append(row[Self.id])
@@ -780,7 +788,7 @@ final class Retro​Rom​Persistence {
     func getRomFileTagIdArray(romKey: String) -> [Int]? {
         do {
             let db = Self.sqlite
-            let alice = Self.romTagInfoTable.filter(Self.key == romKey).order(Self.id)
+            let alice = Self.romGameTagTable.filter(Self.key == romKey).order(Self.id)
             var ids: [Int] = []
             for row in try db.prepare(alice) {
                 let id = row[Self.id]
@@ -801,12 +809,12 @@ final class Retro​Rom​Persistence {
             let db = Self.sqlite
             try db.transaction {
                 if !removedTags.isEmpty {
-                    let alice = Self.romTagInfoTable.filter(Self.key == romKey && removedTags.contains(Self.id))
+                    let alice = Self.romGameTagTable.filter(Self.key == romKey && removedTags.contains(Self.id))
                     try db.run(alice.delete())
                 }
                 if !addedTags.isEmpty {
                     let insertStatements = addedTags.map { id in
-                        Self.romTagInfoTable.insert(or: .replace,
+                        Self.romGameTagTable.insert(or: .replace,
                             Self.key <- romKey,
                             Self.id <- id,
                             Self.createAt <- Date()
@@ -830,7 +838,7 @@ final class Retro​Rom​Persistence {
     func getFileTag(id: Int) -> RetroRomFileTag? {
         do {
             let db = Self.sqlite
-            let alice = Self.tagInfoTable.filter(Self.id == id)
+            let alice = Self.romTagTable.filter(Self.id == id)
             for row in try db.prepare(alice) {
                 let tag = RetroRomFileTag(
                     id: row[Self.id],
@@ -867,7 +875,7 @@ final class Retro​Rom​Persistence {
                 let chunk = Array(idArray[i..<end])
 
                 // 3. 构建当前批次的查询语句
-                let query = Self.tagInfoTable.where(chunk.contains(Self.id))
+                let query = Self.romTagTable.where(chunk.contains(Self.id))
 
                 // 4. 执行当前批次的查询并填充数据
                 for row in try db.prepare(query) {
@@ -895,7 +903,7 @@ final class Retro​Rom​Persistence {
     func getUniqueFileTagId() -> Int? {
         do {
             let db = Self.sqlite
-            if let maxV = try db.scalar(Self.tagInfoTable.select(Self.id.max)) {
+            if let maxV = try db.scalar(Self.romTagTable.select(Self.id.max)) {
                 if maxV < RetroRomFileTag.kUserTagIdStart {
                     return RetroRomFileTag.kUserTagIdStart + 1
                 } else {
@@ -928,10 +936,10 @@ final class Retro​Rom​Persistence {
         }
     }
 
-    func updateFiltTag(id: Int, title: String?, color: Int?) -> Bool {
+    func updateFileTag(id: Int, title: String?, color: Int?) -> Bool {
         do {
             let db = Self.sqlite
-            let alice = Self.tagInfoTable.where(Self.id == id)
+            let alice = Self.romTagTable.where(Self.id == id)
             try db.run(alice.update(
                 Self.title <- title,
                 Self.colorArgb <- color
@@ -950,7 +958,7 @@ final class Retro​Rom​Persistence {
     func deleteFileTag(id: Int) -> Bool {
         do {
             let db = Self.sqlite
-            let alice = Self.tagInfoTable.where(Self.id == id)
+            let alice = Self.romTagTable.where(Self.id == id)
             try db.run(alice.delete())
             return true
         } catch {
@@ -966,7 +974,7 @@ final class Retro​Rom​Persistence {
     func getAllTagFileKeys() -> [Int: String]? {
         do {
             let db = Self.sqlite
-            let sql = "SELECT id, GROUP_CONCAT(key) AS file_keys FROM romtaginfo GROUP BY id"
+            let sql = "SELECT id, GROUP_CONCAT(key) AS file_keys FROM romgametag GROUP BY id"
             var result: [Int: String] = [:]
             for row in try db.prepare(sql) {
                 let rawID    = row[0] as? Int64
@@ -1013,8 +1021,8 @@ extension Retro​Rom​Persistence {
     static let isHidden   = SQLite.Expression<Bool>("is_hidden")
 
     static let entryFileKey    = SQLite.Expression<String>("entry_file_key")
-    static let fileGroupType   = SQLite.Expression<String>("file_group_type")
-    static let fileRole        = SQLite.Expression<String>("file_role")
+    static let fileGroupType   = SQLite.Expression<RetroRomFileGroupType>("file_group_type")
+    static let fileRole        = SQLite.Expression<RetroRomFileSubRole>("file_role")
     static let sortIndex       = SQLite.Expression<Int>("sort_index")
 
     static let romFolderTable   = SQLite.Table("romfolder")
@@ -1056,7 +1064,10 @@ extension Retro​Rom​Persistence {
 
             switch version {
                 case 0:
-                    try databaseV1(db: db)
+                    try databaseV2(db: db)
+                    return true
+                case 1:
+                    try migrationV1ToV2(db: db)
                     return true
                 default:
                     return true
@@ -1074,7 +1085,7 @@ extension Retro​Rom​Persistence {
 
 extension RetroRomFolderItem {
     var insert: SQLite.Insert {
-        Retro​Rom​Persistence.folderInfoTable.insert(
+        Retro​Rom​Persistence.romFolderTable.insert(
             Retro​Rom​Persistence.key      <- key,
             Retro​Rom​Persistence.rawName  <- rawName,
             Retro​Rom​Persistence.showName <- showName,
@@ -1087,28 +1098,41 @@ extension RetroRomFolderItem {
     }
 }
 
+extension RetroRomFileSubItem {
+    var insert: SQLite.Insert {
+        Retro​Rom​Persistence.romGameFileTable.insert(
+            Retro​Rom​Persistence.key <- key,
+            Retro​Rom​Persistence.rawName <- rawName,
+            Retro​Rom​Persistence.fileRole <- fileRole,
+            Retro​Rom​Persistence.sha256 <- sha256,
+            Retro​Rom​Persistence.fileSize <- fileSize,
+            Retro​Rom​Persistence.sortIndex <- sortIndex
+        )
+    }
+}
+
 extension RetroRomFileItem {
     var insert: SQLite.Insert {
-        Retro​Rom​Persistence.romInfoTable.insert(
+        Retro​Rom​Persistence.romGameTable.insert(
             Retro​Rom​Persistence.key        <- key,
-            Retro​Rom​Persistence.rawName    <- rawName,
+            Retro​Rom​Persistence.entryFileKey <- rawName,
             Retro​Rom​Persistence.showName   <- showName,
             Retro​Rom​Persistence.parent     <- parent,
             Retro​Rom​Persistence.createAt   <- createAt,
             Retro​Rom​Persistence.updateAt   <- updateAt,
-            Retro​Rom​Persistence.fileSize   <- fileSize,
             Retro​Rom​Persistence.sha256     <- sha256,
             Retro​Rom​Persistence.lastPlayAt <- lastPlayAt,
             Retro​Rom​Persistence.playTime   <- playTime,
             Retro​Rom​Persistence.preferCore <- preferCore,
             Retro​Rom​Persistence.preferIcon <- preferIcon,
+            Retro​Rom​Persistence.fileGroupType <- fileGroupType,
         )
     }
 }
 
 extension RetroRomGameStateItem {
     var insert: SQLite.Insert {
-        Retro​Rom​Persistence.stateInfoTable.insert(or: .replace,
+        Retro​Rom​Persistence.romStateTable.insert(or: .replace,
             Retro​Rom​Persistence.rawName  <- rawName,
             Retro​Rom​Persistence.coreId   <- coreId,
             Retro​Rom​Persistence.showName <- showName,
@@ -1121,7 +1145,7 @@ extension RetroRomGameStateItem {
 
 extension RetroRomFileTag {
     var insert: SQLite.Insert {
-        Retro​Rom​Persistence.tagInfoTable.insert(or: .replace,
+        Retro​Rom​Persistence.romTagTable.insert(or: .replace,
             Retro​Rom​Persistence.id <- id,
             Retro​Rom​Persistence.title <- title,
             Retro​Rom​Persistence.colorArgb <- color,

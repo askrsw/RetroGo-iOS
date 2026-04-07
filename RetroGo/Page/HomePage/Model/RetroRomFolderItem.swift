@@ -53,13 +53,23 @@ final class RetroRomFolderItem: RetroRomBaseItem {
         return subFiles + subFolders
     }
 
+    override var fullPath: String? {
+        if isRoot {
+            return AppConfig.shared.romFolderPath
+        } else if let parentPath = parentFolderItem?.fullPath {
+            return parentPath + rawName + "/"
+        } else {
+            return nil
+        }
+    }
+
     func canAddItem(_ item: RetroRomBaseItem) -> Bool {
         guard let fullPath = fullPath else {
             return false
         }
 
         let fileManager = FileManager.default
-        let newItemPath = fullPath + item.rawName
+        let newItemPath = fullPath + item.baseName
 
         if fileManager.fileExists(atPath: newItemPath) {
             return false
@@ -73,11 +83,11 @@ final class RetroRomFolderItem: RetroRomBaseItem {
             return false
         }
 
-        let dstPath = path + item.rawName
+        let dstPath = path + item.baseName
         do {
             try FileManager.default.moveItem(atPath: srcPath, toPath: dstPath)
         } catch {
-            print("Move \(item.rawName) from \(srcPath) to \(dstPath) error: \(error)")
+            print("Move \(item.baseName) from \(srcPath) to \(dstPath) error: \(error)")
             return false
         }
 
@@ -92,7 +102,7 @@ final class RetroRomFolderItem: RetroRomBaseItem {
             do {
                 try FileManager.default.moveItem(atPath: dstPath, toPath: srcPath)
             } catch {
-                print("Move \(item.rawName) from \(dstPath) to \(srcPath) error: \(error)")
+                print("Move \(item.baseName) from \(dstPath) to \(srcPath) error: \(error)")
             }
             return false
         }

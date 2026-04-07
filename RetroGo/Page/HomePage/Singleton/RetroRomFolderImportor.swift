@@ -42,22 +42,31 @@ final class RetroRomFolderImportor: Thread {
         case skip, merge, cancel
     }
 
+    enum IncompletePolicy {
+        case skip, cancel
+    }
+
     private let rootUrl: URL
     private let rootParent: String
     private let destinationRootPath: String
 
     private let indicatorView = RetroRomActivityView(mainTitle: Bundle.localizedString(forKey: "homepage_import_importing"))
+    private lazy var groupBuilder = RetroRomImportGroupBuilder(indicatorView: indicatorView)
     private let procSemphore = DispatchSemaphore(value: 0)
     private var conflictPolicy = ConflictPolicy.skip
+    private var incompletePolicy = IncompletePolicy.skip
 
     private var folderItems: [String: RetroRomFolderItem] = [:]
     private var folderItemPaths: [String] = []
     private var skipedFolders: [String] = []
     private var fileItems: [String: RetroRomFileItem] = [:]
     private var fileItemPaths: [String] = []
+    private var fileCopyPlans: [String: [(source: String, destination: String)]] = [:]
     private var skipedFiles: [String] = []
     private var reusedFolders: [RetroRomFolderItem] = []
     private var rootKey: String?
+    private var flattenRootFolder = false
+    private var incompleteGroups: [RetroRomImportGroupBuilder.IncompleteGroup] = []
 
     private let startDate: Date = Date()
     private var success = false
@@ -89,55 +98,466 @@ final class RetroRomFolderImportor: Thread {
         }
         defer { rootUrl.stopAccessingSecurityScopedResource() }
 
-        guard makeRootFolderItem() else {
-            return
-        }
-
-        let fileManager = FileManager.default
-        let rootPath = rootUrl.path(percentEncoded: false)
-        let supportedExtensions = RetroArchX.shared().allExtensionsSet
-        if let enumerator = fileManager.enumerator(atPath: rootPath) {
-            for case let filePath as String in enumerator {
-                if filePath.hasPrefix(".DS_Store") || filePath.hasSuffix(".DS_Store") {
-                    continue
-                }
-
-                if skipedFolders.contains(where: { filePath.hasPrefix($0) }) {
-                    continue
-                }
-
-                let fileUrl = rootUrl.appendingPathComponent(filePath)
-                let ext = fileUrl.pathExtension.lowercased()
-                if !supportedExtensions.contains(ext) {
-                    continue
-                }
-                if fileManager.urlIsDirectory(fileUrl) {
-                    if !makeSubFolderItem(filePath) {
-                        return
-                    }
-                } else if fileManager.urlIsFile(fileUrl) {
-                    if !makeFileItem(filePath, fileUrl: fileUrl) {
-                        return
-                    }
-                }
+        do {
+            let sourceFiles = try collectSourceFiles()
+            let analysis = try groupBuilder.analyzeGroups(from: sourceFiles)
+            let groups = filterImportableGroups(analysis.groups)
+            incompleteGroups = filterIncompleteGroups(analysis.incompleteGroups)
+            if !handleIncompleteGroups(incompleteGroups) {
+                let title = Bundle.localizedString(forKey: "info")
+                let message = Bundle.localizedString(forKey: "homepage_import_cancelled")
+                indicatorView.infoMessage(message, title: title, canDismiss: true)
+                return
             }
-
+            let effectiveSourceFiles = sourceFilesForGroups(groups, fileMap: analysis.map)
+            let absorbedDirectories = determineAbsorbedDirectories(groups: groups, sourceFiles: effectiveSourceFiles)
+            flattenRootFolder = shouldFlattenRootFolder(groups: groups, absorbedDirectories: absorbedDirectories)
+            guard buildFolderItems(groups: groups, absorbedDirectories: absorbedDirectories) else {
+                return
+            }
+            guard buildGroupedFileItems(groups: groups, fileMap: analysis.map, absorbedDirectories: absorbedDirectories) else {
+                return
+            }
             saveFolerAndFiles()
-        } else {
-            return errorProcess(.enumeratorBuildFailed)
+        } catch {
+            errorProcess(.romFileReadFailed(error: error.localizedDescription))
         }
     }
 }
 
 extension RetroRomFolderImportor {
+    private func collectSourceFiles() throws -> [RetroRomImportGroupBuilder.SourceFile] {
+        let fileManager = FileManager.default
+        let rootPath = rootUrl.path(percentEncoded: false)
+        guard let enumerator = fileManager.enumerator(atPath: rootPath) else {
+            throw NSError(domain: "RetroRomError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to enumerate folder"])
+        }
+
+        var files: [RetroRomImportGroupBuilder.SourceFile] = []
+        for case let filePath as String in enumerator {
+            if filePath.hasPrefix(".DS_Store") || filePath.hasSuffix(".DS_Store") {
+                continue
+            }
+
+            let fileUrl = rootUrl.appendingPathComponent(filePath)
+            if !fileManager.urlIsFile(fileUrl) {
+                continue
+            }
+            let displayPath = "\(rootUrl.lastPathComponent)/\(filePath)"
+            let formatter = Bundle.localizedString(forKey: "homepage_import_file_checking")
+            let message = String(format: formatter, displayPath)
+            let title = Bundle.localizedString(forKey: "homepage_import_importing")
+            indicatorView.activeMessage(message, title: title)
+
+            let source = try RetroRomImportGroupBuilder.SourceFile(relativePath: filePath, url: fileUrl)
+            files.append(source)
+        }
+        return files.sorted {
+            $0.relativePath.localizedCaseInsensitiveCompare($1.relativePath) == .orderedAscending
+        }
+    }
+
+    private func filterImportableGroups(_ groups: [RetroRomImportGroupBuilder.Group]) -> [RetroRomImportGroupBuilder.Group] {
+        let supportedExtensions = RetroArchX.shared().allExtensionsSet
+        return groups.filter { group in
+            if group.type != .single {
+                return true
+            }
+            let ext = groupBuilder.fileExtension(of: group.entryPath)
+            return supportedExtensions.contains(ext)
+        }
+    }
+
+    private func filterIncompleteGroups(_ groups: [RetroRomImportGroupBuilder.IncompleteGroup]) -> [RetroRomImportGroupBuilder.IncompleteGroup] {
+        let supportedExtensions = RetroArchX.shared().allExtensionsSet
+        return groups.filter { group in
+            if group.type != .single {
+                return true
+            }
+            let ext = groupBuilder.fileExtension(of: group.entryPath)
+            return supportedExtensions.contains(ext)
+        }
+    }
+
+    private func handleIncompleteGroups(_ groups: [RetroRomImportGroupBuilder.IncompleteGroup]) -> Bool {
+        guard !groups.isEmpty else {
+            return true
+        }
+        promptIncompleteGroups(groups)
+        procSemphore.wait()
+        return incompletePolicy != .cancel
+    }
+
+    private func promptIncompleteGroups(_ groups: [RetroRomImportGroupBuilder.IncompleteGroup]) {
+        DispatchQueue.main.async {
+            let details = groups.map { group -> String in
+                if group.missingPaths.isEmpty {
+                    return "• \(group.entryPath)"
+                }
+                let missing = group.missingPaths.joined(separator: "\n   - ")
+                return "• \(group.entryPath)\n   - \(missing)"
+            }.joined(separator: "\n\n")
+            let format = Bundle.localizedString(forKey: "homepage_import_incomplete_groups_message")
+            let message = NSString.localizedStringWithFormat(format as NSString, details) as String
+            let title = Bundle.localizedString(forKey: "homepage_import_incomplete_groups_title")
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self] _ in
+                self.incompletePolicy = .cancel
+                self.procSemphore.signal()
+            }
+            alert.addAction(cancelAction)
+            let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self] _ in
+                self.incompletePolicy = .skip
+                self.procSemphore.signal()
+            }
+            alert.addAction(skipAction)
+            UIViewController.currentActive()?.present(alert, animated: true)
+        }
+    }
+
+    private func sourceFilesForGroups(_ groups: [RetroRomImportGroupBuilder.Group], fileMap: [String: RetroRomImportGroupBuilder.SourceFile]) -> [RetroRomImportGroupBuilder.SourceFile] {
+        let effectivePaths = Set(groups.flatMap(\.memberPaths))
+        return effectivePaths.compactMap { fileMap[$0] }.sorted {
+            $0.relativePath.localizedCaseInsensitiveCompare($1.relativePath) == .orderedAscending
+        }
+    }
+
+    private func determineAbsorbedDirectories(groups: [RetroRomImportGroupBuilder.Group], sourceFiles: [RetroRomImportGroupBuilder.SourceFile]) -> [String: String] {
+        let allPaths = Set(sourceFiles.map(\.relativePath))
+        var absorbed: [String: String] = [:]
+
+        for group in groups {
+            let candidateDirectory = commonDirectory(for: group.memberPaths)
+            let scopedFiles = files(in: candidateDirectory, from: allPaths)
+            let memberSet = Set(group.memberPaths)
+            guard !candidateDirectory.isEmpty || groups.count == 1 else {
+                continue
+            }
+            guard !scopedFiles.isEmpty, scopedFiles.isSubset(of: memberSet) else {
+                continue
+            }
+
+            let overlappingGroups = groups.filter { other in
+                Set(other.memberPaths).isSubset(of: scopedFiles)
+            }
+            if overlappingGroups.count == 1 {
+                absorbed[group.entryPath] = candidateDirectory
+            }
+        }
+
+        if absorbed.isEmpty, groups.count == 1, let group = groups.first {
+            let memberSet = Set(group.memberPaths)
+            if memberSet == allPaths {
+                absorbed[group.entryPath] = ""
+            }
+        }
+
+        return absorbed
+    }
+
+    private func shouldFlattenRootFolder(groups: [RetroRomImportGroupBuilder.Group], absorbedDirectories: [String: String]) -> Bool {
+        guard groups.count == 1, let group = groups.first else {
+            return false
+        }
+
+        if group.type == .single {
+            return parentDirectory(of: group.entryPath).isEmpty
+        }
+
+        return absorbedDirectories[group.entryPath] == ""
+    }
+
+    private func buildFolderItems(groups: [RetroRomImportGroupBuilder.Group], absorbedDirectories: [String: String]) -> Bool {
+        let requiredRelativeDirectories = requiredFolderDirectories(groups: groups, absorbedDirectories: absorbedDirectories)
+        let sortedDirectories = requiredRelativeDirectories.sorted {
+            let lhsDepth = $0.isEmpty ? 0 : $0.components(separatedBy: "/").count
+            let rhsDepth = $1.isEmpty ? 0 : $1.components(separatedBy: "/").count
+            if lhsDepth != rhsDepth {
+                return lhsDepth < rhsDepth
+            }
+            return $0.localizedCaseInsensitiveCompare($1) == .orderedAscending
+        }
+
+        for directory in sortedDirectories {
+            if shouldSkipDirectory(directory) {
+                skipedFolders.append(directory)
+                continue
+            }
+            if directory.isEmpty {
+                if flattenRootFolder {
+                    continue
+                }
+                if !makeRootFolderItem() {
+                    return false
+                }
+            } else if !makeSubFolderItem(directory) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private func buildGroupedFileItems(groups: [RetroRomImportGroupBuilder.Group], fileMap: [String: RetroRomImportGroupBuilder.SourceFile], absorbedDirectories: [String: String]) -> Bool {
+        for group in groups {
+            if shouldSkipGroup(group, absorbedDirectory: absorbedDirectories[group.entryPath]) {
+                continue
+            }
+            showGroupProgress(group.entryPath)
+            do {
+                if let target = try makeGroupedFileItem(group: group, fileMap: fileMap, absorbedDirectory: absorbedDirectories[group.entryPath]) {
+                    if checkFileExists(target) {
+                        procSemphore.wait()
+                        if conflictPolicy == .cancel {
+                            let title = Bundle.localizedString(forKey: "info")
+                            let message = Bundle.localizedString(forKey: "homepage_import_cancelled")
+                            indicatorView.infoMessage(message, title: title, canDismiss: true)
+                            return false
+                        } else if conflictPolicy == .skip {
+                            removePendingFile(at: target)
+                            skipedFiles.append(target)
+                            continue
+                        }
+                    }
+                }
+            } catch {
+                errorProcess(.romFileReadFailed(error: error.localizedDescription))
+                return false
+            }
+        }
+        return true
+    }
+
+    private func makeGroupedFileItem(group: RetroRomImportGroupBuilder.Group, fileMap: [String: RetroRomImportGroupBuilder.SourceFile], absorbedDirectory: String?) throws -> String? {
+        let parentRelativeDirectory: String
+        let displayName: String?
+        let itemRawName: String
+        let sourceBaseDirectory: String
+
+        if flattenRootFolder, groupsAtRootContainOnly(group: group, absorbedDirectory: absorbedDirectory) {
+            parentRelativeDirectory = ""
+            displayName = rootUrl.lastPathComponent
+            itemRawName = lastPathComponent(of: group.entryPath)
+            sourceBaseDirectory = absorbedDirectory ?? parentDirectory(of: group.entryPath)
+        } else if let absorbedDirectory {
+            parentRelativeDirectory = parentDirectory(of: absorbedDirectory)
+            let folderName = lastPathComponent(of: absorbedDirectory.isEmpty ? rootUrl.lastPathComponent : absorbedDirectory)
+            displayName = folderName
+            itemRawName = lastPathComponent(of: group.entryPath)
+            sourceBaseDirectory = absorbedDirectory
+        } else if group.type == .single {
+            parentRelativeDirectory = parentDirectory(of: group.entryPath)
+            displayName = nil
+            itemRawName = lastPathComponent(of: group.entryPath)
+            sourceBaseDirectory = parentRelativeDirectory
+        } else {
+            parentRelativeDirectory = parentDirectory(of: group.entryPath)
+            displayName = nil
+            itemRawName = lastPathComponent(of: group.entryPath)
+            sourceBaseDirectory = parentRelativeDirectory
+        }
+
+        let parentKey: String
+        if parentRelativeDirectory.isEmpty {
+            if flattenRootFolder {
+                parentKey = rootParent
+            } else if let rootFolder = folderItems[rootUrl.lastPathComponent] {
+                parentKey = rootFolder.key
+            } else {
+                parentKey = rootParent
+            }
+        } else {
+            let parentPath = targetFolderPath(for: parentRelativeDirectory)
+            guard let parentItem = folderItems[parentPath] else {
+                errorProcess(.parentFolderDoesNotExist(path: parentPath))
+                return nil
+            }
+            parentKey = parentItem.key
+        }
+
+        guard let key = Retro​Rom​Persistence.shared.getUniqueKey() else {
+            errorProcess(.uniqueKeyCreationFailed)
+            return nil
+        }
+
+        var subItems: [RetroRomFileSubItem] = []
+        subItems.reserveCapacity(group.memberPaths.count)
+
+        for (index, memberPath) in group.memberPaths.enumerated() {
+            guard let file = fileMap[memberPath] else {
+                throw NSError(domain: "RetroRomError", code: 2, userInfo: [NSLocalizedDescriptionKey: memberPath])
+            }
+            let relativeName = relativeMemberPath(memberPath, baseDirectory: sourceBaseDirectory)
+            let item = RetroRomFileSubItem(
+                key: key,
+                rawName: relativeName,
+                fileRole: groupBuilder.subRole(for: memberPath, entryPath: group.entryPath, groupType: group.type),
+                sha256: try file.sha256(),
+                fileSize: file.fileSize,
+                sortIndex: index
+            )
+            subItems.append(item)
+        }
+
+        let totalFileSize = subItems.reduce(0) { $0 + $1.fileSize }
+        guard let entrySubItem = subItems.first(where: { $0.fileRole == .entry }) else {
+            throw NSError(domain: "RetroRomError", code: 3, userInfo: [NSLocalizedDescriptionKey: group.entryPath])
+        }
+        let sha256 = try groupBuilder.contentSHA256(for: group, entrySubItem: entrySubItem, subItems: subItems)
+        let item = RetroRomFileItem(
+            key: key,
+            rawName: itemRawName,
+            showName: displayName,
+            parent: parentKey,
+            createAt: Date(),
+            updateAt: Date(),
+            fileSize: totalFileSize,
+            sha256: sha256,
+            fileGroupType: group.type,
+            subItems: subItems
+        )
+
+        let targetPath = targetFilePath(for: item, parentRelativeDirectory: parentRelativeDirectory)
+        fileItems[targetPath] = item
+        fileItemPaths.append(targetPath)
+        fileCopyPlans[targetPath] = makeCopyPlan(for: item, group: group, targetPath: targetPath, sourceBaseDirectory: sourceBaseDirectory)
+        return targetPath
+    }
+
+    private func requiredFolderDirectories(groups: [RetroRomImportGroupBuilder.Group], absorbedDirectories: [String: String]) -> Set<String> {
+        var directories: Set<String> = []
+        for group in groups {
+            let parentRelativeDirectory: String
+            if flattenRootFolder, groupsAtRootContainOnly(group: group, absorbedDirectory: absorbedDirectories[group.entryPath]) {
+                parentRelativeDirectory = ""
+            } else if let absorbedDirectory = absorbedDirectories[group.entryPath] {
+                parentRelativeDirectory = parentDirectory(of: absorbedDirectory)
+            } else {
+                parentRelativeDirectory = parentDirectory(of: group.entryPath)
+            }
+
+            var current = parentRelativeDirectory
+            while true {
+                directories.insert(current)
+                if current.isEmpty {
+                    break
+                }
+                current = parentDirectory(of: current)
+            }
+        }
+        return directories
+    }
+
+    private func makeCopyPlan(for item: RetroRomFileItem, group: RetroRomImportGroupBuilder.Group, targetPath: String, sourceBaseDirectory: String) -> [(source: String, destination: String)] {
+        if item.fileGroupType == .single {
+            return [(source: group.entryPath, destination: targetPath)]
+        }
+
+        return item.subItems.map { subItem in
+            let source = joinRelativePath(base: sourceBaseDirectory, component: subItem.rawName)
+            let destination = targetPath + subItem.rawName
+            return (source: source, destination: destination)
+        }
+    }
+
+    private func showGroupProgress(_ path: String) {
+        let formatter = Bundle.localizedString(forKey: "homepage_import_file_checking")
+        let message = String(format: formatter, "\(rootUrl.lastPathComponent)/\(path)")
+        let title = Bundle.localizedString(forKey: "homepage_import_importing")
+        indicatorView.activeMessage(message, title: title)
+    }
+
+    private func files(in directory: String, from allPaths: Set<String>) -> Set<String> {
+        if directory.isEmpty {
+            return allPaths
+        }
+        let prefix = directory + "/"
+        return Set(allPaths.filter { $0 == directory || $0.hasPrefix(prefix) })
+    }
+
+    private func commonDirectory(for paths: [String]) -> String {
+        guard var components = paths.first?.components(separatedBy: "/").dropLast().map({ $0 }) else {
+            return ""
+        }
+        for path in paths.dropFirst() {
+            let pathComponents = path.components(separatedBy: "/").dropLast().map({ $0 })
+            var shared: [String] = []
+            for (lhs, rhs) in zip(components, pathComponents) where lhs == rhs {
+                shared.append(lhs)
+            }
+            components = shared
+            if components.isEmpty {
+                break
+            }
+        }
+        return components.joined(separator: "/")
+    }
+
+    private func relativeMemberPath(_ path: String, baseDirectory: String) -> String {
+        guard !baseDirectory.isEmpty else {
+            return path
+        }
+        let prefix = baseDirectory + "/"
+        if path.hasPrefix(prefix) {
+            return String(path.dropFirst(prefix.count))
+        }
+        return lastPathComponent(of: path)
+    }
+
+    private func parentDirectory(of path: String) -> String {
+        let directory = (path as NSString).deletingLastPathComponent
+        return directory == "." ? "" : directory
+    }
+
+    private func lastPathComponent(of path: String) -> String {
+        (path as NSString).lastPathComponent
+    }
+
+    private func joinRelativePath(base: String, component: String) -> String {
+        guard !base.isEmpty else {
+            return component
+        }
+        guard !component.isEmpty else {
+            return base
+        }
+        return "\(base)/\(component)"
+    }
+
+    private func targetFolderPath(for relativeDirectory: String) -> String {
+        if relativeDirectory.isEmpty {
+            if flattenRootFolder {
+                return ""
+            }
+            return rootUrl.lastPathComponent
+        }
+        if flattenRootFolder {
+            return relativeDirectory
+        }
+        return "\(rootUrl.lastPathComponent)/\(relativeDirectory)"
+    }
+
+    private func targetFilePath(for item: RetroRomFileItem, parentRelativeDirectory: String) -> String {
+        let parentPath = targetFolderPath(for: parentRelativeDirectory)
+        if item.fileGroupType == .single {
+            return parentPath.isEmpty ? item.rawName : "\(parentPath)/\(item.rawName)"
+        }
+        return parentPath.isEmpty ? "\(item.baseName)/" : "\(parentPath)/\(item.baseName)/"
+    }
+
     private func postProcess() {
         if success {
             let files = fileItemPaths.map({ fileItems[$0]! })
-            let fileKeys = files.map({ $0.key })
+            let newFileKeys = files.map({ $0.key })
             RetroRomHomePageState.shared.lastImportDate = startDate
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(name: .romCountChanged, object: nil)
-                NotificationCenter.default.post(name: .retroFolderImported, object: self.rootKey, userInfo: ["fileKeys": fileKeys])
+            if self.rootKey != nil {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .romCountChanged, object: nil)
+                    NotificationCenter.default.post(name: .retroFolderImported, object: self.rootKey, userInfo: ["fileKeys": newFileKeys])
+                }
+            } else if files.count > 0 {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .romCountChanged, object: nil)
+                    NotificationCenter.default.post(name: .retroFileImported, object: newFileKeys)
+                }
             }
         }
     }
@@ -162,19 +582,30 @@ extension RetroRomFolderImportor {
             let title = Bundle.localizedString(forKey: "homepage_import_importing")
             indicatorView.activeMessage(message, title: title)
 
-            let fullPath = destinationRootPath + file
             do {
-                var isDir: ObjCBool = false
-                let exists = fileManager.fileExists(atPath: fullPath, isDirectory: &isDir)
-                if exists {
-                    if isDir.boolValue {
-                        continue
-                    } else {
-                        throw NSError(domain: "RetroRomError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Path occupied by a file"])
+                guard let item = fileItems[file], let plans = fileCopyPlans[file] else {
+                    throw NSError(domain: "RetroRomError", code: 1, userInfo: [NSLocalizedDescriptionKey: file])
+                }
+
+                if item.fileGroupType == .single {
+                    let destination = destinationRootPath + file
+                    let source = rootUrl.appendingPathComponent(plans[0].source).path(percentEncoded: false)
+                    try fileManager.copyItem(atPath: source, toPath: destination)
+                } else {
+                    let containerPath = destinationRootPath + file
+                    try fileManager.createDirectory(atPath: containerPath, withIntermediateDirectories: true)
+                    for plan in plans {
+                        let source = rootUrl.appendingPathComponent(plan.source).path(percentEncoded: false)
+                        let destination = destinationRootPath + plan.destination
+                        let parentPath = (destination as NSString).deletingLastPathComponent
+                        if !parentPath.isEmpty {
+                            try fileManager.createDirectory(atPath: parentPath, withIntermediateDirectories: true)
+                        }
+                        if !fileManager.fileExists(atPath: destination) {
+                            try fileManager.copyItem(atPath: source, toPath: destination)
+                        }
                     }
                 }
-                let src = rootUrl.deletingLastPathComponent().appendingPathComponent(file).path(percentEncoded: false)
-                try fileManager.copyItem(atPath: src, toPath: fullPath)
                 importedCount += 1
             } catch {
                 errorProcess(.fileCopyFailed(path: file))
@@ -190,8 +621,13 @@ extension RetroRomFolderImportor {
             errorProcess(.saveToDatabaseFailed)
         } else {
             let rootRawName = rootUrl.lastPathComponent
-            if let rootFolderItem = folderItems[rootRawName] {
+            if folderItemPaths.contains(rootRawName), let rootFolderItem = folderItems[rootRawName] {
                 RetroRomFileManager.shared.folderItem(key: rootParent)?.addSubItemKeys(newFolderKeys: [rootFolderItem.key], newFileKeys: [])
+            } else if folderItems[rootRawName] == nil {
+                let fileKeys = files.map({ $0.key })
+                if fileKeys.count > 0 {
+                    RetroRomFileManager.shared.folderItem(key: rootParent)?.addSubItemKeys(newFolderKeys: [], newFileKeys: fileKeys)
+                }
             }
             for folder in reusedFolders {
                 folder.updateSubItemKeys()
@@ -200,15 +636,10 @@ extension RetroRomFolderImportor {
                 let message = Bundle.localizedString(forKey: "homepage_import_finished")
                 let title = Bundle.localizedString(forKey: "info")
                 indicatorView.infoMessage(message, title: title, canDismiss: true)
-            } else if importedCount == 1 {
-                success = true
-                let message = Bundle.localizedString(forKey: "homepage_import_completed")
-                let title = Bundle.localizedString(forKey: "homepage_import_success")
-                indicatorView.successMessage(message, title: title, canDismiss: true)
             } else {
                 success = true
-                let formatter = Bundle.localizedString(forKey: "homepage_import_completed_s")
-                let message = String(format: formatter, importedCount)
+                let format = Bundle.localizedString(forKey: "homepage_import_completed")
+                let message = NSString.localizedStringWithFormat(format as NSString, importedCount) as String
                 let title = Bundle.localizedString(forKey: "homepage_import_success")
                 indicatorView.successMessage(message, title: title, canDismiss: true)
             }
@@ -317,9 +748,10 @@ extension RetroRomFolderImportor {
     }
 
     private func makeSubFolderItem(_ folderPath: String) -> Bool {
-        let p = "\(rootUrl.lastPathComponent)/\(folderPath)"
+        let p = targetFolderPath(for: folderPath)
+        let displayPath = "\(rootUrl.lastPathComponent)/\(folderPath)"
         let formatter = Bundle.localizedString(forKey: "homepage_import_folder_checking")
-        let message = String(format: formatter, p)
+        let message = String(format: formatter, displayPath)
         let title = Bundle.localizedString(forKey: "homepage_import_importing")
         indicatorView.activeMessage(message, title: title)
         if checkFolderExists(p) {
@@ -420,11 +852,69 @@ extension RetroRomFolderImportor {
         if lastSlashRange.location != NSNotFound {
             let folderName = pathString.substring(from: lastSlashRange.location + 1)
             let folderParentPath = pathString.substring(to: lastSlashRange.location)
-            let path = "\(rootRawName)/\(folderParentPath)"
+            let path = flattenRootFolder ? folderParentPath : "\(rootRawName)/\(folderParentPath)"
             return (path: path, name: folderName)
         } else {
-            return (path: rootRawName, name: folderPath)
+            return (path: flattenRootFolder ? "" : rootRawName, name: folderPath)
         }
+    }
+
+    private func groupsAtRootContainOnly(group: RetroRomImportGroupBuilder.Group, absorbedDirectory: String?) -> Bool {
+        if group.type == .single {
+            return parentDirectory(of: group.entryPath).isEmpty
+        }
+
+        return absorbedDirectory == ""
+    }
+
+    private func shouldSkipDirectory(_ directory: String) -> Bool {
+        guard !directory.isEmpty else {
+            return false
+        }
+        return skipedFolders.contains(where: { skipped in
+            !skipped.isEmpty && (directory == skipped || directory.hasPrefix(skipped + "/"))
+        })
+    }
+
+    private func shouldSkipGroup(_ group: RetroRomImportGroupBuilder.Group, absorbedDirectory: String?) -> Bool {
+        let directoryToCheck: String
+        if let absorbedDirectory {
+            directoryToCheck = absorbedDirectory
+        } else {
+            directoryToCheck = parentDirectory(of: group.entryPath)
+        }
+
+        if shouldSkipDirectory(directoryToCheck) {
+            return true
+        }
+
+        let prospectivePath: String
+        if flattenRootFolder, groupsAtRootContainOnly(group: group, absorbedDirectory: absorbedDirectory) {
+            prospectivePath = group.type == .single ? lastPathComponent(of: group.entryPath) : ((lastPathComponent(of: group.entryPath) as NSString).deletingPathExtension + "/")
+        } else if let absorbedDirectory {
+            let parentRelativeDirectory = parentDirectory(of: absorbedDirectory)
+            let baseName = (lastPathComponent(of: group.entryPath) as NSString).deletingPathExtension
+            let parentPath = targetFolderPath(for: parentRelativeDirectory)
+            prospectivePath = parentPath.isEmpty ? "\(baseName)/" : "\(parentPath)/\(baseName)/"
+        } else if group.type == .single {
+            let parentRelativeDirectory = parentDirectory(of: group.entryPath)
+            let parentPath = targetFolderPath(for: parentRelativeDirectory)
+            let fileName = lastPathComponent(of: group.entryPath)
+            prospectivePath = parentPath.isEmpty ? fileName : "\(parentPath)/\(fileName)"
+        } else {
+            let parentRelativeDirectory = parentDirectory(of: group.entryPath)
+            let parentPath = targetFolderPath(for: parentRelativeDirectory)
+            let baseName = (lastPathComponent(of: group.entryPath) as NSString).deletingPathExtension
+            prospectivePath = parentPath.isEmpty ? "\(baseName)/" : "\(parentPath)/\(baseName)/"
+        }
+
+        return skipedFiles.contains(prospectivePath)
+    }
+
+    private func removePendingFile(at targetPath: String) {
+        fileItems.removeValue(forKey: targetPath)
+        fileCopyPlans.removeValue(forKey: targetPath)
+        fileItemPaths.removeAll { $0 == targetPath }
     }
 
     private func checkFolderExists(_ path: String) -> Bool {

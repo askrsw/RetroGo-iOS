@@ -24,23 +24,90 @@
 //
 
 import UIKit
+import SQLite
 import ObjcHelper
 import RACoordinator
+
+enum RetroRomFileGroupType: String, Value {
+    case single = "single"
+    case cue = "cue"
+    case mds = "mds"
+    case m3u = "m3u"
+    case gdi = "gdi"
+    case ccd = "ccd"
+
+    // 1. Define the underlying storage data type (String corresponds to String.Datatype, which is TEXT in SQLite)
+    static var declaredDatatype: String {
+        return String.declaredDatatype
+    }
+
+    // 2. Read from Database: Convert the stored String back into the enum type
+    static func fromDatatypeValue(_ datatypeValue: String) -> RetroRomFileGroupType {
+        // Fallback to .single if the value in the database is invalid or unrecognized
+        return RetroRomFileGroupType(rawValue: datatypeValue) ?? .single
+    }
+
+    // 3. Write to Database: Convert the enum instance into its String rawValue for storage
+    var datatypeValue: String {
+        return rawValue
+    }
+}
+
+enum RetroRomFileSubRole: String, Value {
+    case entry
+    case resource
+    case disc
+    case track
+    case descriptor
+
+    static var declaredDatatype: String {
+        return String.declaredDatatype
+    }
+
+    static func fromDatatypeValue(_ datatypeValue: String) -> RetroRomFileSubRole {
+        return RetroRomFileSubRole(rawValue: datatypeValue) ?? .entry
+    }
+
+    var datatypeValue: String {
+        return rawValue
+    }
+}
+
+final class RetroRomFileSubItem {
+    let key: String
+    let rawName: String
+    let fileRole: RetroRomFileSubRole
+    let sha256: String
+    let fileSize: Int
+    let sortIndex: Int
+
+    init(key: String, rawName: String, fileRole: RetroRomFileSubRole, sha256: String, fileSize: Int, sortIndex: Int) {
+        self.key = key
+        self.rawName = rawName
+        self.fileRole = fileRole
+        self.sha256 = sha256
+        self.fileSize = fileSize
+        self.sortIndex = sortIndex
+    }
+}
 
 final class RetroRomFileItem: RetroRomBaseItem {
     let fileSize: Int
     let sha256: String?
     private(set) var lastPlayAt: Date?
     private(set) var playTime: Int
-
     private(set) var tagIdArray: [Int]
+    private(set) var fileGroupType: RetroRomFileGroupType
+    private(set) var subItems: [RetroRomFileSubItem]
 
-    init(key: String, rawName: String, showName: String? = nil, parent: String, createAt: Date, updateAt: Date, preferCore: String? = nil, preferIcon: String? = nil, fileSize: Int, sha256: String?, lastPlayAt: Date? = nil,  playTime: Int = 0, tagIdArray: [Int] = []) {
+    init(key: String, rawName: String, showName: String? = nil, parent: String, createAt: Date, updateAt: Date, preferCore: String? = nil, preferIcon: String? = nil, fileSize: Int, sha256: String?, lastPlayAt: Date? = nil,  playTime: Int = 0, tagIdArray: [Int] = [], fileGroupType: RetroRomFileGroupType = .single, subItems: [RetroRomFileSubItem] = []) {
         self.fileSize   = fileSize
         self.sha256     = sha256
         self.lastPlayAt = lastPlayAt
         self.playTime   = playTime
         self.tagIdArray = tagIdArray
+        self.fileGroupType = fileGroupType
+        self.subItems = subItems
         super.init(key: key, rawName: rawName, showName: showName, parent: parent, createAt: createAt, updateAt: updateAt, preferCore: preferCore, preferIcon: preferIcon)
     }
 
@@ -97,31 +164,76 @@ final class RetroRomFileItem: RetroRomBaseItem {
         formatFileSize(fileSize)
     }
 
+    override var baseName: String {
+        if fileGroupType == .single {
+            return super.baseName
+        } else {
+            return ((rawName as NSString).lastPathComponent as NSString).deletingPathExtension
+        }
+    }
+
+    override var fullPath: String? {
+        guard let parentPath = parentFolderItem?.fullPath else {
+            return nil
+        }
+
+        if fileGroupType == .single {
+            return parentPath + rawName
+        } else {
+            return "\(parentPath)\(baseName)/"
+        }
+    }
+
+    var entryPath: String? {
+        guard let fullPath else {
+            return nil
+        }
+
+        if fileGroupType == .single {
+            return fullPath
+        } else {
+            let entryName = subItems.first(where: { $0.fileRole == .entry })?.rawName ?? rawName
+            return fullPath + entryName
+        }
+    }
+
     override func delete(path: String, indicatorView: RetroRomActivityView) -> Bool {
         let title = Bundle.localizedString(forKey: "homepage_delete_deleting")
         let filePath = (path.count > 0 ? path + "/" : "") + itemName
         let message = Bundle.localizedString(forKey: "homepage_delete_file") + filePath
         indicatorView.activeMessage(message, title: title)
 
-        RetroRomFileManager.shared.deleteGameStateItem(key)
-
-        if RetroRomFileManager.shared.deleteFileItem(key) {
-            parentFolderItem?.removeSubFileItemKey(key)
-            let thumbnailPath = AppConfig.shared.sharedAutoThumnailFolderPath + key + ".jpg"
-            try? FileManager.default.removeItem(atPath: thumbnailPath)
-            if let fullPath = self.fullPath {
-                do {
-                    try FileManager.default.removeItem(atPath: fullPath)
-                } catch {
-                    print("Failed to delete rom file: \(rawName) for item: \(itemName)")
-                }
-            }
-            return true
-        } else {
+        if !RetroRomFileManager.shared.deleteGameStateItem(key) {
             let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_failed"), filePath)
             indicatorView.errorMessage(message, title: Bundle.localizedString(forKey: "error"), canDismiss: true)
             return false
         }
+
+        guard let fullPath = self.fullPath else {
+            let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_failed"), filePath)
+            indicatorView.errorMessage(message, title: Bundle.localizedString(forKey: "error"), canDismiss: true)
+            return false
+        }
+
+        do {
+            try FileManager.default.removeItem(atPath: fullPath)
+        } catch {
+            print("Failed to delete rom file: \(rawName) for item: \(itemName), error: \(error)")
+            let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_failed"), filePath)
+            indicatorView.errorMessage(message, title: Bundle.localizedString(forKey: "error"), canDismiss: true)
+            return false
+        }
+
+        if !RetroRomFileManager.shared.deleteFileItem(key) {
+            let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_failed"), filePath)
+            indicatorView.errorMessage(message, title: Bundle.localizedString(forKey: "error"), canDismiss: true)
+            return false
+        }
+
+        parentFolderItem?.removeSubFileItemKey(key)
+        let thumbnailPath = AppConfig.shared.sharedAutoThumnailFolderPath + key + ".jpg"
+        try? FileManager.default.removeItem(atPath: thumbnailPath)
+        return true
     }
 
     override func assignCore(_ core: EmuCoreInfoItem) -> Bool {
@@ -129,7 +241,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
         if super.assignCore(core) {
             let new = core.coreId
             if oldCore != new {
-                let ext = (rawName as NSString).pathExtension.lowercased()
+                let ext = entryFileExtension
                 let coresFromExt = RetroRomCoreManager.shared.getExtOpenCores(ext: ext)
                 var info: [String: String] = [:]
                 if let old = oldCore, !coresFromExt.contains(where: { $0.coreId == old }) {
@@ -191,7 +303,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
         if let str = (showName as? NSString)?.pathExtension, str.count > 0 {
             suffix = str.lowercased()
         } else {
-            suffix = (rawName as NSString).pathExtension.lowercased()
+            suffix = entryFileExtension
         }
         return RetroRomCoreManager.shared.getExtOpenCores(ext: suffix)
     }
@@ -207,6 +319,13 @@ final class RetroRomFileItem: RetroRomBaseItem {
 }
 
 extension RetroRomFileItem {
+    private var entryFileExtension: String {
+        if fileGroupType == .single {
+            return (rawName as NSString).pathExtension.lowercased()
+        }
+        return (subItems.first(where: { $0.fileRole == .entry })?.rawName as? NSString)?.pathExtension.lowercased() ?? (rawName as NSString).pathExtension.lowercased()
+    }
+
     private func formatFileSize(_ size: Int) -> String {
         let units = ["B", "KB", "MB", "GB", "TB"]
         var fileSize = Double(size)

@@ -31,6 +31,10 @@ final class RetroRomFileImportor: Thread {
         case skip, cancel
     }
 
+    enum IncompletePolicy {
+        case skip, cancel
+    }
+
     private let urls: [URL]
     private let rootParent: String
     private let destinationRootPath: String
@@ -38,6 +42,9 @@ final class RetroRomFileImportor: Thread {
     private let indicatorView = RetroRomActivityView(mainTitle: Bundle.localizedString(forKey: "homepage_import_importing"))
     private let procSemphore = DispatchSemaphore(value: 0)
     private var conflictPolicy = ConflictPolicy.skip
+    private var incompletePolicy = IncompletePolicy.skip
+    private var sourceFiles: [RetroRomImportGroupBuilder.SourceFile] = []
+    private var sourceFileMap: [String: RetroRomImportGroupBuilder.SourceFile] = [:]
     private var fileItems: [RetroRomFileItem] = []
 
     private let startDate: Date = Date()
@@ -65,16 +72,8 @@ final class RetroRomFileImportor: Thread {
     override func main() {
         defer { postProcess() }
 
-        for url in urls {
-            guard url.startAccessingSecurityScopedResource() else {
-                continue
-            }
-
-            let success = makeFileItem(url)
-            url.stopAccessingSecurityScopedResource()
-            if !success {
-                return
-            }
+        if !buildFileItems() {
+            return
         }
 
         saveFiles()
@@ -93,35 +92,67 @@ extension RetroRomFileImportor {
         }
     }
 
-    private func saveFiles() {
-        let fileManager = FileManager.default
-        var errorOccured = false
-        for url in urls {
-            guard url.startAccessingSecurityScopedResource() else {
-                continue
+    private func buildFileItems() -> Bool {
+        do {
+            let builder = RetroRomImportGroupBuilder(indicatorView: indicatorView)
+            sourceFiles.removeAll(keepingCapacity: true)
+            sourceFileMap.removeAll(keepingCapacity: true)
+
+            sourceFiles = try collectSelectedSourceFiles()
+            sourceFileMap = Dictionary(uniqueKeysWithValues: sourceFiles.map { ($0.relativePath, $0) })
+            let analysis = try builder.analyzeGroups(from: sourceFiles)
+            if !handleIncompleteGroups(analysis.incompleteGroups) {
+                let title = Bundle.localizedString(forKey: "info")
+                let message = Bundle.localizedString(forKey: "homepage_import_cancelled")
+                indicatorView.infoMessage(message, title: title, canDismiss: true)
+                return false
             }
 
-            do {
-                defer { url.stopAccessingSecurityScopedResource() }
+            fileItems = try builder.buildFileItems(groups: analysis.groups, map: analysis.map, parent: rootParent) {
+                Retro​Rom​Persistence.shared.getUniqueKey()
+            }
 
-                let fileName = url.lastPathComponent
-                if fileItems.contains(where: { $0.rawName == fileName }) {
-                    let formatter = Bundle.localizedString(forKey: "homepage_import_file_copying")
-                    let message = String(format: formatter, fileName)
-                    let title = Bundle.localizedString(forKey: "homepage_import_importing")
-                    indicatorView.activeMessage(message, title: title)
-
-                    let dstPath = destinationRootPath + fileName
-                    do {
-                        try fileManager.copyItem(atPath: url.path(percentEncoded: false), toPath: dstPath)
-                    } catch {
-                        errorProcess(.fileCopyFailed(path: fileName))
-                        errorOccured = true
+            var filteredItems: [RetroRomFileItem] = []
+            for item in fileItems {
+                if checkFileExists(item) {
+                    procSemphore.wait()
+                    if conflictPolicy == .cancel {
+                        let title = Bundle.localizedString(forKey: "info")
+                        let message = Bundle.localizedString(forKey: "homepage_import_cancelled")
+                        indicatorView.infoMessage(message, title: title, canDismiss: true)
+                        return false
+                    } else if conflictPolicy == .skip {
+                        let formatter = Bundle.localizedString(forKey: "homepage_import_file_skipped")
+                        let message = String(format: formatter, item.itemName)
+                        let title = Bundle.localizedString(forKey: "info")
+                        indicatorView.infoMessage(message, title: title, canDismiss: false)
+                        continue
                     }
                 }
+                filteredItems.append(item)
             }
+            fileItems = filteredItems
+            return true
+        } catch RetroRomImportGroupBuilder.BuildError.keyCreationFailed {
+            errorProcess(.uniqueKeyCreationFailed)
+            return false
+        } catch RetroRomImportGroupBuilder.BuildError.missingEntryFile(let path), RetroRomImportGroupBuilder.BuildError.missingMemberFile(let path) {
+            errorProcess(.romFileReadFailed(error: path))
+            return false
+        } catch RetroRomImportGroupBuilder.BuildError.duplicatedRelativePath(let path) {
+            errorProcess(.romFileReadFailed(error: path))
+            return false
+        } catch {
+            errorProcess(.romFileReadFailed(error: error.localizedDescription))
+            return false
+        }
+    }
 
-            if errorOccured {
+    private func saveFiles() {
+        var errorOccured = false
+        for item in fileItems {
+            if !copyFileItem(item) {
+                errorOccured = true
                 break
             }
         }
@@ -144,84 +175,148 @@ extension RetroRomFileImportor {
                 let message = Bundle.localizedString(forKey: "homepage_import_finished")
                 let title = Bundle.localizedString(forKey: "info")
                 indicatorView.infoMessage(message, title: title, canDismiss: true)
-            } else if importedCount == 1 {
-                success = true
-                let message = Bundle.localizedString(forKey: "homepage_import_completed")
-                let title = Bundle.localizedString(forKey: "homepage_import_success")
-                indicatorView.successMessage(message, title: title, canDismiss: true)
             } else {
                 success = true
-                let formatter = Bundle.localizedString(forKey: "homepage_import_completed_s")
-                let message = String(format: formatter, importedCount)
+                let message = Bundle.localizedString(forKey: "homepage_import_completed", count: importedCount)
                 let title = Bundle.localizedString(forKey: "homepage_import_success")
                 indicatorView.successMessage(message, title: title, canDismiss: true)
             }
+        }
+    }
+
+    private func copyFileItem(_ item: RetroRomFileItem) -> Bool {
+        let fileManager = FileManager.default
+        let formatter = Bundle.localizedString(forKey: "homepage_import_file_copying")
+        let message = String(format: formatter, item.itemName)
+        let title = Bundle.localizedString(forKey: "homepage_import_importing")
+        indicatorView.activeMessage(message, title: title)
+
+        do {
+            if item.fileGroupType == .single {
+                guard let source = sourceFileMap[item.rawName] else {
+                    throw NSError(domain: "RetroRomError", code: 1, userInfo: [NSLocalizedDescriptionKey: item.rawName])
+                }
+                let dstPath = destinationRootPath + item.rawName
+                try copySourceFile(source, toPath: dstPath)
+            } else {
+                guard let containerPath = item.fullPath else {
+                    throw NSError(domain: "RetroRomError", code: 2, userInfo: [NSLocalizedDescriptionKey: item.itemName])
+                }
+                try fileManager.createDirectory(atPath: containerPath, withIntermediateDirectories: true)
+                for sub in item.subItems {
+                    guard let source = sourceFileMap[sub.rawName] else {
+                        throw NSError(domain: "RetroRomError", code: 3, userInfo: [NSLocalizedDescriptionKey: sub.rawName])
+                    }
+                    let dstPath = containerPath + sub.rawName
+                    let parentPath = (dstPath as NSString).deletingLastPathComponent
+                    if !parentPath.isEmpty {
+                        try fileManager.createDirectory(atPath: parentPath, withIntermediateDirectories: true)
+                    }
+                    try copySourceFile(source, toPath: dstPath)
+                }
+            }
+            return true
+        } catch {
+            errorProcess(.fileCopyFailed(path: item.itemName))
+            return false
         }
     }
 
     private func deleteFiles() {
         let fileManager = FileManager.default
         for item in fileItems {
-            let dstPath = destinationRootPath + item.rawName
-            try? fileManager.removeItem(atPath: dstPath)
+            if let path = item.fullPath {
+                try? fileManager.removeItem(atPath: path)
+            }
         }
     }
 
-    private func makeFileItem(_ url: URL) -> Bool {
-        let formatter = Bundle.localizedString(forKey: "homepage_import_file_checking")
-        let message = String(format: formatter, url.lastPathComponent)
-        let title = Bundle.localizedString(forKey: "homepage_import_importing")
-        indicatorView.activeMessage(message, title: title)
+    private func collectSelectedSourceFiles() throws -> [RetroRomImportGroupBuilder.SourceFile] {
+        var files: [RetroRomImportGroupBuilder.SourceFile] = []
+        files.reserveCapacity(urls.count)
 
-        if checkFileExists(url) {
-            procSemphore.wait()
-            if conflictPolicy == .cancel {
-                let title = Bundle.localizedString(forKey: "info")
-                let message = Bundle.localizedString(forKey: "homepage_import_cancelled")
-                indicatorView.infoMessage(message, title: title, canDismiss: true)
-                return false
-            } else if conflictPolicy == .skip {
-                let formatter = Bundle.localizedString(forKey: "homepage_import_file_skipped")
-                let message = String(format: formatter, url.lastPathComponent)
-                let title = Bundle.localizedString(forKey: "info")
-                indicatorView.infoMessage(message, title: title, canDismiss: false)
-                return true
+        for url in urls.sorted(by: { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }) {
+            let formatter = Bundle.localizedString(forKey: "homepage_import_file_checking")
+            let message = String(format: formatter, url.lastPathComponent)
+            indicatorView.activeMessage(message, title: Bundle.localizedString(forKey: "homepage_import_importing"))
+            guard url.startAccessingSecurityScopedResource() else {
+                throw NSError(domain: "RetroRomError", code: 4, userInfo: [NSLocalizedDescriptionKey: url.lastPathComponent])
+            }
+            do {
+                let source = try RetroRomImportGroupBuilder.SourceFile(relativePath: url.lastPathComponent, url: url)
+                files.append(source)
+            } catch {
+                url.stopAccessingSecurityScopedResource()
+                throw error
+            }
+            url.stopAccessingSecurityScopedResource()
+        }
+        return files
+    }
+
+    private func copySourceFile(_ source: RetroRomImportGroupBuilder.SourceFile, toPath destinationPath: String) throws {
+        let shouldStopAccessing = source.url.startAccessingSecurityScopedResource()
+        defer {
+            if shouldStopAccessing {
+                source.url.stopAccessingSecurityScopedResource()
             }
         }
+        try FileManager.default.copyItem(atPath: source.url.path(percentEncoded: false), toPath: destinationPath)
+    }
 
-        do {
-            guard let key = Retro​Rom​Persistence.shared.getUniqueKey() else {
-                errorProcess(.uniqueKeyCreationFailed)
-                return false
-            }
-
-            let rawName = url.lastPathComponent
-            let parent  = rootParent
-            let sha256 = try (url as NSURL).computeSHA256String()
-            let resources = try url.resourceValues(forKeys: [.fileSizeKey])
-            let fileSize = resources.fileSize ?? 0
-            let item = RetroRomFileItem(key: key, rawName: rawName, parent: parent, createAt: Date(), updateAt: Date(), fileSize: fileSize, sha256: sha256)
-            fileItems.append(item)
+    private func handleIncompleteGroups(_ incompleteGroups: [RetroRomImportGroupBuilder.IncompleteGroup]) -> Bool {
+        guard !incompleteGroups.isEmpty else {
             return true
-        } catch {
-            errorProcess(.romFileReadFailed(error: error.localizedDescription))
-            return false
+        }
+        promptIncompleteGroups(incompleteGroups)
+        procSemphore.wait()
+        return incompletePolicy != .cancel
+    }
+
+    private func promptIncompleteGroups(_ groups: [RetroRomImportGroupBuilder.IncompleteGroup]) {
+        DispatchQueue.main.async {
+            let details = groups.map { group -> String in
+                if group.missingPaths.isEmpty {
+                    return "• \(group.entryPath)"
+                }
+                let missing = group.missingPaths.joined(separator: "\n   - ")
+                return "• \(group.entryPath)\n   - \(missing)"
+            }.joined(separator: "\n\n")
+            let format = Bundle.localizedString(forKey: "homepage_import_incomplete_files_message")
+            let message = NSString.localizedStringWithFormat(format as NSString, details) as String
+            let title = Bundle.localizedString(forKey: "homepage_import_incomplete_files_title")
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self] _ in
+                self.incompletePolicy = .cancel
+                self.procSemphore.signal()
+            }
+            alert.addAction(cancelAction)
+            let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self] _ in
+                self.incompletePolicy = .skip
+                self.procSemphore.signal()
+            }
+            alert.addAction(skipAction)
+            UIViewController.currentActive()?.present(alert, animated: true)
         }
     }
 
-    private func checkFileExists(_ url: URL) -> Bool {
-        let fileName = url.lastPathComponent
-        let fullPath = destinationRootPath + fileName
-        if FileManager.default.fileExists(atPath: fullPath) {
+    private func checkFileExists(_ item: RetroRomFileItem) -> Bool {
+        let targetPath: String
+        if item.fileGroupType == .single {
+            targetPath = destinationRootPath + item.rawName
+        } else {
+            targetPath = destinationRootPath + item.baseName
+        }
+        if FileManager.default.fileExists(atPath: targetPath) {
             DispatchQueue.main.async {
                 let title = Bundle.localizedString(forKey: "homepage_import_file_exists")
                 let message: String
-                if FileManager.default.pathIsDirectory(fullPath) {
+                if FileManager.default.pathIsDirectory(targetPath) {
                     let msgFormatter = Bundle.localizedString(forKey: "homepage_import_exist_same_name_folder_with_file")
-                    message = String(format: msgFormatter, fileName, fileName)
+                    message = String(format: msgFormatter, item.itemName, item.itemName)
                 } else {
                     let msgFormatter = Bundle.localizedString(forKey: "homepage_import_file_exists_path")
-                    message = String(format: msgFormatter, fileName)
+                    message = String(format: msgFormatter, item.itemName)
                 }
                 let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
                 let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self] _ in
@@ -234,7 +329,6 @@ extension RetroRomFileImportor {
                     self.procSemphore.signal()
                 }
                 alert.addAction(skipAction)
-
                 UIViewController.currentActive()?.present(alert, animated: true)
             }
             return true

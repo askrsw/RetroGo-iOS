@@ -131,7 +131,7 @@ final class RetroRomFileTag: NSObject {
             return true
         }
 
-        if Retro​Rom​Persistence.shared.updateFiltTag(id: id, title: self.title, color: self.color) {
+        if Retro​Rom​Persistence.shared.updateFileTag(id: id, title: self.title, color: self.color) {
             if newColor != nil {
                 NotificationCenter.default.post(name: .fileTagColorChanged, object: id)
             }

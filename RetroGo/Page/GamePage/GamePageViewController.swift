@@ -64,7 +64,7 @@ final class GamePageViewController: RetroArchViewController {
 
     init(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
         self.romItem   = romItem
-        self.romUrl    = URL(fileURLWithPath: romItem.fullPath!)
+        self.romUrl    = URL(fileURLWithPath: romItem.entryPath!)
         self.startTime = Date()
         super.init(core: core)
         Self.instance = self
