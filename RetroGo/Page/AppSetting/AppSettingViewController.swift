@@ -71,6 +71,7 @@ extension AppSettingViewController {
 
         // about
         case about
+        case versionHeistory
     }
 
     private func configUI() -> UITableView {
@@ -162,6 +163,13 @@ extension AppSettingViewController {
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_about")
                 cell.accessoryType = .disclosureIndicator
                 return cell
+            case .versionHeistory:
+                let cell = cellBuilder()
+                cell.accessoryView = nil
+                cell.imageView?.image = UIImage(systemName: "clock.arrow.circlepath")
+                cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_version_history")
+                cell.accessoryType = .disclosureIndicator
+                return cell
             }
         }
         return ds
@@ -181,7 +189,7 @@ extension AppSettingViewController {
         let gameItems: [Item] = [.coreList]
         snapshot.appendItems(gameItems, toSection: .game)
 
-        let aboutItems: [Item] = [.about]
+        let aboutItems: [Item] = [.versionHeistory, .about]
         snapshot.appendItems(aboutItems, toSection: .about)
 
         dataSource.apply(snapshot, animatingDifferences: animated)
@@ -198,7 +206,7 @@ extension AppSettingViewController: UITableViewDelegate {
         switch item {
         case .language: return true
         case .coreList: return true
-        case .about: return true
+        case .about, .versionHeistory: return true
         default: return false
         }
     }
@@ -211,12 +219,26 @@ extension AppSettingViewController: UITableViewDelegate {
         case .language(let key, _): changeLanguage(key: key)
         case .coreList: showCoreList()
         case .about: showAbout()
+        case .versionHeistory: showVersionHistory()
         default: break
         }
     }
 }
 
 extension AppSettingViewController {
+    private func showVersionHistory() {
+        Vibration.selection.vibrate()
+
+        let languageKey = Bundle.currentSimpleLanguageKey()
+        if let url = Bundle.main.url(forResource: "version", withExtension: "xml", subdirectory: "Data/xmls/\(languageKey)") {
+            let title = Bundle.localizedString(forKey: "appsetting_version_history")
+            let config = XMLRenderConfig()
+            config.mainColor = .mainColor
+            let controller = XMLTextRenderViewController(xmlUrl: url, mainTitle: title, config: config)
+            navigationController?.pushViewController(controller, animated: true)
+        }
+    }
+
     private func showCoreList() {
         Vibration.selection.vibrate()
 
@@ -229,8 +251,8 @@ extension AppSettingViewController {
     private func showAbout() {
         Vibration.selection.vibrate()
 
-        let fileName = "about_\(Bundle.currentSimpleLanguageKey())"
-        if let url = Bundle.main.url(forResource: fileName, withExtension: "xml", subdirectory: "Data/xmls") {
+        let languageKey = Bundle.currentSimpleLanguageKey()
+        if let url = Bundle.main.url(forResource: "about", withExtension: "xml", subdirectory: "Data/xmls/\(languageKey)") {
             let title = Bundle.localizedString(forKey: "appsetting_about")
             let config = XMLRenderConfig()
             config.mainColor = .mainColor

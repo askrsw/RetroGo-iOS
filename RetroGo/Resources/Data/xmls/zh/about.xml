@@ -1,49 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
-    <p-section id="about_intro" bottompadding="10" toppadding="5" block="true">
-        <p-paragraph>
-            ::b(RetroGo)b:: 是一款基于 RetroArch/Libretro 框架的高性能 iOS 模拟器前端。我们通过原生 UIKit 重新定义了移动端交互逻辑，在提供沉浸式复古游戏体验的同时，严格遵循各模拟核心的精度与兼容性要求。
+    <p-section id="about_intro">
+        <p-paragraph bottompadding="10" toppadding="20">
+            <b>RetroGo</b> 是一款基于 RetroArch/Libretro 框架的高性能 iOS 模拟器前端。我们通过原生 UIKit 重新定义了移动端交互逻辑，在提供沉浸式复古游戏体验的同时，严格遵循各模拟核心的精度与兼容性要求。
         </p-paragraph>
     </p-section>
-    <p-section id="about_open_source" bottompadding="15" toppadding="10" block="true">
+    <p-section id="about_open_source" bottompadding="15" toppadding="10">
         <p-title level="3" underline="false">开源协议与地址</p-title>
         <p-paragraph>
-            RetroGo 坚信开源社区的力量。本项目采用 ::b(GNU GPLv3)b:: 协议开源。您可以访问我们的 GitHub 仓库获取源代码、参与贡献或提交问题反馈：::link(https://github.com/askrsw/RetroGo-iOS)link::。
+            RetroGo 坚信开源社区的力量。本项目采用 <b>GNU GPLv3</b> 协议开源。您可以访问我们的 GitHub 仓库获取源代码、参与贡献或提交问题反馈：<a href="https://github.com/askrsw/RetroGo-iOS">https://github.com/askrsw/RetroGo-iOS</a>。
         </p-paragraph>
     </p-section>
-    <p-section id="about_cores" bottompadding="15" toppadding="10" block="true">
+    <p-section id="about_cores" bottompadding="15" toppadding="10">
         <p-title level="3" underline="false">核心组件说明</p-title>
         <p-paragraph>
             本应用集成了多个经过授权的 Libretro 核心。各核心均独立遵循其原有的开源许可证（包括 GPLv2、GPLv3、LGPL、MIT 及 BSD 等）。详细的核心列表及对应的许可证文本，请参阅应用内的「核心列表」页面。
         </p-paragraph>
     </p-section>
-    <p-section id="about_policies" bottompadding="15" toppadding="10" block="true">
+    <p-section id="about_policies" bottompadding="15" toppadding="10">
         <p-title level="3" underline="false">法律条款</p-title>
         <p-paragraph>
-            使用本应用即代表您同意我们的::link(隐私政策|https://matrix4x4.com/retrogo/policy)link::与::link(用户协议|https://matrix4x4.com/retrogo/eula)link::。
+            使用本应用即代表您同意我们的<a href="https://matrix4x4.com/retrogo/policy">隐私政策</a>与<a href="https://matrix4x4.com/retrogo/eula">用户协议</a>。
         </p-paragraph>
     </p-section>
-    <p-section id="about_content" bottompadding="15" toppadding="10" block="true">
+    <p-section id="about_content" bottompadding="15" toppadding="10">
         <p-title level="3" underline="false">版权与法律声明</p-title>
         <p-paragraph>
-            RetroGo 仅作为通用的游戏引擎前端软件提供，::b(不内置、不提供、亦不分发)b:: 任何受版权保护的游戏镜像（ROM）或系统固件（BIOS）。
+            RetroGo 仅作为通用的游戏引擎前端软件提供，<b>不内置、不提供、亦不分发</b> 任何受版权保护的游戏镜像（ROM）或系统固件（BIOS）。
         </p-paragraph>
         <p-paragraph>
             用户须自行确保所加载的内容拥有合法授权，并符合当地法律法规。RetroGo 与任何游戏主机制造商或软件发行商均无关联。
         </p-paragraph>
     </p-section>
-    <p-section id="about_thanks" block="true">
+    <p-section id="about_thanks">
         <p-title level="3" underline="false">致谢</p-title>
-        <p-paragraph>
+        <p-paragraph bottompadding="20" toppadding="10">
             诚挚感谢 RetroArch/Libretro 团队以及全球成千上万名模拟核心贡献者。正是因为开源精神，才让经典的数字文化得以在现代设备上延续。
         </p-paragraph>
     </p-section>
-    <p-section id="about_icp" bottompadding="10" toppadding="0" block="true">
+    <p-section id="about_icp" bottompadding="10" toppadding="0">
         <p-paragraph align="center" fontsize="12" bottompadding="10" toppadding="0">
-            ::link(鲁ICP备2023034487号-9A|https://beian.miit.gov.cn)link::
+            <a href="https://beian.miit.gov.cn">鲁ICP备2023034487号-9A</a>
         </p-paragraph>
         <p-paragraph align="center" fontsize="12" bottompadding="0" toppadding="0">
             Copyright © 2026 haharsw. All Rights Reserved.
         </p-paragraph>
     </p-section>
 </p-contents>
+

@@ -101,7 +101,7 @@ extension GamePageHudView {
             make.centerY.equalToSuperview()
             make.size.equalTo(closeButton.size)
         }
-
+    #if DEBUG
         let settingImage = UIImage(systemName: "gear.circle")
         settingButton.setImage(settingImage, for: .normal)
         settingButton.tintColor = .label
@@ -114,6 +114,7 @@ extension GamePageHudView {
             make.size.equalTo(settingButton.size)
         }
         lastTrailing = settingButton.snp.leading
+    #endif // DEBUG
 
         let infoImage  = UIImage(systemName: "cpu")
         infoButton.tintColor = .label
@@ -154,6 +155,7 @@ extension GamePageHudView {
         }
         lastTrailing = snapButton.snp.leading
 
+    #if DEBUG
         pauseResumeButton.tintColor = .label
         pauseResumeButton.addTarget(self, action: #selector(pauseResumeAction), for: .touchUpInside)
         updatePauseResumeButtonAppearance()
@@ -165,18 +167,19 @@ extension GamePageHudView {
             make.size.equalTo(pauseResumeButton.size)
         }
         lastTrailing = pauseResumeButton.snp.leading
+    #endif // DEBUG
 
-//        muteButton.tintColor = .label
-//        muteButton.addTarget(self, action: #selector(muteAction), for: .touchUpInside)
-//        updateMuteButtonAppearance()
-//        muteButton.sizeToFit()
-//        addSubview(muteButton)
-//        muteButton.snp.makeConstraints { make in
-//            make.trailing.equalTo(lastTrailing).offset(-20)
-//            make.centerY.equalToSuperview()
-//            make.size.equalTo(muteButton.size)
-//        }
-//        lastTrailing = muteButton.snp.leading
+        muteButton.tintColor = .label
+        muteButton.addTarget(self, action: #selector(muteAction), for: .touchUpInside)
+        updateMuteButtonAppearance()
+        muteButton.sizeToFit()
+        addSubview(muteButton)
+        muteButton.snp.makeConstraints { make in
+            make.trailing.equalTo(lastTrailing).offset(-20)
+            make.centerY.equalToSuperview()
+            make.size.equalTo(muteButton.size)
+        }
+        lastTrailing = muteButton.snp.leading
     }
 
     private func updatePauseResumeButtonAppearance() {

@@ -36,4 +36,5 @@ extension Defaults.Keys {
     static let autoSaveLoadState = Key<Bool?>("auto_save_load_state")
     static let lastRateTime = Key<Date?>("last_rate_time")
     static let isUIFeedbackEnabled = Key<Bool?>("is_ui_feedback_enabled")
+    static let versionNewContentViewed = Key<String?>("version_new_content_viewed")
 }

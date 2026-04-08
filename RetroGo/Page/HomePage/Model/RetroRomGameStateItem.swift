@@ -48,7 +48,7 @@ struct RetroRomGameStateItem {
 
     var pngPath: String {
         if isAutoSaved {
-            return AppConfig.shared.sharedAutoThumnailFolderPath + rawName + ".png"
+            return AppConfig.shared.sharedAutoThumbnailFolderPath + rawName + ".png"
         } else {
             let stateFolder = AppConfig.shared.statesFolder + coreId
             return "\(stateFolder)/\(rawName).png"

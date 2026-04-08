@@ -51,6 +51,8 @@ final class SystemDocumentBrowser: UIDocumentBrowserViewController {
         additionalTrailingNavigationBarButtonItems = [
             UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(settingsAction)),
         ]
+
+        WhatsNewViewController.showIfNeeded()
     }
 }
 

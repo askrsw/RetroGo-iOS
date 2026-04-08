@@ -68,6 +68,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSFileManager (Extension)
 @property(nonatomic, copy, readonly) NSString *documentFolder;
 @property(nonatomic, copy, readonly) NSURL *documentFolderUrl;
+@property(nonatomic, copy, readonly) NSString *libraryFolder;
+@property(nonatomic, copy, readonly) NSURL *libraryFolderUrl;
+@property(nonatomic, copy, readonly) NSString *applicationSupportFolder;
+@property(nonatomic, copy, readonly) NSURL *applicationSupportFolderUrl;
 
 - (BOOL)pathIsDirectory:(NSString *)path;
 - (BOOL)urlIsDirectory:(NSURL *)url;
