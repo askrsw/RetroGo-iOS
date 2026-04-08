@@ -32,8 +32,9 @@
 		AB5D01822F813F8000C7081D /* RetroRomImportGroupBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5D01812F813F8000C7081D /* RetroRomImportGroupBuilder.swift */; };
 		AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */; };
 		AB6378A22F7E6394001E1152 /* GameOverlayN64CButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */; };
-		AB651F182F5AD51A007550AA /* XMLTextRenderKit in Frameworks */ = {isa = PBXBuildFile; productRef = AB651F172F5AD51A007550AA /* XMLTextRenderKit */; };
 		AB69E2FE2F4EB4D800C532EE /* RetroRomEmptyTipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB69E2FD2F4EB4D800C532EE /* RetroRomEmptyTipView.swift */; };
+		AB6F0E772F86682100282818 /* XMLTextRenderKit in Frameworks */ = {isa = PBXBuildFile; productRef = AB6F0E762F86682100282818 /* XMLTextRenderKit */; };
+		AB6F0E7A2F8671D000282818 /* emu.fceumm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB7720652F3B1B31004F5B75 /* RACoordinator in Frameworks */ = {isa = PBXBuildFile; productRef = AB7720642F3B1B31004F5B75 /* RACoordinator */; };
 		AB7720672F3B1B33004F5B75 /* ObjcHelper in Frameworks */ = {isa = PBXBuildFile; productRef = AB7720662F3B1B33004F5B75 /* ObjcHelper */; };
 		AB7720692F3B2EB3004F5B75 /* MyApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7720682F3B2EB3004F5B75 /* MyApplication.swift */; };
@@ -48,14 +49,11 @@
 		AB803A1A2F3B38D300DE8D33 /* IQKeyboardManagerSwift in Frameworks */ = {isa = PBXBuildFile; productRef = AB803A192F3B38D300DE8D33 /* IQKeyboardManagerSwift */; };
 		AB8B201E2F7168D700E9082C /* GameSettingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B201D2F7168D200E9082C /* GameSettingViewController.swift */; };
 		AB8B7EC02F4D4A7F00A56A64 /* RetroRomLocationSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B7EBF2F4D4A7F00A56A64 /* RetroRomLocationSelector.swift */; };
-		AB8D11682F665CC400948717 /* XMLTextRenderKit in Frameworks */ = {isa = PBXBuildFile; productRef = AB8D11672F665CC400948717 /* XMLTextRenderKit */; };
 		AB90A1F12F3DE2520078C74E /* RetroRomCoreSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB90A1F02F3DE24B0078C74E /* RetroRomCoreSelectViewController.swift */; };
 		AB997ED02F4AEC00009F47AC /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = AB997ECE2F4AEC00009F47AC /* Localizable.stringsdict */; };
 		AB9CDD722F70422B002E6A55 /* GamePageOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9CDD6A2F70422B002E6A55 /* GamePageOverlayView.swift */; };
 		AB9CDD732F70422B002E6A55 /* GamePageOverlayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9CDD6C2F70422B002E6A55 /* GamePageOverlayConfig.swift */; };
 		ABB34DCA2F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = ABB34DC92F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy */; };
-		ABB51E412F7930EF00207964 /* emu.fceumm in Frameworks */ = {isa = PBXBuildFile; productRef = ABB51E402F7930EF00207964 /* emu.fceumm */; };
-		ABB51E422F79336900207964 /* emu.fceumm in Embed Frameworks */ = {isa = PBXBuildFile; productRef = ABB51E402F7930EF00207964 /* emu.fceumm */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		ABBC8B092F5E5642007E1669 /* emu.dosbox-pure.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC12F5E5504007E1669 /* emu.dosbox-pure.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABBC8B0B2F5E5642007E1669 /* emu.gambatte.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC32F5E5504007E1669 /* emu.gambatte.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABBC8B0C2F5E5642007E1669 /* emu.gearboy.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC42F5E5504007E1669 /* emu.gearboy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -71,6 +69,7 @@
 		ABBC8B162F5E5642007E1669 /* emu.yabause.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8ACE2F5E5504007E1669 /* emu.yabause.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */; };
 		ABBC8B182F5E5690007E1669 /* MoltenVK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		ABBDE0212F860010004A6469 /* WhatsNewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */; };
 		ABD42B842F3A66E7008B1771 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD42B792F3A66E7008B1771 /* AppDelegate.swift */; };
 		ABD42B852F3A66E7008B1771 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD42B7B2F3A66E7008B1771 /* SceneDelegate.swift */; };
 		ABD42B882F3A66E7008B1771 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ABD42B7E2F3A66E7008B1771 /* Assets.xcassets */; };
@@ -126,6 +125,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				AB6F0E7A2F8671D000282818 /* emu.fceumm.framework in CopyFiles */,
 				ABBC8B092F5E5642007E1669 /* emu.dosbox-pure.framework in CopyFiles */,
 				ABBC8B0B2F5E5642007E1669 /* emu.gambatte.framework in CopyFiles */,
 				ABBC8B0C2F5E5642007E1669 /* emu.gearboy.framework in CopyFiles */,
@@ -148,7 +148,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				ABB51E422F79336900207964 /* emu.fceumm in Embed Frameworks */,
 				ABBC8B182F5E5690007E1669 /* MoltenVK.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -216,6 +215,7 @@
 		ABBC8ACC2F5E5504007E1669 /* emu.ppsspp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.ppsspp.framework; sourceTree = "<group>"; };
 		ABBC8ACD2F5E5504007E1669 /* emu.vbam.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.vbam.framework; sourceTree = "<group>"; };
 		ABBC8ACE2F5E5504007E1669 /* emu.yabause.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.yabause.framework; sourceTree = "<group>"; };
+		ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsNewViewController.swift; sourceTree = "<group>"; };
 		ABD42B502F3A5EFC008B1771 /* RetroGo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RetroGo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABD42B792F3A66E7008B1771 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ABD42B7A2F3A66E7008B1771 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -275,10 +275,8 @@
 				ABDAD2682F3BABF5004100A9 /* SnapKit in Frameworks */,
 				AB7720652F3B1B31004F5B75 /* RACoordinator in Frameworks */,
 				ABDAD2782F3BB429004100A9 /* YYText in Frameworks */,
-				AB651F182F5AD51A007550AA /* XMLTextRenderKit in Frameworks */,
 				AB803A1A2F3B38D300DE8D33 /* IQKeyboardManagerSwift in Frameworks */,
-				ABB51E412F7930EF00207964 /* emu.fceumm in Frameworks */,
-				AB8D11682F665CC400948717 /* XMLTextRenderKit in Frameworks */,
+				AB6F0E772F86682100282818 /* XMLTextRenderKit in Frameworks */,
 				ABDAD26B2F3BB0AA004100A9 /* PanModal in Frameworks */,
 				ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */,
 			);
@@ -520,6 +518,7 @@
 		ABDAD2612F3BABA6004100A9 /* Component */ = {
 			isa = PBXGroup;
 			children = (
+				ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */,
 				ABDAD2702F3BB11A004100A9 /* RetroRomFileTagSelector.swift */,
 				ABDAD26E2F3BB0F9004100A9 /* RetroRomFileBrowserConfigView.swift */,
 				ABDAD26C2F3BB0CF004100A9 /* GameImportSelector.swift */,
@@ -637,9 +636,7 @@
 				ABDAD2672F3BABF5004100A9 /* SnapKit */,
 				ABDAD26A2F3BB0AA004100A9 /* PanModal */,
 				ABDAD2772F3BB429004100A9 /* YYText */,
-				AB651F172F5AD51A007550AA /* XMLTextRenderKit */,
-				AB8D11672F665CC400948717 /* XMLTextRenderKit */,
-				ABB51E402F7930EF00207964 /* emu.fceumm */,
+				AB6F0E762F86682100282818 /* XMLTextRenderKit */,
 			);
 			productName = RetroGo;
 			productReference = ABD42B502F3A5EFC008B1771 /* RetroGo.app */;
@@ -676,8 +673,7 @@
 				ABDAD2582F3BAA8C004100A9 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 				ABDAD2662F3BABF5004100A9 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				ABDAD2692F3BB0AA004100A9 /* XCRemoteSwiftPackageReference "PanModal" */,
-				AB8D11662F665CC400948717 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */,
-				ABB51E3F2F7930EF00207964 /* XCLocalSwiftPackageReference "../../Working/RetroArchX/Packages/RetroCores/fceumm" */,
+				AB6F0E752F86682100282818 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ABD42B512F3A5EFC008B1771 /* Products */;
@@ -784,6 +780,7 @@
 				AB55BC762F3B8AEC00569A84 /* AppConfig.swift in Sources */,
 				AB3D70382F7D49F70008A6AA /* GamePageOverlayScene.swift in Sources */,
 				AB55BC6C2F3B84DA00569A84 /* IconRender.swift in Sources */,
+				ABBDE0212F860010004A6469 /* WhatsNewViewController.swift in Sources */,
 				ABDAD29C2F3BB962004100A9 /* RetroRomListSectionFileBrowser.swift in Sources */,
 				AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */,
 				AB55BC7C2F3B8BC400569A84 /* GamePageViewController.swift in Sources */,
@@ -840,7 +837,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -871,7 +868,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -896,7 +893,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -927,7 +924,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -1094,13 +1091,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		ABB51E3F2F7930EF00207964 /* XCLocalSwiftPackageReference "../../Working/RetroArchX/Packages/RetroCores/fceumm" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../Working/RetroArchX/Packages/RetroCores/fceumm;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1110,20 +1100,20 @@
 				minimumVersion = 9.0.6;
 			};
 		};
+		AB6F0E752F86682100282818 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/askrsw/XMLTextRenderKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.1.0;
+			};
+		};
 		AB803A182F3B38D300DE8D33 /* XCRemoteSwiftPackageReference "IQKeyboardManager" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/hackiftekhar/IQKeyboardManager.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 8.0.2;
-			};
-		};
-		AB8D11662F665CC400948717 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/askrsw/XMLTextRenderKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
 			};
 		};
 		ABDAD2582F3BAA8C004100A9 /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
@@ -1158,8 +1148,9 @@
 			package = AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */;
 			productName = Defaults;
 		};
-		AB651F172F5AD51A007550AA /* XMLTextRenderKit */ = {
+		AB6F0E762F86682100282818 /* XMLTextRenderKit */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = AB6F0E752F86682100282818 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */;
 			productName = XMLTextRenderKit;
 		};
 		AB7720642F3B1B31004F5B75 /* RACoordinator */ = {
@@ -1174,15 +1165,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AB803A182F3B38D300DE8D33 /* XCRemoteSwiftPackageReference "IQKeyboardManager" */;
 			productName = IQKeyboardManagerSwift;
-		};
-		AB8D11672F665CC400948717 /* XMLTextRenderKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AB8D11662F665CC400948717 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */;
-			productName = XMLTextRenderKit;
-		};
-		ABB51E402F7930EF00207964 /* emu.fceumm */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = emu.fceumm;
 		};
 		ABDAD2592F3BAA8C004100A9 /* SQLite */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -246,7 +246,7 @@ final class RetroRomFileManager {
 
         let imageFolder: String?
         if autoSave {
-            imageFolder = AppConfig.shared.sharedAutoThumnailFolderPath
+            imageFolder = AppConfig.shared.sharedAutoThumbnailFolderPath
         } else {
             imageFolder = nil
         }

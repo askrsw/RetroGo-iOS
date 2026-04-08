@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<p-contents>
+    <p-section id="version-1.1.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.1.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>April 8, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.1.0" style="number">
+            <p-item>Added a new <b>SpriteKit-based Overlay buttons</b> system to improve the in-game control and interaction experience.</p-item>
+            <p-item>Added <b>smart multi-file ROM import detection</b> for both file import and folder import workflows.</p-item>
+            <p-item>The importer can now automatically recognize grouped game files such as <b>cue, m3u, gdi, mds, and ccd</b>, detect missing referenced files, and handle grouped imports more reliably.</p-item>
+            <p-item>Enhanced data security by migrating core files (Roms, Save States, Databases, etc.) to a <b>secure system directory</b>, preventing accidental deletion and ensuring a more stable app experience.</p-item>
+        </p-list>
+    </p-section>
+    <p-section id="version-1.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>March 22, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.0" style="bullet">
+            <p-item>RetroGo was officially released on the App Store.</p-item>
+        </p-list>
+    </p-section>
+</p-contents>

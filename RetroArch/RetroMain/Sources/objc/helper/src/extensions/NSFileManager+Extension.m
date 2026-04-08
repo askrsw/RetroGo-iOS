@@ -36,6 +36,22 @@
     return [[self URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
 }
 
+- (NSString *)libraryFolder {
+    return [[self libraryFolderUrl] path];
+}
+
+- (NSURL *)libraryFolderUrl {
+    return [[self URLsForDirectory:NSLibraryDirectory inDomains:NSUserDomainMask] firstObject];
+}
+
+- (NSString *)applicationSupportFolder {
+    return [[self applicationSupportFolderUrl] path];
+}
+
+- (NSURL *)applicationSupportFolderUrl {
+    return [[self URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask] firstObject];
+}
+
 - (BOOL)pathIsDirectory:(NSString *)path {
     BOOL isDirectory = NO;
     BOOL exists = [self fileExistsAtPath:path isDirectory:&isDirectory];

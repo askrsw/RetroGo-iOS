@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<p-contents>
+    <p-section id="version-1.0.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.1.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 4 月 8 日</i>。
+        </p-paragraph>
+        <p-list id="v1.1.0" style="number">
+            <p-item>新增基于 <b>SpriteKit</b> 实现的 <b>Overlay 屏幕按键</b>，进一步提升游戏内控制与交互体验。</p-item>
+            <p-item>新增 <b>多文件游戏智能识别导入</b>，同时覆盖文件导入与文件夹导入两种场景。</p-item>
+            <p-item>导入器现已能够自动识别 <b>cue、m3u、gdi、mds、ccd</b> 等多文件组合游戏，并对缺失引用文件的情况进行检测，从而更可靠地完成组合游戏导入。</p-item>
+            <p-item>优化数据存储安全性，将游戏文件（ROM、即时存档、数据库等）迁移至<b>系统私有目录</b>，防止因在“文件”App 中误操作而导致的数据丢失。</p-item>
+        </p-list>
+    </p-section>
+    <p-section id="version-1.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 3 月 22 日</i>。
+        </p-paragraph>
+        <p-list id="v1.0" style="bullet">
+            <p-item>RetroGo 正式上架 App Store。</p-item>
+        </p-list>
+    </p-section>
+</p-contents>

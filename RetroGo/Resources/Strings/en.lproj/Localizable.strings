@@ -54,6 +54,7 @@
 "appsetting_ui_haptic_feedback" = "UI Haptic Feedback";
 "appsetting_ingame_haptic_feedback" = "In-Game Haptic Feedback";
 "appsetting_about" = "About Retro Go";
+"appsetting_version_history" = "Version ​History";
 
 // MARK: - Homepage
 
@@ -158,6 +159,10 @@
 "homepage_move_to" = "Move to ...";
 "homepage_same_folder" = "Target is the same as the current location.";
 "homepage_descendant_folder" = "Cannot move a folder into its own subfolder.";
+"homepage_whats_new" = "What's New";
+"homepage_whats_new_prev" = "To make RetroGo more reliable and efficient for your daily use, we've introduced the following improvements:";
+"homepage_whats_new_post" = "Every improvement counts. If you enjoy RetroGo, please consider leaving a review. Your encouragement is our greatest motivation to keep refining and delivering a pure emulation experience.";
+"homepage_whats_new_encouragement" = "Support us on the App Store";
 
 // MARK: - CorePage
 

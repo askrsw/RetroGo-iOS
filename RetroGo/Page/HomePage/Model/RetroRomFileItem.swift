@@ -120,7 +120,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
     }
 
     override var thumbnail: UIImage? {
-        let path = AppConfig.shared.sharedAutoThumnailFolderPath + "auto_\(sha256 ?? "").png"
+        let path = AppConfig.shared.sharedAutoThumbnailFolderPath + "auto_\(sha256 ?? "").png"
         return UIImage(contentsOfFile: path)
     }
 
@@ -231,7 +231,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
         }
 
         parentFolderItem?.removeSubFileItemKey(key)
-        let thumbnailPath = AppConfig.shared.sharedAutoThumnailFolderPath + key + ".jpg"
+        let thumbnailPath = AppConfig.shared.sharedAutoThumbnailFolderPath + key + ".jpg"
         try? FileManager.default.removeItem(atPath: thumbnailPath)
         return true
     }

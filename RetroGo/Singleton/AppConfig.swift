@@ -30,17 +30,8 @@ final class AppConfig {
     static let shared = AppConfig()
     private init() { }
 
-    private(set) lazy var statesDatabasePath = { () -> String in
-        let folder = FileManager.default.documentFolder + "/data/database/"
-        if FileManager.default.createDirectoryIfNotExists(atPath: folder) {
-            return folder + "states.db"
-        } else {
-            fatalError()
-        }
-    }()
-
     private(set) lazy var statesFolder = { () -> String in
-        let folder = FileManager.default.documentFolder + "/data/states/"
+        let folder = FileManager.default.applicationSupportFolder + "/data/states/"
         if FileManager.default.createDirectoryIfNotExists(atPath: folder) {
             return folder
         } else {
@@ -58,7 +49,7 @@ final class AppConfig {
     }()
 
     private(set) lazy var romDatabasePath = { () -> String in
-        let folder = FileManager.default.documentFolder + "/data/database/"
+        let folder = FileManager.default.applicationSupportFolder + "/data/database/"
         if FileManager.default.createDirectoryIfNotExists(atPath: folder) {
             return folder + "roms.db"
         } else {
@@ -67,7 +58,7 @@ final class AppConfig {
     }()
 
     private(set) lazy var romFolderPath = { () -> String in
-        let folder = FileManager.default.documentFolder + "/data/roms/"
+        let folder = FileManager.default.applicationSupportFolder + "/data/roms/"
         if FileManager.default.createDirectoryIfNotExists(atPath: folder) {
             return folder
         } else {
@@ -75,8 +66,8 @@ final class AppConfig {
         }
     }()
 
-    private(set) lazy var sharedAutoThumnailFolderPath = { () -> String in
-        let folder = FileManager.default.documentFolder + "/data/auto_snapshots/"
+    private(set) lazy var sharedAutoThumbnailFolderPath = { () -> String in
+        let folder = FileManager.default.applicationSupportFolder + "/data/auto_snapshots/"
         if FileManager.default.createDirectoryIfNotExists(atPath: folder) {
             return folder
         } else {

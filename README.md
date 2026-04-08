@@ -6,6 +6,12 @@
 
 [Simplified Chinese (简体中文)](README.zh-CN.md) | English
 
+## 📱 Available on the App Store
+
+RetroGo is now available on the App Store: https://apps.apple.com/app/id6758611562
+
+Download it if you want to try the latest public release on your iPhone or iPad.
+
 ## 📖 Introduction
 
 **RetroGo** is an open-source project designed to bring the power of the Libretro API to iOS with a truly native user experience. Unlike standard RetroArch ports, RetroGo performs a "surgical" architectural decoupling:

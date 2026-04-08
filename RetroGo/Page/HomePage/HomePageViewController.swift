@@ -99,6 +99,8 @@ final class HomePageViewController: UIViewController {
 
         if RetroArchX.shared().initialized {
             updateFileBrowser()
+
+            WhatsNewViewController.showIfNeeded()
         } else {
             NotificationCenter.default.addObserver(self, selector: #selector(retroArchReadyNotification(_:)), name: .RetroArchXReady, object: nil)
         }

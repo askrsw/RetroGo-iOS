@@ -6,6 +6,12 @@
 
 简体中文 | [English](README.md)
 
+## 📱 已上架 App Store
+
+RetroGo 已正式上架 App Store：https://apps.apple.com/app/id6758611562
+
+欢迎下载体验最新公开版本，适用于 iPhone 与 iPad。
+
 ## 📖 项目简介
 
 **RetroGo** 是一款专为 iOS 设计的开源模拟器前端项目。与传统的 RetroArch 移植版不同，RetroGo 对其源代码进行了“手术级”的架构重构：
