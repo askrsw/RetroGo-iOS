@@ -201,6 +201,23 @@
 "coreinfo_firmware_ppsspp_import_failed" = "导入 PPSSPP 资源文件失败！";
 "corelist_core_list" = "核心列表";
 
-"gamepage_game_loading" = "游戏加载中......";
+// MARK: - GamePage
 
-"gamesetting_title" = "游戏设置";
+"gamepage_game_loading" = "游戏加载中......";
+"gamepage_screenshot_saved_at" = "截图保存在 %s。";
+
+// MARK: - ConfigPage
+
+"configpage_global_setting" = "全局设置";
+"configpage_core_setting" = "核心设置";
+"configpage_rom_setting" = "游戏设置";
+"configpage_title_section_core_footer" = "仅影响核心 %@​，优先于全局设置。";
+"configpage_title_section_game_footer" = "仅影响游戏 %@​，优先于核心和全局设置。";
+"configpage_restart_required_section_footer" = "此分组中的设置会在下次打开游戏时生效。";
+"configpage_runtime_section_footer" = "此分组中的设置会立即生效。";
+"configpage_core" = "核心:";
+"configpage_rom" = "游戏:";
+"configpage_game_thread" = "独立游戏线程";
+"configpage_game_thread_desc" = "将游戏逻辑放到独立线程运行​，可能提升流畅度与快进表现​，但部分核心或设备上可能出现兼容性问题。";
+"configpage_game_thread_forbiden_desc" = "核心 %@ 不支持开启独立游戏线程。";
+"configpage_game_fast_multiplier" = "游戏快进倍数";

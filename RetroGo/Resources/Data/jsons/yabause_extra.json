@@ -11,5 +11,6 @@
     ],
     "src_url": "https://github.com/libretro/yabause",
     "supports_analog": true,
-    "overlay": "saturn"
+    "overlay": "saturn",
+    "supports_logic_thread": true
 }

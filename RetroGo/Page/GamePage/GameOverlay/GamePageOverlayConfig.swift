@@ -69,6 +69,7 @@ enum GamePageOverlayElementType: String, Codable {
     case dpad
     case stick
     case button
+    case fastButton = "fast-button"
     case digitalAnalogSwitch = "digital-analog-switch"
     case overlayCollapse = "overlay-collapse"
     case n64CButton = "n64-c-button"

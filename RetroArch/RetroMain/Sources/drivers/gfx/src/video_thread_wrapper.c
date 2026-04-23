@@ -24,7 +24,7 @@
 #include <string/stdstring.h>
 
 #include <gfx/video_driver.h>
-#include "video_thread_wrapper.h"
+#include <gfx/video_thread_wrapper.h>
 #include <gfx/font_driver.h>
 
 #include <utils/verbosity.h>
@@ -67,7 +67,6 @@ static void video_thread_send_packet(thread_video_t *thr,
 
    scond_signal(thr->cond_thread);
    slock_unlock(thr->lock);
-
 }
 
 /* user -> thread */
@@ -282,7 +281,7 @@ static bool video_thread_handle_packet(
             thr->overlay->full_screen(thr->driver_data, pkt.data.b);
          video_thread_reply(thr, &pkt);
          break;
-#endif
+#endif // HAVE_OVERLAY
 
       case CMD_POKE_SET_VIDEO_MODE:
          if (thr->driver_data && thr->poke && thr->poke->set_video_mode)
@@ -946,7 +945,7 @@ static void video_thread_get_overlay_interface(void *data,
    else
       *iface = NULL;
 }
-#endif
+#endif // HAVE_OVERLAY
 
 static void thread_set_video_mode(void *data,
       unsigned width, unsigned height, bool video_fullscreen)

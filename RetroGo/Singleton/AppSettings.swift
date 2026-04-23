@@ -29,10 +29,10 @@ import Foundation
 final class AppSettings {
     static let shared = AppSettings()
     private init() {
-        self.systemHomePage       = Defaults[.systemHomePage] ?? false
-        self.languageFollowSystem = Defaults[.languageFollowSystem] ?? true
-        self.autoSaveLoadState    = Defaults[.autoSaveLoadState] ?? true
-        self.isUIFeedbackEnabled  = Defaults[.isUIFeedbackEnabled] ?? true
+        self.systemHomePage        = Defaults[.systemHomePage] ?? false
+        self.languageFollowSystem  = Defaults[.languageFollowSystem] ?? true
+        self.autoSaveLoadState     = Defaults[.autoSaveLoadState] ?? true
+        self.isUIFeedbackEnabled   = Defaults[.isUIFeedbackEnabled] ?? true
     }
 
     var systemHomePage: Bool {

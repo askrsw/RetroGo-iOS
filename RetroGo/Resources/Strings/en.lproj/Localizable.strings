@@ -201,6 +201,23 @@
 "coreinfo_firmware_ppsspp_import_failed" = "Failed to import PPSSPP resource files!";
 "corelist_core_list" = "Core List";
 
-"gamepage_game_loading" = "Loading game...";
+// MARK: - GamePage
 
-"gamesetting_title" = "Game Setting";
+"gamepage_game_loading" = "Loading game...";
+"gamepage_screenshot_saved_at" = "Screenshot saved at %s。";
+
+// MARK: - ConfigPage
+
+"configpage_global_setting" = "Global Settings";
+"configpage_core_setting" = "Core Settings";
+"configpage_rom_setting" = "Game Settings";
+"configpage_title_section_core_footer" = "Applies only to core %@ and overrides global settings.";
+"configpage_title_section_game_footer" = "Applies only to game %@ and overrides core and global settings.";
+"configpage_restart_required_section_footer" = "Settings in this section take effect the next time you open the game.";
+"configpage_runtime_section_footer" = "Settings in this section take effect immediately.";
+"configpage_core" = "Core:";
+"configpage_rom" = "Rom:";
+"configpage_game_thread" = "Game Thread";
+"configpage_game_thread_desc" = "Runs game logic on a separate thread. This may improve smoothness and fast-forward performance, but some cores or devices may have compatibility issues.";
+"configpage_game_thread_forbiden_desc" = "Core %@ does not support enabling a separate game logic thread.";
+"configpage_game_fast_multiplier" = "Fast Multiplier";

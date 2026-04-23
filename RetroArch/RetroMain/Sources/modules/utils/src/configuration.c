@@ -1350,7 +1350,7 @@ static struct config_array_setting *populate_settings_array(
       return NULL;
 
    /* Arrays */
-   SETTING_ARRAY("audio_driver",                 settings->arrays.audio_driver, false, NULL, true);
+   // SETTING_ARRAY("audio_driver",                 settings->arrays.audio_driver, false, NULL, true);
    SETTING_ARRAY("audio_device",                 settings->arrays.audio_device, false, NULL, true);
    SETTING_ARRAY("audio_resampler",              settings->arrays.audio_resampler, false, NULL, true);
 #ifdef HAVE_MICROPHONE
@@ -1621,7 +1621,9 @@ static struct config_bool_setting *populate_settings_bool(
 #if defined(DINGUX)
    SETTING_BOOL("video_dingux_ipu_keep_aspect",  &settings->bools.video_dingux_ipu_keep_aspect, true, DEFAULT_DINGUX_IPU_KEEP_ASPECT, false);
 #endif
+#if !(defined(__MACH__) && defined(__APPLE__))
    SETTING_BOOL("video_threaded",                video_driver_get_threaded(), true, DEFAULT_VIDEO_THREADED, false);
+#endif
    SETTING_BOOL("video_shared_context",          &settings->bools.video_shared_context, true, DEFAULT_VIDEO_SHARED_CONTEXT, false);
 #ifdef GEKKO
    SETTING_BOOL("video_vfilter",                 &settings->bools.video_vfilter, true, DEFAULT_VIDEO_VFILTER, false);
@@ -1655,11 +1657,6 @@ static struct config_bool_setting *populate_settings_bool(
    SETTING_BOOL("notification_show_config_override_load", &settings->bools.notification_show_config_override_load, true, DEFAULT_NOTIFICATION_SHOW_CONFIG_OVERRIDE_LOAD, false);
    SETTING_BOOL("notification_show_set_initial_disk", &settings->bools.notification_show_set_initial_disk, true, DEFAULT_NOTIFICATION_SHOW_SET_INITIAL_DISK, false);
    SETTING_BOOL("notification_show_disk_control", &settings->bools.notification_show_disk_control, true, DEFAULT_NOTIFICATION_SHOW_DISK_CONTROL, false);
-   SETTING_BOOL("notification_show_save_state",  &settings->bools.notification_show_save_state, true, DEFAULT_NOTIFICATION_SHOW_SAVE_STATE, false);
-   SETTING_BOOL("notification_show_fast_forward", &settings->bools.notification_show_fast_forward, true, DEFAULT_NOTIFICATION_SHOW_FAST_FORWARD, false);
-#ifdef HAVE_SCREENSHOTS
-   SETTING_BOOL("notification_show_screenshot",  &settings->bools.notification_show_screenshot, true, DEFAULT_NOTIFICATION_SHOW_SCREENSHOT, false);
-#endif
    SETTING_BOOL("notification_show_refresh_rate", &settings->bools.notification_show_refresh_rate, true, DEFAULT_NOTIFICATION_SHOW_REFRESH_RATE, false);
 #ifdef HAVE_NETWORKING
    SETTING_BOOL("notification_show_netplay_extra", &settings->bools.notification_show_netplay_extra, true, DEFAULT_NOTIFICATION_SHOW_NETPLAY_EXTRA, false);
@@ -2008,12 +2005,7 @@ static struct config_uint_setting *populate_settings_uint(
    SETTING_UINT("split_joycon_p6",               &settings->uints.input_split_joycon[5], true, 0, false);
    SETTING_UINT("split_joycon_p7",               &settings->uints.input_split_joycon[6], true, 0, false);
    SETTING_UINT("split_joycon_p8",               &settings->uints.input_split_joycon[7], true, 0, false);
-#endif
-
-#ifdef HAVE_SCREENSHOTS
-   SETTING_UINT("notification_show_screenshot_duration", &settings->uints.notification_show_screenshot_duration, true, DEFAULT_NOTIFICATION_SHOW_SCREENSHOT_DURATION, false);
-   SETTING_UINT("notification_show_screenshot_flash",    &settings->uints.notification_show_screenshot_flash, true, DEFAULT_NOTIFICATION_SHOW_SCREENSHOT_FLASH, false);
-#endif
+#endif // HAVE_LIBNX
 
 #ifdef HAVE_NETWORKING
    SETTING_UINT("netplay_ip_port",                    &settings->uints.netplay_port, true, RARCH_DEFAULT_PORT, false);
@@ -2666,7 +2658,7 @@ void config_load(void *data)
    global_t *global = (global_t*)data;
    config_set_defaults(global);
 #ifdef HAVE_CONFIGFILE
-   config_parse_file(global);
+   /* config_parse_file(global); */
 #endif
 }
 

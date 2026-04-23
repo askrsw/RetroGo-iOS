@@ -1480,6 +1480,7 @@ void driver_set_nonblock_state(void)
    bool video_driver_active    = (video_st->flags  & VIDEO_FLAG_ACTIVE) ? true : false;
    bool audio_driver_active    = (audio_st->flags  & AUDIO_FLAG_ACTIVE) ? true : false;
    bool runloop_force_nonblock = (runloop_st->flags & RUNLOOP_FLAG_FORCE_NONBLOCK) ? true : false;
+   bool audio_nonblock         = audio_sync ? enable : true;
 
    /* Only apply non-block-state for video if we're using vsync. */
    if (video_driver_active && VIDEO_DRIVER_GET_PTR_INTERNAL(video_st))
@@ -1499,9 +1500,9 @@ void driver_set_nonblock_state(void)
    if (audio_driver_active && audio_st->context_audio_data)
       audio_st->current_audio->set_nonblock_state(
             audio_st->context_audio_data,
-            audio_sync ? enable : true);
+            audio_nonblock);
 
-   audio_st->chunk_size = enable
+   audio_st->chunk_size = audio_nonblock
       ? audio_st->chunk_nonblock_size
       : audio_st->chunk_block_size;
 }
@@ -5350,7 +5351,7 @@ int rarch_main(int argc, char *argv[], void *data, bool init_drivers)
       RARCH_ERR("FATAL: Failed to initialize the COM interface.\n");
       return 1;
    }
-#endif
+#endif // defined(_WIN32) && !defined(_XBOX) && !defined(__WINRT__)
 
 #if defined(WEBOS)
    // compatibility with webOS 3 - 5
@@ -5363,7 +5364,7 @@ int rarch_main(int argc, char *argv[], void *data, bool init_drivers)
 
    struct rlimit limit = {0, 0};
    setrlimit(RLIMIT_CORE, &limit);
-#endif
+#endif // defined(WEBOS)
 
    rtime_init();
 
@@ -5469,7 +5470,7 @@ int rarch_main(int argc, char *argv[], void *data, bool init_drivers)
    }
 
    main_exit(data);
-#endif
+#endif // !defined(HAVE_MAIN) || defined(HAVE_QT)
 
    return 0;
 }
@@ -5483,7 +5484,7 @@ bool audioworklet_external_block(void);
 #ifdef HAVE_RWEBAUDIO
 bool rwebaudio_external_block(void);
 #endif
-#endif
+#endif // EMSCRIPTEN_AUDIO_EXTERNAL_BLOCK
 
 #ifdef HAVE_RWEBAUDIO
 void rwebaudio_recalibrate_time(void);
@@ -5524,7 +5525,7 @@ void emscripten_mainloop(void)
    if (rwebaudio_external_block())
       return;
 #endif
-#endif
+#endif // EMSCRIPTEN_AUDIO_FAKE_BLOCK
 
    emscripten_frame_count++;
 
@@ -5555,7 +5556,7 @@ void emscripten_mainloop(void)
 #ifdef HAVE_RWEBAUDIO
    rwebaudio_external_block();
 #endif
-#endif
+#endif // EMSCRIPTEN_AUDIO_ASYNC_BLOCK
 
    task_queue_check();
 
@@ -5571,7 +5572,7 @@ void emscripten_mainloop(void)
    main_exit(NULL);
    emscripten_force_exit(0);
 }
-#endif
+#endif // defined(EMSCRIPTEN)
 
 #ifndef HAVE_MAIN
 #ifdef __cplusplus
@@ -5581,7 +5582,7 @@ int main(int argc, char *argv[])
 {
    return rarch_main(argc, argv, NULL);
 }
-#endif
+#endif // !HAVE_MAIN
 
 /* DYNAMIC LIBRETRO CORE  */
 
@@ -7019,7 +7020,7 @@ static bool retroarch_parse_input_and_config(
           * should be properly fixed. */
          runloop_set_current_core_type(CORE_TYPE_DUMMY, false);
       }
-#endif
+#endif // HAVE_DYNAMIC
    }
 
    if (optind < argc)
@@ -7058,7 +7059,7 @@ static bool retroarch_parse_input_and_config(
         RARCH_WARN("[State] Trying to load entry state while replay playback is active. Ignoring entry state.\n");
      }
    }
-   #endif
+#endif // HAVE_BSV_MOVIE
 
 
    /* Check whether a core has been set via the
@@ -7175,7 +7176,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
     * want to do change the default directories.
     */
    dir_check_config();
-#endif
+#endif // __APPLE__
 
 #ifdef HAVE_ACCESSIBILITY
    accessibility_enable                = settings->bools.accessibility_enable;
@@ -7190,7 +7191,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
             accessibility_narrator_speech_speed,
             (char*)msg_hash_to_str(MSG_ACCESSIBILITY_STARTUP),
             10);
-#endif
+#endif // HAVE_ACCESSIBILITY
 
    if (verbosity_enabled)
    {
@@ -7252,7 +7253,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
          "log", sizeof(log_file_name));
    ExcHndlInit();
    ExcHndlSetLogFileNameA(log_file_name);
-#endif
+#endif // defined(DEBUG) && defined(HAVE_DRMINGW)
 
    retroarch_validate_cpu_features();
    retroarch_init_task_queue();
@@ -7293,7 +7294,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
                   runloop_set_current_core_type(CORE_TYPE_IMAGEVIEWER, false);
                }
                break;
-#endif
+#endif // HAVE_IMAGEVIEWER
             default:
                break;
          }
@@ -7355,7 +7356,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
       if (   (!(global->flags & GLOB_FLG_LAUNCHED_FROM_CLI))
           ||   (global->flags & GLOB_FLG_CLI_LOAD_MENU_ON_ERR)
          )
-#endif
+#endif // HAVE_DYNAMIC
       {
          /* Before initialising the dummy core, ensure
           * that we:
@@ -7407,7 +7408,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
          NULL
 #endif
          );
-#endif
+#endif // HAVE_CHEATS
    if(!core_info_get_current_core(&current_core) || current_core == NULL) {
       command_event(CMD_EVENT_CORE_INFO_INIT, NULL);
       command_event(CMD_EVENT_LOAD_CORE_PERSIST, NULL);
@@ -7420,7 +7421,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
       input_overlay_unload();
       input_overlay_init();
 #endif
-#endif
+#endif // HAVE_OVERLAY
    }
 #ifdef HAVE_CONFIGFILE
    // command_event_save_current_config(OVERRIDE_NONE);
@@ -7438,7 +7439,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
       input_st->remote = input_driver_init_remote(
             settings,
             settings->uints.input_max_users);
-#endif
+#endif // HAVE_NETWORKGAMEPAD
    input_mapper_reset(&input_st->mapper);
 #ifdef HAVE_REWIND
    command_event(CMD_EVENT_REWIND_INIT, NULL);
@@ -7459,7 +7460,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
       if (command_event(CMD_EVENT_DISCORD_INIT, NULL))
          discord_st->inited = true;
    }
-#endif
+#endif // HAVE_DISCORD
 
 #ifdef HAVE_PRESENCE
    {
@@ -7467,7 +7468,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
       userdata.status = PRESENCE_MENU;
       command_event(CMD_EVENT_PRESENCE_UPDATE, &userdata);
    }
-#endif
+#endif // HAVE_PRESENCE
 
 #if defined(HAVE_AUDIOMIXER)
    audio_driver_load_system_sounds();

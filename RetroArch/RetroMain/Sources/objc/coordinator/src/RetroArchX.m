@@ -27,11 +27,14 @@
 #import "models/EmuCoreInfoItem.h"
 #import "models/EmuInGameMessage.h"
 #import "controllers/RetroArchViewController.h"
+#import "runner/RAGameLogicThreadRunner.h"
+#import "runner/RAGameLogicDisplayLinkRunner.h"
 
 #import <retroarch_door.h>
 #import <utils/verbosity.h>
 #import <cocoa_input.h>
 #import <UIKit+Extensions.h>
+#import <Foundation+Extensions.h>
 #import <CoreFoundation/CoreFoundation.h>
 
 #define SHOW_CORE_ROM_TYPE_INFO 0
@@ -41,12 +44,9 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 @implementation RetroArchX {
     NSArray<UTType *> *d_allSupportedExtensions;
     NSSet<NSString *> *d_allExtensionsSet;
-
     NSArray<EmuCoreInfoItem *> *d_coreItems;
-
-    CADisplayLink *d_displayLink;
-    NSInteger d_pauseCounter;
-    NSMutableDictionary<NSString *, RetroArchXEmuFrameCallback> *d_emuFrameCallbacks;
+    __nullable id<RAGameLoopRunner> d_gameLogicRuner;
+    NSMutableDictionary<NSString *, RetroArchXEmuFrameAction> *d_emuPrevFrameActions;
 
     BOOL d_initialized;
 }
@@ -65,9 +65,8 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 - (instancetype)init {
     self = [super init];
     if(self != nil) {
-        d_pauseCounter = 0;
         d_initialized = NO;
-        d_emuFrameCallbacks = [NSMutableDictionary dictionary];
+        d_emuPrevFrameActions = [NSMutableDictionary dictionary];
 
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             // open log
@@ -96,9 +95,6 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 }
 
 - (void)dealloc {
-    [d_displayLink invalidate];
-    d_displayLink = nil;
-
     main_exit(NULL);
 }
 
@@ -154,7 +150,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 }
 
 - (CADisplayLink *)displayLink {
-    return d_displayLink;
+    return d_gameLogicRuner.displayLink;
 }
 
 - (BOOL)isCurrentCoreSupportsSavestate {
@@ -220,18 +216,12 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
         dispatch_async(dispatch_get_main_queue(), ^{
             if(load_ret) {
-                // 开启音频延时逻辑
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-                    command_event(CMD_EVENT_AUDIO_START, NULL);
-                });
-
-                // 开启主线程渲染循环
-                if (!self->d_displayLink) {
-                    self->d_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(step:)];
-                    if (@available(iOS 15.0, tvOS 15.0, *)) {
-                        [self->d_displayLink setPreferredFrameRateRange:CAFrameRateRangeDefault];
-                    }
-                    [self->d_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+                if(video_driver_is_threaded()) {
+                    d_gameLogicRuner = [[RAGameLogicThreadRunner alloc] initWithEmuPrevFrameActions:d_emuPrevFrameActions];
+                    [d_gameLogicRuner start];
+                } else {
+                    d_gameLogicRuner = [[RAGameLogicDisplayLinkRunner alloc] initWithEmuPrevFrameActions:d_emuPrevFrameActions];
+                    [d_gameLogicRuner start];
                 }
             }
 
@@ -242,31 +232,17 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     });
 }
 
-- (BOOL)close {
-    [d_displayLink invalidate];
-    d_displayLink = nil;
-
+- (BOOL)stop {
+    BOOL ret = [d_gameLogicRuner stop];
+    d_gameLogicRuner = nil;
     EmuCoreInfoItem *runningCore = [self currentCoreItem];
-
-    // @ref: action_ok_close_content in menu_cbs_ok.c
-    BOOL ret = command_event(CMD_EVENT_UNLOAD_CORE, NULL);
-    apple_platform = nil;
-
     [runningCore cleanupMameSession];
-
     return ret;
 }
 
 - (BOOL)pause {
     if(self.currentCoreItem != nil) {
-        if(d_pauseCounter++ == 0) {
-            audio_driver_stop();
-            BOOL ret = command_event(CMD_EVENT_PAUSE, NULL);
-            [d_displayLink removeFromRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-            return ret;
-        } else {
-            return YES;
-        }
+        return [d_gameLogicRuner pause];
     } else {
         return NO;
     }
@@ -274,21 +250,15 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
 - (BOOL)resume {
     if(self.currentCoreItem != nil) {
-        if(--d_pauseCounter == 0) {
-            audio_driver_start(false);
-            [d_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-            return command_event(CMD_EVENT_UNPAUSE, NULL);
-        } else {
-            return YES;
-        }
+        return [d_gameLogicRuner resume];
     } else {
         return NO;
     }
 }
 
-- (BOOL)restart {
+- (BOOL)reset {
     if(self.currentCoreItem != nil) {
-        return command_event(CMD_EVENT_RESET, NULL);
+        return [d_gameLogicRuner reset];
     } else {
         return NO;
     }
@@ -304,47 +274,13 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     }
 }
 
--(void)step:(CADisplayLink*)target {
-    if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateActive) {
-        return;
-    }
-
-    NSArray<RetroArchXEmuFrameCallback> *callbacks = d_emuFrameCallbacks.allValues.copy;
-    for (RetroArchXEmuFrameCallback callback in callbacks) {
-        callback();
-    }
-
-    int ret = runloop_iterate();
-
-    if (ret == -1) {
-        main_exit(NULL);
-        exit(0);
-    }
-
-    task_queue_check();
-
-    uint32_t runloop_flags = runloop_get_flags();
-    if (!(runloop_flags & RUNLOOP_FLAG_IDLE)) {
-        CFRunLoopWakeUp(CFRunLoopGetMain());
-    }
-}
-
 - (BOOL)saveStateTo:(NSString *)folder imageFolder:(nullable NSString *)imageFolder name:(NSString *)name {
     if(self.currentCoreItem == nil) {
         return NO;
     }
 
-    video_driver_state_t *video_st = video_state_get_ptr();
-    settings_t *settings           = config_get_ptr();
-    bool frame_time_counter_reset_after_save_state = settings->bools.frame_time_counter_reset_after_save_state;
-
-    [self pause];
-
     NSString *path = [folder stringByAppendingPathComponent:name];
     NSString *statePath = [path stringByAppendingPathExtension:@"state"];
-    BOOL ret = content_direct_save_state(statePath.UTF8String);
-    if (frame_time_counter_reset_after_save_state)
-       video_st->frame_time_count = 0;
 
     NSString *pngPath;
     if(imageFolder == nil) {
@@ -353,11 +289,19 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         pngPath = [[imageFolder stringByAppendingPathComponent:name] stringByAppendingPathExtension:@"png"];
     }
 
-    [self saveScreenshotTo:pngPath];
+    NSNumber *ret1 = (NSNumber *)[d_gameLogicRuner suspendGameLoopAndPerformSync:^{
+        video_driver_state_t *video_st = video_state_get_ptr();
+        settings_t *settings           = config_get_ptr();
+        bool frame_time_counter_reset_after_save_state = settings->bools.frame_time_counter_reset_after_save_state;
+        BOOL ret = content_direct_save_state(statePath.UTF8String);
+        if (frame_time_counter_reset_after_save_state)
+           video_st->frame_time_count = 0;
+        return @(ret);
+    } runOnLogicThread:YES];
 
-    [self resume];
+    BOOL ret2 = [self saveScreenshotTo:pngPath notify:NO];
 
-    return ret;
+    return ret1.boolValue && ret2;
 }
 
 - (BOOL)loadStateFrom:(NSString *)path {
@@ -365,50 +309,52 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         return NO;
     }
 
-    [self pause];
-
-    bool ret = content_load_state(path.UTF8String, false, false);
-    if(ret) {
-        command_post_state_loaded();
+    if(![NSFileManager.defaultManager pathIsFile:path]) {
+        return NO;
     }
 
-    [self resume];
-
-    return ret;
+    NSNumber *ret = (NSNumber *)[d_gameLogicRuner suspendGameLoopAndPerformSync:^{
+        bool ret = content_load_state(path.UTF8String, false, false);
+        if(ret) {
+            command_post_state_loaded();
+        }
+        return @(ret);
+    } runOnLogicThread:YES];
+    return ret.boolValue;
 }
 
 bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
 
-- (BOOL)saveScreenshotTo:(NSString *)path {
+- (BOOL)saveScreenshotTo:(NSString *)path notify:(BOOL)notify {
     if(self.currentCoreItem == nil) {
         return NO;
     }
 
-    [self pause];
+    NSNumber *ret = (NSNumber *)[d_gameLogicRuner suspendGameLoopAndPerformSync:^{
+        uint8_t *png_data = NULL;
+        uint64_t png_data_size = 0;
+        BOOL ret = get_screenshot_data(&png_data, &png_data_size);
+        if(png_data && png_data_size > 0) {
+            const char *raw_path = [path fileSystemRepresentation];
+            char log_raw_path[PATH_MAX_LENGTH] = { 0 };
+            FILE *fp = fopen(raw_path, "wb");
+            if (fp) {
+                size_t written = fwrite(png_data, 1, png_data_size, fp);
+                fclose(fp);
 
-    uint8_t *png_data = NULL;
-    uint64_t png_data_size = 0;
-
-    BOOL ret = get_screenshot_data(&png_data, &png_data_size);
-    if(png_data && png_data_size > 0) {
-        const char *raw_path = [path fileSystemRepresentation];
-        char log_raw_path[PATH_MAX_LENGTH] = { 0 };
-        FILE *fp = fopen(raw_path, "wb");
-        if (fp) {
-            size_t written = fwrite(png_data, 1, png_data_size, fp);
-            fclose(fp);
-
-            NSString *message = [NSString stringWithFormat:@"截图保存在 %s。", shorten_path_for_log(raw_path, log_raw_path, sizeof(log_raw_path))];
-            EmuInGameMessage *inGameMessage = [[EmuInGameMessage alloc] initWithMessage:message title:nil type:EmuInGameMessageInfo duration:120 priority:1];
-            [(id)apple_platform showInGameMessage:inGameMessage];
+                if(notify) {
+                    NSString *formatter = [NSBundle localizedStringForKey:@"gamepage_screenshot_saved_at"];
+                    NSString *message = [NSString stringWithFormat:formatter, shorten_path_for_log(raw_path, log_raw_path, sizeof(log_raw_path))];
+                    EmuInGameMessage *inGameMessage = [[EmuInGameMessage alloc] initWithMessage:message title:nil type:EmuInGameMessageInfo duration:120 priority:1];
+                    [(id)apple_platform showInGameMessage:inGameMessage];
+                }
+            }
+            free(png_data);
         }
+        return @(ret);
+    } runOnLogicThread:NO];
 
-        free(png_data);
-    }
-
-    [self resume];
-
-    return ret;
+    return ret.boolValue;
 }
 
 - (void)sendJoypadCode:(enum RetroArchJoypadCode)code down:(BOOL)down {
@@ -435,26 +381,52 @@ bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
     virtual_joypad_set_axis(0, (unsigned)axis, intValue);
 }
 
-- (nullable NSString *)addEmuFrameCallback:(nullable RetroArchXEmuFrameCallback)callback {
-    if (callback == nil) {
-        return nil;
-    }
-
-    NSString *token = NSUUID.UUID.UUIDString;
-    d_emuFrameCallbacks[token] = [callback copy];
-    return token;
-}
-
-- (void)removeEmuFrameCallbackForToken:(nullable NSString *)token {
-    if (token.length == 0) {
+- (void)setFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier {
+    if (self.currentCoreItem == nil || d_gameLogicRuner == nil) {
         return;
     }
 
-    [d_emuFrameCallbacks removeObjectForKey:token];
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [d_gameLogicRuner setFastForwardEnabled:enabled multiplier:multiplier];
+        });
+        return;
+    } else {
+        [d_gameLogicRuner setFastForwardEnabled:enabled multiplier:multiplier];
+    }
 }
 
-- (void)setTurboMultiplier:(NSInteger)multiplier {
-    (void)multiplier;
+- (void)setFastForwardMultiplier:(double)multiplier {
+    if (self.currentCoreItem == nil || d_gameLogicRuner == nil) {
+        return;
+    }
+
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [d_gameLogicRuner setFastForwardMultiplier:multiplier];
+        });
+        return;
+    } else {
+        [d_gameLogicRuner setFastForwardMultiplier:multiplier];
+    }
+}
+
+- (NSString *)addEmuPrevFrameAction:(RetroArchXEmuFrameAction)action {
+    if(d_gameLogicRuner == nil) {
+        NSString *token = NSUUID.UUID.UUIDString;
+        d_emuPrevFrameActions[token] = [action copy];
+        return token;
+    } else {
+        return [d_gameLogicRuner addEmuPrevFrameAction:action];
+    }
+}
+
+- (void)removeEmuPrevFrameActionForToken:(NSString *)token {
+    if(d_gameLogicRuner == nil) {
+        [d_emuPrevFrameActions removeObjectForKey:token];
+    } else {
+        [d_gameLogicRuner removeEmuPrevFrameActionForToken:token];
+    }
 }
 
 #pragma mark - RetroArch Utils

@@ -39,6 +39,7 @@ final class GamePageViewController: RetroArchViewController {
     let romItem: RetroRomFileItem?
     let romUrl: URL?
     let startTime: Date
+    let configSession: GameConfigSession
 
     private(set) var startDate: Date?
 
@@ -46,9 +47,10 @@ final class GamePageViewController: RetroArchViewController {
     private var loaded = false
 
     init(romUrl: URL?, core: EmuCoreInfoItem) {
-        self.romItem  = nil
-        self.romUrl   = romUrl
+        self.romItem   = nil
+        self.romUrl    = romUrl
         self.startTime = Date()
+        self.configSession = GameConfigSession(scope: .core, core: core, game: nil)
         super.init(core: core)
         Self.instance = self
 
@@ -66,6 +68,7 @@ final class GamePageViewController: RetroArchViewController {
         self.romItem   = romItem
         self.romUrl    = URL(fileURLWithPath: romItem.entryPath!)
         self.startTime = Date()
+        self.configSession = GameConfigSession(scope: .game, core: core, game: romItem)
         super.init(core: core)
         Self.instance = self
 
@@ -125,6 +128,8 @@ final class GamePageViewController: RetroArchViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        configSession.configRetroArch()
+        
         RetroArchX.shared().start(romUrl?.path(percentEncoded: false), core: core) { [unowned self] success in
             loaded = true
             myLoadingView?.uninstall()

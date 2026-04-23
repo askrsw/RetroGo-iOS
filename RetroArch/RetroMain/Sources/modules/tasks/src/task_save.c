@@ -625,8 +625,8 @@ static bool task_push_undo_save_state(const char *path, void *data, size_t len)
    if (settings->bools.savestate_file_compression)
       state->flags              |= SAVE_TASK_FLAG_COMPRESS_FILES;
 #endif
-   if (!settings->bools.notification_show_save_state)
-      state->flags              |= SAVE_TASK_FLAG_MUTE;
+   // if (!settings->bools.notification_show_save_state)
+   state->flags              |= SAVE_TASK_FLAG_MUTE;
 
    task->type                    = TASK_TYPE_BLOCKING;
    task->state                   = state;
@@ -1175,8 +1175,8 @@ static void task_push_save_state(const char *path, void *data, size_t len, bool 
    if (settings->bools.savestate_file_compression)
       state->flags              |= SAVE_TASK_FLAG_COMPRESS_FILES;
 #endif
-   if (!settings->bools.notification_show_save_state)
-      state->flags              |= SAVE_TASK_FLAG_MUTE;
+   // if (!settings->bools.notification_show_save_state)
+   state->flags              |= SAVE_TASK_FLAG_MUTE;
 
    task->type                    = TASK_TYPE_BLOCKING;
    task->state                   = state;
@@ -1285,8 +1285,8 @@ static void task_push_load_and_save_state(const char *path, void *data,
    if (settings->bools.savestate_file_compression)
       state->flags              |= SAVE_TASK_FLAG_COMPRESS_FILES;
 #endif
-   if (!settings->bools.notification_show_save_state)
-      state->flags              |= SAVE_TASK_FLAG_MUTE;
+   // if (!settings->bools.notification_show_save_state)
+   state->flags              |= SAVE_TASK_FLAG_MUTE;
 
    task->state                   = state;
    task->type                    = TASK_TYPE_BLOCKING;
@@ -1592,8 +1592,8 @@ bool content_load_state(const char *path,
    if (settings->bools.savestate_file_compression)
       state->flags             |= SAVE_TASK_FLAG_COMPRESS_FILES;
 #endif
-   if (!settings->bools.notification_show_save_state)
-      state->flags             |= SAVE_TASK_FLAG_MUTE;
+   // if (!settings->bools.notification_show_save_state)
+   state->flags             |= SAVE_TASK_FLAG_MUTE;
 
    task->type                   = TASK_TYPE_BLOCKING;
    task->state                  = state;

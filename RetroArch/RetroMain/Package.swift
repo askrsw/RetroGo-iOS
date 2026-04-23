@@ -180,7 +180,10 @@ let package = Package(
         ),
         .target(
             name: "audio",
-            dependencies: [ "interface" ],
+            dependencies: [
+                "interface",
+                .product(name: "signalsmith", package: "RetroDeps"),
+            ],
             path: "Sources/drivers/audio",
             cSettings: defines + [
                 .unsafeFlags([

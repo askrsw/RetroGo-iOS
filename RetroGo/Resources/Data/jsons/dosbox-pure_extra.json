@@ -10,5 +10,6 @@
         }
     ],
     "src_url": "https://github.com/libretro/dosbox-pure",
-    "supports_analog": false
+    "supports_analog": false,
+    "supports_logic_thread": false
 }

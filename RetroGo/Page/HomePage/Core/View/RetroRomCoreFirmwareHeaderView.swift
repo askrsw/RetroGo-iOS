@@ -54,8 +54,8 @@ final class RetroRomCoreFirmwareHeaderView: UICollectionReusableView {
         addSubview(label)
         label.snp.makeConstraints { make in
             make.leading.equalToSuperview()
-            make.top.equalToSuperview().offset(18)
-            make.bottom.equalToSuperview().offset(-8)
+            make.bottom.equalToSuperview().offset(-10)
+            make.top.equalToSuperview().offset(20).priority(.low)
         }
 
         if coreInfoItem?.coreId != "ppsspp" {

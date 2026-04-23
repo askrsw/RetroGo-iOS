@@ -182,6 +182,16 @@
             }
         },
         {
+            "id": "fast",
+            "type": "fast-button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "right": 65, "bottom": 140 },
+                "plain_landscape_layout": { "right": 65, "bottom": 40 }
+            }
+        },
+        {
             "id": "overlay-collapse",
             "type": "overlay-collapse",
             "geometry": {

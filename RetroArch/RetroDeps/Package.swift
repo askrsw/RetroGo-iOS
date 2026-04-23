@@ -135,6 +135,7 @@ let package = Package(
         .library(name: "libDR", targets: ["libDR"]),
         .library(name: "glslang", targets: ["glslang"]),
         .library(name: "stb", targets: ["stb"]),
+        .library(name: "signalsmith", targets: ["signalsmith"]),
     ],
     dependencies: [
         .package(path: "../RetroBase"),
@@ -183,6 +184,17 @@ let package = Package(
                     "-Wno-shorten-64-to-32",
                     "-Wno-deprecated-declarations",
                 ]),
+            ]
+        ),
+        .target(
+            name: "signalsmith",
+            exclude: ["doc"],
+            cxxSettings: [
+                .define("SIGNALSMITH_USE_ACCELERATE", .when(platforms: [.iOS])),
+                .define("ACCELERATE_NEW_LAPACK", .when(platforms: [.iOS])),
+            ],
+            linkerSettings: [
+                .linkedFramework("Accelerate", .when(platforms: [.iOS])),
             ]
         ),
         .target(

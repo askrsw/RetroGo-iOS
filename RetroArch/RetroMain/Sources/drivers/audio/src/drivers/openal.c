@@ -37,6 +37,7 @@
 #include <utils/verbosity.h>
 
 #define OPENAL_BUFSIZE 1024
+#define OPENAL_RING_BLOCKS 32
 
 typedef struct al
 {
@@ -47,13 +48,92 @@ typedef struct al
    ALCcontext *ctx;
    size_t res_ptr;
    ALsizei num_buffers;
-   size_t tmpbuf_ptr;
+   uint8_t *ringbuf;
+   size_t ringbuf_size;
+   size_t ringbuf_read;
+   size_t ringbuf_write;
+   size_t ringbuf_fill;
    int rate;
    ALenum format;
    uint8_t tmpbuf[OPENAL_BUFSIZE];
+   retro_time_t stats_start_time;
+   uint64_t dropped_blocks;
+   uint64_t dropped_bytes;
+   float playback_speed;
    bool nonblock;
    bool is_paused;
 } al_t;
+
+static size_t al_ring_write_avail(const al_t *al)
+{
+   return al->ringbuf_size - al->ringbuf_fill;
+}
+
+static size_t al_ring_read_avail(const al_t *al)
+{
+   return al->ringbuf_fill;
+}
+
+static void al_ring_write(al_t *al, const uint8_t *src, size_t len)
+{
+   size_t first = MIN(len, al->ringbuf_size - al->ringbuf_write);
+   memcpy(al->ringbuf + al->ringbuf_write, src, first);
+
+   if (len > first)
+      memcpy(al->ringbuf, src + first, len - first);
+
+   al->ringbuf_write = (al->ringbuf_write + len) % al->ringbuf_size;
+   al->ringbuf_fill += len;
+}
+
+static void al_ring_read(al_t *al, uint8_t *dst, size_t len)
+{
+   size_t first = MIN(len, al->ringbuf_size - al->ringbuf_read);
+   memcpy(dst, al->ringbuf + al->ringbuf_read, first);
+
+   if (len > first)
+      memcpy(dst + first, al->ringbuf, len - first);
+
+   al->ringbuf_read = (al->ringbuf_read + len) % al->ringbuf_size;
+   al->ringbuf_fill -= len;
+}
+
+static void al_ring_drop_oldest(al_t *al, size_t len)
+{
+   len = MIN(len, al->ringbuf_fill);
+   al->ringbuf_read = (al->ringbuf_read + len) % al->ringbuf_size;
+   al->ringbuf_fill -= len;
+}
+
+static void al_log_drop_stats(al_t *al)
+{
+   retro_time_t now;
+
+   if (!al)
+      return;
+
+   now = cpu_features_get_time_usec();
+
+   if (al->stats_start_time == 0)
+   {
+      al->stats_start_time = now;
+      return;
+   }
+
+   if ((now - al->stats_start_time) < (retro_time_t)60000000)
+      return;
+
+   RARCH_LOG("[OpenAL] drop_stats interval=60s dropped_blocks=%llu dropped_bytes=%llu ring_fill=%u/%u nonblock=%s\n",
+         (unsigned long long)al->dropped_blocks,
+         (unsigned long long)al->dropped_bytes,
+         (unsigned)al->ringbuf_fill,
+         (unsigned)al->ringbuf_size,
+         al->nonblock ? "true" : "false");
+
+   al->stats_start_time = now;
+   al->dropped_blocks   = 0;
+   al->dropped_bytes    = 0;
+}
 
 static void al_free(void *data)
 {
@@ -70,6 +150,7 @@ static void al_free(void *data)
 
    free(al->buffers);
    free(al->res_buf);
+   free(al->ringbuf);
    alcMakeContextCurrent(NULL);
 
    if (al->ctx)
@@ -102,6 +183,7 @@ static void *al_init(const char *device, unsigned rate, unsigned latency,
    alcMakeContextCurrent(al->ctx);
 
    al->rate = rate;
+   al->playback_speed = 1.0f;
 
    /* We already use one buffer for tmpbuf. */
    al->num_buffers = (latency * rate * 2 * sizeof(int16_t)) / (1000 * OPENAL_BUFSIZE) - 1;
@@ -112,7 +194,9 @@ static void *al_init(const char *device, unsigned rate, unsigned latency,
 
    al->buffers = (ALuint*)calloc(al->num_buffers, sizeof(ALuint));
    al->res_buf = (ALuint*)calloc(al->num_buffers, sizeof(ALuint));
-   if (!al->buffers || !al->res_buf)
+   al->ringbuf_size = OPENAL_BUFSIZE * OPENAL_RING_BLOCKS;
+   al->ringbuf = (uint8_t*)calloc(al->ringbuf_size, sizeof(uint8_t));
+   if (!al->buffers || !al->res_buf || !al->ringbuf)
       goto error;
 
    alGenSources(1, &al->source);
@@ -163,51 +247,101 @@ static bool al_get_buffer(al_t *al, ALuint *buffer)
    return true;
 }
 
-static size_t al_fill_internal_buf(al_t *al, const void *s, size_t len)
+static bool al_queue_from_ring(al_t *al)
 {
-   size_t read_size = MIN(OPENAL_BUFSIZE - al->tmpbuf_ptr, len);
-   memcpy(al->tmpbuf + al->tmpbuf_ptr, s, read_size);
-   al->tmpbuf_ptr += read_size;
-   return read_size;
+   ALint source_state;
+   ALuint buffer;
+
+   if (al_ring_read_avail(al) < OPENAL_BUFSIZE)
+      return false;
+
+   if (!al_get_buffer(al, &buffer))
+      return false;
+
+   al_ring_read(al, al->tmpbuf, OPENAL_BUFSIZE);
+   alBufferData(buffer, AL_FORMAT_STEREO16, al->tmpbuf, OPENAL_BUFSIZE, al->rate);
+   alSourceQueueBuffers(al->source, 1, &buffer);
+
+   if (alGetError() != AL_NO_ERROR)
+      return false;
+
+   alGetSourcei(al->source, AL_SOURCE_STATE, &source_state);
+   if (source_state != AL_PLAYING)
+   {
+      alSourcePlay(al->source);
+   }
+
+   return alGetError() == AL_NO_ERROR;
+}
+
+static void al_drain_ring(al_t *al)
+{
+   while (al_ring_read_avail(al) >= OPENAL_BUFSIZE)
+   {
+      if (!al_queue_from_ring(al))
+         break;
+   }
 }
 
 static ssize_t al_write(void *data, const void *s, size_t len)
 {
    al_t           *al = (al_t*)data;
    const uint8_t *buf = (const uint8_t*)s;
-   size_t     written = 0;
+   size_t original_len = len;
 
-   while (len)
+   if (!al)
+      return 0;
+
+   /*
+    * This driver-local ring buffer decouples libretro's push-style audio writes
+    * from OpenAL's fixed-size queued buffers. The goal is to make the output
+    * path behave more like the NES/OpenAL implementation: accumulate PCM in a
+    * stable queue, then submit fixed-size blocks to OpenAL when buffers become
+    * available.
+    */
+   while (len > 0)
    {
-      ALint val;
-      ALuint buffer;
-      size_t rc = al_fill_internal_buf(al, buf, len);
+      size_t write_avail = al_ring_write_avail(al);
 
-      written += rc;
-      buf     += rc;
-      len     -= rc;
+      if (write_avail == 0)
+      {
+         al_drain_ring(al);
+         write_avail = al_ring_write_avail(al);
+      }
 
-      if (al->tmpbuf_ptr != OPENAL_BUFSIZE)
-         break;
+      if (write_avail == 0)
+      {
+         if (al->nonblock)
+         {
+            /*
+             * In fast/non-blocking mode, prefer the most recent audio. Drop one
+             * fixed block from the head of the queue so new data can enter.
+             */
+            al_ring_drop_oldest(al, OPENAL_BUFSIZE);
+            al->dropped_blocks++;
+            al->dropped_bytes += OPENAL_BUFSIZE;
+            write_avail = al_ring_write_avail(al);
+         }
+         else
+         {
+            retro_sleep(1);
+            continue;
+         }
+      }
 
-      if (!al_get_buffer(al, &buffer))
-         break;
+      {
+         size_t to_write = MIN(len, write_avail);
+         al_ring_write(al, buf, to_write);
+         buf += to_write;
+         len -= to_write;
+      }
 
-      alBufferData(buffer, AL_FORMAT_STEREO16, al->tmpbuf, OPENAL_BUFSIZE, al->rate);
-      al->tmpbuf_ptr = 0;
-      alSourceQueueBuffers(al->source, 1, &buffer);
-      if (alGetError() != AL_NO_ERROR)
-         return -1;
-
-      alGetSourcei(al->source, AL_SOURCE_STATE, &val);
-      if (val != AL_PLAYING)
-         alSourcePlay(al->source);
-
-      if (alGetError() != AL_NO_ERROR)
-         return -1;
+      al_drain_ring(al);
    }
 
-   return written;
+   al_log_drop_stats(al);
+
+   return original_len;
 }
 
 static bool al_stop(void *data)
@@ -237,7 +371,9 @@ static bool al_start(void *data, bool is_shutdown)
 {
    al_t *al = (al_t*)data;
    if (al)
+   {
       al->is_paused = false;
+   }
    return true;
 }
 
@@ -245,13 +381,14 @@ static size_t al_write_avail(void *data)
 {
    al_t *al = (al_t*)data;
    al_unqueue_buffers(al);
-   return al->res_ptr * OPENAL_BUFSIZE + (OPENAL_BUFSIZE - al->tmpbuf_ptr);
+   al_drain_ring(al);
+   return al_ring_write_avail(al);
 }
 
 static size_t al_buffer_size(void *data)
 {
    al_t *al = (al_t*)data;
-   return (al->num_buffers + 1) * OPENAL_BUFSIZE; /* Also got tmpbuf. */
+   return al ? al->ringbuf_size : 0;
 }
 
 static bool al_use_float(void *data) { return false; }

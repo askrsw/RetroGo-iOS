@@ -388,3 +388,68 @@ final class RetroRomFileManager {
         }
     }
 }
+
+extension RetroRomFileManager {
+    // v1.0 -> v1.1.0~
+    func performDataMigrationIfNeeded() {
+        let fileManager = FileManager.default
+        let legacyDataRoot = fileManager.documentFolder + "/data"
+
+        guard fileManager.fileExists(atPath: legacyDataRoot) else { return }
+        if isSymbolicLink(at: legacyDataRoot) { return }
+
+        // 定义迁移映射关系：[旧子目录 : 新子目录]
+        let migrationMap: [String: String] = [
+            legacyDataRoot + "/states": AppConfig.shared.statesFolder,
+            legacyDataRoot + "/database": (AppConfig.shared.romDatabasePath as NSString).deletingLastPathComponent,
+            legacyDataRoot + "/roms": AppConfig.shared.romFolderPath,
+            legacyDataRoot + "/auto_snapshots": AppConfig.shared.sharedAutoThumbnailFolderPath
+        ]
+
+        for (oldDir, newDir) in migrationMap {
+            migrateSubFolderContent(from: oldDir, to: newDir)
+        }
+
+        // 检查 legacyDataRoot 是否已经搬空，如果空了再删，如果不空说明有用户自定义数据，留着
+        if let contents = try? fileManager.contentsOfDirectory(atPath: legacyDataRoot), contents.isEmpty {
+            try? fileManager.removeItem(atPath: legacyDataRoot)
+        }
+    }
+
+    private func isSymbolicLink(at path: String) -> Bool {
+        let url = URL(fileURLWithPath: path)
+        return (try? url.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) == true
+    }
+
+    private func normalizedPath(_ path: String) -> String {
+        URL(fileURLWithPath: path).resolvingSymlinksInPath().standardizedFileURL.path
+    }
+
+    // 核心：逐个文件移动，不破坏目录结构
+    private func migrateSubFolderContent(from oldDir: String, to newDir: String) {
+        let fileManager = FileManager.default
+        guard fileManager.pathIsDirectory(oldDir) else { return }
+        if isSymbolicLink(at: oldDir) { return }
+        if normalizedPath(oldDir) == normalizedPath(newDir) { return }
+
+        do {
+            let files = try fileManager.contentsOfDirectory(atPath: oldDir)
+            for fileName in files {
+                let oldPath = oldDir + "/" + fileName
+                let newPath = newDir + "/" + fileName
+
+                if !fileManager.fileExists(atPath: newPath) {
+                    // 使用 moveItem，因为同一个沙盒内这是移动指针，极快且省空间
+                    try fileManager.moveItem(atPath: oldPath, toPath: newPath)
+                } else {
+                    // 如果目标已存在（说明之前迁移过一半中断了），安全起见可以 removeItem 旧的
+                    try? fileManager.removeItem(atPath: oldPath)
+                }
+            }
+            // 尝试删除已经搬空的旧子目录
+            try? fileManager.removeItem(atPath: oldDir)
+        } catch {
+            print("Migration Error at \(oldDir): \(error)")
+        }
+    }
+}

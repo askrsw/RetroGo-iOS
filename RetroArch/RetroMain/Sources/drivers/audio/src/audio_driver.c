@@ -65,6 +65,8 @@ bool task_push_audio_mixer_load(
 #include <record/record_driver.h>
 #include <utils/verbosity.h>
 
+#include <signalsmith-stretch.h>
+
 #define AUDIO_CHUNK_SIZE_BLOCKING      512
 
 /* So we don't get complete line-noise when fast-forwarding audio. */
@@ -104,7 +106,7 @@ audio_driver_t *audio_drivers[] = {
 #if !defined(__QNX__) && !defined(MIYOO) && defined(HAVE_THREADS)
    &audio_alsathread,
 #endif
-#endif
+#endif // HAVE_ALSA
 #ifdef HAVE_TINYALSA
    &audio_tinyalsa,
 #endif
@@ -206,27 +208,27 @@ microphone_driver_t microphone_null = {
 
 microphone_driver_t *microphone_drivers[] = {
 #ifdef HAVE_ALSA
-      &microphone_alsa,
+   &microphone_alsa,
 #if !defined(__QNX__) && !defined(MIYOO) && defined(HAVE_THREADS)
    &microphone_alsathread,
 #endif
-#endif
+#endif // HAVE_ALSA
 #ifdef HAVE_WASAPI
-      &microphone_wasapi,
+   &microphone_wasapi,
 #endif
 #ifdef HAVE_SDL2
-      &microphone_sdl, /* Microphones are not supported in SDL 1 */
+   &microphone_sdl, /* Microphones are not supported in SDL 1 */
 #endif
 #ifdef HAVE_PIPEWIRE
-      &microphone_pipewire,
+   &microphone_pipewire,
 #endif
 #if defined(HAVE_COREAUDIO) && IOS
-      &microphone_coreaudio,
+   &microphone_coreaudio,
 #endif
-      &microphone_null,
-      NULL,
+   &microphone_null,
+   NULL,
 };
-#endif
+#endif // HAVE_MICROPHONE
 
 static audio_driver_state_t audio_driver_st = {0}; /* double alignment */
 
@@ -260,7 +262,7 @@ bool audio_driver_is_ai_service_speech_running(void)
 #endif
    return false;
 }
-#endif
+#endif // HAVE_TRANSLATE
 
 static bool audio_driver_free_devices_list(void)
 {
@@ -299,7 +301,7 @@ static void audio_driver_report_audio_buffer_statistics(void)
          audio_stats.close_to_underrun,
          audio_stats.close_to_blocking);
 }
-#endif
+#endif // DEBUG
 
 static void audio_driver_deinit_resampler(void)
 {
@@ -310,6 +312,143 @@ static void audio_driver_deinit_resampler(void)
    audio_st->resampler_data     = NULL;
    audio_st->resampler_ident[0] = '\0';
    audio_st->resampler_quality  = RESAMPLER_QUALITY_DONTCARE;
+}
+
+static void audio_driver_stretch_free(audio_driver_state_t *audio_st)
+{
+   if (audio_st->stretch_context)
+      signalsmith_stretch_release(audio_st->stretch_context);
+   audio_st->stretch_context = NULL;
+
+   if (audio_st->stretch_input_planar)
+      memalign_free(audio_st->stretch_input_planar);
+   audio_st->stretch_input_planar = NULL;
+   audio_st->stretch_input_capacity_frames = 0;
+
+   if (audio_st->stretch_output_planar)
+      memalign_free(audio_st->stretch_output_planar);
+   audio_st->stretch_output_planar = NULL;
+   audio_st->stretch_output_capacity_frames = 0;
+
+   audio_st->stretch_output_frame_fraction = 0.0;
+}
+
+static bool audio_driver_stretch_ensure(
+      audio_driver_state_t *audio_st,
+      size_t input_frames,
+      size_t output_frames)
+{
+   const int channels = 2;
+   size_t input_samples;
+   size_t output_samples;
+
+   if (!audio_st->stretch_context)
+   {
+      audio_st->stretch_context = signalsmith_stretch_init();
+      if (!audio_st->stretch_context)
+         return false;
+
+      signalsmith_stretch_preset_cheaper(audio_st->stretch_context,
+            channels,
+            audio_st->stretch_sample_rate > 0.0f
+               ? audio_st->stretch_sample_rate : 44100.0f,
+            false);
+   }
+
+   input_samples = input_frames * channels;
+   if (audio_st->stretch_input_capacity_frames < input_frames)
+   {
+      float *new_buffer = (float*)memalign_alloc(64, input_samples * sizeof(float));
+      if (!new_buffer)
+         return false;
+      if (audio_st->stretch_input_planar)
+      {
+         memcpy(new_buffer, audio_st->stretch_input_planar,
+               audio_st->stretch_input_capacity_frames * channels * sizeof(float));
+         memalign_free(audio_st->stretch_input_planar);
+      }
+      audio_st->stretch_input_planar = new_buffer;
+      audio_st->stretch_input_capacity_frames = input_frames;
+   }
+
+   output_samples = output_frames * channels;
+   if (audio_st->stretch_output_capacity_frames < output_frames)
+   {
+      float *new_buffer = (float*)memalign_alloc(64, output_samples * sizeof(float));
+      if (!new_buffer)
+         return false;
+      if (audio_st->stretch_output_planar)
+      {
+         memcpy(new_buffer, audio_st->stretch_output_planar,
+               audio_st->stretch_output_capacity_frames * channels * sizeof(float));
+         memalign_free(audio_st->stretch_output_planar);
+      }
+      audio_st->stretch_output_planar = new_buffer;
+      audio_st->stretch_output_capacity_frames = output_frames;
+   }
+
+   return true;
+}
+
+static bool audio_driver_stretch_apply(
+      audio_driver_state_t *audio_st,
+      float **output_data,
+      unsigned *output_frames)
+{
+   const int channels                   = 2;
+   float *input_channels[2];
+   float *output_channels[2];
+   size_t input_frames                  = *output_frames;
+   double exact_output_frames;
+   size_t target_output_frames;
+   size_t frame;
+   size_t channel;
+
+   if (audio_st->playback_speed <= 1.0f || input_frames == 0)
+      return false;
+
+   exact_output_frames =
+      ((double)input_frames / audio_st->playback_speed)
+      + audio_st->stretch_output_frame_fraction;
+   target_output_frames = (size_t)exact_output_frames;
+
+   if (target_output_frames == 0)
+      target_output_frames = 1;
+
+   audio_st->stretch_output_frame_fraction =
+      exact_output_frames - target_output_frames;
+
+   if (!audio_driver_stretch_ensure(audio_st, input_frames, target_output_frames))
+      return false;
+
+   input_channels[0]  = audio_st->stretch_input_planar;
+   input_channels[1]  = audio_st->stretch_input_planar + input_frames;
+   output_channels[0] = audio_st->stretch_output_planar;
+   output_channels[1] = audio_st->stretch_output_planar + target_output_frames;
+
+   for (frame = 0; frame < input_frames; frame++)
+   {
+      size_t interleaved_index = frame * channels;
+      for (channel = 0; channel < channels; channel++)
+         input_channels[channel][frame] = (*output_data)[interleaved_index + channel];
+   }
+
+   signalsmith_stretch_process(audio_st->stretch_context,
+         (const float *const *)input_channels,
+         (int)input_frames,
+         output_channels,
+         (int)target_output_frames);
+
+   for (frame = 0; frame < target_output_frames; frame++)
+   {
+      size_t interleaved_index = frame * channels;
+      for (channel = 0; channel < channels; channel++)
+         audio_st->output_samples_buf[interleaved_index + channel] = output_channels[channel][frame];
+   }
+
+   *output_data   = audio_st->output_samples_buf;
+   *output_frames = (unsigned)target_output_frames;
+   return true;
 }
 
 static bool audio_driver_deinit_internal(bool audio_enable)
@@ -338,7 +477,7 @@ static bool audio_driver_deinit_internal(bool audio_enable)
       memalign_free(audio_st->rewind_buf);
    audio_st->rewind_buf  = NULL;
    audio_st->rewind_size = 0;
-#endif
+#endif // HAVE_REWIND
 
    if (!audio_enable)
    {
@@ -347,6 +486,7 @@ static bool audio_driver_deinit_internal(bool audio_enable)
    }
 
    audio_driver_deinit_resampler();
+   audio_driver_stretch_free(audio_st);
 
    if (audio_st->output_samples_buf)
       memalign_free(audio_st->output_samples_buf);
@@ -377,7 +517,7 @@ static void audio_driver_mixer_deinit(void)
 
    audio_mixer_done();
 }
-#endif
+#endif // HAVE_AUDIOMIXER
 
 bool audio_driver_deinit(void)
 {
@@ -490,7 +630,7 @@ static void audio_driver_flush(audio_driver_state_t *audio_st,
          src_data.input_frames       = dsp_data.output_frames;
       }
    }
-#endif
+#endif // HAVE_DSP_FILTER
 
    src_data.data_out                 = audio_st->output_samples_buf;
 
@@ -524,7 +664,7 @@ static void audio_driver_flush(audio_driver_state_t *audio_st,
                   audio_st->src_ratio_curr,
                   audio_st->src_ratio_orig);
          }
-#endif
+#endif // 0
       }
    }
 
@@ -537,7 +677,7 @@ static void audio_driver_flush(audio_driver_state_t *audio_st,
    {
       const retro_time_t flush_time = cpu_features_get_time_usec();
 
-      if (audio_st->last_flush_time > 0)
+      if (audio_st->playback_speed <= 1.0f && audio_st->last_flush_time > 0)
       {
          /* What we should see if the speed was 1.0x, converted to microsecs */
          const double expected_flush_delta =
@@ -582,19 +722,22 @@ static void audio_driver_flush(audio_driver_state_t *audio_st,
          if (audio_st->mixer_volume_gain == 1.0f)
             override                      = false;
          mixer_gain                       = audio_st->mixer_volume_gain;
-
       }
       audio_mixer_mix(audio_st->output_samples_buf,
             src_data.output_frames, mixer_gain, override);
    }
-#endif
+#endif // HAVE_AUDIOMIXER
 
    /* Now we write our processed audio output to the driver.
     * It may not be played immediately, depending on 
     * the driver implementation. */
    {
-      const void *output_data = audio_st->output_samples_buf;
+      float *processed_output_data = audio_st->output_samples_buf;
+      const void *output_data = processed_output_data;
       unsigned output_frames  = (unsigned)src_data.output_frames; /* Unit: frames */
+
+      audio_driver_stretch_apply(audio_st, &processed_output_data, &output_frames);
+      output_data = processed_output_data;
 
       /* If the audio driver supports float samples,
        * we don't have to do conversion */
@@ -631,7 +774,7 @@ const char *audio_driver_mixer_get_stream_name(unsigned i)
    return msg_hash_to_str(MENU_ENUM_LABEL_VALUE_NOT_AVAILABLE);
 }
 
-#endif
+#endif // HAVE_AUDIOMIXER
 
 bool audio_driver_init_internal(void *settings_data, bool audio_cb_inited)
 {
@@ -662,7 +805,7 @@ bool audio_driver_init_internal(void *settings_data, bool audio_cb_inited)
 
    audio_driver_st.rewind_buf    = rewind_buf;
    audio_driver_st.rewind_size   = max_buffer_samples;
-#endif
+#endif // HAVE_REWIND
 
    convert_s16_to_float_init_simd();
    convert_float_to_s16_init_simd();
@@ -679,6 +822,14 @@ bool audio_driver_init_internal(void *settings_data, bool audio_cb_inited)
    audio_driver_st.chunk_block_size               = AUDIO_CHUNK_SIZE_BLOCKING;
    audio_driver_st.chunk_nonblock_size            = AUDIO_CHUNK_SIZE_NONBLOCKING;
    audio_driver_st.chunk_size                     = audio_driver_st.chunk_block_size;
+   audio_driver_st.playback_speed                 = 1.0f;
+   audio_driver_st.stretch_sample_rate            = (float)settings->uints.audio_output_sample_rate;
+   audio_driver_st.stretch_output_frame_fraction  = 0.0;
+   audio_driver_st.stretch_context                = NULL;
+   audio_driver_st.stretch_input_planar           = NULL;
+   audio_driver_st.stretch_output_planar          = NULL;
+   audio_driver_st.stretch_input_capacity_frames  = 0;
+   audio_driver_st.stretch_output_capacity_frames = 0;
 
    if (!audio_enable)
    {
@@ -721,7 +872,7 @@ bool audio_driver_init_internal(void *settings_data, bool audio_cb_inited)
       }
    }
    else
-#endif
+#endif // HAVE_THREADS
    {
       audio_driver_st.context_audio_data =
          audio_driver_st.current_audio->init(*settings->arrays.audio_device
@@ -974,7 +1125,7 @@ size_t audio_driver_sample_batch_rewind(
 
    return frames;
 }
-#endif
+#endif // HAVE_REWIND
 
 #ifdef HAVE_DSP_FILTER
 void audio_driver_dsp_filter_free(void)
@@ -997,7 +1148,7 @@ bool audio_driver_dsp_filter_init(const char *device)
       return false;
    if (!(plugs = dir_list_new(basedir, ext_name, false, true, false, false)))
       return false;
-#endif
+#endif // defined(HAVE_DYLIB) && !defined(HAVE_FILTERS_BUILTIN)
    audio_driver_dsp = retro_dsp_filter_new(
          device, plugs, audio_driver_st.input);
    if (!audio_driver_dsp)
@@ -1007,7 +1158,7 @@ bool audio_driver_dsp_filter_init(const char *device)
 
    return true;
 }
-#endif
+#endif // HAVE_DSP_FILTER
 
 void audio_driver_set_buffer_size(size_t bufsize)
 {
@@ -1036,7 +1187,7 @@ void audio_driver_setup_rewind(void)
 
    audio_st->data_ptr = 0;
 }
-#endif
+#endif // HAVE_REWIND
 
 bool audio_driver_get_devices_list(void **data)
 {
@@ -1061,7 +1212,7 @@ bool audio_driver_mixer_extension_supported(const char *ext)
       return true;
    if (string_is_equal_noncase("xm", ext))
       return true;
-#endif
+#endif // HAVE_IBXM
 #ifdef HAVE_DR_FLAC
    if (string_is_equal_noncase("flac", ext))
       return true;
@@ -1615,7 +1766,7 @@ bool audio_driver_mixer_toggle_mute(void)
       !audio_driver_st.mixer_mute_enable;
    return true;
 }
-#endif
+#endif // HAVE_AUDIOMIXER
 
 bool audio_driver_enable_callback(void)
 {
@@ -1699,6 +1850,29 @@ const char *audio_driver_get_ident(void)
    return audio_st->current_audio->ident;
 }
 
+void audio_driver_set_playback_speed(float speed)
+{
+   audio_driver_state_t *audio_st = &audio_driver_st;
+   float sanitized_speed;
+
+   if (!audio_st->current_audio)
+      return;
+
+   sanitized_speed = speed < 1.0f ? 1.0f : speed;
+
+   if (fabsf(audio_st->playback_speed - sanitized_speed) < 0.001f)
+      return;
+
+   audio_st->playback_speed = sanitized_speed;
+   audio_st->stretch_output_frame_fraction = 0.0;
+
+   if (audio_st->stretch_context)
+      signalsmith_stretch_reset(audio_st->stretch_context);
+
+   audio_st->last_flush_time = 0;
+   audio_st->avg_flush_delta = 0;
+}
+
 bool audio_driver_stop(void)
 {
    bool stopped;
@@ -1753,7 +1927,7 @@ void audio_driver_frame_is_reverse(void)
                (runloop_flags & RUNLOOP_FLAG_SLOWMOTION) ? true : false,
                (runloop_flags & RUNLOOP_FLAG_FASTMOTION) ? true : false);
 }
-#endif
+#endif // HAVE_REWIND
 
 void audio_set_float(enum audio_action action, float val)
 {
@@ -2661,4 +2835,4 @@ bool microphone_driver_get_devices_list(void **data)
    *ptr = mic_driver_st.devices_list;
    return true;
 }
-#endif
+#endif // HAVE_MICROPHONE

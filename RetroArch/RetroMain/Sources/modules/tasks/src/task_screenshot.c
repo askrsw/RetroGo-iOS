@@ -353,7 +353,7 @@ static bool screenshot_dump(
       return false;
    }
    state->out_buffer     = buf;
-#endif
+#endif // defined(HAVE_RPNG)
 
    if (use_thread)
    {
@@ -366,11 +366,6 @@ static bool screenshot_dump(
          task->flags    |=  RETRO_TASK_FLG_MUTE;
       else
          task->flags    &= ~RETRO_TASK_FLG_MUTE;
-
-      {
-         if (!savestate & settings->bools.notification_show_screenshot)
-            task->title = strdup(msg_hash_to_str(MSG_TAKING_SCREENSHOT));
-      }
 
       if (task_queue_push(task))
          return true;
@@ -586,7 +581,7 @@ bool take_screenshot(
 }
 
 bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size) {
-    bool ret                       = false;
+    bool ret                       = true;
     uint32_t runloop_flags         = runloop_get_flags();
     video_driver_state_t *video_st = video_state_get_ptr();
     struct video_viewport vp       = { 0 };

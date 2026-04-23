@@ -156,13 +156,7 @@ extension AppSettingViewController {
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_ingame_haptic_feedback")
                 cell.accessoryView = switchControl
                 return cell
-            case .about:
-                let cell = cellBuilder()
-                cell.accessoryView = nil
-                cell.imageView?.image = UIImage(systemName: "info.circle")
-                cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_about")
-                cell.accessoryType = .disclosureIndicator
-                return cell
+
             case .versionHeistory:
                 let cell = cellBuilder()
                 cell.accessoryView = nil
@@ -170,6 +164,14 @@ extension AppSettingViewController {
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_version_history")
                 cell.accessoryType = .disclosureIndicator
                 return cell
+            case .about:
+                let cell = cellBuilder()
+                cell.accessoryView = nil
+                cell.imageView?.image = UIImage(systemName: "info.circle")
+                cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_about")
+                cell.accessoryType = .disclosureIndicator
+                return cell
+
             }
         }
         return ds

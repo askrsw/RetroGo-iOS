@@ -11,5 +11,6 @@
     ],
     "src_url": "https://github.com/libretro/Mesen-S",
     "supports_analog": false,
-    "overlay": "snes"
+    "overlay": "snes",
+    "supports_logic_thread": true
 }

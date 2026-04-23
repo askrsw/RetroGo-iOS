@@ -18,7 +18,7 @@
 #include <math.h>
 
 #include <gfx/font_driver.h>
-#include "video_thread_wrapper.h"
+#include <gfx/video_thread_wrapper.h>
 
 /* TODO/FIXME - global */
 static void *video_font_driver = NULL;
@@ -884,11 +884,17 @@ font_data_t *font_driver_init_first(
    if (     threading_hint
          && is_threaded
          && !video_driver_is_hw_context())
+#if defined(__MACH__) && defined(__APPLE__)
+      ok = virtual_video_font_init(&font_driver, &font_handle,
+            video_data, font_path, font_size, api, font_init_first,
+            is_threaded);
+#else
       ok = video_thread_font_init(&font_driver, &font_handle,
             video_data, font_path, font_size, api, font_init_first,
             is_threaded);
-   else
 #endif
+   else
+#endif // HAVE_THREADS
    ok = font_init_first(&font_driver, &font_handle,
          video_data, font_path, font_size, api, is_threaded);
 

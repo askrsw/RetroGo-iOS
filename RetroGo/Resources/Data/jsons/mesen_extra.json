@@ -11,5 +11,6 @@
     ],
     "src_url": "https://github.com/libretro/Mesen",
     "supports_analog": false,
-    "overlay": "nes"
+    "overlay": "nes",
+    "supports_logic_thread": true
 }

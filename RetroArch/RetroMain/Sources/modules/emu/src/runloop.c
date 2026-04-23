@@ -5414,6 +5414,14 @@ static enum runloop_state_enum runloop_check_state(
          }
       }
 
+   bool v1 = (runloop_state.flags & RUNLOOP_FLAG_SHUTDOWN_INITIATED);
+   bool v2 = trig_quit_key;
+   bool v3 = ((runloop_state.max_frames != 0) && (frame_count >= runloop_state.max_frames));
+   bool v4 = runloop_exec;
+   bool v5 = !is_alive;
+   bool v6 = (((input_st->bsv_movie_state.flags & BSV_FLAG_MOVIE_END) && (input_st->bsv_movie_state.flags & BSV_FLAG_MOVIE_EOF_EXIT)));
+   static int frame_count = 0;
+   frame_count ++;
       if (RUNLOOP_TIME_TO_EXIT(trig_quit_key))
       {
          bool quit_runloop           = false;
@@ -5879,6 +5887,7 @@ static enum runloop_state_enum runloop_check_state(
       old_hold_button_state             = new_hold_button_state;
    }
 
+#if 0
    /* Display fast-forward notification, unless
     * disabled via override */
    if (  !runloop_st->fastmotion_override.current.fastforward
@@ -5897,6 +5906,7 @@ static enum runloop_state_enum runloop_check_state(
          }
       }
    }
+#endif // 0
 
 #ifdef HAVE_CHEEVOS
    if (!cheevos_hardcore_active)

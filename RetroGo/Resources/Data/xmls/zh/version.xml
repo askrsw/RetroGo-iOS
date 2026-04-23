@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
-    <p-section id="version-1.0.0" bottompadding="10" toppadding="5">
+    <p-section id="version-1.2.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.2.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 4 月 24 日</i>。
+        </p-paragraph>
+        <p-list id="v1.2.0" style="number">
+            <p-item>重构底层运行架构，分离 RetroArch 的渲染与逻辑处理，游戏逻辑现可运行在独立线程，带来更稳定的帧节奏与更好的系统响应。</p-item>
+            <p-item>新增游戏快进功能，支持 <b>2x / 3x / 4x / 6x</b> 四档倍率，减少重复等待时间，提升高频游戏操作效率。</p-item>
+            <p-item>引入 <b>signalsmith-stretch</b> 进行快进音频平滑处理，在快进场景下有效降低杂音与噪音，提升整体听感稳定性。</p-item>
+            <p-item>配置系统升级为核心级与游戏级双层配置：支持按核心设置默认参数，并允许按游戏单独覆盖，实现更精细的个性化体验。</p-item>
+        </p-list>
+    </p-section>
+    <p-section id="version-1.1.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.1.0</p-title>
         <p-paragraph fontsize="13">
             发布于 <i>2026 年 4 月 8 日</i>。

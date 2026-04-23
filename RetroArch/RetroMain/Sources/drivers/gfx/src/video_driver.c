@@ -31,7 +31,7 @@
 #include "video_display_server.h"
 
 #ifdef HAVE_THREADS
-#include "video_thread_wrapper.h"
+#include <gfx/video_thread_wrapper.h>
 #endif
 
 #ifdef _WIN32
@@ -467,10 +467,15 @@ video_driver_state_t *video_state_get_ptr(void)
 #ifdef HAVE_THREADS
 void *video_thread_get_ptr(video_driver_state_t *video_st)
 {
+#if defined(__MACH__) && defined(__APPLE__)
+   const void *drv_data        = virtual_video_get_real_driver_data();
+   return (void *)drv_data;
+#else
    const thread_video_t *thr   = (const thread_video_t*)video_st->data;
    if (thr)
       return thr->driver_data;
    return NULL;
+#endif
 }
 #endif
 
@@ -1399,7 +1404,7 @@ bool video_driver_is_threaded(void)
    video_driver_state_t *video_st                 = &video_driver_st;
    return VIDEO_DRIVER_IS_THREADED_INTERNAL(video_st);
 }
-#endif
+#endif // HAVE_THREADS
 
 bool *video_driver_get_threaded(void)
 {
@@ -1407,8 +1412,12 @@ bool *video_driver_get_threaded(void)
 #if defined(__MACH__) && defined(__APPLE__)
    /* TODO/FIXME - force threaded video to disabled on Apple for now
     * until NSWindow/UIWindow concurrency issues are taken care of */
-   video_st->threaded = false;
-#endif
+   // video_st->threaded = false;
+
+   /* RetroGo
+    * Use fake video driver on iOS to separate game logic and rendering threads. */
+
+#endif // defined(__MACH__) && defined(__APPLE__)
    return &video_st->threaded;
 }
 
@@ -1419,6 +1428,10 @@ void video_driver_set_threaded(bool val)
    /* TODO/FIXME - force threaded video to disabled on Apple for now
     * until NSWindow/UIWindow concurrency issues are taken care of */
    video_st->threaded = false;
+
+   /* RetroGo
+    * Use fake video driver on iOS to separate game logic and rendering threads. */
+   video_st->threaded = val;
 #else
    video_st->threaded = val;
 #endif
@@ -1432,12 +1445,17 @@ const char *video_driver_get_ident(void)
 #ifdef HAVE_THREADS
    if (VIDEO_DRIVER_IS_THREADED_INTERNAL(video_st))
    {
+#if defined(__MACH__) && defined(__APPLE__)
+      const video_driver_t * drv = virtual_video_get_real_driver();
+      return drv->ident;
+#else
       const thread_video_t *thr   = (const thread_video_t*)video_st->data;
       if (!thr || !thr->driver)
          return NULL;
       return thr->driver->ident;
-   }
 #endif
+   }
+#endif // HAVE_THREADS
 
    return video_st->current_video->ident;
 }
@@ -3499,7 +3517,15 @@ bool video_driver_init_internal(bool *video_is_threaded, bool verbosity_enabled)
       bool ret;
       /* Can't do hardware rendering with threaded driver currently. */
       RARCH_LOG("[Video] Starting threaded video driver...\n");
-
+#if defined(__MACH__) && defined(__APPLE__)
+      ret = virtual_video_init(
+            (const video_driver_t**)&video_st->current_video,
+            &video_st->data,
+            &input_state_get_ptr()->current_driver,
+            (void**)&input_state_get_ptr()->current_data,
+            video_st->current_video,
+            video);
+#else
       ret = video_init_thread(
             (const video_driver_t**)&video_st->current_video,
             &video_st->data,
@@ -3507,6 +3533,8 @@ bool video_driver_init_internal(bool *video_is_threaded, bool verbosity_enabled)
             (void**)&input_state_get_ptr()->current_data,
             video_st->current_video,
             video);
+#endif // defined(__MACH__) && defined(__APPLE__)
+
       if (!ret)
       {
          RARCH_ERR("[Video] Cannot open threaded video driver. Exiting...\n");
@@ -3514,7 +3542,7 @@ bool video_driver_init_internal(bool *video_is_threaded, bool verbosity_enabled)
       }
    }
    else
-#endif
+#endif // HAVE_THREADS
       video_st->data = video_st->current_video->init(
             &video,
             &input_state_get_ptr()->current_driver,

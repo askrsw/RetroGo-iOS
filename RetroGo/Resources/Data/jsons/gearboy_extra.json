@@ -11,5 +11,6 @@
     ],
     "src_url": "https://github.com/libretro/Gearboy",
     "supports_analog": false,
-    "overlay": "gbc"
+    "overlay": "gbc",
+    "supports_logic_thread": true
 }
