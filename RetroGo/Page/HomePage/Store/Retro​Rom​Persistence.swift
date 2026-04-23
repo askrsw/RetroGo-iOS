@@ -522,7 +522,7 @@ final class Retro​Rom​Persistence {
             let db = Self.sqlite
             let alice = Self.romGameTable.filter(Self.key == key)
             let update = alice.update(
-                Self.lastPlayAt <- Date()
+                Self.lastPlayAt <- date
             )
             try db.run(update)
             return true
@@ -1035,7 +1035,7 @@ extension Retro​Rom​Persistence {
     static let romTagInfoView   = SQLite.View("romtaginfoview")
     static let folderChildrenInfoView = SQLite.View("folderchildreninfoview")
 
-    private static let sqlite = { () -> Connection in
+    static let sqlite = { () -> Connection in
         let romInfoPath = AppConfig.shared.romDatabasePath
         do {
             let db = try Connection(romInfoPath, readonly: false)
@@ -1064,10 +1064,14 @@ extension Retro​Rom​Persistence {
 
             switch version {
                 case 0:
-                    try databaseV2(db: db)
+                    try databaseV3(db: db)
                     return true
                 case 1:
                     try migrationV1ToV2(db: db)
+                    try migrationV2ToV3(db: db)
+                    return true
+                case 2:
+                    try migrationV2ToV3(db: db)
                     return true
                 default:
                     return true

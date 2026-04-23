@@ -33,7 +33,6 @@ final class GamePageHudView: UIView {
 
     let closeButton = UIButton(type: .system)
     let settingButton = UIButton(type: .system)
-    let infoButton = UIButton(type: .system)
     let restartButton = UIButton(type: .system)
     let snapButton = UIButton(type: .system)
     private(set) lazy var loadStateButton = UIButton(type: .system)
@@ -101,7 +100,7 @@ extension GamePageHudView {
             make.centerY.equalToSuperview()
             make.size.equalTo(closeButton.size)
         }
-    #if DEBUG
+
         let settingImage = UIImage(systemName: "gear.circle")
         settingButton.setImage(settingImage, for: .normal)
         settingButton.tintColor = .label
@@ -114,20 +113,6 @@ extension GamePageHudView {
             make.size.equalTo(settingButton.size)
         }
         lastTrailing = settingButton.snp.leading
-    #endif // DEBUG
-
-        let infoImage  = UIImage(systemName: "cpu")
-        infoButton.tintColor = .label
-        infoButton.setImage(infoImage, for: .normal)
-        infoButton.addTarget(self, action: #selector(coreInfoAction), for: .touchUpInside)
-        infoButton.sizeToFit()
-        addSubview(infoButton)
-        infoButton.snp.makeConstraints { make in
-            make.trailing.equalTo(lastTrailing).offset(-20)
-            make.centerY.equalToSuperview()
-            make.size.equalTo(infoButton.size)
-        }
-        lastTrailing = infoButton.snp.leading
 
         let restartImage  = UIImage(systemName: "arrow.clockwise.circle")
         restartButton.tintColor = .label
@@ -272,7 +257,7 @@ extension GamePageHudView {
         let nowString = DateFormatter.yyyyMMddHHmmss().string(from: Date())
         let pngName  = "snap-\(nowString).png"
         let snapPath = AppConfig.shared.snapshotFolder + pngName
-        RetroArchX.shared().saveScreenshot(to: snapPath)
+        RetroArchX.shared().saveScreenshot(to: snapPath, notify: true)
     }
 
     @objc
@@ -312,25 +297,16 @@ extension GamePageHudView {
     private func restartAction() {
         Vibration.selection.vibrate()
 
-        RetroArchX.shared().restart()
-    }
-
-    @objc
-    private func coreInfoAction() {
-        Vibration.selection.vibrate()
-
-        if let coreInfoItem = RetroArchX.shared().currentCoreItem {
-            let controller = RetroRomCoreInfoViewController(coreInfoItem: coreInfoItem, showCloseButton: true, interactive: false)
-            let navController = UINavigationController(rootViewController: controller)
-            holder?.present(navController, animated: true)
-        }
+        RetroArchX.shared().reset()
     }
 
     @objc
     private func settingAction() {
         Vibration.selection.vibrate()
 
-        let controller = GameSettingViewController()
+        guard let session = holder?.configSession else { return }
+
+        let controller = GameConfigViewController(session: session, showCloseButton: true)
         let naviController = UINavigationController(rootViewController: controller)
         holder?.present(naviController, animated: true)
     }
@@ -343,9 +319,11 @@ extension GamePageHudView {
             let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: holder?.romItem)
             _ = RetroRomFileManager.shared.saveState(rawName: name, showName: nil, sha256: holder?.romItem?.sha256, romKey: holder?.romItem?.key, autoSave: true)
             holder?.romItem?.pulseImage = !(holder?.romItem?.pulseImage ?? false)
+            RetroArchX.shared().stop()
+        } else {
+            RetroArchX.shared().stop()
         }
-
-        RetroArchX.shared().close()
+        
         holder?.romUrl?.stopAccessingSecurityScopedResource()
         holder?.dismiss(animated: true)
     }

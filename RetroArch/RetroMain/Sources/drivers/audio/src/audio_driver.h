@@ -70,7 +70,7 @@ typedef struct audio_mixer_stream_params
    enum audio_mixer_type type;
    enum audio_mixer_state state;
 } audio_mixer_stream_params_t;
-#endif
+#endif // HAVE_AUDIOMIXER
 
 typedef struct audio_driver
 {
@@ -233,6 +233,9 @@ typedef struct
    float rate_control_delta;
    float input;
    float volume_gain;
+   float playback_speed;
+   float stretch_sample_rate;
+   double stretch_output_frame_fraction;
 
    enum resampler_quality resampler_quality;
 
@@ -249,6 +252,12 @@ typedef struct
    retro_time_t last_flush_time;
    /* Exponential moving average */
    retro_time_t avg_flush_delta;
+
+   void *stretch_context;
+   float *stretch_input_planar;
+   float *stretch_output_planar;
+   size_t stretch_input_capacity_frames;
+   size_t stretch_output_capacity_frames;
 } audio_driver_state_t;
 
 bool audio_driver_enable_callback(void);
@@ -310,7 +319,7 @@ const char *audio_driver_mixer_get_stream_name(unsigned i);
 
 void audio_driver_load_system_sounds(void);
 
-#endif
+#endif // HAVE_AUDIOMIXER
 
 bool audio_driver_start(bool is_shutdown);
 
@@ -382,7 +391,7 @@ void audio_driver_sample_rewind(int16_t left, int16_t right);
  **/
 size_t audio_driver_sample_batch_rewind(
       const int16_t *data, size_t frames);
-#endif
+#endif // HAVE_REWIND
 
 extern audio_driver_t audio_rsound;
 extern audio_driver_t audio_audioio;

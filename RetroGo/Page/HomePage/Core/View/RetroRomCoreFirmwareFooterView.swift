@@ -122,6 +122,5 @@ final class RetroRomCoreFirmwareFooterView: UICollectionReusableView {
                 }
             }
         }
-
     }
 }

@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.2.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.2.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>April 24, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.2.0" style="number">
+            <p-item>Refactored the runtime architecture by separating RetroArch rendering and game logic, with game logic now running on an independent thread for improved frame stability and responsiveness.</p-item>
+            <p-item>Added fast-forward support with <b>2x / 3x / 4x / 6x</b> speed levels, reducing repetitive wait time and improving gameplay efficiency.</p-item>
+            <p-item>Integrated <b>signalsmith-stretch</b> for audio smoothing during fast-forward, effectively reducing noise artifacts and improving overall listening quality.</p-item>
+            <p-item>Upgraded configuration to a dual-layer model (core-level + game-level): set defaults per core and override them per game for finer-grained personalization.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.1.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.1.0</p-title>
         <p-paragraph fontsize="13">

@@ -25,9 +25,9 @@
 
 #import <UIKit/UIKit.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#import "runner/RAGameLoopRunner.h"
 
 NS_ASSUME_NONNULL_BEGIN
-typedef void (^RetroArchXEmuFrameCallback)(void);
 
 NS_ENUM(int, RetroArchJoypadCode) {
     RetroArchJoypadCodeNone   = -1,
@@ -66,6 +66,8 @@ NS_ENUM(unsigned, RetroArchJoypadAxis) {
 @property(nonatomic, strong, nullable, readonly) EmuCoreInfoItem *currentCoreItem;
 @property(nonatomic, assign, readonly) BOOL initialized;
 
+
+
 + (instancetype)shared;
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -78,20 +80,22 @@ NS_ENUM(unsigned, RetroArchJoypadAxis) {
 
 - (void)sendJoypadCode:(enum RetroArchJoypadCode)code down:(BOOL)down;
 - (void)sendJoypadAxis:(enum RetroArchJoypadAxis)axis value:(CGFloat)value;
-- (nullable NSString *)addEmuFrameCallback:(nullable RetroArchXEmuFrameCallback)callback;
-- (void)removeEmuFrameCallbackForToken:(nullable NSString *)token;
-- (void)setTurboMultiplier:(NSInteger)multiplier;
+- (void)setFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier;
+- (void)setFastForwardMultiplier:(double)multiplier;
+- (NSString *)addEmuPrevFrameAction:(RetroArchXEmuFrameAction)action;
+- (void)removeEmuPrevFrameActionForToken:(NSString *)token;
 
 #pragma mark - Core Control
+
 - (void)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core completion:(nullable void (^)(BOOL success))completion;
-- (BOOL)close;
+- (BOOL)stop;
 - (BOOL)pause;
 - (BOOL)resume;
-- (BOOL)restart;
+- (BOOL)reset;
 - (BOOL)mute:(BOOL)mute;
 - (BOOL)saveStateTo:(NSString *)folder imageFolder:(nullable NSString *)imageFolder name:(NSString *)name;
 - (BOOL)loadStateFrom:(NSString *)path;
-- (BOOL)saveScreenshotTo:(NSString *)path;
+- (BOOL)saveScreenshotTo:(NSString *)path notify:(BOOL)notify;
 
 @end
 

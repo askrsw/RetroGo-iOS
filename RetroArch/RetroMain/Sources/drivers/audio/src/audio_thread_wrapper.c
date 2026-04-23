@@ -48,7 +48,6 @@ typedef struct audio_thread
    bool is_paused;
    bool is_shutdown;
    bool use_float;
-
 } audio_thread_t;
 
 /**

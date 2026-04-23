@@ -167,7 +167,7 @@ typedef struct settings
 #ifdef HAVE_WASAPI
       unsigned microphone_wasapi_sh_buffer_length;
 #endif
-#endif
+#endif // HAVE_MICROPHONE
 
       unsigned fps_update_interval;
       unsigned memory_update_interval;
@@ -251,10 +251,6 @@ typedef struct settings
       unsigned video_overscan_correction_bottom;
 #endif
       unsigned video_shader_delay;
-#ifdef HAVE_SCREENSHOTS
-      unsigned notification_show_screenshot_duration;
-      unsigned notification_show_screenshot_flash;
-#endif
 
       /* Accessibility */
       unsigned accessibility_narrator_speech_speed;
@@ -571,7 +567,7 @@ typedef struct settings
       bool microphone_wasapi_exclusive_mode;
       bool microphone_wasapi_float_format;
 #endif
-#endif
+#endif // HAVE_MICROPHONE
 
       /* Input */
       bool input_remap_binds_enable;
@@ -614,7 +610,7 @@ typedef struct settings
       bool input_touch_vmouse_touchpad;
       bool input_touch_vmouse_trackball;
       bool input_touch_vmouse_gesture;
-#endif
+#endif // UDEV_TOUCH_SUPPORT
 
       /* Frame time counter */
       bool frame_time_counter_reset_after_fastforwarding;
@@ -630,11 +626,7 @@ typedef struct settings
       bool notification_show_config_override_load;
       bool notification_show_set_initial_disk;
       bool notification_show_disk_control;
-      bool notification_show_save_state;
-      bool notification_show_fast_forward;
-#ifdef HAVE_SCREENSHOTS
-      bool notification_show_screenshot;
-#endif
+
       bool notification_show_refresh_rate;
       bool notification_show_netplay_extra;
 

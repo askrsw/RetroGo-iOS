@@ -233,6 +233,9 @@ typedef struct
    float rate_control_delta;
    float input;
    float volume_gain;
+   float playback_speed;
+   float stretch_sample_rate;
+   double stretch_output_frame_fraction;
 
    enum resampler_quality resampler_quality;
 
@@ -249,6 +252,12 @@ typedef struct
    retro_time_t last_flush_time;
    /* Exponential moving average */
    retro_time_t avg_flush_delta;
+
+   void *stretch_context;
+   float *stretch_input_planar;
+   float *stretch_output_planar;
+   size_t stretch_input_capacity_frames;
+   size_t stretch_output_capacity_frames;
 } audio_driver_state_t;
 
 bool audio_driver_enable_callback(void);
@@ -421,6 +430,8 @@ extern audio_driver_t audio_rwebaudio;
 extern audio_driver_t audio_audioworklet;
 
 audio_driver_state_t *audio_state_get_ptr(void);
+
+void audio_driver_set_playback_speed(float speed);
 
 const char *audio_driver_get_ident(void);
 

@@ -370,7 +370,11 @@
 #if defined(HAVE_LIBNX)
 #define DEFAULT_VIDEO_THREADED true
 #else
+#if defined(__MACH__) && defined(__APPLE__)
+#define DEFAULT_VIDEO_THREADED true
+#else
 #define DEFAULT_VIDEO_THREADED false
+#endif
 #endif
 
 #if defined(HAVE_THREADS)
@@ -794,25 +798,6 @@ static inline bool default_use_metal_arg_buffers(void) {
 /* Display disc control notifications */
 #define DEFAULT_NOTIFICATION_SHOW_DISK_CONTROL true
 
-/* Display save state notifications */
-#define DEFAULT_NOTIFICATION_SHOW_SAVE_STATE false
-
-/* Display a notification when fast forwarding
- * content */
-#define DEFAULT_NOTIFICATION_SHOW_FAST_FORWARD true
-
-#if defined(HAVE_SCREENSHOTS)
-/*Display a notification when taking a screenshot*/
-#define DEFAULT_NOTIFICATION_SHOW_SCREENSHOT true
-
-/*Desired duration of the screenshot notification*/
-#define DEFAULT_NOTIFICATION_SHOW_SCREENSHOT_DURATION 0
-
-/* Display a white flashing effect with the desired
- * duration when taking a screenshot*/
-#define DEFAULT_NOTIFICATION_SHOW_SCREENSHOT_FLASH 0
-#endif
-
 /* Display a notification when setting the refresh rate*/
 #if (defined(DINGUX) && defined(DINGUX_BETA))
 /* 3DS and OpenDingux Beta devices set refresh rate
@@ -896,7 +881,7 @@ static inline bool default_use_metal_arg_buffers(void) {
 /* Automatically mute audio when fast forward is enabled. */
 #define DEFAULT_AUDIO_FASTFORWARD_MUTE false
 /* Speed up audio to match fast forward speed up. */
-#define DEFAULT_AUDIO_FASTFORWARD_SPEEDUP false
+#define DEFAULT_AUDIO_FASTFORWARD_SPEEDUP true
 /* Automatically mute audio when rewind is enabled. */
 #define DEFAULT_AUDIO_REWIND_MUTE false
 

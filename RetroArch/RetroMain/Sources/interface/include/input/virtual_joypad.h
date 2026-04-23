@@ -44,6 +44,7 @@ enum virtual_joypad_axis
 void virtual_joypad_set_button(unsigned port, unsigned id, bool down);
 void virtual_joypad_set_axis(unsigned port, unsigned axis, int16_t value);
 void virtual_joypad_set_connected(unsigned port, bool connected);
+void virtual_joypad_commit_frame_state(void);
 void virtual_joypad_reset(unsigned port);
 void virtual_joypad_reset_all(void);
 

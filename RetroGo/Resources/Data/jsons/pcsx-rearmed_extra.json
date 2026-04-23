@@ -11,5 +11,6 @@
     ],
     "src_url": "https://github.com/libretro/pcsx_rearmed",
     "supports_analog": true,
-    "overlay": "ps"
+    "overlay": "ps",
+    "supports_logic_thread": true
 }

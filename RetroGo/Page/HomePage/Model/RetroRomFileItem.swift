@@ -224,6 +224,12 @@ final class RetroRomFileItem: RetroRomBaseItem {
             return false
         }
 
+        do {
+            try GameConfigSession.deleteGameConfig(key)
+        } catch {
+            print("Failed to delete game config: \(key) for item: \(itemName), error: \(error)")
+        }
+
         if !RetroRomFileManager.shared.deleteFileItem(key) {
             let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_failed"), filePath)
             indicatorView.errorMessage(message, title: Bundle.localizedString(forKey: "error"), canDismiss: true)
@@ -231,7 +237,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
         }
 
         parentFolderItem?.removeSubFileItemKey(key)
-        let thumbnailPath = AppConfig.shared.sharedAutoThumbnailFolderPath + key + ".jpg"
+        let thumbnailPath = AppConfig.shared.sharedAutoThumbnailFolderPath + key + ".png"
         try? FileManager.default.removeItem(atPath: thumbnailPath)
         return true
     }

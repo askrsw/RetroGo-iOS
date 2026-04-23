@@ -11,5 +11,6 @@
     ],
     "src_url": "https://github.com/libretro/melonDS",
     "supports_analog": false,
-    "overlay": "nds"
+    "overlay": "nds",
+    "supports_logic_thread": true
 }

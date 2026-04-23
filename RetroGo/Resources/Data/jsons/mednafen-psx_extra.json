@@ -11,5 +11,6 @@
     ],
     "src_url": "https://github.com/libretro/beetle-psx-libretro",
     "supports_analog": true,
-    "overlay": "ps"
+    "overlay": "ps",
+    "supports_logic_thread": true
 }

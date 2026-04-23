@@ -11,5 +11,6 @@
     ],
     "src_url": "https://github.com/libretro/ppsspp",
     "supports_analog": true,
-    "overlay": "psp"
+    "overlay": "psp",
+    "supports_logic_thread": false
 }

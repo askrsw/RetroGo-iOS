@@ -172,7 +172,7 @@ static void choose_output_device(coreaudio_t *dev, const char* device)
 done:
    free(devices);
 }
-#endif
+#endif // !TARGET_OS_IPHONE
 
 static void *coreaudio_init(const char *device,
       unsigned rate, unsigned latency,

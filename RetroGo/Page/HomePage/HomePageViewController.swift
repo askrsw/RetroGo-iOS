@@ -680,5 +680,4 @@ private final class MainThreadStallMonitor {
         }
     }
 }
-#endif
-
+#endif // DEBUG

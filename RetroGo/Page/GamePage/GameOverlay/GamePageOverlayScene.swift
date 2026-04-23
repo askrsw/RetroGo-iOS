@@ -34,6 +34,7 @@ protocol GameOverlayElementLayout: SKNode {
 typealias GameOverlayButtonDigitalChanged = (RetroArchJoypadCode, Bool) -> Void
 typealias GameOverlayDirectionAnalogChanged = (CGFloat, CGFloat) -> Void
 typealias GameOverlaySwitchHandler = (GameOverlayDpadStickSwitch.`Type`) -> Void
+typealias GameOverlayFastStateChanged = (Bool) -> Void
 
 final class GamePageOverlayScene: SKScene {
     enum Mode { case portrait, landscape }
@@ -52,9 +53,10 @@ final class GamePageOverlayScene: SKScene {
     private var dpadStickSwitch: GameOverlayDpadStickSwitch?
     private var overlayCollapseButton: GameOverlayCollapseButton?
     private var actionButtons: [GameOverlayActionButton] = []
+    private var fastButton: GameOverLayFastButton?
     private var n64CButton: GameOverlayN64CButton?
     private var ndsLayoutButton: GameOverlayNDSLayoutButton?
-    private var emuFrameCallbackToken: String?
+    private var emuFrameActionToken: String?
 
     private struct CollapseVisualState {
         var position: CGPoint
@@ -83,8 +85,8 @@ final class GamePageOverlayScene: SKScene {
     }
 
     deinit {
-        if let emuFrameCallbackToken {
-            RetroArchX.shared().removeEmuFrameCallback(forToken: emuFrameCallbackToken)
+        if let emuFrameActionToken {
+            RetroArchX.shared().removeEmuPrevFrameAction(forToken: emuFrameActionToken)
         }
     }
 
@@ -108,7 +110,7 @@ final class GamePageOverlayScene: SKScene {
         guard usePolarLayout != enabled else { return }
         usePolarLayout = enabled
 
-        // Only actionButtons participate in polar layout, so only they need to be re-laid out when toggling.
+        // Only button-like nodes participate in polar layout, so only they need to be re-laid out when toggling.
         let basePostion: CGPoint?
         if let overlayCollapseButton {
             let rect = resolveRect(overlayCollapseButton.element)
@@ -118,7 +120,8 @@ final class GamePageOverlayScene: SKScene {
         }
 
         let shouldUpdatePosition = !(overlayCollapsed ?? false)
-        layout(nodes: actionButtons, shouldUpdatePosition: shouldUpdatePosition, basePostion: basePostion)
+        let polarNodes: [GameOverlayElementLayout] = actionButtons
+        layout(nodes: polarNodes, shouldUpdatePosition: shouldUpdatePosition, basePostion: basePostion)
     }
 }
 
@@ -149,7 +152,7 @@ extension GamePageOverlayScene {
         }
 
         let shouldUpdatePosition = !(overlayCollapsed ?? false)
-        let nodes: [GameOverlayElementLayout] = [dpad, stick, dpadStickSwitch, ndsLayoutButton, n64CButton].compactMap({ $0 }) + actionButtons
+        let nodes: [GameOverlayElementLayout] = [dpad, stick, dpadStickSwitch, ndsLayoutButton, n64CButton, fastButton].compactMap({ $0 }) + actionButtons
         layout(nodes: nodes, shouldUpdatePosition: shouldUpdatePosition, basePostion: basePostion)
     }
 
@@ -158,8 +161,8 @@ extension GamePageOverlayScene {
             let rect = resolveRect(node.element)
             let newPosition = node.updateRect(rect, shouldUpdatePosition: shouldUpdatePosition)
 
-            // Only action buttons use polar layout; other overlay elements keep zero rotation.
-            if usePolarLayout, node is GameOverlayActionButton,
+            // Only button-like nodes use polar layout; other overlay elements keep zero rotation.
+            if usePolarLayout, (node is GameOverlayActionButton || node is GameOverLayFastButton),
                let polar = (mode == .portrait ? node.element.geometry.polarPortraitLayout : node.element.geometry.polarLandscapeLayout) {
                 // Note: theta is stored in degrees in overlay JSON.
                 let thetaRadians = polar.theta * Double.pi / 180.0
@@ -193,6 +196,8 @@ extension GamePageOverlayScene {
             return makeDigitalAnalogSwithNode(element: element)
         case .button:
             return makeButtonNode(element: element)
+        case .fastButton:
+            return makeFastButtonNode(element: element)
         case .overlayCollapse:
             return makeOverlayCollapseNode(element: element)
         case .n64CButton:
@@ -280,6 +285,17 @@ extension GamePageOverlayScene {
             RetroArchX.shared().send(code, down: down)
         }
         self.actionButtons.append(node)
+        return node
+    }
+
+    private func makeFastButtonNode(element: GamePageOverlayElement) -> SKNode {
+        let node = GameOverLayFastButton(element: element) { enabled in
+            guard let multiplier = GamePageViewController.instance?.configSession.getFastForwardMultiplier() else {
+                return
+            }
+            RetroArchX.shared().setFastForwardEnabled(enabled, multiplier: multiplier)
+        }
+        self.fastButton = node
         return node
     }
 
@@ -440,16 +456,16 @@ extension GamePageOverlayScene {
     }
 
     private func updateEmuFrameCallbackRegistration() {
-        if let emuFrameCallbackToken {
-            RetroArchX.shared().removeEmuFrameCallback(forToken: emuFrameCallbackToken)
-            self.emuFrameCallbackToken = nil
+        if let emuFrameActionToken {
+            RetroArchX.shared().removeEmuPrevFrameAction(forToken: emuFrameActionToken)
+            self.emuFrameActionToken = nil
         }
 
         guard actionButtons.isEmpty == false else {
             return
         }
 
-        emuFrameCallbackToken = RetroArchX.shared().addEmuFrameCallback { [weak self] in
+        emuFrameActionToken = RetroArchX.shared().addEmuPrevFrameAction { [weak self] in
             guard let self else { return }
             self.actionButtons.forEach { $0.updateTurboFrameOutput() }
         }

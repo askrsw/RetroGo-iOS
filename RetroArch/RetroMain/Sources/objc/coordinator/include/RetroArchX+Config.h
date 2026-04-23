@@ -1,8 +1,8 @@
 //
-//  RetroArchStrings.m
+//  RetroArchX+Config.h
 //  RetroGo
 //
-//  Created by haharsw on 2026/2/11.
+//  Created by haharsw on 2026/4/19.
 //  Copyright © 2026 haharsw. All rights reserved.
 //
 //  ---------------------------------------------------------------------------------
@@ -23,21 +23,18 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#import "RetroArchStrings.h"
-#import <intl/msg_hash.h>
+#import "RetroArchX.h"
 
-@implementation RetroArchStrings
+NS_ASSUME_NONNULL_BEGIN
 
-+ (NSString *)stringFromRetroArch:(RetroArchString)v {
-    enum msg_hash_enums k = v;
-    const char *s = msg_hash_to_str(k);
-    return @(s);
-}
+typedef struct RetroArchConfig {
+    bool logicThread;
 
-+ (NSString *)usStringFromRetroArch:(RetroArchString)v {
-    enum msg_hash_enums k = v;
-    const char *s = msg_hash_to_str_us(k);
-    return @(s);
-}
+    double fastForwardMultiplier;
+} RetroArchConfig;
 
+@interface RetroArchX (Config)
+- (void)config:(RetroArchConfig)cfg;
 @end
+
+NS_ASSUME_NONNULL_END

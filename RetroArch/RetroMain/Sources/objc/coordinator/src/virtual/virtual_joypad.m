@@ -28,23 +28,45 @@
 #include <input/input_driver.h>
 #include <retro_miscellaneous.h>
 #include <defines/input_defines.h>
+#include <rthreads/rthreads.h>
 
 #include "virtual_joypad.h"
 
-static input_bits_t virtual_buttons[DEFAULT_MAX_PADS];
-static int16_t virtual_axes[DEFAULT_MAX_PADS][4];
-static bool virtual_connected[DEFAULT_MAX_PADS];
+static input_bits_t virtual_pending_buttons[DEFAULT_MAX_PADS];
+static int16_t virtual_pending_axes[DEFAULT_MAX_PADS][4];
+static bool virtual_pending_connected[DEFAULT_MAX_PADS];
+
+static input_bits_t virtual_frame_buttons[DEFAULT_MAX_PADS];
+static int16_t virtual_frame_axes[DEFAULT_MAX_PADS][4];
+static bool virtual_frame_connected[DEFAULT_MAX_PADS];
+
+static slock_t *virtual_joypad_lock;
+
+static void virtual_joypad_ensure_lock(void)
+{
+    if (!virtual_joypad_lock)
+        virtual_joypad_lock = slock_new();
+}
 
 static void virtual_joypad_init_state(void)
 {
     unsigned i;
+
+    virtual_joypad_ensure_lock();
+
     for (i = 0; i < DEFAULT_MAX_PADS; i++)
     {
-        BIT256_CLEAR_ALL(virtual_buttons[i]);
-        memset(virtual_axes[i], 0, sizeof(virtual_axes[i]));
-        virtual_connected[i] = false;
+        BIT256_CLEAR_ALL(virtual_pending_buttons[i]);
+        memset(virtual_pending_axes[i], 0, sizeof(virtual_pending_axes[i]));
+        virtual_pending_connected[i] = false;
+
+        BIT256_CLEAR_ALL(virtual_frame_buttons[i]);
+        memset(virtual_frame_axes[i], 0, sizeof(virtual_frame_axes[i]));
+        virtual_frame_connected[i] = false;
     }
-    virtual_connected[0] = true;
+
+    virtual_pending_connected[0] = true;
+    virtual_frame_connected[0] = true;
 }
 
 void virtual_joypad_set_button(unsigned port, unsigned id, bool down)
@@ -52,12 +74,17 @@ void virtual_joypad_set_button(unsigned port, unsigned id, bool down)
     if (port >= DEFAULT_MAX_PADS || id >= RARCH_BIND_LIST_END)
         return;
 
-    if (down)
-        BIT256_SET(virtual_buttons[port], id);
-    else
-        BIT256_CLEAR(virtual_buttons[port], id);
+    virtual_joypad_ensure_lock();
+    slock_lock(virtual_joypad_lock);
 
-    virtual_connected[port] = true;
+    if (down)
+        BIT256_SET(virtual_pending_buttons[port], id);
+    else
+        BIT256_CLEAR(virtual_pending_buttons[port], id);
+
+    virtual_pending_connected[port] = true;
+
+    slock_unlock(virtual_joypad_lock);
 }
 
 void virtual_joypad_set_axis(unsigned port, unsigned axis, int16_t value)
@@ -70,23 +97,51 @@ void virtual_joypad_set_axis(unsigned port, unsigned axis, int16_t value)
     if (value < -0x7fff)
         value = -0x7fff;
 
-    virtual_axes[port][axis] = value;
-    virtual_connected[port] = true;
+    virtual_joypad_ensure_lock();
+    slock_lock(virtual_joypad_lock);
+    virtual_pending_axes[port][axis] = value;
+    virtual_pending_connected[port] = true;
+    slock_unlock(virtual_joypad_lock);
 }
 
 void virtual_joypad_set_connected(unsigned port, bool connected)
 {
     if (port >= DEFAULT_MAX_PADS)
         return;
-    virtual_connected[port] = connected;
+
+    virtual_joypad_ensure_lock();
+    slock_lock(virtual_joypad_lock);
+    virtual_pending_connected[port] = connected;
+    slock_unlock(virtual_joypad_lock);
+}
+
+void virtual_joypad_commit_frame_state(void)
+{
+    unsigned i;
+
+    virtual_joypad_ensure_lock();
+    slock_lock(virtual_joypad_lock);
+    for (i = 0; i < DEFAULT_MAX_PADS; i++)
+    {
+        memcpy(&virtual_frame_buttons[i], &virtual_pending_buttons[i], sizeof(virtual_frame_buttons[i]));
+        memcpy(virtual_frame_axes[i], virtual_pending_axes[i], sizeof(virtual_frame_axes[i]));
+        virtual_frame_connected[i] = virtual_pending_connected[i];
+    }
+    slock_unlock(virtual_joypad_lock);
 }
 
 void virtual_joypad_reset(unsigned port)
 {
     if (port >= DEFAULT_MAX_PADS)
         return;
-    BIT256_CLEAR_ALL(virtual_buttons[port]);
-    memset(virtual_axes[port], 0, sizeof(virtual_axes[port]));
+
+    virtual_joypad_ensure_lock();
+    slock_lock(virtual_joypad_lock);
+    BIT256_CLEAR_ALL(virtual_pending_buttons[port]);
+    memset(virtual_pending_axes[port], 0, sizeof(virtual_pending_axes[port]));
+    BIT256_CLEAR_ALL(virtual_frame_buttons[port]);
+    memset(virtual_frame_axes[port], 0, sizeof(virtual_frame_axes[port]));
+    slock_unlock(virtual_joypad_lock);
 }
 
 void virtual_joypad_reset_all(void)
@@ -107,7 +162,7 @@ static bool virtual_joypad_query_pad(unsigned pad)
 {
     if (pad >= DEFAULT_MAX_PADS)
         return false;
-    return virtual_connected[pad];
+    return virtual_frame_connected[pad];
 }
 
 static void virtual_joypad_free(void)
@@ -119,7 +174,7 @@ static int32_t virtual_joypad_button(unsigned port, uint16_t joykey)
 {
     if (port >= DEFAULT_MAX_PADS || joykey >= RARCH_BIND_LIST_END)
         return 0;
-    return BIT256_GET(virtual_buttons[port], joykey) ? 1 : 0;
+    return BIT256_GET(virtual_frame_buttons[port], joykey) ? 1 : 0;
 }
 
 static void virtual_joypad_get_buttons(unsigned port, input_bits_t *state)
@@ -131,7 +186,7 @@ static void virtual_joypad_get_buttons(unsigned port, input_bits_t *state)
         BIT256_CLEAR_ALL(*state);
         return;
     }
-    memcpy(state, &virtual_buttons[port], sizeof(*state));
+    memcpy(state, &virtual_frame_buttons[port], sizeof(*state));
 }
 
 static int16_t virtual_joypad_axis(unsigned port, uint32_t joyaxis)
@@ -147,14 +202,14 @@ static int16_t virtual_joypad_axis(unsigned port, uint32_t joyaxis)
     axis = AXIS_NEG_GET(joyaxis);
     if (axis != AXIS_DIR_NONE && axis < 4)
     {
-        val = virtual_axes[port][axis];
+        val = virtual_frame_axes[port][axis];
         return (val < 0) ? val : 0;
     }
 
     axis = AXIS_POS_GET(joyaxis);
     if (axis != AXIS_DIR_NONE && axis < 4)
     {
-        val = virtual_axes[port][axis];
+        val = virtual_frame_axes[port][axis];
         return (val > 0) ? val : 0;
     }
 

@@ -63,9 +63,12 @@ final class RetroRomCoreInfoViewController: UIViewController {
         navigationItem.title = coreInfoItem.coreName
 
         if showCloseButton {
-            navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark.circle"), style: .plain, target: self, action: #selector(closeAction))
-            navigationItem.leftBarButtonItem?.tintColor = .mainColor
+            navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(closeAction))
+            navigationItem.leftBarButtonItem?.tintColor = .label
         }
+
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(settingAction))
+        navigationItem.rightBarButtonItem?.tintColor = .label
 
         _ = collectionView
 
@@ -278,6 +281,13 @@ extension RetroRomCoreInfoViewController {
             snapshot.appendItems(descItems, toSection: .desc)
         }
         dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
+    @objc
+    private func settingAction() {
+        let session = GameConfigSession(scope: .core, core: coreInfoItem, game: nil)
+        let controller = GameConfigViewController(session: session)
+        navigationController?.pushViewController(controller, animated: true)
     }
 
     @objc

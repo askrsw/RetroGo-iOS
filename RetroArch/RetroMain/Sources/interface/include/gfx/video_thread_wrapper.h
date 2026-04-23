@@ -24,7 +24,7 @@
 #include <rthreads/rthreads.h>
 #include <retro_miscellaneous.h>
 
-#include <gfx/font_driver.h>
+#include "font_driver.h"
 
 RETRO_BEGIN_DECLS
 
@@ -272,6 +272,15 @@ bool video_thread_font_init(
 
 unsigned video_thread_texture_handle(void *data,
       custom_command_method_t func);
+
+bool virtual_video_init(const video_driver_t **out_driver, void **out_data, input_driver_t **input, void **input_data, const video_driver_t *drv, const video_info_t info);
+
+bool virtual_video_font_init(const void **font_driver, void **font_handle, void *data, const char *font_path, float video_font_size, enum font_driver_render_api api, custom_font_command_method_t func, bool is_threaded);
+
+unsigned virtual_video_texture_handle(void *data, custom_command_method_t func);
+
+const video_driver_t *virtual_video_get_real_driver();
+const void *virtual_video_get_real_driver_data();
 
 RETRO_END_DECLS
 

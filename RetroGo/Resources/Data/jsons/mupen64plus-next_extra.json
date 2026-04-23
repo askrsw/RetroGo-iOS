@@ -11,5 +11,6 @@
     ],
     "src_url": "https://github.com/libretro/mupen64plus-libretro-nx",
     "supports_analog": true,
-    "overlay": "n64"
+    "overlay": "n64",
+    "supports_logic_thread": false
 }

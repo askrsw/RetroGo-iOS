@@ -42,4 +42,4 @@ bool audio_init_thread(const audio_driver_t **out_driver, void **out_data,
       unsigned block_frames,
       const audio_driver_t *driver);
 
-#endif
+#endif // !RARCH_AUDIO_THREAD_H__

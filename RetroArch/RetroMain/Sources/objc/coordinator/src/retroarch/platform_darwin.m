@@ -479,5 +479,5 @@ frontend_ctx_driver_t frontend_ctx_darwin = {
    frontend_darwin_accessibility_speak, /* accessibility_speak */
    NULL,                            /* set_gamemode        */
    "darwin",                        /* ident               */
-   NULL                             /* get_video_driver    */
+    NULL                            /* get_video_driver    */
 };

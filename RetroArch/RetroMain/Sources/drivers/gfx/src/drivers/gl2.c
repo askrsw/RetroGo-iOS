@@ -60,7 +60,7 @@
 #include "../common/gl2_common.h"
 
 #ifdef HAVE_THREADS
-#include "../video_thread_wrapper.h"
+#include <gfx/video_thread_wrapper.h>
 #endif
 
 #include <gfx/font_driver.h>
@@ -5082,9 +5082,13 @@ static uintptr_t gl2_load_texture(void *video_data, void *data,
          default:
             break;
       }
+#if defined(__MACH__) && defined(__APPLE__)
+      return virtual_video_texture_handle(data, func);
+#else
       return video_thread_texture_handle(data, func);
-   }
 #endif
+   }
+#endif // HAVE_THREADS
 
    video_texture_load_gl2((struct texture_image*)data, filter_type, &id);
    return id;
@@ -5101,10 +5105,14 @@ static void gl2_unload_texture(void *data,
    if (threaded)
    {
       custom_command_method_t func = video_texture_unload_wrap_gl2;
+#if defined(__MACH__) && defined(__APPLE__)
+      virtual_video_texture_handle((void *)id, func);
+#else
       video_thread_texture_handle((void *)id, func);
+#endif
       return;
    }
-#endif
+#endif // HAVE_THREADS
 
    glid = (GLuint)id;
    glDeleteTextures(1, &glid);

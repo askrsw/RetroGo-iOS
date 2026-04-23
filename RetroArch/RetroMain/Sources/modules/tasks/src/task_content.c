@@ -2163,7 +2163,7 @@ static bool task_load_content_internal(
 #endif /* HAVE_XDELTA */
    if (runloop_st->flags & RUNLOOP_FLAG_PATCH_BLOCKED)
       content_ctx.flags |= CONTENT_INFO_FLAG_PATCH_IS_BLOCKED;
-#endif
+#endif // HAVE_PATCH
    if (runloop_st->missing_bios)
       content_ctx.flags                   |= CONTENT_INFO_FLAG_BIOS_IS_MISSING;
    content_ctx.directory_system            = NULL;
@@ -2224,7 +2224,7 @@ static bool task_load_content_internal(
       userdata.status = PRESENCE_MENU;
       command_event(CMD_EVENT_PRESENCE_UPDATE, &userdata);
    }
-#endif
+#endif // HAVE_PRESENCE
 
    /* Loads content into currently selected core. */
    if ((ret = content_load(content_info, p_content)))
