@@ -60,19 +60,20 @@ NS_ASSUME_NONNULL_BEGIN
         _systemName = coreInfo->systemname ? @(coreInfo->systemname) : nil;
         _systemID = coreInfo->system_id ? @(coreInfo->system_id) : nil;
         _version = coreInfo->display_version ? @(coreInfo->display_version) : nil;
-        ASSIGN_ARRAY_FROM_COREINFO(_categories, coreInfo, categories)
-        ASSIGN_ARRAY_FROM_COREINFO(_licenses, coreInfo, licenses)
+        ASSIGN_ARRAY_FROM_COREINFO(_categories, coreInfo, categories);
+        ASSIGN_ARRAY_FROM_COREINFO(_licenses, coreInfo, licenses);
         _manufacturer = coreInfo->system_manufacturer ? @(coreInfo->system_manufacturer) : nil;
-        ASSIGN_ARRAY_FROM_COREINFO(_extensions, coreInfo, supported_extensions)
-        ASSIGN_ARRAY_FROM_COREINFO(_authors, coreInfo, authors)
+        ASSIGN_ARRAY_FROM_COREINFO(_extensions, coreInfo, supported_extensions);
+        ASSIGN_ARRAY_FROM_COREINFO(_authors, coreInfo, authors);
         _supportNoContent = coreInfo->supports_no_game;
         _experimental = coreInfo->is_experimental;
         _singlePurpose = coreInfo->single_purpose;
-        ASSIGN_ARRAY_FROM_COREINFO(_permissions, coreInfo, permissions)
-        ASSIGN_ARRAY_FROM_COREINFO(_databases, coreInfo, databases)
-        ASSIGN_ARRAY_FROM_COREINFO(_hwApis, coreInfo, required_hw_api)
+        _isHWRender = coreInfo->is_hw_render;
+        ASSIGN_ARRAY_FROM_COREINFO(_permissions, coreInfo, permissions);
+        ASSIGN_ARRAY_FROM_COREINFO(_databases, coreInfo, databases);
+        ASSIGN_ARRAY_FROM_COREINFO(_hwApis, coreInfo, required_hw_api);
         _desc = coreInfo->description ? @(coreInfo->description) : nil;
-        ASSIGN_ARRAY_FROM_COREINFO(_notes, coreInfo, notes)
+        ASSIGN_ARRAY_FROM_COREINFO(_notes, coreInfo, notes);
 
         if(string_starts_with(coreInfo->core_file_id.str, "emu_")) {
             _coreId = @(coreInfo->core_file_id.str + 4);

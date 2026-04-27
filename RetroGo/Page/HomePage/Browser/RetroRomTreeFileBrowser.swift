@@ -419,12 +419,13 @@ extension RetroRomTreeFileBrowser: UIContextMenuInteractionDelegate {
                 actTag = nil
             }
             let actAssignCore = getAssignCoreAction(item: item)
+            let actSetting = getGameSettingAction(item: item)
             let actImport = getImportAction(item: item)
             let actNewFolder = getNewFolderAction(item: item)
             let actRename = getRenameAction(indexPath: indexPath)
             let actDelete = getDeleteAction(item: item)
             let actInfo = getInfoAction(item: item)
-            let actions = [actPlay, actAssignCore, actImport, actNewFolder, actRename, actTag, actInfo, actDelete].compactMap({ $0 })
+            let actions = [actPlay, actAssignCore, actSetting, actImport, actNewFolder, actRename, actTag, actInfo, actDelete].compactMap({ $0 })
             return UIMenu(title: "", children: actions)
         }
     }

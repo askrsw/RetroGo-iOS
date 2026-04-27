@@ -27,14 +27,23 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef struct RetroArchConfig {
-    bool logicThread;
-
-    double fastForwardMultiplier;
-} RetroArchConfig;
+@interface RetroArchConfig : NSObject
+@property(nonatomic, assign) BOOL logicThread;
+@property(nonatomic, copy)   NSString *videoDriver;
+@property(nonatomic, copy)   NSString *audioDriver;
+@property(nonatomic, assign) double fastForwardMultiplier;
+@property(nonatomic, assign) BOOL   muteOnFastForward;
+@end
 
 @interface RetroArchX (Config)
-- (void)config:(RetroArchConfig)cfg;
+- (void)config:(RetroArchConfig *)cfg;
+- (void)setFastForwardMultiplier:(double)multiplier;
+- (void)setMuteOnFastForward:(BOOL)value;
+
+- (NSString *)defaultVideoDriver;
+- (NSArray<NSString *> *)availableVideoDrivers;
+- (NSString *)defaultAudioDriver;
+- (NSArray<NSString *> *)availableAudioDrivers;
 @end
 
 NS_ASSUME_NONNULL_END

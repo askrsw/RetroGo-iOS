@@ -241,7 +241,7 @@ typedef _Atomic double atomic_double;
 - (BOOL)reset {
     NSNumber *ret = (NSNumber *)[self performLogicBlockSync:^NSObject * _Nullable{
         return @(command_event(CMD_EVENT_RESET, NULL));
-    } useBlockingSemaphore:YES];
+    } useBlockingSemaphore:NO];
     return ret.boolValue;
 }
 
@@ -274,6 +274,8 @@ typedef _Atomic double atomic_double;
         runloop_state_t *runloop_st = runloop_state_get_ptr();
         input_driver_state_t *input_st = input_state_get_ptr();
         video_driver_state_t *video_st = video_state_get_ptr();
+        audio_driver_state_t *audio_st = audio_state_get_ptr();
+        settings_t *settings = config_get_ptr();
 
         if (runloop_st != NULL && video_st != NULL) {
             struct retro_fastforwarding_override fastforwardOverride = {0};
@@ -302,6 +304,15 @@ typedef _Atomic double atomic_double;
                     input_st->flags |= INP_FLAG_NONBLOCKING;
                 } else {
                     input_st->flags &= ~INP_FLAG_NONBLOCKING;
+                }
+            }
+
+            if (audio_st != NULL) {
+                BOOL shouldMuteOnFastForward = settings != NULL && settings->bools.audio_fastforward_mute;
+                if (enabled && shouldMuteOnFastForward) {
+                    audio_st->flags |= AUDIO_FLAG_MUTED;
+                } else {
+                    audio_st->flags &= ~AUDIO_FLAG_MUTED;
                 }
             }
 

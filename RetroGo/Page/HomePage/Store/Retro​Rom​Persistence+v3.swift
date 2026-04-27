@@ -50,3 +50,31 @@ extension Retro​Rom​Persistence {
         try db.run("PRAGMA user_version = \(3)")
     }
 }
+
+extension Retro​Rom​Persistence {
+    static func migrationV3ToV4(db: Connection) throws {
+        try commonV4(db: db)
+    }
+
+    // app version 1.3.0
+    static func databaseV4(db: Connection) throws {
+        try Self.databaseV3(db: db)
+        try Self.commonV4(db: db)
+    }
+
+    private static func commonV4(db: Connection) throws {
+        try addColumnIfNeeded(db: db, table: "romconfig", column: "video_driver", type: "TEXT")
+        try addColumnIfNeeded(db: db, table: "romconfig", column: "audio_driver", type: "TEXT")
+        try addColumnIfNeeded(db: db, table: "romconfig", column: "mute_on_fastforward", type: "INTEGER")
+
+        try db.run("PRAGMA user_version = \(4)")
+    }
+
+    private static func addColumnIfNeeded(db: Connection, table: String, column: String, type: String) throws {
+        let sql = "SELECT COUNT(*) FROM pragma_table_info('" + table + "') WHERE name = ?"
+        let count = try db.scalar(sql, column) as? Int64 ?? 0
+        if count == 0 {
+            try db.run("ALTER TABLE " + table + " ADD COLUMN " + column + " " + type)
+        }
+    }
+}

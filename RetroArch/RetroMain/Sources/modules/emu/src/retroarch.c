@@ -164,7 +164,7 @@
 #ifdef HAVE_CLOUDSYNC
 #include "network/cloud_sync_driver.h"
 #endif
-#endif
+#endif // HAVE_NETWORKING
 
 #ifdef HAVE_THREADS
 #include <rthreads/rthreads.h>
@@ -1183,7 +1183,7 @@ static size_t find_driver_nonempty(
       if (microphone_drivers[i])
          return strlcpy(s, microphone_drivers[i]->ident, len);
    }
-#endif
+#endif // HAVE_MICROPHONE
    else if (string_is_equal(label, "record_driver"))
    {
       if (record_drivers[i])
@@ -1205,21 +1205,21 @@ static size_t find_driver_nonempty(
       if (bluetooth_drivers[i])
          return strlcpy(s, bluetooth_drivers[i]->ident, len);
    }
-#endif
+#endif // HAVE_BLUETOOTH
 #ifdef HAVE_WIFI
    else if (string_is_equal(label, "wifi_driver"))
    {
       if (wifi_drivers[i])
          return strlcpy(s, wifi_drivers[i]->ident, len);
    }
-#endif
+#endif // HAVE_WIFI
 #ifdef HAVE_CLOUDSYNC
    else if (string_is_equal(label, "cloud_sync_driver"))
    {
       if (cloud_sync_drivers[i])
          return strlcpy(s, cloud_sync_drivers[i]->ident, len);
    }
-#endif
+#endif // HAVE_CLOUDSYNC
    return 0;
 }
 
@@ -2218,7 +2218,7 @@ static struct string_list *string_list_new_special(
 
             string_list_append(s, opt, attr);
          }
-#endif
+#endif // HAVE_CLOUDSYNC
          break;
 #ifdef HAVE_LAKKA
       case STRING_LIST_TIMEZONES:
@@ -5344,7 +5344,7 @@ int rarch_main(int argc, char *argv[], void *data, bool init_drivers)
                       |  RUNLOOP_FLAG_RUNAHEAD_AVAILABLE
                       |  RUNLOOP_FLAG_RUNAHEAD_FORCE_INPUT_DIRTY
                         );
-#endif
+#endif // HAVE_RUNAHEAD
 #if defined(_WIN32) && !defined(_XBOX) && !defined(__WINRT__)
    if (FAILED(CoInitialize(NULL)))
    {
@@ -7206,7 +7206,7 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
          {
             /* TODO/FIXME - localize */
             _len += strlcpy(str_output + _len,
-                  FILE_PATH_LOG_INFO " CPU Model Name: ",
+                  "CPU Model Name: ",
                   sizeof(str_output)   - _len);
             _len += strlcpy(str_output + _len,
                   cpu_model,
@@ -7237,9 +7237,9 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
 #else
          snprintf(str_output, sizeof(str_output),
                "%s: %s" "\n"
-               FILE_PATH_LOG_INFO " Version: " PACKAGE_VERSION "\n"
-               FILE_PATH_LOG_INFO " Built: " __DATE__ "\n"
-               FILE_PATH_LOG_INFO " =================================================\n",
+               "Version: " PACKAGE_VERSION "\n"
+               "Built: " __DATE__ "\n"
+               "=================================================\n",
                "Capabilities",
                str);
 #endif

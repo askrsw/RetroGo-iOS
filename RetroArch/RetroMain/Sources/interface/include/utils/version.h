@@ -21,4 +21,4 @@
 #define PACKAGE_VERSION "1.21.0"
 #endif
 
-#endif
+#endif // !RARCH_VERSION_H__

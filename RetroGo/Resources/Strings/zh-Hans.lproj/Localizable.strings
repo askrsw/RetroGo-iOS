@@ -220,4 +220,9 @@
 "configpage_game_thread" = "独立游戏线程";
 "configpage_game_thread_desc" = "将游戏逻辑放到独立线程运行​，可能提升流畅度与快进表现​，但部分核心或设备上可能出现兼容性问题。";
 "configpage_game_thread_forbiden_desc" = "核心 %@ 不支持开启独立游戏线程。";
+"configpage_video_driver" = "视频驱动";
+"configpage_video_driver_desc" = "Vulkan 兼容性与稳定性最佳（推荐）；Metal、GL 为实验性选项，可能有性能或兼容性问题。";
+"configpage_video_driver_forbiden_desc" = "核心 %@ 不支持自定义视频驱动";
+"configpage_audio_driver" = "音频驱动";
 "configpage_game_fast_multiplier" = "游戏快进倍数";
+"configpage_game_mute_when_fast"  = "快进时静音";

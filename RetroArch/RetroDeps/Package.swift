@@ -14,7 +14,6 @@ let defines: [CSetting] = [
     .define("HAVE_CHD"),
     .define("HAVE_CHEATS"),
     .define("HAVE_CHEEVOS"),
-    .define("HAVE_CLOUDSYNC"),
     .define("HAVE_COCOA_METAL"),
     .define("HAVE_COMMAND"),
     .define("HAVE_CONFIGFILE"),
@@ -116,6 +115,9 @@ let defines: [CSetting] = [
     .define("HAVE_UPDATE_ASSETS"),
     .define("HAVE_UPDATE_CORE_INFO"),
     .define("HAVE_ONLINE_UPDATER", .when(platforms: [.iOS, .tvOS])),
+
+    // disable
+    // .define("HAVE_CLOUDSYNC"),
 ]
 
 let package = Package(

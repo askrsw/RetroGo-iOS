@@ -91,13 +91,14 @@ extension RetroRomFolderFileBrowser {
             guard let self = self else { return nil }
             let actPlayOrEnter = getPlayOrEnterAction(item: item)
             let actAssignCore  = getAssignCoreAction(item: item)
+            let actSetting     = getGameSettingAction(item: item)
             let actImport      = getImportAction(item: item)
             let actMoveTo      = getMoveToAction(item: item)
             let actRename      = getRenameAction(indexPath: indexPath)
             let actTag         = getTagAction(item: item)
             let actDelete      = getDeleteAction(item: item)
             let actInfo        = getInfoAction(item: item)
-            let actions = [actPlayOrEnter, actAssignCore, actImport, actMoveTo, actRename, actTag, actInfo, actDelete].compactMap({ $0 })
+            let actions = [actPlayOrEnter, actAssignCore, actSetting, actImport, actMoveTo, actRename, actTag, actInfo, actDelete].compactMap({ $0 })
             return UIMenu(title: "", children: actions)
         }
     }

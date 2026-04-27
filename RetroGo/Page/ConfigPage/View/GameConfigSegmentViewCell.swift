@@ -32,10 +32,10 @@ final class GameConfigSegmentViewCell: GameConfigBaseViewCell {
     override func updateUI() {
         super.updateUI()
 
-        segmentControl.isEnabled = config?.enabled ?? true
+        segmentControl.isEnabled = entry?.enabled ?? true
         segmentControl.removeAllSegments()
 
-        if let array = config?.getSegmentArray?() {
+        if let array = entry?.getSegmentArray?() {
             for item in array {
                 switch item {
                 case .image(let img):
@@ -48,7 +48,7 @@ final class GameConfigSegmentViewCell: GameConfigBaseViewCell {
 
         segmentControl.sizeToFit()
 
-        guard let selectedIndex = config?.getSegmentSelectedIndex?(), segmentControl.numberOfSegments > 0 else {
+        guard let selectedIndex = entry?.getSegmentSelectedIndex?(), segmentControl.numberOfSegments > 0 else {
             segmentControl.selectedSegmentIndex = UISegmentedControl.noSegment
             return
         }
@@ -78,6 +78,7 @@ final class GameConfigSegmentViewCell: GameConfigBaseViewCell {
 extension GameConfigSegmentViewCell {
     @objc
     private func segmentIndexValueChanged(_ sender: UISegmentedControl) {
-        config?.setSegmentSelectedIndex?(sender.selectedSegmentIndex)
+        Vibration.selection.vibrate()
+        entry?.setSegmentSelectedIndex?(sender.selectedSegmentIndex)
     }
 }

@@ -838,7 +838,16 @@ font_renderer_t metal_raster_font = {
 
 - (bool)_initMetal
 {
-   _library = [_device newDefaultLibrary];
+   NSError *error = nil;
+   _library = [_device newDefaultLibraryWithBundle:SWIFTPM_MODULE_BUNDLE error:&error];
+   if (!_library) {
+      _library = [_device newDefaultLibrary]; // fallback main bundle
+   }
+   if (!_library) {
+      RARCH_ERR("[Metal] Failed to load MTLLibrary: %s\n", error.localizedDescription.UTF8String);
+      return NO;
+   }
+
    _context = [[Context alloc] initWithDevice:_device
                                         layer:_layer
                                       library:_library];

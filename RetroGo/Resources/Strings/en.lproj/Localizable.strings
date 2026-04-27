@@ -220,4 +220,9 @@
 "configpage_game_thread" = "Game Thread";
 "configpage_game_thread_desc" = "Runs game logic on a separate thread. This may improve smoothness and fast-forward performance, but some cores or devices may have compatibility issues.";
 "configpage_game_thread_forbiden_desc" = "Core %@ does not support enabling a separate game logic thread.";
+"configpage_video_driver" = "Video Driver";
+"configpage_video_driver_desc" = "Vulkan is recommended for best stability and compatibility. Metal and GL are experimental and may have performance or compatibility issues.";
+"configpage_video_driver_forbiden_desc" = "Core %@ does not support custom video drivers.";
+"configpage_audio_driver" = "Audio Driver";
 "configpage_game_fast_multiplier" = "Fast Multiplier";
+"configpage_game_mute_when_fast"  = "Mute on Fast-Forward";

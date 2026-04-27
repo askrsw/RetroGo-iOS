@@ -23,7 +23,6 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-import Foundation
 import UIKit
 import SnapKit
 import PanModal
@@ -32,11 +31,6 @@ import RACoordinator
 
 final class HomePageViewController: UIViewController {
     static weak var instance: HomePageViewController?
-
-#if DEBUG
-    private let logStartTime = CFAbsoluteTimeGetCurrent()
-    private var stallMonitor: MainThreadStallMonitor?
-#endif
 
     private let titleView = RetroRomPageTitleView()
     private var addBarButtonItem: UIBarButtonItem?
@@ -76,20 +70,11 @@ final class HomePageViewController: UIViewController {
     }
 
     deinit {
-#if DEBUG
-        stallMonitor?.stop()
-#endif
         NotificationCenter.default.removeObserver(self)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-#if DEBUG
-        trace("viewDidLoad begin")
-        let monitor = MainThreadStallMonitor(threshold: 0.5, interval: 0.1)
-        monitor.start()
-        stallMonitor = monitor
-#endif
         view.backgroundColor = .systemBackground
         navigationItem.titleView = titleView
 
@@ -104,9 +89,6 @@ final class HomePageViewController: UIViewController {
         } else {
             NotificationCenter.default.addObserver(self, selector: #selector(retroArchReadyNotification(_:)), name: .RetroArchXReady, object: nil)
         }
-#if DEBUG
-        trace("viewDidLoad end")
-#endif
     }
 
     override func viewDidLayoutSubviews() {
@@ -310,9 +292,6 @@ final class HomePageViewController: UIViewController {
 
 extension HomePageViewController {
     private func updateFileBrowser() {
-#if DEBUG
-        trace("updateFileBrowser begin")
-#endif
         if fileBrowser != nil {
             fileBrowser.removeFromSuperview()
         }
@@ -329,9 +308,6 @@ extension HomePageViewController {
         }
 
         checkRetroItemIsEmpty()
-#if DEBUG
-        trace("updateFileBrowser end")
-#endif
     }
 
     private func getFileBrowser(meta: RetroRomFileBrowserMeta) -> RetroRomFileBrowser {
@@ -381,9 +357,6 @@ extension HomePageViewController {
     }
 
     private func configUI() {
-#if DEBUG
-        trace("configUI begin")
-#endif
         let gearIcon = UIImage(systemName: "gear")
         let gearButton = UIBarButtonItem(image: gearIcon, landscapeImagePhone: gearIcon, style: .plain, target: self, action: #selector(settingsAction))
         navigationItem.leftBarButtonItem = gearButton
@@ -395,9 +368,6 @@ extension HomePageViewController {
         let configIcon = UIImage(systemName: "slider.horizontal.3")
         let configButton = UIBarButtonItem(image: configIcon, landscapeImagePhone: configIcon, style: .plain, target: self, action: #selector(configAction))
         navigationItem.rightBarButtonItems = [configButton, plusButton]
-#if DEBUG
-        trace("configUI end")
-#endif
     }
 
     private func showGameImportSelector() {
@@ -436,14 +406,6 @@ extension HomePageViewController: UIPopoverPresentationControllerDelegate {
 }
 
 extension HomePageViewController {
-#if DEBUG
-    private func trace(_ message: String) {
-        let delta = CFAbsoluteTimeGetCurrent() - logStartTime
-        let logMessage = String(format: "[HomePage] %@ (t=%.3fs)", message, delta)
-        NSLog(logMessage)
-    }
-#endif
-
     @objc
     private func handLeftPanGesture(_ pan: UIPanGestureRecognizer) {
         let translation = pan.translation(in: pan.view)
@@ -582,9 +544,6 @@ extension HomePageViewController {
 
     @objc
     private func retroArchReadyNotification(_ notif: Notification) {
-#if DEBUG
-        trace("retroArchReadyNotification")
-#endif
         NotificationCenter.default.removeObserver(self, name: .RetroArchXReady, object: nil)
         updateFileBrowser()
     }
@@ -637,47 +596,3 @@ extension HomePageViewController: UIDocumentPickerDelegate {
         pendingRootParent = nil
     }
 }
-
-#if DEBUG
-private final class MainThreadStallMonitor {
-    private let threshold: TimeInterval
-    private let interval: TimeInterval
-    private let queue = DispatchQueue(label: "com.retrogo.main.thread.stall", qos: .background)
-    private var timer: DispatchSourceTimer?
-    private var isRunning = false
-
-    init(threshold: TimeInterval, interval: TimeInterval) {
-        self.threshold = threshold
-        self.interval = interval
-    }
-
-    func start() {
-        guard !isRunning else { return }
-        isRunning = true
-        let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now() + interval, repeating: interval)
-        timer.setEventHandler { [weak self] in
-            self?.ping()
-        }
-        timer.resume()
-        self.timer = timer
-    }
-
-    func stop() {
-        timer?.cancel()
-        timer = nil
-        isRunning = false
-    }
-
-    private func ping() {
-        let sent = CFAbsoluteTimeGetCurrent()
-        DispatchQueue.main.async {
-            let delay = CFAbsoluteTimeGetCurrent() - sent
-            if delay > self.threshold {
-                let logMessage = String(format: "[Stall] main thread blocked %.3fs", delay)
-                NSLog(logMessage)
-            }
-        }
-    }
-}
-#endif // DEBUG

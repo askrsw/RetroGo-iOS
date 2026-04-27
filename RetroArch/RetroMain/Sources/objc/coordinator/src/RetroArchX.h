@@ -64,9 +64,8 @@ NS_ENUM(unsigned, RetroArchJoypadAxis) {
 @property(nonatomic, strong, readonly) NSSet<NSString *> *allExtensionsSet;
 @property(nonatomic, strong, readonly) NSArray<EmuCoreInfoItem *> *allCores;
 @property(nonatomic, strong, nullable, readonly) EmuCoreInfoItem *currentCoreItem;
+@property(nonatomic, strong, nullable, readonly) id<RAGameLoopRunner> gameLogicRunner;
 @property(nonatomic, assign, readonly) BOOL initialized;
-
-
 
 + (instancetype)shared;
 - (instancetype)init NS_UNAVAILABLE;
@@ -81,7 +80,6 @@ NS_ENUM(unsigned, RetroArchJoypadAxis) {
 - (void)sendJoypadCode:(enum RetroArchJoypadCode)code down:(BOOL)down;
 - (void)sendJoypadAxis:(enum RetroArchJoypadAxis)axis value:(CGFloat)value;
 - (void)setFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier;
-- (void)setFastForwardMultiplier:(double)multiplier;
 - (NSString *)addEmuPrevFrameAction:(RetroArchXEmuFrameAction)action;
 - (void)removeEmuPrevFrameActionForToken:(NSString *)token;
 

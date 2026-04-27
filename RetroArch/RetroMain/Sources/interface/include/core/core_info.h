@@ -116,6 +116,7 @@ typedef struct
    char *assets_path;
    char *firmwares_path;
    char *overlay_path;
+   bool is_hw_render;
 } core_info_t;
 
 /* A subset of core_info parameters required for

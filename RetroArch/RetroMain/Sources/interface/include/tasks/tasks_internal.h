@@ -250,10 +250,12 @@ void task_push_cdrom_dump(const char *drive);
 
 extern const char* const input_builtin_autoconfs[];
 
+#ifdef HAVE_CLOUDSYNC
 /* cloud sync tasks */
 void task_push_cloud_sync_update_driver(void);
 void task_push_cloud_sync(void);
+#endif
 
 RETRO_END_DECLS
 
-#endif
+#endif // !TASKS_HANDLER_INTERNAL_H

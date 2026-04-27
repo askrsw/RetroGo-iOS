@@ -2292,7 +2292,7 @@ bool video_driver_find_driver(
                      " driver for GL HW render.\n",
                      settings->arrays.video_driver);
                break;
-#endif
+#endif // defined(HAVE_OPENGL)
             default:
             case RETRO_HW_CONTEXT_NONE:
                break;

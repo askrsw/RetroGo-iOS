@@ -26,6 +26,10 @@
 import SQLite
 import RACoordinator
 
+enum GameConfigScope: String {
+    case global, core, game
+}
+
 final class GameConfigSession {
     let scope: GameConfigScope
     let core: EmuCoreInfoItem?
@@ -41,6 +45,27 @@ final class GameConfigSession {
 
     func configRetroArch() {
         RetroArchX.shared().config(config)
+    }
+
+    func makeConfigData() -> [(section: GameConfigSection, entries: [GameConfigEntry])] {
+        var array: [(section: GameConfigSection, entries: [GameConfigEntry])] = []
+
+        let titleEntries = makeTitleConfigEntries()
+        if titleEntries.count > 0 {
+            array.append((section: .title, entries: titleEntries))
+        }
+
+        let restartRequiredEntries = makeRestartRequiredConfigEntries()
+        if restartRequiredEntries.count > 0 {
+            array.append((section: .restartRequired, entries: restartRequiredEntries))
+        }
+
+        let overlayEntries = makeOverlayConfigEntries()
+        if overlayEntries.count > 0 {
+            array.append((section: .overlay, entries: overlayEntries))
+        }
+
+        return array
     }
 }
 
@@ -63,6 +88,36 @@ extension GameConfigSession {
     func setFastForwardMultiplier(value: Double) -> Bool {
         config.fastForwardMultiplier = value
         return setOptionalValue(column: Self.fastForwardMultiplier, value: value)
+    }
+
+    func getVideoDriver() -> String {
+        config.videoDriver
+    }
+
+    @discardableResult
+    func setVideoDriver(value: String) -> Bool {
+        config.videoDriver = value
+        return setOptionalValue(column: Self.videoDriver, value: value)
+    }
+
+    func getAudioDriver() -> String {
+        config.audioDriver
+    }
+
+    @discardableResult
+    func setAudioDriver(value: String) -> Bool {
+        config.audioDriver = value
+        return setOptionalValue(column: Self.audioDriver, value: value)
+    }
+
+    func getMuteOnFastForward() -> Bool {
+        config.muteOnFastForward
+    }
+
+    @discardableResult
+    func setMuteOnFastForward(value: Bool) -> Bool {
+        config.muteOnFastForward = value
+        return setOptionalValue(column: Self.muteOnFastForward, value: value)
     }
 }
 
@@ -87,6 +142,15 @@ private extension GameConfigSession {
         #endif
         }
 
+        if let core {
+            if core.supportsLogicThread == false {
+                cfg.logicThread = false
+            }
+            if core.isHWRender {
+                cfg.videoDriver = RetroArchX.shared().defaultVideoDriver()
+            }
+        }
+
         return cfg
     }
 
@@ -104,7 +168,15 @@ private extension GameConfigSession {
     }
 
     func makeDefaultConfig() -> RetroArchConfig {
-        return .init(logicThread: core?.supportsLogicThread ?? false, fastForwardMultiplier: 2.0)
+        let cfg = RetroArchConfig()
+
+        cfg.logicThread = core?.supportsLogicThread ?? false
+        cfg.videoDriver = RetroArchX.shared().defaultVideoDriver()
+        cfg.audioDriver = RetroArchX.shared().defaultAudioDriver()
+
+        cfg.fastForwardMultiplier = 2.0
+        cfg.muteOnFastForward     = false
+        return cfg
     }
 
     func apply(row: Row, to config: inout RetroArchConfig) {
@@ -114,7 +186,17 @@ private extension GameConfigSession {
         if let v = row[Self.fastForwardMultiplier] {
             config.fastForwardMultiplier = v
         }
+        if let v = row[Self.videoDriver] {
+            config.videoDriver = v
+        }
+        if let v = row[Self.audioDriver] {
+            config.audioDriver = v
+        }
+        if let v = row[Self.muteOnFastForward] {
+            config.muteOnFastForward = v
+        }
     }
+
 }
 
 private extension GameConfigSession {
@@ -190,8 +272,14 @@ extension GameConfigSession {
     static let threadEnabled    = SQLite.Expression<Bool?>("thread_enabled")
     static let fastForwardMultiplier = SQLite.Expression<Double?>("fast​_forward​_multiplier")
 
+    static let videoDriver       = SQLite.Expression<String?>("video_driver")
+    static let audioDriver       = SQLite.Expression<String?>("audio_driver")
+    static let muteOnFastForward = SQLite.Expression<Bool?>("mute_on_fastforward")
+
     /*
-     * (key, configScope, updateAt, threadEnabled, fastForwardMultiplier)
+     * key, configScope, updateAt
+     * v3: threadEnabled, fastForwardMultiplier
+     * v4: videoDriver, audioDriver, muteOnFastForward
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

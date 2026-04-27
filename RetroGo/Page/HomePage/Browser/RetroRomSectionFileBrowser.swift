@@ -200,6 +200,7 @@ extension RetroRomSectionFileBrowser {
                 self?.startGame(item)
             }
             let actAssignCore = getAssignCoreAction(item: item)
+            let actSetting = getGameSettingAction(item: item)
             let actRename = getRenameAction(indexPath: indexPath)
             let actTag = UIAction(title: Bundle.localizedString(forKey: "tags"), image: UIImage(systemName: "tag")) { [weak self] _ in
                 Vibration.medium.vibrate()
@@ -207,7 +208,7 @@ extension RetroRomSectionFileBrowser {
             }
             let actDelete = getDeleteAction(item: item)
             let actInfo = getInfoAction(item: item)
-            let actions = [actPlay, actAssignCore, actRename, actTag, actInfo, actDelete].compactMap({ $0 })
+            let actions = [actPlay, actAssignCore, actSetting, actRename, actTag, actInfo, actDelete].compactMap({ $0 })
             return UIMenu(title: "", children: actions)
         }
     }

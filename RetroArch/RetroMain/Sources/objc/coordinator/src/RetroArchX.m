@@ -51,7 +51,8 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     BOOL d_initialized;
 }
 
-@synthesize initialized = d_initialized;
+@synthesize gameLogicRunner = d_gameLogicRuner;
+@synthesize initialized     = d_initialized;
 
 + (instancetype)shared {
     static RetroArchX *instance = nil;
@@ -393,21 +394,6 @@ bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
         return;
     } else {
         [d_gameLogicRuner setFastForwardEnabled:enabled multiplier:multiplier];
-    }
-}
-
-- (void)setFastForwardMultiplier:(double)multiplier {
-    if (self.currentCoreItem == nil || d_gameLogicRuner == nil) {
-        return;
-    }
-
-    if (![NSThread isMainThread]) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [d_gameLogicRuner setFastForwardMultiplier:multiplier];
-        });
-        return;
-    } else {
-        [d_gameLogicRuner setFastForwardMultiplier:multiplier];
     }
 }
 

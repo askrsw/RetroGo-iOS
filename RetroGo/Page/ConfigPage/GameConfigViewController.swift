@@ -34,13 +34,12 @@ final class GameConfigViewController: UIViewController {
 
     let showCloseButton: Bool
     let session: GameConfigSession
-    let sections: [GameConfigSection]
-    let items: [[GameConfigItem]]
+    let configData: [(section: GameConfigSection, entries: [GameConfigEntry])]
 
     init(session: GameConfigSession, showCloseButton: Bool = false) {
         self.showCloseButton = showCloseButton
-        self.session  = session
-        (self.sections, self.items) = GameConfigSection.makeConfigData(session: session)
+        self.session         = session
+        self.configData      = session.makeConfigData()
         super.init(nibName: nil, bundle: nil)
 
         RetroArchX.shared().pause()
@@ -67,7 +66,6 @@ final class GameConfigViewController: UIViewController {
 
         _ = tableView
         _ = dataSource
-
         applySnapshot(animated: false)
     }
 }
@@ -88,23 +86,15 @@ extension GameConfigViewController {
 }
 
 extension GameConfigViewController {
-    typealias DataSource = UITableViewDiffableDataSource<GameConfigSection, GameConfigItem>
-    typealias Snapshot   = NSDiffableDataSourceSnapshot<GameConfigSection, GameConfigItem>
+    typealias DataSource = UITableViewDiffableDataSource<GameConfigSection, GameConfigEntry>
+    typealias Snapshot   = NSDiffableDataSourceSnapshot<GameConfigSection, GameConfigEntry>
 
     private func applySnapshot(animated: Bool) {
-        guard sections.count == items.count else {
-            return
-        }
-
         var snapshot = Snapshot()
-        snapshot.appendSections(sections)
-
-        for index in 0 ..< sections.count {
-            let section = sections[index]
-            let sectionItems = items[index]
-            snapshot.appendItems(sectionItems, toSection: section)
+        snapshot.appendSections(configData.map({ $0.section }))
+        for item in configData {
+            snapshot.appendItems(item.entries, toSection: item.section)
         }
-
         dataSource.apply(snapshot, animatingDifferences: animated)
     }
 
@@ -125,14 +115,13 @@ extension GameConfigViewController {
     }
 
     private func configDS() -> DataSource {
-        let ds = DataSource(tableView: tableView) { [weak self] tableView, indexPath, item in
+        let ds = DataSource(tableView: tableView) { [weak self] tableView, indexPath, entry in
             guard let self = self else { return nil}
-            switch item.type {
-            case .game, .core: return makeCell(GameConfigTitleViewCell.self, config: item)
-            case .logicThread: return makeCell(GameConfigSwitchViewCell.self, config: item)
-            case .retroArchOverlay: return makeCell(GameConfigSwitchViewCell.self, config: item)
-            case .spritkitOverlay: return makeCell(GameConfigSwitchViewCell.self, config: item)
-            case .fastForwardMultiplier: return makeCell(GameConfigSegmentViewCell.self, config: item)
+            switch entry.ui {
+            case .label: return makeCell(GameConfigTitleViewCell.self, entry: entry)
+            case .switch: return makeCell(GameConfigSwitchViewCell.self, entry: entry)
+            case .segmentcontrol: return makeCell(GameConfigSegmentViewCell.self, entry: entry)
+            case .list: return makeCell(GameConfigLabelViewCell.self, entry: entry)
             }
         }
         return ds
@@ -142,13 +131,14 @@ extension GameConfigViewController {
         let cellId = String(describing: cellType)
         if let cell = tableView.dequeueReusableCell(withIdentifier: cellId) as? T {
             return cell
+        } else {
+            return T(style: .default, reuseIdentifier: cellId)
         }
-        return T(style: .default, reuseIdentifier: cellId)
     }
 
-    private func makeCell<T: GameConfigBaseViewCell>(_ cellType: T.Type, config: GameConfigItem) -> UITableViewCell {
+    private func makeCell<T: GameConfigBaseViewCell>(_ cellType: T.Type, entry: GameConfigEntry) -> UITableViewCell {
         let cell: T = dequeueCell(cellType)
-        cell.config = config
+        cell.entry = entry
         return cell
     }
 }
@@ -168,18 +158,18 @@ extension GameConfigViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        guard section < sections.count else { return nil }
+        guard section < configData.count else { return nil }
 
-        let text = sections[section].getSectionFooterText(session: session)
+        let text = configData[section].section.getSectionFooterText(session: session)
         guard let text, !text.isEmpty else { return nil }
 
         return makeFooterView(text)
     }
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        guard section < sections.count else { return .leastNormalMagnitude }
+        guard section < configData.count else { return .leastNormalMagnitude }
 
-        let text = sections[section].getSectionFooterText(session: session)
+        let text = configData[section].section.getSectionFooterText(session: session)
         if text?.isEmpty == false {
             return UITableView.automaticDimension
         }
@@ -189,10 +179,24 @@ extension GameConfigViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
-        false
+        guard let entry = dataSource.itemIdentifier(for: indexPath) else {
+            return false
+        }
+        switch entry.ui {
+            case .list: return entry.enabled
+            default: return false
+        }
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+
+        guard let entry = dataSource.itemIdentifier(for: indexPath) else { return }
+        switch entry.ui {
+            case .list:
+                let selector = GameConfigListItemSelector(entry: entry)
+                navigationController?.pushViewController(selector, animated: true)
+            default: break
+        }
     }
 }

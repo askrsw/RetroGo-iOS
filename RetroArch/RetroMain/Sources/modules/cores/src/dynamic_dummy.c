@@ -54,7 +54,7 @@ void *retro_get_memory_data(unsigned id) { return libretro_dummy_retro_get_memor
 size_t retro_get_memory_size(unsigned id) { return libretro_dummy_retro_get_memory_size(id); }
 void retro_cheat_reset(void) { libretro_dummy_retro_cheat_reset(); }
 void retro_cheat_set(unsigned idx, bool enabled, const char *code) { libretro_dummy_retro_cheat_set(idx, enabled, code); }
-#endif
+#endif // defined(HAVE_STATIC_DUMMY)
 
 void libretro_dummy_retro_init(void)
 {

@@ -597,9 +597,7 @@ matrix_float4x4 matrix_proj_ortho(float left, float right, float top, float bott
       return;
 
    _captureEnabled        = captureEnabled;
-#if 0
    _layer.framebufferOnly = !captureEnabled;
-#endif
 }
 
 - (bool)captureEnabled

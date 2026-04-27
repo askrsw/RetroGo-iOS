@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign, readonly) BOOL supportNoContent;
 @property(nonatomic, assign, readonly) BOOL experimental;
 @property(nonatomic, assign, readonly) BOOL singlePurpose;
+@property(nonatomic, assign, readonly) BOOL isHWRender;
 @property(nonatomic, copy, nullable, readonly) NSArray<NSString *> *permissions;
 @property(nonatomic, copy, nullable, readonly) NSArray<NSString *> *databases;
 @property(nonatomic, copy, nullable, readonly) NSArray<NSString *> *hwApis;

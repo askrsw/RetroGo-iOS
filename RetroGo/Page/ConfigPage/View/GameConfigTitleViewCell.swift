@@ -31,7 +31,7 @@ final class GameConfigTitleViewCell: GameConfigBaseViewCell {
 
     override func updateUI() {
         super.updateUI()
-        titleLabel.text = config?.title
+        titleLabel.text = entry?.getStringValue?()
     }
 
     override func configUI() {

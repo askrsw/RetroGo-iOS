@@ -175,7 +175,7 @@ struct runloop
    my_list *runahead_save_state_list;
    my_list *input_state_list;
    preempt_t *preempt_data;
-#endif
+#endif // defined(HAVE_RUNAHEAD)
 
 #ifdef HAVE_REWIND
    struct state_manager_rewind_state rewind_st;
@@ -197,7 +197,7 @@ struct runloop
 #if defined(HAVE_DYNAMIC) || defined(HAVE_DYLIB)
    struct retro_callbacks secondary_callbacks;           /* ptr alignment */
 #endif
-#endif
+#endif // HAVE_RUNAHEAD
 #ifdef HAVE_THREADS
    slock_t *msg_queue_lock;
 #endif
@@ -223,7 +223,7 @@ struct runloop
    dylib_t secondary_lib_handle;                         /* ptr alignment */
 #endif
    size_t runahead_save_state_size;
-#endif
+#endif // defined(HAVE_RUNAHEAD)
    size_t msg_queue_size;
 
 #if defined(HAVE_RUNAHEAD)

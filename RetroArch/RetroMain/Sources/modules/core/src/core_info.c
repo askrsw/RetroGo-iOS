@@ -452,6 +452,7 @@ void core_info_copy(core_info_t *src, core_info_t *dst)
    dst->assets_path               = src->assets_path          ? strdup(src->assets_path) : NULL;
    dst->firmwares_path            = src->firmwares_path       ? strdup(src->firmwares_path) : NULL;
    dst->overlay_path              = src->overlay_path         ? strdup(src->overlay_path) : NULL;
+   dst->is_hw_render              = src->is_hw_render;
 
    dst->categories_list           = src->categories_list           ? string_list_clone(src->categories_list)           : NULL;
    dst->databases_list            = src->databases_list            ? string_list_clone(src->databases_list)            : NULL;
@@ -598,6 +599,7 @@ static void core_info_transfer(core_info_t *src, core_info_t *dst)
    src->core_file_id.str              = NULL;
    dst->core_file_id.hash             = src->core_file_id.hash;
 
+   dst->is_hw_render                  = src->is_hw_render;
    dst->savestate_support_level       = src->savestate_support_level;
    dst->has_info                      = src->has_info;
    dst->supports_no_game              = src->supports_no_game;
@@ -1852,6 +1854,11 @@ static void core_info_parse_config_file(
       entry->value      = NULL;
    }
 
+   if(config_get_bool(conf, "hw_render", &tmp_bool))
+      info->is_hw_render = tmp_bool;
+   else
+      info->is_hw_render = false;
+
    if (config_get_bool(conf, "supports_no_game",
             &tmp_bool))
       info->supports_no_game = tmp_bool;
@@ -2382,6 +2389,7 @@ bool core_info_init_current_core(void)
    current->assets_path                   = NULL;
    current->firmwares_path                = NULL;
    current->overlay_path                  = NULL;
+   current->is_hw_render                  = false;
 
    p_coreinfo->current                    = current;
    return true;

@@ -1260,7 +1260,7 @@ void video_driver_filter_free(void);
  * NULL.
  **/
 void *video_thread_get_ptr(video_driver_state_t *video_st);
-#endif
+#endif // HAVE_THREADS
 
 void video_driver_lock_new(void);
 
@@ -1381,4 +1381,4 @@ extern const shader_backend_t gl_cg_backend;
 
 RETRO_END_DECLS
 
-#endif
+#endif // !RARCH_VIDEO_DRIVER_H__

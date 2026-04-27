@@ -285,6 +285,8 @@ extension RetroRomCoreInfoViewController {
 
     @objc
     private func settingAction() {
+        Vibration.selection.vibrate()
+
         let session = GameConfigSession(scope: .core, core: coreInfoItem, game: nil)
         let controller = GameConfigViewController(session: session)
         navigationController?.pushViewController(controller, animated: true)

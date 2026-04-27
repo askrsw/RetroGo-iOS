@@ -80,7 +80,6 @@ typedef void (^RetroArchXEmuFrameCallback)(void);
 - (void)sendJoypadCode:(enum RetroArchJoypadCode)code down:(BOOL)down;
 - (void)sendJoypadAxis:(enum RetroArchJoypadAxis)axis value:(CGFloat)value;
 - (void)setFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier;
-- (void)setFastForwardMultiplier:(double)multiplier;
 
 - (NSString *)addEmuPrevFrameAction:(RetroArchXEmuFrameCallback)action;
 - (void)removeEmuPrevFrameActionForToken:(NSString *)token;

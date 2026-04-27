@@ -175,7 +175,8 @@ extension RetroRomFileBrowser {
     }
 
     func getInfoAction(item: RetroRomBaseItem) -> UIAction? {
-        nil
+        Vibration.selection.vibrate()
+        return nil
     }
 
     func getDeleteAction(item: RetroRomBaseItem) -> UIAction {
@@ -210,6 +211,18 @@ extension RetroRomFileBrowser {
             let controller = RetroRomCoreSelectViewController(action: action)
             let navController = UINavigationController(rootViewController: controller)
             current.present(navController, animated: true)
+        }
+    }
+
+    func getGameSettingAction(item: RetroRomBaseItem) -> UIAction? {
+        guard let game = item as? RetroRomFileItem else { return nil }
+        return UIAction(title: Bundle.localizedString(forKey: "configpage_rom_setting"), image: UIImage(systemName: "gear")) { _ in
+            Vibration.selection.vibrate()
+            let current = UIViewController.currentActive()
+            let session = GameConfigSession(scope: .game, core: nil, game: game)
+            let controller = GameConfigViewController(session: session, showCloseButton: true)
+            let naviController = UINavigationController(rootViewController: controller)
+            current?.present(naviController, animated: true)
         }
     }
 }

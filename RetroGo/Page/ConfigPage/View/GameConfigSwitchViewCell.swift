@@ -35,8 +35,8 @@ final class GameConfigSwitchViewCell: GameConfigBaseViewCell {
     override func updateUI() {
         super.updateUI()
         
-        `switch`.isEnabled = config?.enabled ?? true
-        `switch`.isOn = config?.getBoolValue?() ?? false
+        `switch`.isEnabled = entry?.enabled ?? true
+        `switch`.isOn = entry?.getBoolValue?() ?? false
     }
 
     override func configUI() {
@@ -50,6 +50,6 @@ final class GameConfigSwitchViewCell: GameConfigBaseViewCell {
 extension GameConfigSwitchViewCell {
     @objc
     private func switchValueChanged(_ sender: UISwitch) {
-        config?.setBoolValue?(sender.isOn)
+        entry?.setBoolValue?(sender.isOn)
     }
 }

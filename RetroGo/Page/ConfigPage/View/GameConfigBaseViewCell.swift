@@ -31,8 +31,9 @@ class GameConfigBaseViewCell: UITableViewCell {
 
     private(set) var descButton: UIButton?
 
-    var config: GameConfigItem? {
+    var entry: GameConfigEntry? {
         didSet {
+            entryChanged(new: entry, old: oldValue)
             updateUI()
         }
     }
@@ -51,9 +52,9 @@ class GameConfigBaseViewCell: UITableViewCell {
     }
 
     func updateUI() {
-        tipLabel.text = config?.tip
+        tipLabel.text = entry?.title
 
-        if let _ = config?.desc {
+        if let _ = entry?.desc {
             if descButton == nil {
                 let button = UIButton(type: .system)
                 button.addTarget(self, action: #selector(descButtonTapped(_:)), for: .touchUpInside)
@@ -93,6 +94,8 @@ class GameConfigBaseViewCell: UITableViewCell {
             }
         }
     }
+
+    func entryChanged(new: GameConfigEntry?, old: GameConfigEntry?) { }
 }
 
 extension GameConfigBaseViewCell {
@@ -100,7 +103,7 @@ extension GameConfigBaseViewCell {
     private func descButtonTapped(_ sender: UIButton) {
         Vibration.selection.vibrate()
 
-        guard let desc = config?.desc else { return }
+        guard let desc = entry?.desc else { return }
         let descView = GameConfigDescView(desc: desc)
         descView.install(source: sender)
     }

@@ -1827,22 +1827,22 @@ bool runloop_environment_cb(unsigned cmd, void *data)
          enum retro_pixel_format pix_fmt =
             *(const enum retro_pixel_format*)data;
 
-         switch (pix_fmt)
-         {
-            case RETRO_PIXEL_FORMAT_0RGB1555:
+         if(runloop_st->current_core.retro_init != libretro_dummy_retro_init) {
+            switch (pix_fmt)
+            {
+               case RETRO_PIXEL_FORMAT_0RGB1555:
                RARCH_LOG("[Environ] SET_PIXEL_FORMAT: 0RGB1555.\n");
                break;
-
-            case RETRO_PIXEL_FORMAT_RGB565:
+               case RETRO_PIXEL_FORMAT_RGB565:
                RARCH_LOG("[Environ] SET_PIXEL_FORMAT: RGB565.\n");
                break;
-            case RETRO_PIXEL_FORMAT_XRGB8888:
+               case RETRO_PIXEL_FORMAT_XRGB8888:
                RARCH_LOG("[Environ] SET_PIXEL_FORMAT: XRGB8888.\n");
                break;
-            default:
+               default:
                return false;
+            }
          }
-
          video_st->pix_fmt = pix_fmt;
          break;
       }
@@ -3538,8 +3538,8 @@ bool runloop_init_libretro_symbols(
                   return false;
                *lib_handle_p = lib_handle_local;
             }
-#endif
-#endif
+#endif // HAVE_RUNAHEAD
+#endif // HAVE_DYNAMIC
 
             CORE_SYMBOLS(SYMBOL);
          }
@@ -4303,6 +4303,10 @@ static void retro_run_null(void) { } /* Stub function callback impl. */
 static bool core_verify_api_version(runloop_state_t *runloop_st)
 {
    unsigned api_version        = runloop_st->current_core.retro_api_version();
+   if(runloop_st->current_core.retro_init == libretro_dummy_retro_init) {
+      return true;
+   }
+
    if (api_version != RETRO_API_VERSION)
    {
       RARCH_WARN("[Core] is compiled against a different version of libretro than this libretro implementation.\n");
@@ -4394,11 +4398,14 @@ static bool runloop_event_load_core(runloop_state_t *runloop_st,
 
    runloop_st->current_core.retro_get_system_av_info(&video_st->av_info);
 
-   RARCH_LOG("[Core] Geometry: %ux%u, Aspect: %.3f, FPS: %.2f, Sample rate: %.2f Hz.\n",
-         video_st->av_info.geometry.base_width, video_st->av_info.geometry.base_height,
-         video_st->av_info.geometry.aspect_ratio,
-         video_st->av_info.timing.fps,
-         video_st->av_info.timing.sample_rate);
+   if(runloop_st->current_core.retro_init != libretro_dummy_retro_init) {
+      RARCH_LOG("[Core] Geometry: %ux%u, Aspect: %.3f, FPS: %.2f, Sample rate: %.2f Hz.\n",
+                video_st->av_info.geometry.base_width,
+                video_st->av_info.geometry.base_height,
+                video_st->av_info.geometry.aspect_ratio,
+                video_st->av_info.timing.fps,
+                video_st->av_info.timing.sample_rate);
+   }
 
    return true;
 }
@@ -4434,7 +4441,7 @@ bool runloop_event_init_core(
       command_event(CMD_EVENT_CORE_INFO_INIT, NULL);
       command_event(CMD_EVENT_LOAD_CORE_PERSIST, NULL);
    }
-#endif
+#endif // HAVE_NETWORKING
 
    /* Load symbols */
    if (!runloop_init_libretro_symbols(runloop_st,
