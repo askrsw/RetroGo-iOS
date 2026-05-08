@@ -41,6 +41,9 @@ static int16_t virtual_frame_axes[DEFAULT_MAX_PADS][4];
 static bool virtual_frame_connected[DEFAULT_MAX_PADS];
 
 static slock_t *virtual_joypad_lock;
+static retro_keybind_set virtual_autoconf_binds[DEFAULT_MAX_PADS];
+static bool virtual_autoconf_binds_initialized;
+static unsigned virtual_target_port = 0;
 
 static void virtual_joypad_ensure_lock(void)
 {
@@ -65,11 +68,17 @@ static void virtual_joypad_init_state(void)
         virtual_frame_connected[i] = false;
     }
 
-    virtual_pending_connected[0] = true;
-    virtual_frame_connected[0] = true;
+    virtual_pending_connected[virtual_target_port] = true;
+    virtual_frame_connected[virtual_target_port] = true;
 }
 
-void virtual_joypad_set_button(unsigned port, unsigned id, bool down)
+void virtual_joypad_set_button(unsigned id, bool down)
+{
+    unsigned port = virtual_target_port;
+    virtual_joypad_set_button_for_port(port, id, down);
+}
+
+void virtual_joypad_set_button_for_port(unsigned port, unsigned id, bool down)
 {
     if (port >= DEFAULT_MAX_PADS || id >= RARCH_BIND_LIST_END)
         return;
@@ -87,7 +96,13 @@ void virtual_joypad_set_button(unsigned port, unsigned id, bool down)
     slock_unlock(virtual_joypad_lock);
 }
 
-void virtual_joypad_set_axis(unsigned port, unsigned axis, int16_t value)
+void virtual_joypad_set_axis(unsigned axis, int16_t value)
+{
+    unsigned port = virtual_target_port;
+    virtual_joypad_set_axis_for_port(port, axis, value);
+}
+
+void virtual_joypad_set_axis_for_port(unsigned port, unsigned axis, int16_t value)
 {
     if (port >= DEFAULT_MAX_PADS || axis >= 4)
         return;
@@ -113,6 +128,36 @@ void virtual_joypad_set_connected(unsigned port, bool connected)
     slock_lock(virtual_joypad_lock);
     virtual_pending_connected[port] = connected;
     slock_unlock(virtual_joypad_lock);
+}
+
+bool virtual_joypad_set_target_port(unsigned port)
+{
+    if (port >= DEFAULT_MAX_PADS)
+        return false;
+
+    virtual_joypad_ensure_lock();
+    slock_lock(virtual_joypad_lock);
+    if (virtual_target_port != port)
+    {
+        unsigned old_port = virtual_target_port;
+        BIT256_CLEAR_ALL(virtual_pending_buttons[old_port]);
+        memset(virtual_pending_axes[old_port], 0, sizeof(virtual_pending_axes[old_port]));
+        virtual_pending_connected[old_port] = false;
+        BIT256_CLEAR_ALL(virtual_frame_buttons[old_port]);
+        memset(virtual_frame_axes[old_port], 0, sizeof(virtual_frame_axes[old_port]));
+        virtual_frame_connected[old_port] = false;
+
+        virtual_target_port = port;
+        virtual_pending_connected[port] = true;
+        virtual_frame_connected[port] = true;
+    }
+    slock_unlock(virtual_joypad_lock);
+    return true;
+}
+
+unsigned virtual_joypad_get_target_port(void)
+{
+    return virtual_target_port;
 }
 
 void virtual_joypad_commit_frame_state(void)
@@ -216,6 +261,33 @@ static int16_t virtual_joypad_axis(unsigned port, uint32_t joyaxis)
     return 0;
 }
 
+static void virtual_joypad_ensure_autoconf_binds(void)
+{
+    if (!virtual_autoconf_binds_initialized)
+    {
+        unsigned port;
+        unsigned i;
+        for (port = 0; port < DEFAULT_MAX_PADS; port++)
+        {
+            for (i = 0; i < RARCH_FIRST_CUSTOM_BIND; i++)
+            {
+                virtual_autoconf_binds[port][i].joykey = i;
+                virtual_autoconf_binds[port][i].joyaxis = AXIS_NONE;
+            }
+
+            virtual_autoconf_binds[port][RARCH_ANALOG_LEFT_X_PLUS].joyaxis  = AXIS_POS(0);
+            virtual_autoconf_binds[port][RARCH_ANALOG_LEFT_X_MINUS].joyaxis = AXIS_NEG(0);
+            virtual_autoconf_binds[port][RARCH_ANALOG_LEFT_Y_PLUS].joyaxis  = AXIS_POS(1);
+            virtual_autoconf_binds[port][RARCH_ANALOG_LEFT_Y_MINUS].joyaxis = AXIS_NEG(1);
+            virtual_autoconf_binds[port][RARCH_ANALOG_RIGHT_X_PLUS].joyaxis  = AXIS_POS(2);
+            virtual_autoconf_binds[port][RARCH_ANALOG_RIGHT_X_MINUS].joyaxis = AXIS_NEG(2);
+            virtual_autoconf_binds[port][RARCH_ANALOG_RIGHT_Y_PLUS].joyaxis  = AXIS_POS(3);
+            virtual_autoconf_binds[port][RARCH_ANALOG_RIGHT_Y_MINUS].joyaxis = AXIS_NEG(3);
+        }
+        virtual_autoconf_binds_initialized = true;
+    }
+}
+
 static int16_t virtual_joypad_state(
         rarch_joypad_info_t *joypad_info,
         const struct retro_keybind *binds,
@@ -223,24 +295,25 @@ static int16_t virtual_joypad_state(
 {
     unsigned i;
     int16_t ret = 0;
-    uint16_t port_idx = joypad_info ? joypad_info->joy_idx : port;
+    uint16_t port_idx = port;
+    const struct retro_keybind *auto_binds;
 
     if (port_idx >= DEFAULT_MAX_PADS)
         return 0;
+    virtual_joypad_ensure_autoconf_binds();
+    auto_binds = virtual_autoconf_binds[port_idx];
 
     for (i = 0; i < RARCH_FIRST_CUSTOM_BIND; i++)
     {
-        const uint64_t joykey  = (binds[i].joykey != NO_BTN)
-            ? binds[i].joykey  : joypad_info->auto_binds[i].joykey;
-        const uint32_t joyaxis = (binds[i].joyaxis != AXIS_NONE)
-            ? binds[i].joyaxis : joypad_info->auto_binds[i].joyaxis;
+        const uint64_t joykey  = auto_binds[i].joykey;
+        const uint32_t joyaxis = auto_binds[i].joyaxis;
 
         if ((uint16_t)joykey != NO_BTN &&
                 virtual_joypad_button(port_idx, (uint16_t)joykey))
             ret |= (1 << i);
         else if (joyaxis != AXIS_NONE &&
                 ((float)abs(virtual_joypad_axis(port_idx, joyaxis)) / 0x8000) >
-                joypad_info->axis_threshold)
+                (joypad_info ? joypad_info->axis_threshold : 0.5f))
             ret |= (1 << i);
     }
 
@@ -249,24 +322,7 @@ static int16_t virtual_joypad_state(
 
 static void virtual_joypad_poll(void)
 {
-    if (input_autoconf_binds[0][RETRO_DEVICE_ID_JOYPAD_B].joykey == NO_BTN)
-    {
-        unsigned i;
-        for (i = 0; i < RARCH_FIRST_CUSTOM_BIND; i++)
-        {
-            input_autoconf_binds[0][i].joykey = i;
-            input_autoconf_binds[0][i].joyaxis = AXIS_NONE;
-        }
-
-        input_autoconf_binds[0][RARCH_ANALOG_LEFT_X_PLUS].joyaxis  = AXIS_POS(0);
-        input_autoconf_binds[0][RARCH_ANALOG_LEFT_X_MINUS].joyaxis = AXIS_NEG(0);
-        input_autoconf_binds[0][RARCH_ANALOG_LEFT_Y_PLUS].joyaxis  = AXIS_POS(1);
-        input_autoconf_binds[0][RARCH_ANALOG_LEFT_Y_MINUS].joyaxis = AXIS_NEG(1);
-        input_autoconf_binds[0][RARCH_ANALOG_RIGHT_X_PLUS].joyaxis  = AXIS_POS(2);
-        input_autoconf_binds[0][RARCH_ANALOG_RIGHT_X_MINUS].joyaxis = AXIS_NEG(2);
-        input_autoconf_binds[0][RARCH_ANALOG_RIGHT_Y_PLUS].joyaxis  = AXIS_POS(3);
-        input_autoconf_binds[0][RARCH_ANALOG_RIGHT_Y_MINUS].joyaxis = AXIS_NEG(3);
-    }
+    virtual_joypad_ensure_autoconf_binds();
 }
 
 static bool virtual_joypad_rumble(unsigned pad, enum retro_rumble_effect effect, uint16_t strength)

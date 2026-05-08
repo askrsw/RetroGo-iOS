@@ -167,6 +167,9 @@ void driver_uninit(int flags, enum driver_lifetime_flags lifetime_flags);
 
 void retro_input_poll_null(void);
 
+bool drivers_init_input_only(settings_t *settings, bool verbosity_enabled);
+void drivers_deinit_input_only(void);
+
 RETRO_END_DECLS
 
 #endif

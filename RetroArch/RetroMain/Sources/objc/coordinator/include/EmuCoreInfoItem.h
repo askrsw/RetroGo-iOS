@@ -64,6 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign, readonly) BOOL supportsAnalog;
 @property(nonatomic, copy, nullable, readonly) NSString *overlayName;
 @property(nonatomic, assign, readonly) BOOL supportsLogicThread;
+@property(nonatomic, assign, readonly) BOOL allowsDefaultTurboXYHijack;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)noneCore;

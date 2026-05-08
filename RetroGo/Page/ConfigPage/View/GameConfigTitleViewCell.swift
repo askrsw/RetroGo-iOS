@@ -28,10 +28,24 @@ import SnapKit
 
 final class GameConfigTitleViewCell: GameConfigBaseViewCell {
     let titleLabel = UILabel(frame: .zero)
+    private lazy var detailButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "info.circle"), for: .normal)
+        button.configuration?.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
+        button.tintColor = .label
+        button.addTarget(self, action: #selector(detailButtonTapAction(_:)), for: .touchUpInside)
+        button.frame = CGRect(x: 0, y: 0, width: 28, height: 28)
+        return button
+    }()
 
     override func updateUI() {
         super.updateUI()
         titleLabel.text = entry?.getStringValue?()
+        if entry?.detailButtonTapHandler != nil {
+            accessoryView = detailButton
+        } else {
+            accessoryView = nil
+        }
     }
 
     override func configUI() {
@@ -48,5 +62,12 @@ final class GameConfigTitleViewCell: GameConfigBaseViewCell {
             make.bottom.equalToSuperview().offset(-12)
             make.trailing.equalToSuperview().offset(-20)
         }
+    }
+}
+
+extension GameConfigTitleViewCell {
+    @objc
+    private func detailButtonTapAction(_ sender: UIButton) {
+        entry?.detailButtonTapHandler?()
     }
 }

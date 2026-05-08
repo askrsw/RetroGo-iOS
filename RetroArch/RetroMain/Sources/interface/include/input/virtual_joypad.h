@@ -41,9 +41,13 @@ enum virtual_joypad_axis
     VIRTUAL_JOYPAD_AXIS_RIGHT_Y = 3
 };
 
-void virtual_joypad_set_button(unsigned port, unsigned id, bool down);
-void virtual_joypad_set_axis(unsigned port, unsigned axis, int16_t value);
+void virtual_joypad_set_button(unsigned id, bool down);
+void virtual_joypad_set_button_for_port(unsigned port, unsigned id, bool down);
+void virtual_joypad_set_axis(unsigned axis, int16_t value);
+void virtual_joypad_set_axis_for_port(unsigned port, unsigned axis, int16_t value);
 void virtual_joypad_set_connected(unsigned port, bool connected);
+bool virtual_joypad_set_target_port(unsigned port);
+unsigned virtual_joypad_get_target_port(void);
 void virtual_joypad_commit_frame_state(void);
 void virtual_joypad_reset(unsigned port);
 void virtual_joypad_reset_all(void);
@@ -53,4 +57,3 @@ void virtual_joypad_reset_all(void);
 #endif
 
 #endif /* VIRTUAL_JOYPAD_H */
-

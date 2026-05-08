@@ -66,6 +66,8 @@ extension Retro​Rom​Persistence {
         try addColumnIfNeeded(db: db, table: "romconfig", column: "video_driver", type: "TEXT")
         try addColumnIfNeeded(db: db, table: "romconfig", column: "audio_driver", type: "TEXT")
         try addColumnIfNeeded(db: db, table: "romconfig", column: "mute_on_fastforward", type: "INTEGER")
+        try addColumnIfNeeded(db: db, table: "romconfig", column: "overlay_touch_player", type: "INTEGER")
+        try addColumnIfNeeded(db: db, table: "romconfig", column: "input_binding_profile", type: "BLOB")
 
         try db.run("PRAGMA user_version = \(4)")
     }

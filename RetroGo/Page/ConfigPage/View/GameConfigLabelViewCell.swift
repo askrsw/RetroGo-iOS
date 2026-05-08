@@ -30,12 +30,16 @@ final class GameConfigLabelViewCell: GameConfigBaseViewCell {
     private let label = UILabel(frame: .zero)
     private var refreshObservation: NSKeyValueObservation?
 
+    override var constrainTipLabelVertically: Bool {
+        true
+    }
+
     override func updateUI() {
         super.updateUI()
 
         guard let entry else { return }
         switch entry.ui {
-        case .list:
+        case .list, .controller:
             accessoryType = .disclosureIndicator
             label.text = entry.getListSelectedTitle?()
             if entry.enabled {
@@ -57,6 +61,7 @@ final class GameConfigLabelViewCell: GameConfigBaseViewCell {
 
         label.font = UIFont.boldSystemFont(ofSize: UIFont.labelFontSize)
         label.textAlignment = .right
+        label.lineBreakMode = .byTruncatingMiddle
         contentView.addSubview(label)
         label.snp.makeConstraints { make in
             make.leading.greaterThanOrEqualTo(tipLabel.snp.trailing).offset(12)
@@ -93,7 +98,7 @@ private extension GameConfigLabelViewCell {
             guard let self, let entry else { return }
             guard let currentEntry = self.entry, currentEntry === entry else { return }
             switch entry.ui {
-            case .list:
+            case .list, .controller:
                 self.label.text = entry.getListSelectedTitle?()
             default:
                 break

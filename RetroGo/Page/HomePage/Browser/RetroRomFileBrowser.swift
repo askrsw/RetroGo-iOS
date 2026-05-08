@@ -167,7 +167,6 @@ extension RetroRomFileBrowser {
     func getMoveToAction(item: RetroRomBaseItem) -> UIAction {
         UIAction(title: Bundle.localizedString(forKey: "homepage_move_to"), image: UIImage(systemName: "arrow.right.doc.on.clipboard")) { _ in
             Vibration.selection.vibrate()
-
             let selector = RetroRomLocationSelector(srcItem: item, browser: self)
             let navController = UINavigationController(rootViewController: selector)
             UIViewController.currentActive()?.present(navController, animated: true)
@@ -196,7 +195,6 @@ extension RetroRomFileBrowser {
     func getAssignCoreAction(item: RetroRomBaseItem) -> UIAction {
         UIAction(title: Bundle.localizedString(forKey: "homepage_asign_core"), image: UIImage(systemName: "cpu")) { _ in
             Vibration.selection.vibrate()
-
             guard let current = UIViewController.currentActive() else {
                 return
             }
@@ -216,11 +214,12 @@ extension RetroRomFileBrowser {
 
     func getGameSettingAction(item: RetroRomBaseItem) -> UIAction? {
         guard let game = item as? RetroRomFileItem else { return nil }
+        let core = RetroRomCoreManager.shared.getRunningCore(game)
         return UIAction(title: Bundle.localizedString(forKey: "configpage_rom_setting"), image: UIImage(systemName: "gear")) { _ in
             Vibration.selection.vibrate()
             let current = UIViewController.currentActive()
-            let session = GameConfigSession(scope: .game, core: nil, game: game)
-            let controller = GameConfigViewController(session: session, showCloseButton: true)
+            let session = GameConfigSession(scope: .game, core: core, game: game)
+            let controller = GameConfigViewController(session: session, applyInputBinding: true, showCloseButton: true)
             let naviController = UINavigationController(rootViewController: controller)
             current?.present(naviController, animated: true)
         }

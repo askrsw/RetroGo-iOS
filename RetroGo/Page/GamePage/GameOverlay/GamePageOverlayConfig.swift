@@ -261,10 +261,48 @@ extension GamePageOverlayElement {
         }).map({ GamePageOverlayAction($0) })
     }
 
+    var isCombo: Bool {
+        guard let v = meta?["is_combo"], case .bool(let b) = v else {
+            return false
+        }
+        return b
+    }
+
     var psActionButtonIcon: GameOverlayPSActionButtonIcon? {
         guard let v = meta?["ps_action_button_icon"], case .string(let s) = v else {
             return nil
         }
         return GameOverlayPSActionButtonIcon(rawValue: s)
+    }
+}
+
+extension GamePageOverlayConfig {
+    enum OverlayName: String {
+        case `default` = "default"
+        case n64 = "n64"
+        case nes = "nes"
+        case nds = "nds"
+        case gbc = "gbc"
+        case gba = "gba"
+        case snes = "snes"
+        case saturn = "saturn"
+        case ps = "ps"
+        case psp = "psp"
+    }
+
+    static func loadOverlayConfig(_ name: String?) -> Self {
+        let overlayName = OverlayName(rawValue: name ?? "") ?? .default
+        guard let url = Bundle.main.url(forResource: overlayName.rawValue, withExtension: "json", subdirectory: "Data/overlays/spritekit") else {
+            fatalError()
+        }
+
+        do {
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            let data = try Data(contentsOf: url)
+            return try decoder.decode(GamePageOverlayConfig.self, from: data)
+        } catch {
+            fatalError(error.localizedDescription)
+        }
     }
 }

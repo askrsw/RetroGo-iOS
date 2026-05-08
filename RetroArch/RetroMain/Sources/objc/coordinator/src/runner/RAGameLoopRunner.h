@@ -33,6 +33,8 @@ typedef NSObject *_Nullable(^RAGameLoopSyncBlock)(void);
 @protocol RAGameLoopRunner <NSObject>
 @property(nonatomic, readonly, strong) CADisplayLink *displayLink;
 
+@property(nonatomic, assign, getter=isStatsLoggingEnabled) BOOL statsLoggingEnabled;
+
 - (BOOL)start;
 - (BOOL)stop;
 - (BOOL)pause;

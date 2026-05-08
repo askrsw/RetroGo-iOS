@@ -41,28 +41,30 @@ final class GameOverlayDpadStickSwitch: SKNode, GameOverlayElementLayout {
 
     private(set) var element: GamePageOverlayElement
     private let handler: GameOverlaySwitchHandler?
+    private let theme: GameOverlayTheme
 
-    init(element: GamePageOverlayElement, handler: GameOverlaySwitchHandler?) {
+    init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, handler: GameOverlaySwitchHandler?) {
         self.element = element
         self.handler = handler
+        self.theme = theme
         super.init()
 
         name = element.id
         isHidden = element.isHidden
         isUserInteractionEnabled = true
 
-        ringNode.strokeColor = SKColor(white: 1.0, alpha: 0.75)
+        ringNode.strokeColor = theme.primaryColor(alpha: theme.normalContentAlpha)
         addChild(ringNode)
 
-        crossVerticalNode.fillColor = SKColor(white: 1.0, alpha: 0.85)
+        crossVerticalNode.fillColor = theme.primaryColor(alpha: 0.85)
         crossVerticalNode.strokeColor = .clear
         crossNode.addChild(crossVerticalNode)
-        crossHorizontalNode.fillColor = SKColor(white: 1.0, alpha: 0.85)
+        crossHorizontalNode.fillColor = theme.primaryColor(alpha: 0.85)
         crossHorizontalNode.strokeColor = .clear
         crossNode.addChild(crossHorizontalNode)
         addChild(crossNode)
 
-        stickNode.fillColor = SKColor(white: 1.0, alpha: 0.85)
+        stickNode.fillColor = theme.primaryColor(alpha: 0.85)
         stickNode.strokeColor = .clear
         addChild(stickNode)
     }

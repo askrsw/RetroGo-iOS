@@ -29,7 +29,7 @@ import StoreKit
 import ObjcHelper
 import RACoordinator
 
-final class GamePageViewController: RetroArchViewController {
+final class GamePageViewController: RAGameViewController {
     static private(set) weak var instance: GamePageViewController?
 
     let inGameInfoView = GamePageInGameInfoView(frame: .zero)

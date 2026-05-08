@@ -30,6 +30,7 @@
 #include <utils/list_special.h>
 #include <utils/verbosity.h>
 #include <input/input_driver.h>
+#include <input/mfi_joypad.h>
 
 #include <tasks/tasks_internal.h>
 #ifdef HAVE_BLISSBOX
@@ -638,6 +639,8 @@ static void cb_input_autoconfigure_connect(
       input_config_set_autoconfig_binds(port,
             autoconfig_handle->autoconfig_file);
 
+   mfi_joypad_notify_auto_binds_changed((unsigned)port);
+
    reallocate_port_if_needed(port,autoconfig_handle->device_info.vid, autoconfig_handle->device_info.pid,
       autoconfig_handle->device_info.name,
       autoconfig_handle->device_info.display_name);
@@ -989,6 +992,8 @@ static void cb_input_autoconfigure_disconnect(
    input_config_set_device_pid(port, 0);
    input_config_set_device_autoconfigured(port, false);
    input_config_reset_autoconfig_binds(port);
+
+   mfi_joypad_notify_auto_binds_changed((unsigned)port);
 }
 
 static void input_autoconfigure_disconnect_handler(retro_task_t *task)

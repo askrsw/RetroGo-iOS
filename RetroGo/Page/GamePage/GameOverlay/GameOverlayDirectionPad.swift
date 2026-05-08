@@ -56,8 +56,8 @@ final class GameOverlayDirectionPad: SKNode, GameOverlayElementLayout {
                 return
             }
 
-            let inactive = SKColor(white: 0.95, alpha: 0.5)
-            let active = SKColor(white: 0.95, alpha: 1)
+            let inactive = theme.primaryColor(alpha: 0.5)
+            let active = theme.primaryColor(alpha: 1)
             up.fillColor = inactive
             right.fillColor = inactive
             down.fillColor = inactive
@@ -93,37 +93,41 @@ final class GameOverlayDirectionPad: SKNode, GameOverlayElementLayout {
     private var upLeftRect: CGRect = .zero
 
     private(set) var element: GamePageOverlayElement
+    let allowsDiagonalInput: Bool
     let digitalHandler: GameOverlayButtonDigitalChanged?
+    private let theme: GameOverlayTheme
 
-    init(element: GamePageOverlayElement, digitalHandler: GameOverlayButtonDigitalChanged?) {
+    init(element: GamePageOverlayElement, allowsDiagonalInput: Bool = true, theme: GameOverlayTheme = .default, digitalHandler: GameOverlayButtonDigitalChanged?) {
         self.element = element
+        self.allowsDiagonalInput = allowsDiagonalInput
         self.digitalHandler = digitalHandler
+        self.theme = theme
         super.init()
 
         name = element.id
         isUserInteractionEnabled = true
 
-        shape.strokeColor = .white
+        shape.strokeColor = theme.primaryColor
         shape.lineWidth = 2
         addChild(shape)
 
-        circle.fillColor = .mainColor
+        circle.fillColor = theme.accentColor
         circle.lineWidth = 0
         addChild(circle)
 
-        up.fillColor = SKColor(white: 0.95, alpha: 0.5)
+        up.fillColor = theme.primaryColor(alpha: 0.5)
         up.lineWidth = 0
         shape.addChild(up)
 
-        right.fillColor = SKColor(white: 0.95, alpha: 0.5)
+        right.fillColor = theme.primaryColor(alpha: 0.5)
         right.lineWidth = 0
         shape.addChild(right)
 
-        down.fillColor = SKColor(white: 0.95, alpha: 0.5)
+        down.fillColor = theme.primaryColor(alpha: 0.5)
         down.lineWidth = 0
         shape.addChild(down)
 
-        left.fillColor = SKColor(white: 0.95, alpha: 0.5)
+        left.fillColor = theme.primaryColor(alpha: 0.5)
         left.lineWidth = 0
         shape.addChild(left)
     }
@@ -173,51 +177,13 @@ final class GameOverlayDirectionPad: SKNode, GameOverlayElementLayout {
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
-            let touchPoint = touch.location(in: self)
-            if upRightRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.up | GameOverlayDirectionMask.right
-            } else if downRightRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.down | GameOverlayDirectionMask.right
-            } else if downLeftRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.down | GameOverlayDirectionMask.left
-            } else if upLeftRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.up | GameOverlayDirectionMask.left
-            } else if upRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.up
-            } else if rightRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.right
-            } else if downRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.down
-            } else if leftRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.left
-            } else {
-                status = GameOverlayDirectionMask.none
-            }
+            updateStatus(for: touch.location(in: self))
         }
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
-            let touchPoint = touch.location(in: self)
-            if upRightRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.up | GameOverlayDirectionMask.right
-            } else if downRightRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.down | GameOverlayDirectionMask.right
-            } else if downLeftRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.down | GameOverlayDirectionMask.left
-            } else if upLeftRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.up | GameOverlayDirectionMask.left
-            } else if upRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.up
-            } else if rightRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.right
-            } else if downRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.down
-            } else if leftRect.contains(touchPoint) {
-                status = GameOverlayDirectionMask.left
-            } else {
-                status = GameOverlayDirectionMask.none
-            }
+            updateStatus(for: touch.location(in: self))
         }
     }
 
@@ -231,6 +197,58 @@ final class GameOverlayDirectionPad: SKNode, GameOverlayElementLayout {
 }
 
 extension GameOverlayDirectionPad {
+    func applyBindingBubbleTouch(_ touching: Bool, actionId: String) {
+        switch actionId {
+        case "up":
+            digitalHandler?(.up, touching)
+        case "right":
+            digitalHandler?(.right, touching)
+        case "down":
+            digitalHandler?(.down, touching)
+        case "left":
+            digitalHandler?(.left, touching)
+        default:
+            break
+        }
+    }
+
+    private func updateStatus(for touchPoint: CGPoint) {
+        if allowsDiagonalInput {
+            if upRightRect.contains(touchPoint) {
+                status = GameOverlayDirectionMask.up | GameOverlayDirectionMask.right
+                return
+            }
+            if downRightRect.contains(touchPoint) {
+                status = GameOverlayDirectionMask.down | GameOverlayDirectionMask.right
+                return
+            }
+            if downLeftRect.contains(touchPoint) {
+                status = GameOverlayDirectionMask.down | GameOverlayDirectionMask.left
+                return
+            }
+            if upLeftRect.contains(touchPoint) {
+                status = GameOverlayDirectionMask.up | GameOverlayDirectionMask.left
+                return
+            }
+        }
+
+        updateCardinalStatus(for: touchPoint)
+    }
+
+    private func updateCardinalStatus(for touchPoint: CGPoint) {
+        if upRect.contains(touchPoint) {
+            status = GameOverlayDirectionMask.up
+        } else if rightRect.contains(touchPoint) {
+            status = GameOverlayDirectionMask.right
+        } else if downRect.contains(touchPoint) {
+            status = GameOverlayDirectionMask.down
+        } else if leftRect.contains(touchPoint) {
+            status = GameOverlayDirectionMask.left
+        } else {
+            status = GameOverlayDirectionMask.none
+        }
+    }
+
     private func updateRadius(_ radius: CGFloat) {
         self.radius = radius
         self.smallRaidusSquare = radius * 0.2 * radius * 0.2

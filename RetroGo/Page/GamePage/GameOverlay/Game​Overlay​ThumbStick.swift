@@ -40,12 +40,12 @@ final class Game​Overlay​ThumbStick: SKNode, GameOverlayElementLayout {
         didSet {
             guard touching != oldValue else { return }
             if touching {
-                circlePannel.fillColor = SKColor(white: 0.95, alpha: 0.35)
-                decoration.fillColor = .white
+                circlePannel.fillColor = theme.primaryColor(alpha: 0.35)
+                decoration.fillColor = theme.primaryColor
             } else {
                 indicator.run(originalStateAction, withKey: "stateChange")
-                circlePannel.fillColor = SKColor(white: 0.95, alpha: 0.2)
-                decoration.fillColor = SKColor(white: 0.95, alpha: 0.35)
+                circlePannel.fillColor = theme.primaryColor(alpha: 0.2)
+                decoration.fillColor = theme.primaryColor(alpha: 0.35)
                 status = GameOverlayDirectionMask.none
             }
         }
@@ -69,26 +69,28 @@ final class Game​Overlay​ThumbStick: SKNode, GameOverlayElementLayout {
     private(set) var element: GamePageOverlayElement
     private let digitalHandler: GameOverlayButtonDigitalChanged?
     private let analogHandler: GameOverlayDirectionAnalogChanged?
+    private let theme: GameOverlayTheme
 
-    init(element: GamePageOverlayElement, digitalHandler: GameOverlayButtonDigitalChanged? = nil, analogHandler: GameOverlayDirectionAnalogChanged? = nil) {
+    init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, digitalHandler: GameOverlayButtonDigitalChanged? = nil, analogHandler: GameOverlayDirectionAnalogChanged? = nil) {
         self.element = element
         self.digitalHandler = digitalHandler
         self.analogHandler = analogHandler
+        self.theme = theme
         super.init()
 
         name = element.id
         isUserInteractionEnabled = true
 
-        circlePannel.fillColor = SKColor(white: 0.95, alpha: 0.2)
-        circlePannel.strokeColor = SKColor.white
+        circlePannel.fillColor = theme.primaryColor(alpha: 0.2)
+        circlePannel.strokeColor = theme.primaryColor
         circlePannel.lineWidth = 2
         addChild(circlePannel)
 
-        indicator.fillColor = .mainColor
+        indicator.fillColor = theme.accentColor
         indicator.lineWidth = 0
         circlePannel.addChild(indicator)
 
-        decoration.fillColor = SKColor(white: 0.95, alpha: 0.35)
+        decoration.fillColor = theme.primaryColor(alpha: 0.35)
         decoration.lineWidth = 0
         addChild(decoration)
     }

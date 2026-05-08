@@ -1707,6 +1707,7 @@ void drivers_init(
    if (flags & DRIVER_MIDI_MASK)
       midi_driver_init(settings);
 
+#if 0
    {  /* Initialize virtual joypad driver */
       input_driver_state_t *inputState = input_state_get_ptr();
       void *inputData = inputState ? inputState->current_data : NULL;
@@ -1714,6 +1715,7 @@ void drivers_init(
       input_config_set_device_joypad_driver(0, "virtual");
       virtual_joypad_set_connected(0, true);
    }
+#endif // 0
 
 #ifdef HAVE_LAKKA
    cpu_scaling_driver_init();
@@ -1773,8 +1775,10 @@ void driver_uninit(int flags, enum driver_lifetime_flags lifetime_flags)
 
    if ((flags & DRIVER_INPUT_MASK))
    {
+#if 0
       virtual_joypad_set_connected(0, false);
       virtual_joypad_reset_all();
+#endif
       input_state_get_ptr()->current_data = NULL;
    }
 
@@ -1792,6 +1796,79 @@ void driver_uninit(int flags, enum driver_lifetime_flags lifetime_flags)
 #ifdef HAVE_LAKKA
    cpu_scaling_driver_free();
 #endif
+}
+
+bool drivers_init_input_only(settings_t *settings, bool verbosity_enabled)
+{
+   input_driver_state_t *input_st = input_state_get_ptr();
+
+   if (!settings || !input_st)
+      return false;
+
+   /* Already initialized */
+   if (input_st->current_driver && input_st->current_data)
+      return true;
+
+   if (!input_driver_find_driver(settings, "input driver", verbosity_enabled))
+   {
+      RARCH_ERR("[InputOnly] Cannot find input driver.\n");
+      return false;
+   }
+
+   if (!input_st->current_driver)
+   {
+      RARCH_ERR("[InputOnly] current input driver is NULL after find.\n");
+      return false;
+   }
+
+   input_st->current_data = input_driver_init_wrap(
+         input_st->current_driver,
+         settings->arrays.input_joypad_driver);
+
+   if (!input_st->current_data)
+   {
+      RARCH_ERR("[InputOnly] Cannot initialize input driver.\n");
+      input_st->current_driver = NULL;
+      return false;
+   }
+
+   return true;
+}
+
+void drivers_deinit_input_only(void)
+{
+   input_driver_state_t *input_st = input_state_get_ptr();
+
+   if (!input_st)
+      return;
+
+#ifdef HAVE_NETWORKGAMEPAD
+   if (input_st->remote)
+   {
+      settings_t *settings = config_get_ptr();
+      unsigned max_users = settings ? settings->uints.input_max_users : MAX_USERS;
+      input_remote_free(input_st->remote, max_users);
+      input_st->remote = NULL;
+   }
+#endif
+
+#ifdef HAVE_COMMAND
+   input_driver_deinit_command(input_st);
+#endif
+
+   if (input_st->current_driver && input_st->current_driver->free && input_st->current_data)
+      input_st->current_driver->free(input_st->current_data);
+
+   input_st->current_data   = NULL;
+   input_st->current_driver = NULL;
+
+   input_st->flags &= ~(INP_FLAG_KB_LINEFEED_ENABLE
+                      | INP_FLAG_BLOCK_HOTKEY
+                      | INP_FLAG_BLOCK_LIBRETRO_INPUT
+                      | INP_FLAG_NONBLOCKING);
+
+   memset(&input_st->turbo_btns, 0, sizeof(turbo_buttons_t));
+   memset(&input_st->analog_requested, 0, sizeof(input_st->analog_requested));
 }
 
 static void retroarch_deinit_drivers(struct retro_callbacks *cbs)
@@ -7125,7 +7202,7 @@ static void retroarch_validate_cpu_features(void)
  *
  * @return true on success, otherwise false if there was an error.
  **/
-bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
+bool retroarch_main_init(int argc, char *argv[], bool init_drivers, bool init_input_driver_only)
 {
 #if defined(DEBUG) && defined(HAVE_DRMINGW)
    char log_file_name[128];
@@ -7422,6 +7499,8 @@ bool retroarch_main_init(int argc, char *argv[], bool init_drivers)
       input_overlay_init();
 #endif
 #endif // HAVE_OVERLAY
+   } else if (init_input_driver_only) {
+      drivers_init_input_only(settings, verbosity_enabled);
    }
 #ifdef HAVE_CONFIGFILE
    // command_event_save_current_config(OVERRIDE_NONE);

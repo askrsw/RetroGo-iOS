@@ -117,6 +117,7 @@
             "meta": {
                 "title": "AB",
                 "binds": ["A", "B"],
+                "is_combo": true,
                 "is_turbo": true,
                 "is_turbo_auto_keep": false
             }

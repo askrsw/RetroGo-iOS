@@ -30,6 +30,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class RAInputActionManager;
+
 NS_ENUM(int, RetroArchJoypadCode) {
     RetroArchJoypadCodeNone   = -1,
     RetroArchJoypadCodeB      = 0,  /* RETRO_DEVICE_ID_JOYPAD_B */
@@ -65,7 +67,9 @@ typedef void (^RetroArchXEmuFrameCallback)(void);
 @property(nonatomic, strong, readonly) NSSet<NSString *> *allExtensionsSet;
 @property(nonatomic, strong, readonly) NSArray<EmuCoreInfoItem *> *allCores;
 @property(nonatomic, strong, nullable, readonly) EmuCoreInfoItem *currentCoreItem;
+@property(nonatomic, strong, readonly) RAInputActionManager *inputActionManager;
 @property(nonatomic, assign, readonly) BOOL initialized;
+@property(nonatomic, assign, readonly) BOOL dummyCoreRunning;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)shared;
@@ -85,6 +89,10 @@ typedef void (^RetroArchXEmuFrameCallback)(void);
 - (void)removeEmuPrevFrameActionForToken:(NSString *)token;
 
 - (void)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core completion:(nullable void (^)(BOOL success))completion;
+- (void)startDummyCoreIfNeeded:(nullable void (^)(BOOL success))completion;
+- (BOOL)stopDummyCoreIfNeeded;
+- (BOOL)startInputDriverOnlyIfNeeded;
+- (BOOL)stopInputDriverOnlyIfNeeded;
 - (BOOL)stop;
 - (BOOL)pause;
 - (BOOL)resume;

@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.3.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.3.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>May 8, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.3.0" style="number">
+            <p-item>Added per-player external controller mapping with in-app binding configuration.</p-item>
+            <p-item>Added persistent game-level input binding profiles, automatically restored per ROM.</p-item>
+            <p-item>Added configurable core/game options: video driver, audio driver, and mute during fast-forward.</p-item>
+            <p-item>Added overlay touch player assignment and improved virtual/physical input coordination.</p-item>
+            <p-item>Improved stability for Saturn (Yabause) when exiting with connected controllers.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.2.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.2.0</p-title>
         <p-paragraph fontsize="13">

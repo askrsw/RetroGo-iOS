@@ -15,6 +15,7 @@
 "refresh" = "刷新";
 "tags" = "标签";
 "delete" = "删除";
+"setting" = "设置";
 "red" = "红色";
 "orange" = "橙色";
 "yellow" = "黄色";
@@ -200,6 +201,7 @@
 "coreinfo_firmware_ppsspp_imported" = "成功导入 PPSSPP 的资源文件。";
 "coreinfo_firmware_ppsspp_import_failed" = "导入 PPSSPP 资源文件失败！";
 "corelist_core_list" = "核心列表";
+"corelist_core_settings" = "核心设置";
 
 // MARK: - GamePage
 
@@ -214,6 +216,8 @@
 "configpage_title_section_core_footer" = "仅影响核心 %@​，优先于全局设置。";
 "configpage_title_section_game_footer" = "仅影响游戏 %@​，优先于核心和全局设置。";
 "configpage_restart_required_section_footer" = "此分组中的设置会在下次打开游戏时生效。";
+"configpage_overlay_section_header" = "屏幕按键";
+"configpage_controller_section_header" = "外接手柄";
 "configpage_runtime_section_footer" = "此分组中的设置会立即生效。";
 "configpage_core" = "核心:";
 "configpage_rom" = "游戏:";
@@ -226,3 +230,13 @@
 "configpage_audio_driver" = "音频驱动";
 "configpage_game_fast_multiplier" = "游戏快进倍数";
 "configpage_game_mute_when_fast"  = "快进时静音";
+"configpage_game_mute_when_fast_desc" = "未开启独立游戏线程时，高倍速快进可能产生明显杂音。如遇到此问题，可开启快进静音。";
+"configpage_overlay_touch_player" = "按键玩家";
+"configpage_controllers" = "玩家控制器";
+"configpage_player" = "玩家 %d";
+"configpage_touchscreen" = "触摸屏";
+"configpage_no_controllers_connected_tip" = "未检测到外接手柄。请先连接兼容的游戏手柄，然后返回此页面选择。";
+"configpage_no_controller_connected" = "未连接";
+"configpage_connected_controllers" = "已连接手柄";
+"configpage_button_mapping" = "按键映射";
+"configpage_press_button" = "请按键";

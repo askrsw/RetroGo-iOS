@@ -15,6 +15,7 @@
 "refresh" = "Refresh";
 "tags" = "Tags";
 "delete" = "Delete";
+"setting" = "Setting";
 "red" = "Red";
 "orange" = "Orange";
 "yellow" = "Yellow";
@@ -200,6 +201,7 @@
 "coreinfo_firmware_ppsspp_imported" = "Successfully imported PPSSPP resource files.";
 "coreinfo_firmware_ppsspp_import_failed" = "Failed to import PPSSPP resource files!";
 "corelist_core_list" = "Core List";
+"corelist_core_settings" = "Core Settings";
 
 // MARK: - GamePage
 
@@ -214,6 +216,8 @@
 "configpage_title_section_core_footer" = "Applies only to core %@ and overrides global settings.";
 "configpage_title_section_game_footer" = "Applies only to game %@ and overrides core and global settings.";
 "configpage_restart_required_section_footer" = "Settings in this section take effect the next time you open the game.";
+"configpage_overlay_section_header" = "Touch Controls";
+"configpage_controller_section_header" = "External Controllers";
 "configpage_runtime_section_footer" = "Settings in this section take effect immediately.";
 "configpage_core" = "Core:";
 "configpage_rom" = "Rom:";
@@ -226,3 +230,13 @@
 "configpage_audio_driver" = "Audio Driver";
 "configpage_game_fast_multiplier" = "Fast Multiplier";
 "configpage_game_mute_when_fast"  = "Mute on Fast-Forward";
+"configpage_game_mute_when_fast_desc" = "When the separate game thread is disabled, high-speed fast-forward may cause noticeable audio noise. Enable this option if that happens.";
+"configpage_overlay_touch_player" = "Touch Player";
+"configpage_controllers" = "Controllers";
+"configpage_player" = "Player %d";
+"configpage_touchscreen" = "Touch Screen";
+"configpage_no_controllers_connected_tip" = "No external controllers detected. Connect a compatible game controller, then return to this page to choose it.";
+"configpage_no_controller_connected" = "Not Connected";
+"configpage_connected_controllers" = "Connected Controllers";
+"configpage_button_mapping" = "Button Mapping";
+"configpage_press_button" = "Press";

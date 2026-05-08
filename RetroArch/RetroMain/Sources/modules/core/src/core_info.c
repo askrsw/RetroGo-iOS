@@ -3148,7 +3148,7 @@ const char *core_info_get_assets_path(core_info_t *info, bool create) {
 }
 
 const char *core_info_get_firmwares_path(core_info_t *info, bool create) {
-    if(info == NULL) {
+    if(info == NULL || info->user_path == NULL) {
         return NULL;
     }
     if(info->firmwares_path == NULL) {
@@ -3165,7 +3165,7 @@ const char *core_info_get_firmwares_path(core_info_t *info, bool create) {
 
 
 const char *core_info_get_current_firmwares_path() {
-    core_info_t *current;
+    core_info_t *current = NULL;
     if(core_info_get_current_core(&current)) {
         return core_info_get_firmwares_path(current, false);
     } else {

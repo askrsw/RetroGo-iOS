@@ -67,11 +67,13 @@ final class GameOverLayFastButton: SKNode, GameOverlayElementLayout {
 
     private(set) var element: GamePageOverlayElement
     private let fastStateChangeHander: GameOverlayFastStateChanged?
+    private let theme: GameOverlayTheme
 
     // MARK: - Init
-    init(element: GamePageOverlayElement, fastStateChangeHander: GameOverlayFastStateChanged?) {
+    init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, fastStateChangeHander: GameOverlayFastStateChanged?) {
         self.element = element
         self.fastStateChangeHander = fastStateChangeHander
+        self.theme = theme
         super.init()
 
         name = element.id
@@ -136,15 +138,15 @@ extension GameOverLayFastButton {
         [leftChevronNode, rightChevronNode].forEach {
             $0.lineWidth = 0
             $0.strokeColor = .clear
-            $0.fillColor = .white
+            $0.fillColor = theme.primaryColor
             $0.zPosition = 1
             contentNode.addChild($0)
         }
 
-        shapeNode.strokeColor = SKColor.white
+        shapeNode.strokeColor = theme.primaryColor
         shapeNode.lineWidth = 2
         shapeNode.zPosition = 0
-        shapeNode.fillColor = SKColor(white: 1, alpha: 0.1)
+        shapeNode.fillColor = theme.primaryColor(alpha: theme.normalFillAlpha)
         addChild(shapeNode)
     }
 
@@ -153,14 +155,14 @@ extension GameOverLayFastButton {
         let foregroundAlpha: CGFloat
 
         if isTouching {
-            fillColor = SKColor(white: 1.0, alpha: 0.55)
-            foregroundAlpha = 1.0
+            fillColor = theme.primaryColor(alpha: theme.emphasizedPressedFillAlpha)
+            foregroundAlpha = theme.pressedContentAlpha
         } else if isFastForwardEnabled {
-            fillColor = SKColor(white: 1.0, alpha: 0.35)
+            fillColor = theme.primaryColor(alpha: theme.emphasizedActiveFillAlpha)
             foregroundAlpha = 0.95
         } else {
             fillColor = SKColor.clear
-            foregroundAlpha = 0.75
+            foregroundAlpha = theme.normalContentAlpha
         }
 
         shapeNode.fillColor = fillColor
@@ -242,5 +244,10 @@ extension GameOverLayFastButton {
 
     private func handleLongPress() {
         // Reserved for the fast-forward multiplier popup menu.
+    }
+
+    func applyBindingBubbleTouch(_ touching: Bool) {
+        isTouching = touching
+        fastStateChangeHander?(touching)
     }
 }

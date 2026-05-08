@@ -26,9 +26,11 @@
 #import "RetroArchX.h"
 #import "models/EmuCoreInfoItem.h"
 #import "models/EmuInGameMessage.h"
-#import "controllers/RetroArchViewController.h"
+#import "controllers/RAGameViewController.h"
 #import "runner/RAGameLogicThreadRunner.h"
 #import "runner/RAGameLogicDisplayLinkRunner.h"
+#import "input/RAInputActionManager.h"
+#import "virtual/virtual_joypad.h"
 
 #import <retroarch_door.h>
 #import <utils/verbosity.h>
@@ -36,6 +38,7 @@
 #import <UIKit+Extensions.h>
 #import <Foundation+Extensions.h>
 #import <CoreFoundation/CoreFoundation.h>
+#import <tasks/task_content.h>
 
 #define SHOW_CORE_ROM_TYPE_INFO 0
 
@@ -46,13 +49,17 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     NSSet<NSString *> *d_allExtensionsSet;
     NSArray<EmuCoreInfoItem *> *d_coreItems;
     __nullable id<RAGameLoopRunner> d_gameLogicRuner;
+    RAInputActionManager *d_inputActionManager;
     NSMutableDictionary<NSString *, RetroArchXEmuFrameAction> *d_emuPrevFrameActions;
 
     BOOL d_initialized;
+    BOOL d_dummyCoreRunning;
+    BOOL d_inputDriverOnlyRunning;
 }
 
-@synthesize gameLogicRunner = d_gameLogicRuner;
-@synthesize initialized     = d_initialized;
+@synthesize gameLogicRunner    = d_gameLogicRuner;
+@synthesize inputActionManager = d_inputActionManager;
+@synthesize initialized        = d_initialized;
 
 + (instancetype)shared {
     static RetroArchX *instance = nil;
@@ -67,7 +74,15 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     self = [super init];
     if(self != nil) {
         d_initialized = NO;
+        d_dummyCoreRunning = NO;
+        d_inputDriverOnlyRunning = NO;
         d_emuPrevFrameActions = [NSMutableDictionary dictionary];
+        d_inputActionManager = [[RAInputActionManager alloc] init];
+
+        __weak RetroArchX *weakSelf = self;
+        d_emuPrevFrameActions[@"RAInputActionManager.tick"] = ^{
+            [weakSelf.inputActionManager tickFrame:YES];
+        };
 
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             // open log
@@ -97,6 +112,14 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
 - (void)dealloc {
     main_exit(NULL);
+}
+
+- (BOOL)dummyCoreRunning {
+    return d_dummyCoreRunning;
+}
+
+- (BOOL)inputDriverOnlyRunning {
+    return d_inputDriverOnlyRunning;
 }
 
 - (NSArray<UTType *> *)allSupportedExtensions {
@@ -190,6 +213,14 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 #pragma mark - Core Control
 
 - (void)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core completion:(nullable void (^)(BOOL success))completion {
+    if (d_dummyCoreRunning) {
+        [self stopDummyCoreIfNeeded];
+    }
+
+    if (d_inputDriverOnlyRunning) {
+        [self stopInputDriverOnlyIfNeeded];
+    }
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         content_ctx_info_t content_info;
         NSString *corePath = core.corePath;
@@ -217,6 +248,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
         dispatch_async(dispatch_get_main_queue(), ^{
             if(load_ret) {
+                d_dummyCoreRunning = NO;
                 if(video_driver_is_threaded()) {
                     d_gameLogicRuner = [[RAGameLogicThreadRunner alloc] initWithEmuPrevFrameActions:d_emuPrevFrameActions];
                     [d_gameLogicRuner start];
@@ -224,6 +256,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
                     d_gameLogicRuner = [[RAGameLogicDisplayLinkRunner alloc] initWithEmuPrevFrameActions:d_emuPrevFrameActions];
                     [d_gameLogicRuner start];
                 }
+                d_gameLogicRuner.statsLoggingEnabled = YES;
             }
 
             if (completion) {
@@ -233,11 +266,142 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     });
 }
 
+- (void)startDummyCoreIfNeeded:(nullable void (^)(BOOL success))completion {
+    // 已有真实游戏在跑时，不启动 dummy。
+    if (self.currentCoreItem != nil || d_gameLogicRuner != nil || d_dummyCoreRunning) {
+        if (completion) {
+            completion(YES);
+        }
+        return;
+    }
+
+    if (d_inputDriverOnlyRunning) {
+        [self stopInputDriverOnlyIfNeeded];
+    }
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        content_ctx_info_t content_info;
+        memset(&content_info, 0, sizeof(content_ctx_info_t));
+        content_info.init_input_driver_only = true;
+        BOOL load_ret = task_push_start_dummy_core(&content_info);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (load_ret) {
+                d_gameLogicRuner = [[RAGameLogicDisplayLinkRunner alloc] initWithEmuPrevFrameActions:d_emuPrevFrameActions];
+                [d_gameLogicRuner start];
+                d_gameLogicRuner.statsLoggingEnabled = NO;
+                d_dummyCoreRunning = YES;
+            }
+            if (completion) {
+                completion(load_ret);
+            }
+        });
+    });
+}
+
+- (BOOL)stopDummyCoreIfNeeded {
+    if (!d_dummyCoreRunning) {
+        return YES;
+    }
+
+    // 防止误停真实游戏
+    if (self.currentCoreItem != nil) {
+        return YES;
+    }
+
+    BOOL ret = YES;
+    if (d_gameLogicRuner != nil) {
+        ret = [d_gameLogicRuner stop];
+        d_gameLogicRuner = nil;
+    }
+
+    drivers_deinit_input_only();
+
+    d_dummyCoreRunning = NO;
+    return ret;
+}
+
+- (BOOL)startInputDriverOnlyIfNeeded {
+    // 真实游戏或 dummy loop 运行时，不走 input-only
+    if (self.currentCoreItem != nil || d_dummyCoreRunning || d_gameLogicRuner != nil) {
+        return YES;
+    }
+    if (d_inputDriverOnlyRunning) {
+        return YES;
+    }
+
+    settings_t *settings = config_get_ptr();
+    if (!settings) return NO;
+
+    bool ok = drivers_init_input_only(settings, verbosity_is_enabled());
+    if (ok) {
+        d_inputDriverOnlyRunning = YES;
+    }
+    return ok;
+}
+
+- (BOOL)stopInputDriverOnlyIfNeeded {
+    if (!d_inputDriverOnlyRunning) return YES;
+    // 防误停：有真实游戏或 dummy loop 时不动
+    if (self.currentCoreItem != nil || d_dummyCoreRunning || d_gameLogicRuner != nil) {
+        return YES;
+    }
+
+    drivers_deinit_input_only();
+    d_inputDriverOnlyRunning = NO;
+    return YES;
+}
+
 - (BOOL)stop {
+    EmuCoreInfoItem *runningCore = [self currentCoreItem];
+    NSString *coreId = runningCore.coreId.lowercaseString ?: @"";
+    BOOL isYabause = [coreId containsString:@"yabause"];
+    if (isYabause) {
+        /*
+         Yabause-specific teardown guard:
+
+         We observed a stable EXC_BAD_ACCESS in emu.yabause (often in Vdp1DrawCommands)
+         when exiting a game with a connected MFi controller. The core issue is teardown
+         ordering/race: input callbacks may still arrive while core/video state is being
+         paused/unloaded, causing use-after-free or inconsistent state access inside the
+         framework render path.
+
+         Mitigation strategy:
+         1) Stop input callbacks first (quiesce input).
+         2) Reset runtime input state.
+         3) Pause and give a short quiet window before stop/unload.
+         4) Restore callbacks after teardown for next session.
+
+         This does NOT disconnect system Bluetooth controllers; it only detaches the app's
+         internal input callback chain during core teardown.
+        */
+
+        // A) 先静默输入，避免 teardown 期间收到 mfi 事件
+        [d_inputActionManager beginCoreTeardownGuard];
+
+        // B) 尝试先 pause，让 runloop/render 进入稳定态
+        if (d_gameLogicRuner != nil) {
+            [d_gameLogicRuner pause];
+        }
+
+        // C) 给一小段静默窗口，尽量让 Vdp1DrawCommands 收尾
+        if ([NSThread isMainThread]) {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.08, false);
+        } else {
+            usleep(80 * 1000);
+        }
+    }
+
     BOOL ret = [d_gameLogicRuner stop];
     d_gameLogicRuner = nil;
-    EmuCoreInfoItem *runningCore = [self currentCoreItem];
+    d_dummyCoreRunning = NO;
+    d_inputDriverOnlyRunning = NO;
     [runningCore cleanupMameSession];
+
+    if (isYabause) {
+        // D) 恢复回调链，避免影响下次开局
+        [d_inputActionManager endCoreTeardownGuard];
+    }
+
     return ret;
 }
 
@@ -363,7 +527,7 @@ bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
         return;
     }
 
-    virtual_joypad_set_button(0, (unsigned)code, down);
+    virtual_joypad_set_button((unsigned)code, down);
 }
 
 - (void)sendJoypadAxis:(enum RetroArchJoypadAxis)axis value:(CGFloat)value {
@@ -379,7 +543,7 @@ bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
     }
 
     int16_t intValue = (int16_t)(clamped * 0x7fff);
-    virtual_joypad_set_axis(0, (unsigned)axis, intValue);
+    virtual_joypad_set_axis((unsigned)axis, intValue);
 }
 
 - (void)setFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier {

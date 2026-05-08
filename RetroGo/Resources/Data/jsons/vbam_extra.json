@@ -13,5 +13,6 @@
     "supports_analog": false,
     "notes": "GBA core. Analog stick can be used for tilt/gyro sensors in certain games, but not implemented in current version.",
     "overlay": "gba",
-    "supports_logic_thread": true
+    "supports_logic_thread": true,
+    "allows_default_trubo_xy_hijack": true
 }

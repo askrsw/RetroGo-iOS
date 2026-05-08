@@ -34,7 +34,7 @@ final class GameConfigSession {
     let scope: GameConfigScope
     let core: EmuCoreInfoItem?
     let game: RetroRomFileItem?
-    private(set) var config: RetroArchConfig!
+    private(set) var config: RAConfig!
 
     init(scope: GameConfigScope, core: EmuCoreInfoItem?, game: RetroRomFileItem?) {
         self.scope  = scope
@@ -45,6 +45,11 @@ final class GameConfigSession {
 
     func configRetroArch() {
         RetroArchX.shared().config(config)
+
+        RetroArchX.shared().inputActionManager.fastForwardMultiplierProvider = { [weak self] in
+            guard let self = self else { return 2.0 }
+            return getFastForwardMultiplier()
+        }
     }
 
     func makeConfigData() -> [(section: GameConfigSection, entries: [GameConfigEntry])] {
@@ -63,6 +68,11 @@ final class GameConfigSession {
         let overlayEntries = makeOverlayConfigEntries()
         if overlayEntries.count > 0 {
             array.append((section: .overlay, entries: overlayEntries))
+        }
+
+        let controllerEntries = makeControllerConfigEntries()
+        if controllerEntries.count > 0 {
+            array.append((section: .controller, entries: controllerEntries))
         }
 
         return array
@@ -119,10 +129,42 @@ extension GameConfigSession {
         config.muteOnFastForward = value
         return setOptionalValue(column: Self.muteOnFastForward, value: value)
     }
+
+    func getOverlayTouchPlayer() -> Int {
+        Int(config.overlayTouchPlayer)
+    }
+
+    @discardableResult
+    func setOverlayTouchPlayer(value: Int) -> Bool {
+        config.overlayTouchPlayer = Int32(value)
+        return setOptionalValue(column: Self.overlayTouchPlayer, value: value)
+    }
+
+    @discardableResult
+    func saveInputBindingProfile(_ profile: RAInputBindingProfile?) -> Bool {
+        config.inputBindingProfile = profile
+
+        let data: Data?
+        if let profile {
+            do {
+                data = try profile.encodedData()
+            } catch {
+            #if DEBUG
+                fatalError("Encode inputBindingProfile failed: \(error.localizedDescription)")
+            #else
+                return false
+            #endif
+            }
+        } else {
+            data = nil
+        }
+
+        return setOptionalValue(column: Self.inputBindingProfile, value: data)
+    }
 }
 
 private extension GameConfigSession {
-    func getConfig() -> RetroArchConfig {
+    func getConfig() -> RAConfig {
         let pairs = makeConfigScopeKeyPairs()
         var cfg   = makeDefaultConfig()
 
@@ -167,8 +209,8 @@ private extension GameConfigSession {
         return pairs
     }
 
-    func makeDefaultConfig() -> RetroArchConfig {
-        let cfg = RetroArchConfig()
+    func makeDefaultConfig() -> RAConfig {
+        let cfg = RAConfig()
 
         cfg.logicThread = core?.supportsLogicThread ?? false
         cfg.videoDriver = RetroArchX.shared().defaultVideoDriver()
@@ -176,10 +218,18 @@ private extension GameConfigSession {
 
         cfg.fastForwardMultiplier = 2.0
         cfg.muteOnFastForward     = false
+        cfg.overlayTouchPlayer    = 0
+
+        if let core {
+            let coreCap = RAInputCoreCapabilities()
+            coreCap.supportsAnalog = core.supportsAnalog
+            coreCap.allowsDefaultTurboXYHijack = core.allowsDefaultTurboXYHijack
+            cfg.coreCaps = coreCap
+        }
         return cfg
     }
 
-    func apply(row: Row, to config: inout RetroArchConfig) {
+    func apply(row: Row, to config: inout RAConfig) {
         if let v = row[Self.threadEnabled] {
             config.logicThread = v
         }
@@ -195,8 +245,25 @@ private extension GameConfigSession {
         if let v = row[Self.muteOnFastForward] {
             config.muteOnFastForward = v
         }
+        if let v = row[Self.overlayTouchPlayer] {
+            config.overlayTouchPlayer = Int32(v)
+        }
+        if let v = row[Self.inputBindingProfile] {
+            do {
+               let profile = try RAInputBindingProfile.decode(from: v)
+                config.inputBindingProfile = profile
+            #if DEBUG
+                print(profile)
+            #endif
+            } catch {
+            #if DEBUG
+                fatalError("Decode inputBindingProfile failed: \(error.localizedDescription)")
+            #else
+                print("Decode inputBindingProfile failed: \(error.localizedDescription)")
+            #endif
+            }
+        }
     }
-
 }
 
 private extension GameConfigSession {
@@ -266,20 +333,25 @@ private extension GameConfigSession {
 }
 
 extension GameConfigSession {
+    // v3
     static let key              = Retro​Rom​Persistence.key
     static let updateAt         = Retro​Rom​Persistence.updateAt
     static let configScope      = SQLite.Expression<String>("scope")
     static let threadEnabled    = SQLite.Expression<Bool?>("thread_enabled")
     static let fastForwardMultiplier = SQLite.Expression<Double?>("fast​_forward​_multiplier")
 
-    static let videoDriver       = SQLite.Expression<String?>("video_driver")
-    static let audioDriver       = SQLite.Expression<String?>("audio_driver")
-    static let muteOnFastForward = SQLite.Expression<Bool?>("mute_on_fastforward")
+    // v4
+    static let videoDriver         = SQLite.Expression<String?>("video_driver")
+    static let audioDriver         = SQLite.Expression<String?>("audio_driver")
+    static let muteOnFastForward   = SQLite.Expression<Bool?>("mute_on_fastforward")
+    static let overlayTouchPlayer  = SQLite.Expression<Int?>("overlay_touch_player")
+    static let inputBindingProfile = SQLite.Expression<Data?>("input_binding_profile")
 
     /*
      * key, configScope, updateAt
      * v3: threadEnabled, fastForwardMultiplier
-     * v4: videoDriver, audioDriver, muteOnFastForward
+     * v4: videoDriver, audioDriver, muteOnFastForward,
+     *     overlayTouchPlayer, inputBindingProfile
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

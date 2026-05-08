@@ -306,7 +306,7 @@ extension GamePageHudView {
 
         guard let session = holder?.configSession else { return }
 
-        let controller = GameConfigViewController(session: session, showCloseButton: true)
+        let controller = GameConfigViewController(session: session, applyInputBinding: false, showCloseButton: true)
         let naviController = UINavigationController(rootViewController: controller)
         holder?.present(naviController, animated: true)
     }

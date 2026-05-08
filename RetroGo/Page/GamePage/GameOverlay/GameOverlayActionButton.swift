@@ -106,14 +106,16 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
     private(set) var element: GamePageOverlayElement
     private let joypadCodes: [RetroArchJoypadCode]
     private let digitalChangeHandler: GameOverlayButtonDigitalChanged?
+    private let theme: GameOverlayTheme
 
     // MARK: - Init
-    init(element: GamePageOverlayElement, isTurboSupported: Bool, autoKeepTurbo: Bool, digitalChangeHandler: GameOverlayButtonDigitalChanged?) {
+    init(element: GamePageOverlayElement, isTurboSupported: Bool, autoKeepTurbo: Bool, theme: GameOverlayTheme = .default, digitalChangeHandler: GameOverlayButtonDigitalChanged?) {
         self.element = element
         self.joypadCodes = element.binds.map({ $0.code })
         self.autoKeepTurbo = autoKeepTurbo
         self.isTurboSupported = isTurboSupported
         self.digitalChangeHandler = digitalChangeHandler
+        self.theme = theme
         super.init()
 
         name = element.id
@@ -174,6 +176,10 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
             // Switching from turbo -> normal should reflect current touch state immediately.
             emit(isTouching)
         }
+    }
+
+    func applyBindingBubbleTouch(_ touching: Bool) {
+        emit(touching)
     }
 
     private func resetTurboState(preservingTrackingTouch: Bool) {
@@ -293,7 +299,7 @@ extension GameOverlayActionButton {
         } else if let title = element.title {
             let lNode = SKLabelNode(text: title)
             lNode.fontName = "Helvetica"
-            lNode.fontColor = SKColor(white: 1.0, alpha: 0.75)
+            lNode.fontColor = theme.primaryColor(alpha: theme.normalContentAlpha)
             lNode.verticalAlignmentMode = .center
             lNode.horizontalAlignmentMode = .center
             lNode.zPosition = 1
@@ -301,10 +307,10 @@ extension GameOverlayActionButton {
             self.labelNode = lNode
         }
 
-        shapeNode.strokeColor = SKColor.white
+        shapeNode.strokeColor = theme.primaryColor
         shapeNode.lineWidth = 2
         shapeNode.zPosition = 0
-        shapeNode.fillColor = SKColor(white: 1, alpha: 0.1)
+        shapeNode.fillColor = theme.primaryColor(alpha: theme.normalFillAlpha)
         addChild(shapeNode)
     }
 
@@ -313,19 +319,19 @@ extension GameOverlayActionButton {
         let foregroundAlpha: CGFloat
 
         if isTouching {
-            fillColor = SKColor(white: 1.0, alpha: 0.4)
-            foregroundAlpha = 1.0
+            fillColor = theme.primaryColor(alpha: theme.pressedFillAlpha)
+            foregroundAlpha = theme.pressedContentAlpha
         } else if isTurboActive {
             // Turbo active (latched or holding) but not touching.
-            fillColor = SKColor(white: 1.0, alpha: 0.25)
+            fillColor = theme.primaryColor(alpha: theme.activeFillAlpha)
             foregroundAlpha = 0.95
         } else {
-            fillColor = SKColor(white: 1.0, alpha: 0.1)
-            foregroundAlpha = 0.75
+            fillColor = theme.primaryColor(alpha: theme.normalFillAlpha)
+            foregroundAlpha = theme.normalContentAlpha
         }
 
         shapeNode.fillColor = fillColor
-        labelNode?.fontColor = SKColor(white: 1.0, alpha: foregroundAlpha)
+        labelNode?.fontColor = theme.primaryColor(alpha: foregroundAlpha)
         updatePSIconAppearance(alpha: foregroundAlpha)
     }
 
@@ -357,7 +363,7 @@ extension GameOverlayActionButton {
     }
 
     private func updatePSIconAppearance(alpha: CGFloat) {
-        let strokeColor = SKColor(white: 1.0, alpha: alpha)
+        let strokeColor = theme.primaryColor(alpha: alpha)
         psIconShapeNodes.forEach {
             $0.strokeColor = strokeColor
         }
@@ -459,4 +465,3 @@ private extension GameOverlayPSActionButtonIcon {
         CGPath(rect: CGRect(x: -28, y: -28, width: 56, height: 56), transform: nil)
     }
 }
-

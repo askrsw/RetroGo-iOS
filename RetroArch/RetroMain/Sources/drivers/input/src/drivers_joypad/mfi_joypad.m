@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <limits.h>
+#include <dispatch/dispatch.h>
 
 #include <boolean.h>
 
@@ -24,6 +25,7 @@
 
 #include <utils/verbosity.h>
 #include <input/input_driver.h>
+#include <input/mfi_joypad.h>
 #include <tasks/tasks_internal.h>
 
 void get_ios_version(int *major, int *minor);
@@ -58,6 +60,66 @@ static NSMutableArray *mfiControllers;
 static bool mfi_inited            = false;
 static id mfi_connect_observer    = nil;
 static id mfi_disconnect_observer = nil;
+static mfi_joypad_button_event_callback_t mfi_button_event_callback = NULL;
+static void *mfi_button_event_userdata = NULL;
+static mfi_joypad_axis_event_callback_t mfi_axis_event_callback = NULL;
+static void *mfi_axis_event_userdata = NULL;
+static mfi_joypad_button_suppression_callback_t mfi_button_suppression_callback = NULL;
+static void *mfi_button_suppression_userdata = NULL;
+static mfi_joypad_axis_suppression_callback_t mfi_axis_suppression_callback = NULL;
+static void *mfi_axis_suppression_userdata = NULL;
+static NSTimer *mfi_button_event_monitor_timer = nil;
+static uint32_t mfi_button_event_monitor_buttons[MAX_USERS];
+static int16_t mfi_button_event_monitor_axes[MAX_USERS][MAX_MFI_AXES];
+static const int16_t mfi_axis_event_threshold = 16384;
+static mfi_joypad_topology_changed_callback_t mfi_topology_changed_callback = NULL;
+static void *mfi_topology_changed_userdata = NULL;
+
+void mfi_joypad_set_button_event_callback(
+      mfi_joypad_button_event_callback_t callback,
+      void *userdata)
+{
+   mfi_button_event_callback = callback;
+   mfi_button_event_userdata = userdata;
+}
+
+void mfi_joypad_set_axis_event_callback(
+      mfi_joypad_axis_event_callback_t callback,
+      void *userdata)
+{
+   mfi_axis_event_callback = callback;
+   mfi_axis_event_userdata = userdata;
+}
+
+void mfi_joypad_set_button_suppression_callback(
+      mfi_joypad_button_suppression_callback_t callback,
+      void *userdata)
+{
+   mfi_button_suppression_callback = callback;
+   mfi_button_suppression_userdata = userdata;
+}
+
+void mfi_joypad_set_axis_suppression_callback(
+      mfi_joypad_axis_suppression_callback_t callback,
+      void *userdata)
+{
+   mfi_axis_suppression_callback = callback;
+   mfi_axis_suppression_userdata = userdata;
+}
+
+void mfi_joypad_set_topology_changed_callback(
+      mfi_joypad_topology_changed_callback_t callback,
+      void *userdata)
+{
+   mfi_topology_changed_callback = callback;
+   mfi_topology_changed_userdata = userdata;
+}
+
+void mfi_joypad_notify_auto_binds_changed(unsigned port)
+{
+   if (mfi_topology_changed_callback)
+       mfi_topology_changed_callback(mfi_topology_changed_userdata);
+}
 
 static bool apple_gamecontroller_available(void)
 {
@@ -77,86 +139,228 @@ static bool mfi_controller_is_siri_remote(GCController *controller)
    return controller.microGamepad && !controller.extendedGamepad && [@"Remote" isEqualToString:controller.vendorName];
 }
 
-static void apple_gamecontroller_joypad_poll_internal(GCController *controller, uint32_t slot)
+static const char *apple_gamecontroller_joypad_display_name_for_button(unsigned button)
 {
-    uint32_t *buttons        = &mfi_buttons[slot];
+   switch (button)
+   {
+      case RETRO_DEVICE_ID_JOYPAD_B:
+         return "A";
+      case RETRO_DEVICE_ID_JOYPAD_A:
+         return "B";
+      case RETRO_DEVICE_ID_JOYPAD_Y:
+         return "X";
+      case RETRO_DEVICE_ID_JOYPAD_X:
+         return "Y";
+      case RETRO_DEVICE_ID_JOYPAD_SELECT:
+         return "Select";
+      case RETRO_DEVICE_ID_JOYPAD_START:
+         return "Menu";
+      case RETRO_DEVICE_ID_JOYPAD_UP:
+         return "D-Pad Up";
+      case RETRO_DEVICE_ID_JOYPAD_DOWN:
+         return "D-Pad Down";
+      case RETRO_DEVICE_ID_JOYPAD_LEFT:
+         return "D-Pad Left";
+      case RETRO_DEVICE_ID_JOYPAD_RIGHT:
+         return "D-Pad Right";
+      case RETRO_DEVICE_ID_JOYPAD_L:
+         return "L1";
+      case RETRO_DEVICE_ID_JOYPAD_R:
+         return "R1";
+      case RETRO_DEVICE_ID_JOYPAD_L2:
+         return "L2";
+      case RETRO_DEVICE_ID_JOYPAD_R2:
+         return "R2";
+      case RETRO_DEVICE_ID_JOYPAD_L3:
+         return "L3";
+      case RETRO_DEVICE_ID_JOYPAD_R3:
+         return "R3";
+      default:
+         return NULL;
+   }
+}
+
+static const char *apple_gamecontroller_joypad_display_name_for_axis(unsigned axis, bool positive)
+{
+   switch (axis)
+   {
+      case 0:
+         return positive ? "Left Stick Right" : "Left Stick Left";
+      case 1:
+         return positive ? "Left Stick Up" : "Left Stick Down";
+      case 2:
+         return positive ? "Right Stick Right" : "Right Stick Left";
+      case 3:
+         return positive ? "Right Stick Up" : "Right Stick Down";
+      case 4:
+         return positive ? "L2 Axis +" : "L2 Axis -";
+      case 5:
+         return positive ? "R2 Axis +" : "R2 Axis -";
+      default:
+         return NULL;
+   }
+}
+
+static void apple_gamecontroller_joypad_report_button_transitions(uint32_t slot, uint32_t previous_buttons, uint32_t current_buttons)
+{
+   if (slot >= MAX_USERS)
+      return;
+
+   uint32_t changed_buttons = previous_buttons ^ current_buttons;
+   if (!changed_buttons)
+      return;
+
+   if (mfi_button_event_callback == NULL)
+      return;
+
+   for (unsigned button = 0; button < RARCH_FIRST_CUSTOM_BIND; button++)
+   {
+      uint32_t mask = (1 << button);
+      if ((changed_buttons & mask) == 0)
+         continue;
+
+      const char *display_name = apple_gamecontroller_joypad_display_name_for_button(button);
+      if (display_name == NULL)
+         continue;
+
+      mfi_button_event_callback(
+            slot,
+            (uint16_t)button,
+            (current_buttons & mask) != 0,
+            display_name,
+            mfi_button_event_userdata);
+   }
+}
+
+static void apple_gamecontroller_joypad_report_axis_transition(uint32_t slot,
+      unsigned axis,
+      bool positive,
+      int16_t axis_value,
+      bool pressed)
+{
+   if (slot >= MAX_USERS || axis >= MAX_MFI_AXES || mfi_axis_event_callback == NULL)
+      return;
+
+   const char *display_name = apple_gamecontroller_joypad_display_name_for_axis(axis, positive);
+   if (display_name == NULL)
+      return;
+
+   mfi_axis_event_callback(
+         slot,
+         positive ? AXIS_POS(axis) : AXIS_NEG(axis),
+         axis_value,
+         pressed,
+         display_name,
+         mfi_axis_event_userdata);
+}
+
+static void apple_gamecontroller_joypad_report_axis_transitions(uint32_t slot,
+      const int16_t previous_axes[MAX_MFI_AXES],
+      const int16_t current_axes[MAX_MFI_AXES])
+{
+   if (slot >= MAX_USERS || mfi_axis_event_callback == NULL)
+      return;
+
+   for (unsigned axis = 0; axis < MAX_MFI_AXES; axis++)
+   {
+      int16_t previous_value = previous_axes[axis];
+      int16_t current_value = current_axes[axis];
+      bool previous_positive = previous_value >= mfi_axis_event_threshold;
+      bool current_positive = current_value >= mfi_axis_event_threshold;
+      bool previous_negative = previous_value <= -mfi_axis_event_threshold;
+      bool current_negative = current_value <= -mfi_axis_event_threshold;
+
+      if (previous_positive != current_positive)
+         apple_gamecontroller_joypad_report_axis_transition(slot, axis, true, current_value, current_positive);
+      if (previous_negative != current_negative)
+         apple_gamecontroller_joypad_report_axis_transition(slot, axis, false, current_value, current_negative);
+   }
+}
+
+static uint32_t apple_gamecontroller_joypad_read_buttons_and_axes(GCController *controller,
+      uint32_t retained_buttons,
+      int16_t axes[MAX_MFI_AXES])
+{
+    uint32_t buttons;
+
     /* Retain the values from the paused controller handler and pass them through.
      * The menu button can be pressed/unpressed
      * like any other button in iOS 13,
      * so no need to passthrough anything */
     if (@available(iOS 13, *))
-        *buttons             = 0;
+        buttons              = 0;
     else
     {
        /* Use the paused controller handler for iOS versions below 13 */
-       uint32_t pause        = *buttons & (1 << RETRO_DEVICE_ID_JOYPAD_START);
-       uint32_t select       = *buttons & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT);
-       uint32_t l3           = *buttons & (1 << RETRO_DEVICE_ID_JOYPAD_L3);
-       uint32_t r3           = *buttons & (1 << RETRO_DEVICE_ID_JOYPAD_R3);
-       *buttons              = 0 | pause | select | l3 | r3;
+       uint32_t pause        = retained_buttons & (1 << RETRO_DEVICE_ID_JOYPAD_START);
+       uint32_t select       = retained_buttons & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT);
+       uint32_t l3           = retained_buttons & (1 << RETRO_DEVICE_ID_JOYPAD_L3);
+       uint32_t r3           = retained_buttons & (1 << RETRO_DEVICE_ID_JOYPAD_R3);
+       buttons               = 0 | pause | select | l3 | r3;
     }
-    memset(mfi_axes[slot], 0, sizeof(mfi_axes[0]));
+
+    memset(axes, 0, sizeof(mfi_axes[0]));
 
     if (@available(macOS 11, iOS 14, tvOS 14, *))
     {
         GCPhysicalInputProfile *profile = controller.physicalInputProfile;
 
-        *buttons |= [[profile.dpads[GCInputDirectionPad] up] isPressed]       ? (1 << RETRO_DEVICE_ID_JOYPAD_UP)     : 0;
-        *buttons |= [[profile.dpads[GCInputDirectionPad] down] isPressed]     ? (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)   : 0;
-        *buttons |= [[profile.dpads[GCInputDirectionPad] left] isPressed]     ? (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)   : 0;
-        *buttons |= [[profile.dpads[GCInputDirectionPad] right] isPressed]    ? (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)  : 0;
-        *buttons |= [profile.buttons[GCInputButtonA] isPressed]               ? (1 << RETRO_DEVICE_ID_JOYPAD_B)      : 0;
-        *buttons |= [profile.buttons[GCInputButtonB] isPressed]               ? (1 << RETRO_DEVICE_ID_JOYPAD_A)      : 0;
-        *buttons |= [profile.buttons[GCInputButtonX] isPressed]               ? (1 << RETRO_DEVICE_ID_JOYPAD_Y)      : 0;
-        *buttons |= [profile.buttons[GCInputButtonY] isPressed]               ? (1 << RETRO_DEVICE_ID_JOYPAD_X)      : 0;
-        *buttons |= [profile.buttons[GCInputLeftShoulder] isPressed]          ? (1 << RETRO_DEVICE_ID_JOYPAD_L)      : 0;
-        *buttons |= [profile.buttons[GCInputRightShoulder] isPressed]         ? (1 << RETRO_DEVICE_ID_JOYPAD_R)      : 0;
-        *buttons |= [profile.buttons[GCInputLeftTrigger] isPressed]           ? (1 << RETRO_DEVICE_ID_JOYPAD_L2)     : 0;
-        *buttons |= [profile.buttons[GCInputRightTrigger] isPressed]          ? (1 << RETRO_DEVICE_ID_JOYPAD_R2)     : 0;
-        *buttons |= [profile.buttons[GCInputLeftThumbstickButton] isPressed]  ? (1 << RETRO_DEVICE_ID_JOYPAD_L3)     : 0;
-        *buttons |= [profile.buttons[GCInputRightThumbstickButton] isPressed] ? (1 << RETRO_DEVICE_ID_JOYPAD_R3)     : 0;
-        *buttons |= [profile.buttons[GCInputButtonOptions] isPressed]         ? (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) : 0;
-        *buttons |= [profile.buttons[GCInputButtonMenu] isPressed]            ? (1 << RETRO_DEVICE_ID_JOYPAD_START)  : 0;
-        *buttons |= [profile.buttons[GCInputButtonHome] isPressed]            ? (1 << RARCH_FIRST_CUSTOM_BIND)       : 0;
+        buttons |= [[profile.dpads[GCInputDirectionPad] up] isPressed]       ? (1 << RETRO_DEVICE_ID_JOYPAD_UP)     : 0;
+        buttons |= [[profile.dpads[GCInputDirectionPad] down] isPressed]     ? (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)   : 0;
+        buttons |= [[profile.dpads[GCInputDirectionPad] left] isPressed]     ? (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)   : 0;
+        buttons |= [[profile.dpads[GCInputDirectionPad] right] isPressed]    ? (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT)  : 0;
+        buttons |= [profile.buttons[GCInputButtonA] isPressed]               ? (1 << RETRO_DEVICE_ID_JOYPAD_B)      : 0;
+        buttons |= [profile.buttons[GCInputButtonB] isPressed]               ? (1 << RETRO_DEVICE_ID_JOYPAD_A)      : 0;
+        buttons |= [profile.buttons[GCInputButtonX] isPressed]               ? (1 << RETRO_DEVICE_ID_JOYPAD_Y)      : 0;
+        buttons |= [profile.buttons[GCInputButtonY] isPressed]               ? (1 << RETRO_DEVICE_ID_JOYPAD_X)      : 0;
+        buttons |= [profile.buttons[GCInputLeftShoulder] isPressed]          ? (1 << RETRO_DEVICE_ID_JOYPAD_L)      : 0;
+        buttons |= [profile.buttons[GCInputRightShoulder] isPressed]         ? (1 << RETRO_DEVICE_ID_JOYPAD_R)      : 0;
+        buttons |= [profile.buttons[GCInputLeftTrigger] isPressed]           ? (1 << RETRO_DEVICE_ID_JOYPAD_L2)     : 0;
+        buttons |= [profile.buttons[GCInputRightTrigger] isPressed]          ? (1 << RETRO_DEVICE_ID_JOYPAD_R2)     : 0;
+        buttons |= [profile.buttons[GCInputLeftThumbstickButton] isPressed]  ? (1 << RETRO_DEVICE_ID_JOYPAD_L3)     : 0;
+        buttons |= [profile.buttons[GCInputRightThumbstickButton] isPressed] ? (1 << RETRO_DEVICE_ID_JOYPAD_R3)     : 0;
+        buttons |= [profile.buttons[GCInputButtonOptions] isPressed]         ? (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) : 0;
+        buttons |= [profile.buttons[GCInputButtonMenu] isPressed]            ? (1 << RETRO_DEVICE_ID_JOYPAD_START)  : 0;
+        buttons |= [profile.buttons[GCInputButtonHome] isPressed]            ? (1 << RARCH_FIRST_CUSTOM_BIND)       : 0;
 
-        mfi_axes[slot][0] = [[profile.dpads[GCInputLeftThumbstick] xAxis] value]  * 32767.0f;
-        mfi_axes[slot][1] = [[profile.dpads[GCInputLeftThumbstick] yAxis] value]  * 32767.0f;
-        mfi_axes[slot][2] = [[profile.dpads[GCInputRightThumbstick] xAxis] value] * 32767.0f;
-        mfi_axes[slot][3] = [[profile.dpads[GCInputRightThumbstick] yAxis] value] * 32767.0f;
-        mfi_axes[slot][4] = [profile.buttons[GCInputLeftTrigger] value]           * 32767.0f;
-        mfi_axes[slot][5] = [profile.buttons[GCInputRightTrigger] value]          * 32767.0f;
+        axes[0] = [[profile.dpads[GCInputLeftThumbstick] xAxis] value]  * 32767.0f;
+        axes[1] = [[profile.dpads[GCInputLeftThumbstick] yAxis] value]  * 32767.0f;
+        axes[2] = [[profile.dpads[GCInputRightThumbstick] xAxis] value] * 32767.0f;
+        axes[3] = [[profile.dpads[GCInputRightThumbstick] yAxis] value] * 32767.0f;
+        axes[4] = [profile.buttons[GCInputLeftTrigger] value]           * 32767.0f;
+        axes[5] = [profile.buttons[GCInputRightTrigger] value]          * 32767.0f;
     }
     else if (controller.extendedGamepad)
     {
         GCExtendedGamepad *gp = (GCExtendedGamepad *)controller.extendedGamepad;
 
-        *buttons             |= gp.dpad.up.pressed         ? (1 << RETRO_DEVICE_ID_JOYPAD_UP)    : 0;
-        *buttons             |= gp.dpad.down.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)  : 0;
-        *buttons             |= gp.dpad.left.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)  : 0;
-        *buttons             |= gp.dpad.right.pressed      ? (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT) : 0;
-        *buttons             |= gp.buttonA.pressed         ? (1 << RETRO_DEVICE_ID_JOYPAD_B)     : 0;
-        *buttons             |= gp.buttonB.pressed         ? (1 << RETRO_DEVICE_ID_JOYPAD_A)     : 0;
-        *buttons             |= gp.buttonX.pressed         ? (1 << RETRO_DEVICE_ID_JOYPAD_Y)     : 0;
-        *buttons             |= gp.buttonY.pressed         ? (1 << RETRO_DEVICE_ID_JOYPAD_X)     : 0;
-        *buttons             |= gp.leftShoulder.pressed    ? (1 << RETRO_DEVICE_ID_JOYPAD_L)     : 0;
-        *buttons             |= gp.rightShoulder.pressed   ? (1 << RETRO_DEVICE_ID_JOYPAD_R)     : 0;
-        *buttons             |= gp.leftTrigger.pressed     ? (1 << RETRO_DEVICE_ID_JOYPAD_L2)    : 0;
-        *buttons             |= gp.rightTrigger.pressed    ? (1 << RETRO_DEVICE_ID_JOYPAD_R2)    : 0;
+        buttons              |= gp.dpad.up.pressed         ? (1 << RETRO_DEVICE_ID_JOYPAD_UP)    : 0;
+        buttons              |= gp.dpad.down.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)  : 0;
+        buttons              |= gp.dpad.left.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)  : 0;
+        buttons              |= gp.dpad.right.pressed      ? (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT) : 0;
+        buttons              |= gp.buttonA.pressed         ? (1 << RETRO_DEVICE_ID_JOYPAD_B)     : 0;
+        buttons              |= gp.buttonB.pressed         ? (1 << RETRO_DEVICE_ID_JOYPAD_A)     : 0;
+        buttons              |= gp.buttonX.pressed         ? (1 << RETRO_DEVICE_ID_JOYPAD_Y)     : 0;
+        buttons              |= gp.buttonY.pressed         ? (1 << RETRO_DEVICE_ID_JOYPAD_X)     : 0;
+        buttons              |= gp.leftShoulder.pressed    ? (1 << RETRO_DEVICE_ID_JOYPAD_L)     : 0;
+        buttons              |= gp.rightShoulder.pressed   ? (1 << RETRO_DEVICE_ID_JOYPAD_R)     : 0;
+        buttons              |= gp.leftTrigger.pressed     ? (1 << RETRO_DEVICE_ID_JOYPAD_L2)    : 0;
+        buttons              |= gp.rightTrigger.pressed    ? (1 << RETRO_DEVICE_ID_JOYPAD_R2)    : 0;
 #if OSX || __IPHONE_OS_VERSION_MAX_ALLOWED >= 120100 || __TV_OS_VERSION_MAX_ALLOWED >= 120100
         if (@available(iOS 12.1, macOS 10.15, tvOS 12.1, *))
         {
-            *buttons         |= gp.leftThumbstickButton.pressed ? (1 << RETRO_DEVICE_ID_JOYPAD_L3) : 0;
-            *buttons         |= gp.rightThumbstickButton.pressed ? (1 << RETRO_DEVICE_ID_JOYPAD_R3) : 0;
+            buttons          |= gp.leftThumbstickButton.pressed ? (1 << RETRO_DEVICE_ID_JOYPAD_L3) : 0;
+            buttons          |= gp.rightThumbstickButton.pressed ? (1 << RETRO_DEVICE_ID_JOYPAD_R3) : 0;
         }
 #endif
 
 #if OSX || __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000 || __TV_OS_VERSION_MAX_ALLOWED >= 130000
         if (@available(iOS 13, tvOS 13, macOS 10.15, *))
         {
-            *buttons             |= gp.buttonOptions.pressed ? (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) : 0;
-            *buttons             |= gp.buttonMenu.pressed    ? (1 << RETRO_DEVICE_ID_JOYPAD_START)  : 0;
+            buttons              |= gp.buttonOptions.pressed ? (1 << RETRO_DEVICE_ID_JOYPAD_SELECT) : 0;
+            buttons              |= gp.buttonMenu.pressed    ? (1 << RETRO_DEVICE_ID_JOYPAD_START)  : 0;
             if (@available(iOS 14, tvOS 14, macOS 11, *))
-                *buttons         |= gp.buttonHome.pressed    ? (1 << RARCH_FIRST_CUSTOM_BIND)       : 0;
+                buttons          |= gp.buttonHome.pressed    ? (1 << RARCH_FIRST_CUSTOM_BIND)       : 0;
             else
             {
                /* Support buttons that aren't supported by older mFi controller via "hotkey" combinations:
@@ -168,24 +372,24 @@ static void apple_gamecontroller_joypad_poll_internal(GCController *controller, 
                if (gp.buttonMenu.pressed )
                {
                   if (gp.leftShoulder.pressed)
-                     *buttons     |= 1 << RETRO_DEVICE_ID_JOYPAD_SELECT;
+                     buttons      |= 1 << RETRO_DEVICE_ID_JOYPAD_SELECT;
                   else if (gp.leftTrigger.pressed)
-                     *buttons     |= 1 << RETRO_DEVICE_ID_JOYPAD_L3;
+                     buttons      |= 1 << RETRO_DEVICE_ID_JOYPAD_L3;
                   else if (gp.rightTrigger.pressed)
-                     *buttons     |= 1 << RETRO_DEVICE_ID_JOYPAD_R3;
+                     buttons      |= 1 << RETRO_DEVICE_ID_JOYPAD_R3;
                   else
-                     *buttons     |= 1 << RETRO_DEVICE_ID_JOYPAD_START;
+                     buttons      |= 1 << RETRO_DEVICE_ID_JOYPAD_START;
                }
             }
         }
 #endif
 
-        mfi_axes[slot][0]         = gp.leftThumbstick.xAxis.value * 32767.0f;
-        mfi_axes[slot][1]         = gp.leftThumbstick.yAxis.value * 32767.0f;
-        mfi_axes[slot][2]         = gp.rightThumbstick.xAxis.value * 32767.0f;
-        mfi_axes[slot][3]         = gp.rightThumbstick.yAxis.value * 32767.0f;
-        mfi_axes[slot][4]         = gp.leftTrigger.value * 32767.0f;
-        mfi_axes[slot][5]         = gp.rightTrigger.value * 32767.0f;
+        axes[0]                  = gp.leftThumbstick.xAxis.value * 32767.0f;
+        axes[1]                  = gp.leftThumbstick.yAxis.value * 32767.0f;
+        axes[2]                  = gp.rightThumbstick.xAxis.value * 32767.0f;
+        axes[3]                  = gp.rightThumbstick.yAxis.value * 32767.0f;
+        axes[4]                  = gp.leftTrigger.value * 32767.0f;
+        axes[5]                  = gp.rightTrigger.value * 32767.0f;
 
     }
     else if (controller.microGamepad)
@@ -198,18 +402,32 @@ static void apple_gamecontroller_joypad_poll_internal(GCController *controller, 
     else if (controller.gamepad)
     {
         GCGamepad *gp = (GCGamepad *)controller.gamepad;
-        *buttons     |= gp.dpad.up.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_UP)    : 0;
-        *buttons     |= gp.dpad.down.pressed     ? (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)  : 0;
-        *buttons     |= gp.dpad.left.pressed     ? (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)  : 0;
-        *buttons     |= gp.dpad.right.pressed    ? (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT) : 0;
-        *buttons     |= gp.buttonA.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_B)     : 0;
-        *buttons     |= gp.buttonB.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_A)     : 0;
-        *buttons     |= gp.buttonX.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_Y)     : 0;
-        *buttons     |= gp.buttonY.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_X)     : 0;
-        *buttons     |= gp.leftShoulder.pressed  ? (1 << RETRO_DEVICE_ID_JOYPAD_L)     : 0;
-        *buttons     |= gp.rightShoulder.pressed ? (1 << RETRO_DEVICE_ID_JOYPAD_R)     : 0;
+        buttons      |= gp.dpad.up.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_UP)    : 0;
+        buttons      |= gp.dpad.down.pressed     ? (1 << RETRO_DEVICE_ID_JOYPAD_DOWN)  : 0;
+        buttons      |= gp.dpad.left.pressed     ? (1 << RETRO_DEVICE_ID_JOYPAD_LEFT)  : 0;
+        buttons      |= gp.dpad.right.pressed    ? (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT) : 0;
+        buttons      |= gp.buttonA.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_B)     : 0;
+        buttons      |= gp.buttonB.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_A)     : 0;
+        buttons      |= gp.buttonX.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_Y)     : 0;
+        buttons      |= gp.buttonY.pressed       ? (1 << RETRO_DEVICE_ID_JOYPAD_X)     : 0;
+        buttons      |= gp.leftShoulder.pressed  ? (1 << RETRO_DEVICE_ID_JOYPAD_L)     : 0;
+        buttons      |= gp.rightShoulder.pressed ? (1 << RETRO_DEVICE_ID_JOYPAD_R)     : 0;
     }
 #pragma clang diagnostic pop
+
+    return buttons;
+}
+
+static void apple_gamecontroller_joypad_poll_internal(GCController *controller, uint32_t slot)
+{
+    uint32_t *buttons         = &mfi_buttons[slot];
+    uint32_t previous_buttons = *buttons;
+    int16_t previous_axes[MAX_MFI_AXES];
+    memcpy(previous_axes, mfi_axes[slot], sizeof(previous_axes));
+
+    *buttons = apple_gamecontroller_joypad_read_buttons_and_axes(controller, *buttons, mfi_axes[slot]);
+    apple_gamecontroller_joypad_report_button_transitions(slot, previous_buttons, *buttons);
+    apple_gamecontroller_joypad_report_axis_transitions(slot, previous_axes, mfi_axes[slot]);
 }
 
 static void apple_gamecontroller_joypad_poll(void)
@@ -226,6 +444,102 @@ static void apple_gamecontroller_joypad_poll(void)
           apple_gamecontroller_joypad_poll_internal(controller, (uint32_t)controller.playerIndex);
     }
 }
+
+static void apple_gamecontroller_joypad_monitor_poll(void)
+{
+    if (!apple_gamecontroller_available())
+        return;
+
+    for (GCController *controller in [GCController controllers])
+    {
+       if (  !controller ||
+             (controller.playerIndex < 0) || (controller.playerIndex >= MAX_USERS) ||
+             mfi_controller_is_siri_remote(controller))
+          continue;
+
+       uint32_t slot             = (uint32_t)controller.playerIndex;
+       int16_t axes[MAX_MFI_AXES];
+       uint32_t previous_buttons = mfi_button_event_monitor_buttons[slot];
+       uint32_t current_buttons  = apple_gamecontroller_joypad_read_buttons_and_axes(controller, previous_buttons, axes);
+
+       mfi_button_event_monitor_buttons[slot] = current_buttons;
+       apple_gamecontroller_joypad_report_button_transitions(slot, previous_buttons, current_buttons);
+       apple_gamecontroller_joypad_report_axis_transitions(slot, mfi_button_event_monitor_axes[slot], axes);
+       memcpy(mfi_button_event_monitor_axes[slot], axes, sizeof(mfi_button_event_monitor_axes[slot]));
+    }
+}
+
+static void apple_gamecontroller_joypad_monitor_seed_buttons(void)
+{
+    memset(mfi_button_event_monitor_buttons, 0, sizeof(mfi_button_event_monitor_buttons));
+    memset(mfi_button_event_monitor_axes, 0, sizeof(mfi_button_event_monitor_axes));
+
+    if (!apple_gamecontroller_available())
+        return;
+
+    for (GCController *controller in [GCController controllers])
+    {
+       if (  !controller ||
+             (controller.playerIndex < 0) || (controller.playerIndex >= MAX_USERS) ||
+             mfi_controller_is_siri_remote(controller))
+          continue;
+
+       uint32_t slot = (uint32_t)controller.playerIndex;
+       int16_t axes[MAX_MFI_AXES];
+       mfi_button_event_monitor_buttons[slot] =
+             apple_gamecontroller_joypad_read_buttons_and_axes(controller, 0, axes);
+       memcpy(mfi_button_event_monitor_axes[slot], axes, sizeof(mfi_button_event_monitor_axes[slot]));
+    }
+}
+
+static void apple_gamecontroller_joypad_start_button_event_monitor_on_main(void)
+{
+   if (mfi_button_event_monitor_timer != nil)
+      return;
+
+   apple_gamecontroller_joypad_monitor_seed_buttons();
+   mfi_button_event_monitor_timer = [NSTimer timerWithTimeInterval:(1.0 / 60.0)
+                                                           repeats:YES
+                                                             block:^(NSTimer *timer) {
+      apple_gamecontroller_joypad_monitor_poll();
+   }];
+   [[NSRunLoop mainRunLoop] addTimer:mfi_button_event_monitor_timer forMode:NSRunLoopCommonModes];
+}
+
+static void apple_gamecontroller_joypad_stop_button_event_monitor_on_main(void)
+{
+   [mfi_button_event_monitor_timer invalidate];
+   mfi_button_event_monitor_timer = nil;
+   memset(mfi_button_event_monitor_buttons, 0, sizeof(mfi_button_event_monitor_buttons));
+   memset(mfi_button_event_monitor_axes, 0, sizeof(mfi_button_event_monitor_axes));
+}
+
+void mfi_joypad_start_button_event_monitor(void)
+{
+   if ([NSThread isMainThread])
+      apple_gamecontroller_joypad_start_button_event_monitor_on_main();
+   else
+      dispatch_async(dispatch_get_main_queue(), ^{
+         apple_gamecontroller_joypad_start_button_event_monitor_on_main();
+      });
+}
+
+void mfi_joypad_stop_button_event_monitor(void)
+{
+   if ([NSThread isMainThread])
+      apple_gamecontroller_joypad_stop_button_event_monitor_on_main();
+   else
+      dispatch_async(dispatch_get_main_queue(), ^{
+         apple_gamecontroller_joypad_stop_button_event_monitor_on_main();
+      });
+}
+
+static void mfi_joypad_notify_topology_changed(void)
+{
+   if (mfi_topology_changed_callback)
+      mfi_topology_changed_callback(mfi_topology_changed_userdata);
+}
+
 
 static void apple_gamecontroller_joypad_register(GCController *controller)
 {
@@ -519,11 +833,21 @@ static void apple_gamecontroller_joypad_disconnect(GCController* controller)
         [mfi_rumblers[pad] shutdown];
     mfi_rumblers[pad]    = nil;
     mfi_controllers[pad] = 0;
-    if ([mfiControllers containsObject:controller])
+    memset(mfi_axes[pad], 0, sizeof(mfi_axes[pad]));
+    mfi_buttons[pad] = 0;
+
+    /* Disconnect notification object may not match the exact retained pointer.
+     * Always remove matching controller entry by player slot, then enqueue
+     * autoconfigure disconnect unconditionally so input_device_info is cleared. */
+    for (NSInteger i = (NSInteger)mfiControllers.count - 1; i >= 0; i--)
     {
-        [mfiControllers removeObject:controller];
-        input_autoconfigure_disconnect((unsigned)pad, mfi_joypad.ident);
+       GCController *c = mfiControllers[(NSUInteger)i];
+       if (c == controller || c.playerIndex == pad)
+          [mfiControllers removeObjectAtIndex:(NSUInteger)i];
     }
+
+    input_autoconfigure_disconnect((unsigned)pad,
+          [controller.vendorName cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
 #if TARGET_OS_IOS
@@ -659,19 +983,41 @@ static int32_t apple_gamecontroller_joypad_button(
    else if (GET_HAT_DIR(joykey))
       return 0;
    else if (joykey < 32)
+   {
+      if (     mfi_button_suppression_callback != NULL
+            && mfi_button_suppression_callback(port, joykey, mfi_button_suppression_userdata))
+         return 0;
       return ((mfi_buttons[port] & (1 << joykey)) != 0);
+   }
    return 0;
 }
 
 static void apple_gamecontroller_joypad_get_buttons(unsigned port,
       input_bits_t *state)
 {
-    BITS_COPY16_PTR(state, mfi_buttons[port]);
+   uint32_t buttons = mfi_buttons[port];
+
+   if (mfi_button_suppression_callback != NULL)
+   {
+      unsigned joykey;
+      for (joykey = 0; joykey < RARCH_FIRST_CUSTOM_BIND && joykey < 32; joykey++)
+      {
+         if (mfi_button_suppression_callback(port, (uint16_t)joykey, mfi_button_suppression_userdata))
+            buttons &= ~(1 << joykey);
+      }
+   }
+
+   BITS_COPY16_PTR(state, buttons);
 }
 
 static int16_t apple_gamecontroller_joypad_axis(
       unsigned port, uint32_t joyaxis)
 {
+    if (     joyaxis != AXIS_NONE
+          && mfi_axis_suppression_callback != NULL
+          && mfi_axis_suppression_callback(port, joyaxis, mfi_axis_suppression_userdata))
+       return 0;
+
     if (AXIS_NEG_GET(joyaxis) < MAX_MFI_AXES)
     {
        int16_t axis = AXIS_NEG_GET(joyaxis);
@@ -702,18 +1048,25 @@ static int16_t apple_gamecontroller_joypad_state(
    {
       for (i = 0; i < RARCH_FIRST_CUSTOM_BIND; i++)
       {
+         if (!binds[i].valid)
+            continue;
+
          /* Auto-binds are per joypad, not per user. */
          const uint64_t joykey  = (binds[i].joykey != NO_BTN)
             ? binds[i].joykey  : joypad_info->auto_binds[i].joykey;
          const uint32_t joyaxis = (binds[i].joyaxis != AXIS_NONE)
             ? binds[i].joyaxis : joypad_info->auto_binds[i].joyaxis;
          if (     (uint16_t)joykey != NO_BTN
-               && !GET_HAT_DIR(i)
-               && (i < 32)
-               && ((mfi_buttons[port_idx] & (1 << i)) != 0)
+               && !GET_HAT_DIR(joykey)
+               && (joykey < 32)
+               && (mfi_button_suppression_callback == NULL ||
+                   !mfi_button_suppression_callback(port_idx, (uint16_t)joykey, mfi_button_suppression_userdata))
+               && ((mfi_buttons[port_idx] & (1 << joykey)) != 0)
             )
             ret |= ( 1 << i);
          else if (joyaxis != AXIS_NONE &&
+               (mfi_axis_suppression_callback == NULL ||
+                !mfi_axis_suppression_callback(port_idx, joyaxis, mfi_axis_suppression_userdata)) &&
                ((float)abs(apple_gamecontroller_joypad_axis(port_idx, joyaxis))
                 / 0x8000) > joypad_info->axis_threshold)
             ret |= (1 << i);

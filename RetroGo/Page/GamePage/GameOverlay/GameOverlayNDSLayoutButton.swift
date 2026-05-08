@@ -43,12 +43,16 @@ final class GameOverlayNDSLayoutButton: SKNode, GameOverlayElementLayout {
             let ringAlpha: CGFloat = touching ? 1.0 : 0.9
             let primaryAlpha: CGFloat = touching ? 0.85 : 0.65
             let secondaryAlpha: CGFloat = touching ? 0.75 : 0.55
-            ringNode.strokeColor = SKColor(white: 1.0, alpha: ringAlpha)
-            primaryScreenNode.fillColor = SKColor(white: 1.0, alpha: primaryAlpha)
-            secondaryScreenNode.fillColor = SKColor(white: 1.0, alpha: secondaryAlpha)
+            ringNode.strokeColor = theme.primaryColor(alpha: ringAlpha)
+            primaryScreenNode.fillColor = theme.primaryColor(alpha: primaryAlpha)
+            secondaryScreenNode.fillColor = theme.primaryColor(alpha: secondaryAlpha)
 
             joypadCodes.forEach { digitalChangeHandler?($0, touching) }
         }
+    }
+
+    var size: CGSize {
+        ringNode.frame.size
     }
 
     private let ringNode = SKShapeNode()
@@ -59,25 +63,27 @@ final class GameOverlayNDSLayoutButton: SKNode, GameOverlayElementLayout {
     private(set) var element: GamePageOverlayElement
     private let joypadCodes: [RetroArchJoypadCode]
     private let digitalChangeHandler: GameOverlayButtonDigitalChanged?
+    private let theme: GameOverlayTheme
 
-    init(element: GamePageOverlayElement, digitalChangeHandler: GameOverlayButtonDigitalChanged?) {
+    init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, digitalChangeHandler: GameOverlayButtonDigitalChanged?) {
         self.element = element
         self.joypadCodes = element.binds.map( { $0.code })
         self.digitalChangeHandler = digitalChangeHandler
+        self.theme = theme
         super.init()
 
         name = element.id
         isHidden = element.isHidden
         isUserInteractionEnabled = true
 
-        ringNode.strokeColor = SKColor(white: 1.0, alpha: 0.9)
+        ringNode.strokeColor = theme.primaryColor(alpha: 0.9)
         ringNode.fillColor = .clear
         addChild(ringNode)
 
         addChild(contentNode)
 
-        let primaryFill = SKColor(white: 1.0, alpha: 0.65)
-        let secondaryFill = SKColor(white: 1.0, alpha: 0.55)
+        let primaryFill = theme.primaryColor(alpha: 0.65)
+        let secondaryFill = theme.primaryColor(alpha: 0.55)
 
         primaryScreenNode.strokeColor = .clear
         primaryScreenNode.fillColor = primaryFill
@@ -143,6 +149,10 @@ final class GameOverlayNDSLayoutButton: SKNode, GameOverlayElementLayout {
 }
 
 extension GameOverlayNDSLayoutButton {
+    func applyBindingBubbleTouch(_ touching: Bool) {
+        joypadCodes.forEach { digitalChangeHandler?($0, touching) }
+    }
+
     private func updateAppearance(for rect: CGRect) {
         let size = min(rect.width, rect.height)
         let radius = size * 0.5

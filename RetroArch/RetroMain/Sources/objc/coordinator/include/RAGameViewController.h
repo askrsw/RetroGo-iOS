@@ -1,5 +1,5 @@
 //
-//  RetroArchViewController.h
+//  RAGameViewController.h
 //  RetroGo
 //
 //  Created by haharsw on 2026/2/11.
@@ -24,14 +24,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <darwin/apple_platform.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class EmuCoreInfoItem;
 @class EmuInGameMessage;
 
-@interface RetroArchViewController : UIViewController <ApplePlatform, UIPointerInteractionDelegate>
+@interface RAGameViewController : UIViewController
 @property(nonatomic, strong, readonly) UIView *hudView;
 @property(nonatomic, strong, readonly) UIView *overlayView;
 @property(nonatomic, assign, readwrite) BOOL useRetroArchOverlay;

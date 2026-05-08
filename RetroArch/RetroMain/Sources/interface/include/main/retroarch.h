@@ -119,7 +119,7 @@ const char* video_shader_get_current_shader_preset(void);
  *
  * @return true on success, otherwise false if there was an error.
  **/
-bool retroarch_main_init(int argc, char *argv[], bool init_drivers);
+bool retroarch_main_init(int argc, char *argv[], bool init_drivers, bool init_input_driver_only);
 
 bool retroarch_main_quit(void);
 

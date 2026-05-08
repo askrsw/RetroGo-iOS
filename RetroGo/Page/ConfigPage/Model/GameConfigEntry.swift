@@ -32,7 +32,7 @@ enum GameConfigEntryType {
 }
 
 enum GameConfigEntryUIType {
-    case label, `switch`, segmentcontrol, list
+    case label, `switch`, segmentcontrol, list, controller
 }
 
 typealias GameConfigGetStringValue = () -> String
@@ -52,6 +52,8 @@ typealias GameConfigGetListArray = () -> (list: [(title: String, value: AnyHasha
 typealias GameConfigGetListSelectedTitle = () -> String?
 typealias GameConfigSetListSelectedValue = (AnyHashable) -> Void
 
+typealias GameConfigDetailButtonTapHander = () -> Void
+
 final class GameConfigEntry: NSObject {
     let type: GameConfigEntryType
     let ui: GameConfigEntryUIType
@@ -65,7 +67,10 @@ final class GameConfigEntry: NSObject {
 
     var enabled: Bool = true
     var desc: String?
+    weak var session: GameConfigSession?
     @objc dynamic var refresh: Bool = false
+
+    var detailButtonTapHandler: GameConfigDetailButtonTapHander?
 
     var getStringValue: GameConfigGetStringValue?
 
@@ -82,6 +87,42 @@ final class GameConfigEntry: NSObject {
 }
 
 extension GameConfigSession {
+    func makeControllerConfigEntries() -> [GameConfigEntry] {
+        guard core != nil else { return [] }
+        var entries: [GameConfigEntry] = []
+        let refreshEntries = NSHashTable<GameConfigEntry>.weakObjects()
+        let formatter = Bundle.localizedString(forKey: "configpage_player")
+        for i in 0 ..< 4 {
+            let title = String(format: formatter, i + 1)
+            let entry = GameConfigEntry(type: .string, ui: .controller, title: title)
+            entry.getListArray = {
+                let devices = RetroArchX.shared().availableInputDevices()
+                let selected = devices.firstIndex(where: { $0.port == i })
+                let list = devices.map({ ($0.name, $0) })
+                return (list, selected)
+            }
+            entry.getListSelectedTitle = {
+                let devices = RetroArchX.shared().availableInputDevices()
+                if let name = devices.first(where: { $0.port == i })?.name {
+                    return name
+                } else {
+                    return Bundle.localizedString(forKey: "configpage_no_controller_connected")
+                }
+            }
+            entry.setListSelectedValue = { v in
+                guard let device = v as? RAInputDevice else {
+                    return
+                }
+                RetroArchX.shared().setPhysicalDeviceSlot(Int32(device.slot), toPort: Int32(i))
+                refreshEntries.allObjects.forEach({ $0.refresh.toggle() })
+            }
+            entry.session = self
+            refreshEntries.add(entry)
+            entries.append(entry)
+        }
+        return entries
+    }
+
     func makeOverlayConfigEntries() -> [GameConfigEntry] {
         var entries: [GameConfigEntry] = []
         do {
@@ -115,8 +156,35 @@ extension GameConfigSession {
                 RetroArchX.shared().setMuteOnFastForward(value)
                 self?.setMuteOnFastForward(value: value)
             }
+            entry.desc = Bundle.localizedString(forKey: "configpage_game_mute_when_fast_desc")
             entries.append(entry)
         }
+
+        do {
+            let title = Bundle.localizedString(forKey: "configpage_overlay_touch_player")
+            let entry = GameConfigEntry(type: .int, ui: .list, title: title)
+            entry.getListArray = { [weak self] in
+                guard let self = self else { return ([], nil) }
+                var list: [(String, Int)] = []
+                let formatter = Bundle.localizedString(forKey: "configpage_player")
+                for i in 0 ..< 4 {
+                    list.append((String(format: formatter, i + 1), i))
+                }
+                return (list, getOverlayTouchPlayer())
+            }
+            entry.getListSelectedTitle = { [weak self] in
+                guard let self = self else { return nil }
+                let formatter = Bundle.localizedString(forKey: "configpage_player")
+                return String(format: formatter, getOverlayTouchPlayer() + 1)
+            }
+            entry.setListSelectedValue = { [weak self] v in
+                guard let self = self, let index = v as? Int else { return }
+                setOverlayTouchPlayer(value: index)
+                RetroArchX.shared().setVirtualDevicePort(Int32(index))
+            }
+            entries.append(entry)
+        }
+
         return entries
     }
 
@@ -198,6 +266,14 @@ extension GameConfigSession {
 
     func makeTitleConfigEntries() -> [GameConfigEntry] {
         var entries: [GameConfigEntry] = []
+
+        lazy var showCoreDetail = { [weak self] in
+            guard let core = self?.core, let currentActive = UIViewController.currentActive() else { return }
+            let controller = RetroRomCoreInfoViewController(coreInfoItem: core, showCloseButton: true, interactive: false)
+            let naviController = UINavigationController(rootViewController: controller)
+            currentActive.present(naviController, animated: true)
+        }
+
         if scope == .game {
             let gameTitle = Bundle.localizedString(forKey: "configpage_rom")
             let gameEntry = GameConfigEntry(type: .string, ui: .label, title: gameTitle)
@@ -214,6 +290,7 @@ extension GameConfigSession {
                     guard let core = self?.core else { return "" }
                     return core.coreName
                 }
+                coreEntry.detailButtonTapHandler = showCoreDetail
                 entries.append(coreEntry)
             }
         } else if scope == .core {
@@ -223,6 +300,7 @@ extension GameConfigSession {
                 guard let core = self?.core else { return "" }
                 return core.coreName
             }
+            coreEntry.detailButtonTapHandler = showCoreDetail
             entries.append(coreEntry)
         }
         return entries

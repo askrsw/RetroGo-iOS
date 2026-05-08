@@ -241,6 +241,7 @@ struct rarch_main_wrap
    int argc;
    uint8_t flags;
    bool init_drivers;
+   bool init_input_driver_only;
 };
 
 /* All run-time- / command line flag-related globals go here. */

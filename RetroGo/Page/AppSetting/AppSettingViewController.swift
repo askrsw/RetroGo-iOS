@@ -68,6 +68,7 @@ extension AppSettingViewController {
         // game section
         case coreList
         case inGameHaptic
+        case coreSettingList
 
         // about
         case about
@@ -146,6 +147,13 @@ extension AppSettingViewController {
                 cell.textLabel?.text = Bundle.localizedString(forKey: "corelist_core_list")
                 cell.accessoryType = .disclosureIndicator
                 return cell
+            case .coreSettingList:
+                let cell = cellBuilder()
+                cell.accessoryView = nil
+                cell.imageView?.image = UIImage(systemName: "gear")
+                cell.textLabel?.text = Bundle.localizedString(forKey: "corelist_core_settings")
+                cell.accessoryType = .disclosureIndicator
+                return cell
             case .inGameHaptic:
                 let switchControl = UISwitch()
                 switchControl.isOn = true
@@ -188,7 +196,7 @@ extension AppSettingViewController {
         }
         snapshot.appendItems(mainItems, toSection: .main)
 
-        let gameItems: [Item] = [.coreList]
+        let gameItems: [Item] = [.coreList, .coreSettingList]
         snapshot.appendItems(gameItems, toSection: .game)
 
         let aboutItems: [Item] = [.versionHeistory, .about]
@@ -207,7 +215,7 @@ extension AppSettingViewController: UITableViewDelegate {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return false }
         switch item {
         case .language: return true
-        case .coreList: return true
+        case .coreList, .coreSettingList: return true
         case .about, .versionHeistory: return true
         default: return false
         }
@@ -219,7 +227,8 @@ extension AppSettingViewController: UITableViewDelegate {
 
         switch item {
         case .language(let key, _): changeLanguage(key: key)
-        case .coreList: showCoreList()
+        case .coreList: showCoreList(action: .showCoreInfo)
+        case .coreSettingList: showCoreList(action: .configureCore)
         case .about: showAbout()
         case .versionHeistory: showVersionHistory()
         default: break
@@ -241,12 +250,12 @@ extension AppSettingViewController {
         }
     }
 
-    private func showCoreList() {
+    private func showCoreList(action: EmuCoreListViewController.Action) {
         Vibration.selection.vibrate()
 
         guard RetroArchX.shared().initialized else { return }
 
-        let controller = EmuCoreListViewController()
+        let controller = EmuCoreListViewController(action: action)
         navigationController?.pushViewController(controller, animated: true)
     }
 

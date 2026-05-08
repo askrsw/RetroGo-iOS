@@ -73,7 +73,7 @@ final class GameOverlayN64CButton: SKNode, GameOverlayElementLayout {
                 return
             }
 
-            let circleActive = SKColor(white: 0.95, alpha: 0.35)
+            let circleActive = theme.primaryColor(alpha: 0.35)
             let circleInactive = SKColor.clear
 
             let isUp = status & GameOverlayDirectionMask.up > 0
@@ -114,11 +114,13 @@ final class GameOverlayN64CButton: SKNode, GameOverlayElementLayout {
     private(set) var element: GamePageOverlayElement
     private let codes: CodeMap
     private let digitalHandler: GameOverlayButtonDigitalChanged?
+    private let theme: GameOverlayTheme
 
-    init(element: GamePageOverlayElement, codes: CodeMap = .n64C, digitalHandler: GameOverlayButtonDigitalChanged?) {
+    init(element: GamePageOverlayElement, codes: CodeMap = .n64C, theme: GameOverlayTheme = .default, digitalHandler: GameOverlayButtonDigitalChanged?) {
         self.element = element
         self.codes = codes
         self.digitalHandler = digitalHandler
+        self.theme = theme
         super.init()
 
         name = element.id
@@ -130,10 +132,10 @@ final class GameOverlayN64CButton: SKNode, GameOverlayElementLayout {
         down.fillColor = .clear
         left.fillColor = .clear
 
-        up.strokeColor = SKColor(white: 1.0, alpha: 0.7)
-        right.strokeColor = SKColor(white: 1.0, alpha: 0.7)
-        down.strokeColor = SKColor(white: 1.0, alpha: 0.7)
-        left.strokeColor = SKColor(white: 1.0, alpha: 0.7)
+        up.strokeColor = theme.primaryColor(alpha: 0.7)
+        right.strokeColor = theme.primaryColor(alpha: 0.7)
+        down.strokeColor = theme.primaryColor(alpha: 0.7)
+        left.strokeColor = theme.primaryColor(alpha: 0.7)
 
         up.lineWidth = 1.5
         right.lineWidth = 1.5
@@ -145,8 +147,8 @@ final class GameOverlayN64CButton: SKNode, GameOverlayElementLayout {
         addChild(down)
         addChild(left)
 
-        let triangleStroke = SKColor(white: 1.0, alpha: 0.75)
-        let triangleFill = SKColor.white
+        let triangleStroke = theme.primaryColor(alpha: 0.75)
+        let triangleFill = theme.primaryColor
         for triangle in [upTriangle, rightTriangle, downTriangle, leftTriangle] {
             triangle.strokeColor = triangleStroke
             triangle.lineWidth = 1.5
@@ -195,6 +197,25 @@ final class GameOverlayN64CButton: SKNode, GameOverlayElementLayout {
 }
 
 extension GameOverlayN64CButton {
+    func applyBindingBubbleTouch(_ touching: Bool, actionId: String) {
+        let code: RetroArchJoypadCode
+        switch actionId {
+        case "n64_c_up":
+            code = codes.up
+        case "n64_c_right":
+            code = codes.right
+        case "n64_c_down":
+            code = codes.down
+        case "n64_c_left":
+            code = codes.left
+        default:
+            return
+        }
+
+        digitalHandler?(codes.modifier, touching)
+        digitalHandler?(code, touching)
+    }
+
     private func updateRadius(_ radius: CGFloat) {
         self.radius = radius
         self.buttonRadius = radius * 0.35

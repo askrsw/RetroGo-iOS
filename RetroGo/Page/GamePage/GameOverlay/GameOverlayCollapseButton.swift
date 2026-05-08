@@ -35,21 +35,23 @@ final class GameOverlayCollapseButton: SKNode, GameOverlayElementLayout {
 
     private(set) var element: GamePageOverlayElement
     private let handler: ((Bool) -> Void)?
+    private let theme: GameOverlayTheme
 
-    init(element: GamePageOverlayElement, handler: ((Bool) -> Void)?) {
+    init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, handler: ((Bool) -> Void)?) {
         self.element = element
         self.handler = handler
+        self.theme = theme
         super.init()
 
         name = element.id
         isHidden = element.isHidden
         isUserInteractionEnabled = true
 
-        ringNode.strokeColor = SKColor(white: 1.0, alpha: 0.75)
+        ringNode.strokeColor = theme.primaryColor(alpha: theme.normalContentAlpha)
         ringNode.fillColor = .clear
         addChild(ringNode)
 
-        chevronNode.strokeColor = SKColor(white: 1.0, alpha: 0.9)
+        chevronNode.strokeColor = theme.primaryColor(alpha: 0.9)
         chevronNode.lineCap = .round
         chevronNode.lineJoin = .round
         chevronNode.fillColor = .clear

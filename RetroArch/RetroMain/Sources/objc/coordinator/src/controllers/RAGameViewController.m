@@ -1,5 +1,5 @@
 //
-//  RetroArchViewController.m
+//  RAGameViewController.m
 //  RetroGo
 //
 //  Created by haharsw on 2026/2/11.
@@ -23,7 +23,7 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#import "RetroArchViewController.h"
+#import "RAGameViewController.h"
 #import "../RetroArchX.h"
 #import "../models/EmuCoreInfoItem.h"
 #import <cocoa_input.h>
@@ -36,7 +36,7 @@
 #import <GameController/GCControllerButtonInput.h>
 #endif
 
-@implementation RetroArchViewController {
+@implementation RAGameViewController {
     EmuCoreInfoItem *d_core;
     UIView *d_renderView;
     apple_view_type_t d_vt;

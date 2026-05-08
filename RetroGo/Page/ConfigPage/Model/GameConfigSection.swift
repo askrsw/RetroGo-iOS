@@ -30,6 +30,7 @@ enum GameConfigSection: Hashable {
     case title
     case restartRequired
     case overlay
+    case controller
 }
 
 extension GameConfigSection {
@@ -49,5 +50,16 @@ extension GameConfigSection {
             return nil
         }
         return nil
+    }
+
+    func getSectionHeaderText(session: GameConfigSession) -> String? {
+        switch self {
+            case .overlay:
+                return Bundle.localizedString(forKey: "configpage_overlay_section_header")
+            case .controller:
+                return Bundle.localizedString(forKey: "configpage_controller_section_header")
+            default:
+                return nil
+        }
     }
 }

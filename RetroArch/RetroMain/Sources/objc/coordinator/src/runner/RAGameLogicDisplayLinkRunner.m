@@ -420,17 +420,19 @@ static inline double RASanitizeFastForwardMultiplier(double multiplier) {
     double displayFps = deltaSteps / elapsedSec;
     double iterateFps = deltaIterates / elapsedSec;
     double iteratePerStep = deltaSteps > 0 ? ((double)deltaIterates / (double)deltaSteps) : 0.0;
-    
-    RARCH_LOG("[DisplayLinkRunner][Stats][%s] window=%.2fs display_fps=%.2f iterate_fps=%.2f iterate_per_step=%.2f budget_stops=%llu fast_forward=%s multiplier=%.3f\n",
-              reason,
-              elapsedSec,
-              displayFps,
-              iterateFps,
-              iteratePerStep,
-              (unsigned long long)deltaBudgetStops,
-              d_fastForwardEnabled ? "true" : "false",
-              RASanitizeFastForwardMultiplier(d_fastForwardMultiplier));
-    
+
+    if(self.isStatsLoggingEnabled) {
+        RARCH_LOG("[DisplayLinkRunner][Stats][%s] window=%.2fs display_fps=%.2f iterate_fps=%.2f iterate_per_step=%.2f budget_stops=%llu fast_forward=%s multiplier=%.3f\n",
+                  reason,
+                  elapsedSec,
+                  displayFps,
+                  iterateFps,
+                  iteratePerStep,
+                  (unsigned long long)deltaBudgetStops,
+                  d_fastForwardEnabled ? "true" : "false",
+                  RASanitizeFastForwardMultiplier(d_fastForwardMultiplier));
+    }
+
     d_statsLastLogTimeSec = now;
     d_statsLastStepSampleCount = d_stepSampleCount;
     d_statsLastIterateSampleCount = d_iterateSampleCount;

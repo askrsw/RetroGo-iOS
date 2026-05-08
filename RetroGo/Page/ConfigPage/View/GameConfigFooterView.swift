@@ -57,7 +57,7 @@ final class GameConfigFooterView: UITableViewHeaderFooterView {
             make.top.equalToSuperview().offset(6)
             make.leading.equalToSuperview().offset(10)
             make.trailing.equalToSuperview().offset(-10)
-            make.bottom.equalToSuperview().offset(-20).priority(.low)
+            make.bottom.equalToSuperview().offset(-24)
         }
     }
 }

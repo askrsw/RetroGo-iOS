@@ -59,19 +59,6 @@ final class GamePageOverlayView: SKView {
 }
 
 extension GamePageOverlayView {
-    enum OverlayName: String {
-        case `default` = "default"
-        case n64 = "n64"
-        case nes = "nes"
-        case nds = "nds"
-        case gbc = "gbc"
-        case gba = "gba"
-        case snes = "snes"
-        case saturn = "saturn"
-        case ps = "ps"
-        case psp = "psp"
-    }
-
     private func applyCoreMode(_ coreInfoItem: EmuCoreInfoItem) {
         if coreInfoItem.coreId != "dosbox-pure" {
             allowsTransparency = true
@@ -81,9 +68,9 @@ extension GamePageOverlayView {
             isUserInteractionEnabled = true
             isHidden = false
             isPaused = false
-            let overlayName = OverlayName(rawValue: coreInfoItem.overlayName ?? "")!
-            // let overlayName = OverlayName.psp
-            overlayScene = makeOverlayScene(name: overlayName, supportsAnalog: coreInfoItem.supportsAnalog)
+
+            let overlayConfig = GamePageOverlayConfig.loadOverlayConfig(coreInfoItem.overlayName)
+            overlayScene = GamePageOverlayScene(size: .zero, config: overlayConfig, supportsAnalog: coreInfoItem.supportsAnalog)
         } else {
             isHidden = true
             isUserInteractionEnabled = false
@@ -92,26 +79,6 @@ extension GamePageOverlayView {
             if scene != nil {
                 presentScene(nil)
             }
-        }
-    }
-
-    private func makeOverlayScene(name: OverlayName, supportsAnalog: Bool) -> GamePageOverlayScene? {
-        guard let url = Bundle.main.url(forResource: name.rawValue, withExtension: "json", subdirectory: "Data/overlays/spritekit") else {
-            return nil
-        }
-
-        do {
-            let decoder = JSONDecoder()
-            decoder.keyDecodingStrategy = .convertFromSnakeCase
-            let data = try Data(contentsOf: url)
-            let config = try decoder.decode(GamePageOverlayConfig.self, from: data)
-            return GamePageOverlayScene(size: .zero, config: config, supportsAnalog: supportsAnalog)
-        } catch {
-        #if DEBUG
-            fatalError(error.localizedDescription)
-        #else
-            return nil
-        #endif
         }
     }
 }

@@ -896,18 +896,20 @@ typedef _Atomic double atomic_double;
     uint64_t averageRunloopUsec = deltaRunloopSamples > 0 ? (deltaRunloopAccumulatedUsec / deltaRunloopSamples) : 0;
     double framesPerSec = deltaRunloopSamples / elapsedSec;
 
-    RARCH_LOG("[GameThread][Stats][%s] window=%.2fs fps=%.2f frames=%llu fast_forward=%s multiplier=%.3f avg_jitter=%lluus max_jitter=%lluus avg_runloop=%lluus max_runloop=%lluus missed_deadlines=%llu\n",
-              reason,
-              elapsedSec,
-              framesPerSec,
-              (unsigned long long)deltaRunloopSamples,
-              atomic_load(&d_fastForwardEnabled) ? "true" : "false",
-              [self sanitizedFastForwardMultiplier:atomic_load(&d_fastForwardMultiplier)],
-              (unsigned long long)averageJitterUsec,
-              (unsigned long long)d_jitterMaxUsec,
-              (unsigned long long)averageRunloopUsec,
-              (unsigned long long)d_runloopMaxUsec,
-              (unsigned long long)deltaDeadlineMissCount);
+    if(self.isStatsLoggingEnabled) {
+        RARCH_LOG("[GameThread][Stats][%s] window=%.2fs fps=%.2f frames=%llu fast_forward=%s multiplier=%.3f avg_jitter=%lluus max_jitter=%lluus avg_runloop=%lluus max_runloop=%lluus missed_deadlines=%llu\n",
+                  reason,
+                  elapsedSec,
+                  framesPerSec,
+                  (unsigned long long)deltaRunloopSamples,
+                  atomic_load(&d_fastForwardEnabled) ? "true" : "false",
+                  [self sanitizedFastForwardMultiplier:atomic_load(&d_fastForwardMultiplier)],
+                  (unsigned long long)averageJitterUsec,
+                  (unsigned long long)d_jitterMaxUsec,
+                  (unsigned long long)averageRunloopUsec,
+                  (unsigned long long)d_runloopMaxUsec,
+                  (unsigned long long)deltaDeadlineMissCount);
+    }
 
     d_statsLastLogTimeSec = now;
     d_statsLastJitterSampleCount = d_jitterSampleCount;

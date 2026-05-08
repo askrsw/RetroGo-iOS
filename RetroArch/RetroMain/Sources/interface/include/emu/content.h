@@ -38,6 +38,7 @@ typedef struct content_ctx_info
    environment_get_t environ_get;  /* Function passed for environment_get function */
    int argc;                       /* Argument count. */
    bool init_drivers;              /* Init drivers */
+   bool init_input_driver_only;    /* Init input driver only (no audio/video) */
 } content_ctx_info_t;
 
 /* Load a state from memory. */

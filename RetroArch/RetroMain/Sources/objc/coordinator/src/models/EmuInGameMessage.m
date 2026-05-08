@@ -23,7 +23,7 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 #import "EmuInGameMessage.h"
-#import "RetroArchViewController.h"
+#import "RAGameViewController.h"
 #import <main/runloop.h>
 
 NS_ASSUME_NONNULL_BEGIN

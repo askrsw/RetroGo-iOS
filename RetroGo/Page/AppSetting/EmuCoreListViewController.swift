@@ -29,9 +29,25 @@ import ObjcHelper
 import RACoordinator
 
 final class EmuCoreListViewController: UIViewController {
+    enum Action {
+        case showCoreInfo      // 进入 RetroRomCoreInfoViewController
+        case configureCore     // 进入 GameConfigViewController（核心设置）
+    }
+
     private lazy var tableView  = self.configUI()
     private lazy var dataSource = self.configDS()
 
+    let action: Action
+
+    init(action: Action) {
+        self.action = action
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -96,7 +112,14 @@ extension EmuCoreListViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         Vibration.selection.vibrate()
         if let item = dataSource.itemIdentifier(for: indexPath) {
-            let controller = RetroRomCoreInfoViewController(coreInfoItem: item, showCloseButton: false, interactive: true)
+            let controller: UIViewController
+            switch action {
+            case .showCoreInfo:
+                controller = RetroRomCoreInfoViewController(coreInfoItem: item, showCloseButton: false, interactive: true)
+            case .configureCore:
+                let session = GameConfigSession(scope: .core, core: item, game: nil)
+                controller = GameConfigViewController(session: session, applyInputBinding: true, showCloseButton: false)
+            }
             navigationController?.pushViewController(controller, animated: true)
         }
     }

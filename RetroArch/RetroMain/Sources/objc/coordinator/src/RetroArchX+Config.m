@@ -24,20 +24,44 @@
 //
 
 #import "RetroArchX+Config.h"
+#import "input/RAInputBindingProfile.h"
+#import "input/RAInputActionManager.h"
 
 #include <gfx/video_driver.h>
 #include <utils/configuration.h>
 #include <main/runloop.h>
 #include <audio/audio_driver.h>
+#include <input/input_driver.h>
+#include <defines/input_defines.h>
 #include <string.h>
 
-@implementation RetroArchConfig
+#include "virtual/virtual_joypad.h"
+
+@interface RAInputDevice()
+@property(nonatomic, readwrite, assign) NSInteger slot;
+@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, assign) NSInteger port;
+@property(nonatomic, readwrite, assign) uint16_t vid;
+@property(nonatomic, readwrite, assign) uint16_t pid;
+@property(nonatomic, readwrite, assign) BOOL autoconfigured;
+@property(nonatomic, readwrite, copy) NSString *joypadDriver;
+@end
+
+@implementation RAConfig
+@end
+
+@implementation RAInputDevice
+@end
+
+@implementation RAInputCoreCapabilities
 @end
 
 @implementation RetroArchX (Config)
 
-- (void)config:(RetroArchConfig *)cfg {
+- (void)config:(RAConfig *)cfg {
     video_driver_set_threaded(cfg.logicThread);
+
+    [self setVirtualDevicePort:cfg.overlayTouchPlayer];
 
     settings_t *settings = config_get_ptr();
     if(settings != nil) {
@@ -45,6 +69,8 @@
         [self writeCString:settings->arrays.audio_driver cap:sizeof(settings->arrays.audio_driver) value:cfg.audioDriver];
         [self setMuteOnFastForward:cfg.muteOnFastForward];
     }
+
+    [self.inputActionManager applyInputBindingProfile:cfg.inputBindingProfile coreCapabilities:cfg.coreCaps useLock:YES];
 }
 
 - (void)setFastForwardMultiplier:(double)multiplier {
@@ -106,6 +132,104 @@
         return @"";
     }
     return @(ident);
+}
+
+- (NSArray<RAInputDevice *> *)availableInputDevices {
+    settings_t *settings = config_get_ptr();
+    NSMutableArray<RAInputDevice *> *result = [NSMutableArray array];
+
+    NSMutableDictionary<NSNumber *, NSNumber *> *deviceSlotToPlayerPort = [NSMutableDictionary dictionary];
+    if (settings != nil) {
+        for (unsigned playerPort = 0; playerPort < MAX_USERS; playerPort++) {
+            unsigned deviceSlot = settings->uints.input_joypad_index[playerPort];
+            if (deviceSlot < MAX_INPUT_DEVICES) {
+                deviceSlotToPlayerPort[@(deviceSlot)] = @(playerPort);
+            }
+        }
+    }
+
+    for (unsigned deviceSlot = 0; deviceSlot < MAX_INPUT_DEVICES; deviceSlot++) {
+        const char *displayName = input_config_get_device_display_name(deviceSlot);
+        const char *name = input_config_get_device_name(deviceSlot);
+        const char *resolvedName = (displayName != NULL && displayName[0] != '\0') ? displayName : name;
+        if (resolvedName == NULL || resolvedName[0] == '\0') {
+            continue;
+        }
+
+        NSString *deviceName = @(resolvedName);
+
+        NSNumber *mappedPort = deviceSlotToPlayerPort[@(deviceSlot)];
+        NSString *joypadDriver = @"";
+        const char *rawJoypadDriver = input_config_get_device_joypad_driver(deviceSlot);
+        if (rawJoypadDriver != NULL && rawJoypadDriver[0] != '\0') {
+            joypadDriver = @(rawJoypadDriver);
+        }
+
+        RAInputDevice *device = [[RAInputDevice alloc] init];
+        device.slot = (NSInteger)deviceSlot;
+        device.name = deviceName;
+        device.port = mappedPort != nil ? mappedPort.integerValue : -1;
+        device.vid = input_config_get_device_vid(deviceSlot);
+        device.pid = input_config_get_device_pid(deviceSlot);
+        device.autoconfigured = input_config_get_device_autoconfigured(deviceSlot);
+        device.joypadDriver = joypadDriver;
+        [result addObject:device];
+    }
+
+    return result;
+}
+
+- (BOOL)setVirtualDevicePort:(int)port {
+    if (port < 0 || port >= (int)MAX_USERS) {
+        return NO;
+    }
+    return virtual_joypad_set_target_port((unsigned)port);
+}
+
+- (BOOL)setPhysicalDeviceSlot:(int)slot toPort:(int)port {
+    settings_t *settings = config_get_ptr();
+    if (settings == nil) {
+        return NO;
+    }
+    if (port < 0 || port >= (int)MAX_USERS) {
+        return NO;
+    }
+    if (slot < 0 || slot >= (int)MAX_INPUT_DEVICES) {
+        return NO;
+    }
+
+    const char *displayName = input_config_get_device_display_name((unsigned)slot);
+    const char *name = input_config_get_device_name((unsigned)slot);
+    const char *resolvedName = (displayName != NULL && displayName[0] != '\0') ? displayName : name;
+    if (resolvedName == NULL || resolvedName[0] == '\0') {
+        return NO;
+    }
+
+    unsigned targetPort = (unsigned)port;
+    unsigned targetSlot = (unsigned)slot;
+    unsigned currentSlot = settings->uints.input_joypad_index[targetPort];
+
+    if (currentSlot == targetSlot) {
+        return YES;
+    }
+
+    int occupiedPort = -1;
+    for (unsigned candidatePort = 0; candidatePort < MAX_USERS; candidatePort++) {
+        if ((int)candidatePort == port) {
+            continue;
+        }
+        if (settings->uints.input_joypad_index[candidatePort] == targetSlot) {
+            occupiedPort = (int)candidatePort;
+            break;
+        }
+    }
+
+    settings->uints.input_joypad_index[targetPort] = targetSlot;
+    if (occupiedPort >= 0) {
+        settings->uints.input_joypad_index[(unsigned)occupiedPort] = currentSlot;
+    }
+
+    return YES;
 }
 
 #pragma mark - Utils

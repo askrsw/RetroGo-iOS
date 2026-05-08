@@ -27,16 +27,37 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RetroArchConfig : NSObject
+@class RAInputBindingProfile;
+
+@interface RAInputDevice : NSObject
+@property(nonatomic, readonly, assign) NSInteger slot;
+@property(nonatomic, readonly, copy) NSString *name;
+@property(nonatomic, readonly, assign) NSInteger port;
+@property(nonatomic, readonly, assign) uint16_t vid;
+@property(nonatomic, readonly, assign) uint16_t pid;
+@property(nonatomic, readonly, assign) BOOL autoconfigured;
+@property(nonatomic, readonly, copy) NSString *joypadDriver;
+@end
+
+@interface RAInputCoreCapabilities : NSObject
+@property(nonatomic, assign) BOOL allowsDefaultTurboXYHijack;
+@property(nonatomic, assign) BOOL supportsAnalog;
+@end
+
+@interface RAConfig : NSObject
 @property(nonatomic, assign) BOOL logicThread;
 @property(nonatomic, copy)   NSString *videoDriver;
 @property(nonatomic, copy)   NSString *audioDriver;
 @property(nonatomic, assign) double fastForwardMultiplier;
 @property(nonatomic, assign) BOOL   muteOnFastForward;
+@property(nonatomic, assign) int    overlayTouchPlayer;
+
+@property(nonatomic, strong, nullable) RAInputCoreCapabilities *coreCaps;
+@property(nonatomic, strong, nullable) RAInputBindingProfile *inputBindingProfile;
 @end
 
 @interface RetroArchX (Config)
-- (void)config:(RetroArchConfig *)cfg;
+- (void)config:(RAConfig *)cfg;
 - (void)setFastForwardMultiplier:(double)multiplier;
 - (void)setMuteOnFastForward:(BOOL)value;
 
@@ -44,6 +65,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSString *> *)availableVideoDrivers;
 - (NSString *)defaultAudioDriver;
 - (NSArray<NSString *> *)availableAudioDrivers;
+- (NSArray<RAInputDevice *> *)availableInputDevices;
+- (BOOL)setVirtualDevicePort:(int)port;
+- (BOOL)setPhysicalDeviceSlot:(int)slot toPort:(int)port;
 @end
 
 NS_ASSUME_NONNULL_END

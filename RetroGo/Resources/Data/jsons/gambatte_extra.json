@@ -12,5 +12,6 @@
     "src_url": "https://github.com/libretro/gambatte-libretro",
     "supports_analog": false,
     "overlay": "gbc",
-    "supports_logic_thread": true
+    "supports_logic_thread": true,
+    "allows_default_trubo_xy_hijack": true
 }

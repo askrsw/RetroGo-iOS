@@ -1431,8 +1431,9 @@ static bool content_load(content_ctx_info_t *info,
    wrap_args->argc = *rarch_argc_ptr;
    wrap_args->argv = rarch_argv_ptr;
    wrap_args->init_drivers = info->init_drivers;
+   wrap_args->init_input_driver_only = info->init_input_driver_only;
 
-   success         = retroarch_main_init(wrap_args->argc, wrap_args->argv, wrap_args->init_drivers);
+   success         = retroarch_main_init(wrap_args->argc, wrap_args->argv, wrap_args->init_drivers, wrap_args->init_input_driver_only);
 
    for (i = 0; i < ARRAY_SIZE(argv_copy); i++)
       free(argv_copy[i]);

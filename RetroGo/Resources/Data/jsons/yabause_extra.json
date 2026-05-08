@@ -12,5 +12,6 @@
     "src_url": "https://github.com/libretro/yabause",
     "supports_analog": true,
     "overlay": "saturn",
-    "supports_logic_thread": true
+    "supports_logic_thread": true,
+    "allows_default_trubo_xy_hijack": false
 }

@@ -35,7 +35,7 @@ final class GameConfigListItemSelector: UIViewController {
     let entry: GameConfigEntry
 
     init(entry: GameConfigEntry) {
-        self.entry = entry
+        self.entry      = entry
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -102,6 +102,7 @@ extension GameConfigListItemSelector {
             return
         }
 
+        oldSelectedIndex = nil
         if let selected = result.selected {
             oldSelectedIndex = IndexPath(item: selected, section: 0)
         }

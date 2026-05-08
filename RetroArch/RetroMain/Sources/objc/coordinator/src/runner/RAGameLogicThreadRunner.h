@@ -28,6 +28,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface RAGameLogicThreadRunner : NSObject <RAGameLoopRunner>
+@property(nonatomic, assign, getter=isStatsLoggingEnabled) BOOL statsLoggingEnabled;
+
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithEmuPrevFrameActions:(NSMutableDictionary<NSString *, RetroArchXEmuFrameAction> *)prevFrameActions;
 @end

@@ -124,6 +124,42 @@ retro_keybind_set input_config_binds[MAX_USERS];
 retro_keybind_set input_autoconf_binds[MAX_USERS];
 uint64_t lifecycle_state                                        = 0;
 
+static retro_keybind_set input_virtual_autoconf_binds[MAX_USERS];
+static bool input_virtual_autoconf_binds_initialized             = false;
+
+static const struct retro_keybind *input_virtual_get_autoconf_binds(unsigned port)
+{
+   unsigned i;
+
+   if (!input_virtual_autoconf_binds_initialized)
+   {
+      unsigned player;
+      for (player = 0; player < MAX_USERS; player++)
+      {
+         for (i = 0; i < RARCH_FIRST_CUSTOM_BIND; i++)
+         {
+            input_virtual_autoconf_binds[player][i].joykey  = i;
+            input_virtual_autoconf_binds[player][i].joyaxis = AXIS_NONE;
+         }
+
+         input_virtual_autoconf_binds[player][RARCH_ANALOG_LEFT_X_PLUS].joyaxis   = AXIS_POS(0);
+         input_virtual_autoconf_binds[player][RARCH_ANALOG_LEFT_X_MINUS].joyaxis  = AXIS_NEG(0);
+         input_virtual_autoconf_binds[player][RARCH_ANALOG_LEFT_Y_PLUS].joyaxis   = AXIS_POS(1);
+         input_virtual_autoconf_binds[player][RARCH_ANALOG_LEFT_Y_MINUS].joyaxis  = AXIS_NEG(1);
+         input_virtual_autoconf_binds[player][RARCH_ANALOG_RIGHT_X_PLUS].joyaxis  = AXIS_POS(2);
+         input_virtual_autoconf_binds[player][RARCH_ANALOG_RIGHT_X_MINUS].joyaxis = AXIS_NEG(2);
+         input_virtual_autoconf_binds[player][RARCH_ANALOG_RIGHT_Y_PLUS].joyaxis  = AXIS_POS(3);
+         input_virtual_autoconf_binds[player][RARCH_ANALOG_RIGHT_Y_MINUS].joyaxis = AXIS_NEG(3);
+      }
+
+      input_virtual_autoconf_binds_initialized = true;
+   }
+
+   if (port >= MAX_USERS)
+      port = 0;
+   return input_virtual_autoconf_binds[port];
+}
+
 static void *input_null_init(const char *joypad_driver) { return (void*)-1; }
 static void input_null_poll(void *data) { }
 static int16_t input_null_input_state(
@@ -759,9 +795,22 @@ static int32_t input_state_wrap(
       unsigned id)
 {
    int32_t ret = 0;
+   bool sec_joypad_is_virtual = sec_joypad
+      && sec_joypad->ident
+      && string_is_equal(sec_joypad->ident, "virtual");
+   rarch_joypad_info_t sec_joypad_info;
+   rarch_joypad_info_t *sec_info = joypad_info;
 
    if (!binds)
       return 0;
+
+   if (sec_joypad_is_virtual)
+   {
+      sec_joypad_info            = *joypad_info;
+      sec_joypad_info.joy_idx    = _port;
+      sec_joypad_info.auto_binds = input_virtual_get_autoconf_binds(_port);
+      sec_info                   = &sec_joypad_info;
+   }
 
    /* Do a bitwise OR to combine input states together */
 
@@ -772,7 +821,7 @@ static int32_t input_state_wrap(
          if (joypad)
             ret |= joypad->state(joypad_info, binds[_port], _port);
          if (sec_joypad)
-            ret |= sec_joypad->state(joypad_info, binds[_port], _port);
+            ret |= sec_joypad->state(sec_info, binds[_port], _port);
       }
       else
       {
@@ -804,11 +853,20 @@ static int32_t input_state_wrap(
             }
             if (sec_joypad)
             {
-               if ((uint16_t)joykey != NO_BTN && sec_joypad->button(
-                        port, (uint16_t)joykey))
+               const uint64_t sec_autobind_joykey = sec_info->auto_binds[id].joykey;
+               const uint64_t sec_autobind_joyaxis = sec_info->auto_binds[id].joyaxis;
+               const uint64_t sec_joykey = (bind_joykey != NO_BTN)
+                  ? bind_joykey  : sec_autobind_joykey;
+               const uint64_t sec_joyaxis = (bind_joyaxis != AXIS_NONE)
+                  ? bind_joyaxis : sec_autobind_joyaxis;
+               uint16_t sec_port = sec_joypad_is_virtual
+                  ? (uint16_t)_port : port;
+
+               if ((uint16_t)sec_joykey != NO_BTN && sec_joypad->button(
+                        sec_port, (uint16_t)sec_joykey))
                   return 1;
-               if (joyaxis != AXIS_NONE &&
-                     ((float)abs(sec_joypad->axis(port, (uint32_t)joyaxis))
+               if (sec_joyaxis != AXIS_NONE &&
+                     ((float)abs(sec_joypad->axis(sec_port, (uint32_t)sec_joyaxis))
                       / 0x8000) > axis_threshold)
                   return 1;
             }
@@ -1809,6 +1867,9 @@ static int16_t input_state_internal(
 #else
    const input_device_driver_t *sec_joypad = NULL;
 #endif
+   bool sec_joypad_is_virtual              = sec_joypad
+      && sec_joypad->ident
+      && string_is_equal(sec_joypad->ident, "virtual");
    uint8_t mapped_port                     = 0;
    int16_t result                          = 0;
    bool input_blocked                      = (input_st->flags & INP_FLAG_BLOCK_LIBRETRO_INPUT) ? true : false;
@@ -1830,6 +1891,14 @@ static int16_t input_state_internal(
 
       joypad_info.joy_idx            = settings->uints.input_joypad_index[mapped_port];
       joypad_info.auto_binds         = input_autoconf_binds[joypad_info.joy_idx];
+      rarch_joypad_info_t sec_joypad_info = joypad_info;
+      rarch_joypad_info_t *sec_info       = &joypad_info;
+      if (sec_joypad_is_virtual)
+      {
+         sec_joypad_info.joy_idx    = mapped_port;
+         sec_joypad_info.auto_binds = input_virtual_get_autoconf_binds(mapped_port);
+         sec_info                   = &sec_joypad_info;
+      }
 
       /* Skip disabled input devices */
       if (mapped_port >= max_users)
@@ -1897,7 +1966,7 @@ static int16_t input_state_internal(
                         ret = input_joypad_analog_button(
                               input_analog_deadzone,
                               input_analog_sensitivity,
-                              sec_joypad, &joypad_info,
+                              sec_joypad, sec_info,
                               id,
                               &(*input_st->libretro_input_binds[mapped_port])[id]);
 
@@ -1919,7 +1988,7 @@ static int16_t input_state_internal(
                         input_analog_deadzone,
                         input_analog_sensitivity,
                         sec_joypad,
-                        &joypad_info,
+                        sec_info,
                         idx,
                         id,
                         (*input_st->libretro_input_binds[mapped_port]));
@@ -3819,12 +3888,12 @@ void joypad_driver_reinit(void *data, const char *joypad_driver_name)
       tmp->poll();
       tmp->destroy();
    }
-#endif
+#endif // HAVE_MFI
    if (!input_driver_st.primary_joypad)
       input_driver_st.primary_joypad    = input_joypad_init_driver(joypad_driver_name, data);
-#if 0
+#if 1
    if (!input_driver_st.secondary_joypad)
-      input_driver_st.secondary_joypad  = input_joypad_init_driver("mfi", data);
+      input_driver_st.secondary_joypad  = input_joypad_init_driver("virtual", data);
 #endif
 }
 
@@ -3900,10 +3969,10 @@ void input_driver_init_joypads(void)
       input_driver_st.primary_joypad        = input_joypad_init_driver(
          settings->arrays.input_joypad_driver,
          input_driver_st.current_data);
-#if 0
+#if 1
    if (!input_driver_st.secondary_joypad)
       input_driver_st.secondary_joypad      = input_joypad_init_driver(
-            "mfi",
+            "virtual",
             input_driver_st.current_data);
 #endif
 }
