@@ -380,5 +380,14 @@
 			</dict>
 		</dict>
 	</array>
+	<key>InAppPurchase</key>
+	<dict>
+		<key>ProMonthly</key>
+		<string>$(IAP_PRO_MONTHLY_ID)</string>
+		<key>ProYearly</key>
+		<string>$(IAP_PRO_YEARLY_ID)</string>
+		<key>ProLifetime</key>
+		<string>$(IAP_PRO_LIFETIME_ID)</string>
+	</dict>
 </dict>
 </plist>

@@ -89,6 +89,7 @@
 		ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */; };
 		ABBC8B182F5E5690007E1669 /* MoltenVK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABBDE0212F860010004A6469 /* WhatsNewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */; };
+		ABC0BDCE2FAF831A004A6A40 /* AppStorePurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC0BDCD2FAF831A004A6A40 /* AppStorePurchaseManager.swift */; };
 		ABD42B842F3A66E7008B1771 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD42B792F3A66E7008B1771 /* AppDelegate.swift */; };
 		ABD42B852F3A66E7008B1771 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD42B7B2F3A66E7008B1771 /* SceneDelegate.swift */; };
 		ABD42B882F3A66E7008B1771 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ABD42B7E2F3A66E7008B1771 /* Assets.xcassets */; };
@@ -259,6 +260,7 @@
 		ABBC8ACD2F5E5504007E1669 /* emu.vbam.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.vbam.framework; sourceTree = "<group>"; };
 		ABBC8ACE2F5E5504007E1669 /* emu.yabause.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.yabause.framework; sourceTree = "<group>"; };
 		ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsNewViewController.swift; sourceTree = "<group>"; };
+		ABC0BDCD2FAF831A004A6A40 /* AppStorePurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorePurchaseManager.swift; sourceTree = "<group>"; };
 		ABD42B502F3A5EFC008B1771 /* RetroGo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RetroGo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABD42B792F3A66E7008B1771 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ABD42B7A2F3A66E7008B1771 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -367,6 +369,7 @@
 				AB55BC732F3B8A9800569A84 /* AppToastManager.swift */,
 				AB55BC752F3B8AEB00569A84 /* AppConfig.swift */,
 				AB55BC772F3B8B4200569A84 /* AppSettings.swift */,
+				ABC0BDCD2FAF831A004A6A40 /* AppStorePurchaseManager.swift */,
 			);
 			path = Singleton;
 			sourceTree = "<group>";
@@ -860,6 +863,7 @@
 				AB80162C2F9333860031643C /* GameConfigSection.swift in Sources */,
 				AB8016312F93DAF80031643C /* GameConfigFooterView.swift in Sources */,
 				AB3D70482F7D876A0008A6AA /* GameOverlayCollapseButton.swift in Sources */,
+				ABC0BDCE2FAF831A004A6A40 /* AppStorePurchaseManager.swift in Sources */,
 				AB79E7492F659FA5007C480E /* GamePageHudView.swift in Sources */,
 				AB7C3A752F8043DA004C872A /* Retro​Rom​Persistence+v2.swift in Sources */,
 				ABDAD26D2F3BB0D1004100A9 /* GameImportSelector.swift in Sources */,

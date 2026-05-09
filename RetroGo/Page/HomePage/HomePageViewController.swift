@@ -89,6 +89,10 @@ final class HomePageViewController: UIViewController {
         } else {
             NotificationCenter.default.addObserver(self, selector: #selector(retroArchReadyNotification(_:)), name: .RetroArchXReady, object: nil)
         }
+
+        print(IAPProductID.monthly)
+        print(IAPProductID.yearly)
+        print(IAPProductID.lifetime)
     }
 
     override func viewDidLayoutSubviews() {
