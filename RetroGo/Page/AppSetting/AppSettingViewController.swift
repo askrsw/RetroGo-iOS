@@ -32,6 +32,13 @@ import XMLTextRenderKit
 final class AppSettingViewController: UIViewController {
     private lazy var tableView  = self.configUI()
     private lazy var dataSource = self.configDS()
+    private lazy var proButton = AppSettingProButton(target: self, action: #selector(purchaseAction(_:)))
+    private var entitlementRefreshTask: Task<Void, Never>?
+
+    deinit {
+        entitlementRefreshTask?.cancel()
+        NotificationCenter.default.removeObserver(self)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,10 +49,21 @@ final class AppSettingViewController: UIViewController {
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark.circle"), landscapeImagePhone: UIImage(systemName: "xmark.circle"), style: .plain, target: self, action: #selector(closeAction(_:)))
         navigationItem.leftBarButtonItem?.tintColor = .mainColor
 
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: proButton)
+
         _ = tableView
         _ = dataSource
 
         applySnapshot(animated: false)
+
+        proButton.reloadPurchaseState()
+        NotificationCenter.default.addObserver(self, selector: #selector(purchaseStateDidChange(_:)), name: .appStorePurchaseStateDidChange, object: nil)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        proButton.reloadPurchaseState()
+        refreshPurchaseState()
     }
 }
 
@@ -274,6 +292,7 @@ extension AppSettingViewController {
 
     private func updateText() {
         navigationItem.title = Bundle.localizedString(forKey: "homepage_main_title")
+        proButton.reloadPurchaseState()
     }
 
     private func changeLanguage(key: String) {
@@ -334,8 +353,174 @@ extension AppSettingViewController {
     }
 
     @objc
+    private func purchaseAction(_ sender: Any) {
+        Vibration.selection.vibrate()
+        let controller = AppStorePurchaseViewController()
+        let naviController = UINavigationController(rootViewController: controller)
+        present(naviController, animated: true)
+    }
+
+    @objc
+    private func purchaseStateDidChange(_ notification: Notification) {
+        proButton.reloadPurchaseState()
+    }
+
+    private func refreshPurchaseState() {
+        entitlementRefreshTask?.cancel()
+        entitlementRefreshTask = Task { @MainActor [weak self] in
+            try? await AppStorePurchaseManager.shared.loadProducts()
+            await AppStorePurchaseManager.shared.refreshEntitlements(allowClearingActiveEntitlement: true)
+            guard !Task.isCancelled else { return }
+            self?.proButton.reloadPurchaseState()
+        }
+    }
+
+    @objc
     private func closeAction(_ sender: UIBarButtonItem) {
         Vibration.selection.vibrate()
         navigationController?.dismiss(animated: true)
+    }
+}
+
+private final class AppSettingProButton: UIControl {
+    private let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterialDark))
+    private let iconView = UIImageView(image: UIImage(systemName: "crown.fill"))
+    private let statusBadgeView = UIImageView(image: UIImage(systemName: "checkmark.circle.fill"))
+    private let titleLabel = UILabel()
+    private var currentTitle = "Pro"
+
+    init(target: Any?, action: Selector) {
+        super.init(frame: .zero)
+        configUI()
+        reloadPurchaseState()
+        frame.size = intrinsicContentSize
+        addTarget(target, action: action, for: .touchUpInside)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var isHighlighted: Bool {
+        didSet {
+            UIView.animate(withDuration: 0.12, delay: 0, options: [.allowUserInteraction, .beginFromCurrentState]) {
+                self.transform = self.isHighlighted ? CGAffineTransform(scaleX: 0.94, y: 0.94) : .identity
+                self.alpha = self.isHighlighted ? 0.82 : 1.0
+            }
+        }
+    }
+
+    override var intrinsicContentSize: CGSize {
+        let iconWidth: CGFloat = 20
+        let spacing: CGFloat = 6
+        let horizontalPadding: CGFloat = 20
+        let titleWidth = ceil((currentTitle as NSString).size(withAttributes: [.font: titleLabel.font as Any]).width)
+        return CGSize(width: iconWidth + spacing + titleWidth + horizontalPadding, height: 38)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        let radius = bounds.height / 2
+        layer.cornerRadius = radius
+        effectView.layer.cornerRadius = radius
+    }
+
+    func reloadPurchaseState() {
+        apply(entitlement: AppStorePurchaseManager.shared.activeProEntitlement)
+    }
+
+    private func configUI() {
+        accessibilityLabel = "RetroGo Pro"
+        accessibilityTraits = .button
+
+        layer.borderWidth = 1
+        layer.borderColor = UIColor.white.withAlphaComponent(0.10).cgColor
+        clipsToBounds = true
+
+        effectView.isUserInteractionEnabled = false
+        effectView.clipsToBounds = true
+        addSubview(effectView)
+        effectView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        iconView.tintColor = UIColor(hex: 0xFFD700, alpha: 1.0)
+        iconView.contentMode = .scaleAspectFit
+
+        titleLabel.font = .systemFont(ofSize: UIFont.labelFontSize, weight: .semibold)
+        titleLabel.text = currentTitle
+
+        statusBadgeView.tintColor = .systemGreen
+        statusBadgeView.contentMode = .scaleAspectFit
+        statusBadgeView.isHidden = true
+
+        let iconContainer = UIView()
+        iconContainer.isUserInteractionEnabled = false
+        iconContainer.addSubview(iconView)
+        iconContainer.addSubview(statusBadgeView)
+
+        let stackView = UIStackView(arrangedSubviews: [iconContainer, titleLabel])
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.spacing = 6
+        stackView.isUserInteractionEnabled = false
+        addSubview(stackView)
+
+        iconContainer.snp.makeConstraints { make in
+            make.size.equalTo(22)
+        }
+
+        iconView.snp.makeConstraints { make in
+            make.size.equalTo(20)
+            make.center.equalToSuperview()
+        }
+
+        statusBadgeView.snp.makeConstraints { make in
+            make.size.equalTo(11)
+            make.top.equalToSuperview().offset(-1)
+            make.trailing.equalToSuperview().offset(1)
+        }
+
+        stackView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.leading.equalToSuperview().offset(10)
+            make.trailing.equalToSuperview().offset(-10)
+        }
+    }
+
+    private func apply(entitlement: AppStoreProEntitlementInfo?) {
+        if let entitlement {
+            if entitlement.isInFreeTrial {
+                currentTitle = Bundle.localizedString(forKey: "iap_trial_status")
+                titleLabel.text = currentTitle
+                titleLabel.textColor = UIColor(hex: 0xFFD700, alpha: 1.0)
+                statusBadgeView.isHidden = true
+                effectView.contentView.backgroundColor = UIColor(hex: 0xFFD700, alpha: 0.08)
+                layer.borderColor = UIColor(hex: 0xFFD700, alpha: 0.32).cgColor
+                accessibilityLabel = "RetroGo Pro Trial"
+            } else {
+                currentTitle = "Pro"
+                titleLabel.text = currentTitle
+                titleLabel.textColor = UIColor(hex: 0xFFD700, alpha: 1.0)
+                statusBadgeView.isHidden = false
+                effectView.contentView.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.08)
+                layer.borderColor = UIColor(hex: 0xFFD700, alpha: 0.36).cgColor
+                accessibilityLabel = "RetroGo Pro Active"
+            }
+        } else {
+            currentTitle = "Pro"
+            titleLabel.text = currentTitle
+            titleLabel.textColor = .mainColor
+            statusBadgeView.isHidden = true
+            effectView.contentView.backgroundColor = UIColor.clear
+            layer.borderColor = UIColor.white.withAlphaComponent(0.10).cgColor
+            accessibilityLabel = "RetroGo Pro"
+        }
+
+        invalidateIntrinsicContentSize()
+        frame.size = intrinsicContentSize
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 }

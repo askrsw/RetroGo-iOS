@@ -29,6 +29,8 @@ import ObjcHelper
 import RACoordinator
 
 final class RetroRomCoreInfoViewController: UIViewController {
+    private let gamePauseToken = RetroArchGamePauseToken()
+
     let coreInfoItem: EmuCoreInfoItem
     let showCloseButton: Bool
     let interactive: Bool
@@ -45,16 +47,10 @@ final class RetroRomCoreInfoViewController: UIViewController {
         self.showCloseButton = showCloseButton
         self.interactive = interactive
         super.init(nibName: nil, bundle: nil)
-
-        RetroArchX.shared().pause()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    deinit {
-        RetroArchX.shared().resume()
     }
 
     override func viewDidLoad() {

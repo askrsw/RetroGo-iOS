@@ -273,9 +273,12 @@ extension GamePageOverlayScene {
 
     private func makeFastButtonNode(element: GamePageOverlayElement) -> SKNode {
         let node = GameOverLayFastButton(element: element, theme: theme) { enabled in
-            guard let multiplier = GamePageViewController.instance?.configSession.getFastForwardMultiplier() else {
+            guard let requestedMultiplier = GamePageViewController.instance?.configSession.getFastForwardMultiplier() else {
                 return
             }
+            let multiplier = enabled
+                ? AppStoreProFeatureGate.effectiveFastForwardMultiplierForRuntime(requestedMultiplier)
+                : requestedMultiplier
             RetroArchX.shared().setFastForwardEnabled(enabled, multiplier: multiplier)
         }
         self.fastButton = node

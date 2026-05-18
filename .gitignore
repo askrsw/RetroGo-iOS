@@ -100,3 +100,7 @@ OUINotifications/
 .DS_Store
 
 Main.xcconfig
+
+/LocalDocs/
+/Backup/
+/.claude/

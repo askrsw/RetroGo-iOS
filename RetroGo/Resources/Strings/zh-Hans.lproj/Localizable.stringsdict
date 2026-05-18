@@ -30,5 +30,61 @@
 			<string>%d 个游戏</string>
 		</dict>
 	</dict>
+	<key>iap_period_unit_day</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_days@</string>
+		<key>num_days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d 天</string>
+		</dict>
+	</dict>
+	<key>iap_period_unit_week</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_weeks@</string>
+		<key>num_weeks</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d 个星期</string>
+		</dict>
+	</dict>
+	<key>iap_period_unit_month</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_months@</string>
+		<key>num_months</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d 个月</string>
+		</dict>
+	</dict>
+	<key>iap_period_unit_year</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_years@</string>
+		<key>num_years</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d 年</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

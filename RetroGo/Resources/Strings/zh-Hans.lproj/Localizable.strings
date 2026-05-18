@@ -23,6 +23,9 @@
 "blue" = "蓝色";
 "purple" = "紫色";
 "gray" = "灰色";
+"start" = "开始";
+"month" = "月";
+"year" = "年";
 
 "gamepage_save_state" = "保存存档";
 "gamepage_input_state_name" = "请输入存档名称";
@@ -105,7 +108,8 @@
 "homepage_rename" = "重命名";
 "homepage_delete" = "删除";
 "homepage_info" = "信息";
-"homepage_empty_tip" = "游戏库为空，请点击右上角添加按钮加载游戏 ROM。你需要通过其它途径获得游戏 ROM 并保存到本地文件系统。";
+"homepage_empty_title" = "游戏库为空";
+"homepage_empty_tip" = "点击右上角 + 导入游戏 ROM。\n请确保你拥有所导入游戏的合法副本。";
 "homepage_parent_folder" = "上一级目录";
 "homepage_root_folder" = "根目录";
 "homepage_jump" = "跳转到";
@@ -240,3 +244,76 @@
 "configpage_connected_controllers" = "已连接手柄";
 "configpage_button_mapping" = "按键映射";
 "configpage_press_button" = "请按键";
+
+// MARK: - In App Purchase
+
+"iap_main_title" = "RetroGo Pro";
+"iap_restore" = "恢复购买";
+"iap_chooseplan" = "选择你的方案";
+"iap_loading_products" = "正在加载订阅产品...";
+"iap_failed_load_products" = "加载订阅产品失败。\n%@";
+"iap_no_subscription_products" = "当前暂无可用订阅产品。";
+"iap_yearly_trial_desc" = "%@ · 之后按年计费";
+"iap_loading" = "加载中...";
+"iap_probenefits" = "Pro 权益";
+"iap_probenefit1" = "无限制快进控制。";
+"iap_probenefit2" = "每个游戏支持无限手动存档位。";
+"iap_probenefit3" = "高级物理手柄按键映射。";
+"iap_probenefit4" = "支持核心级与游戏级的细粒度配置。";
+"iap_probenefit5" = "支持 RetroGo 持续开发与未来高级功能。";
+"iap_foottiptext" = "确认购买后，Pro 解锁费用将从你的 App Store 账户扣除。月度和年度订阅会自动续订，除非你在当前订阅周期结束前至少 24 小时关闭自动续订。终身解锁为一次性购买，不会自动续订。你可以随时在 App Store 中管理订阅。如有任何问题，请联系我们。";
+"iap_foottipmanage" = "管理订阅";
+"iap_foottipcontact" = "联系我们";
+"iap_privacypolicy" = "隐私政策";
+"iap_termsofuse" = "使用条款";
+"iap_monthly" = "按月订阅";
+"iap_yearly" = "按年订阅";
+"iap_lifetime" = "终身解锁";
+"iap_unlock_lifetime" = "立即解锁终身版";
+"iap_subscribe_now" = "立即订阅";
+"iap_monthly_desc" = "按月计费，可随时取消。";
+"iap_yearly_desc" = "按年计费，可随时取消。";
+"iap_lifetime_desc" = "一次性购买，永久解锁。";
+"iap_current_plan" = "当前方案";
+"iap_purchases_restored" = "已恢复购买记录。";
+"iap_select_a_plan" = "请选择一个方案。";
+"iap_plan_already_unlocked" = "该方案已解锁。";
+"iap_purchase_successful" = "购买成功。";
+"iap_purchase_pending_approval" = "购买待处理（等待批准）。";
+"iap_purchase_cancelled" = "已取消购买。";
+"iap_free_trial" = "免费试用";
+"iap_error_invalid_product_id" = "无效的商品 ID。";
+"iap_error_product_not_loaded" = "未能从 App Store 加载该商品。";
+"iap_error_transaction_verifi_failed" = "交易验证失败。";
+"iap_error_another_purchase_in_progress" = "当前有其他购买操作正在进行中。";
+"iap_error_no_purchase_available_to_restore" = "没有可恢复的购买记录。";
+"iap_error_unknown_purchase_error" = "未知购买错误。";
+"iap_hero_subtitle" = "解锁完整的复古游戏体验";
+"iap_monthly_badge" = "灵活";
+"iap_yearly_badge" = "热门";
+"iap_lifetime_badge" = "最超值";
+"iap_save" = "节省";
+"iap_lifetime_tip" = "一次买断";
+"iap_retrogo_pro_monthly" = "RetroGo Pro 月度订阅";
+"iap_retrogo_pro_yearly" = "RetroGo Pro 年度订阅";
+"iap_retrogo_pro_lifetime" = "RetroGo Pro 终身解锁";
+"iap_retrogo_pro_is_active" = "RetroGo Pro 已激活";
+"iap_retrogo_pro_active_alert_text" = "此设备已可使用全部 Pro 功能。";
+"iap_retrogo_pro_is_trial" = "RetroGo Pro 试用中";
+"iap_retrogo_pro_trial_thanks" = "感谢试用 RetroGo Pro，所有 Pro 功能已解锁。";
+"iap_retrogo_pro_purchase_thanks" = "感谢购买 RetroGo Pro，所有 Pro 功能已解锁。";
+"iap_retrogo_lifetime_unlock" = "终身解锁";
+"iap_retrogo_trial_ends_formatter" = "%@ · 试用期至 %@";
+"iap_retrogo_active_until_formatter" = "%@ · 有效期至 %@";
+"iap_trial_status" = "试用";
+
+// MARK: - Pro Feature Gate
+
+"progate_alert_title" = "RetroGo Pro";
+"progate_alert_message_format" = "%@\n解锁 RetroGo Pro 后可继续使用。";
+"progate_unlock_pro" = "解锁 Pro";
+"progate_not_now" = "暂不";
+"progate_fast_forward_locked" = "3x、4x、6x 快进倍率需要 Pro。";
+"progate_manual_save_slot_locked" = "无限手动存档位是 Pro 功能。";
+"progate_controller_mapping_locked" = "高级物理手柄按键映射是 Pro 功能。";
+"progate_advanced_configuration_locked" = "核心与游戏的高级配置是 Pro 功能。";

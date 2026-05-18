@@ -51,6 +51,7 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
     var usePolarLayout = false
 
     var onDirtyChanged: ((Bool) -> Void)?
+    var shouldAllowBindingChange: (() -> Bool)?
 
     init(
         size: CGSize,
@@ -276,6 +277,10 @@ private extension GameConfigBindingOverlayScene {
               let activeBinding,
               let presenter = activeBinding.presenter else {
             return false
+        }
+
+        if shouldAllowBindingChange?() == false {
+            return true
         }
 
         let didBind: Bool

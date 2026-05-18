@@ -29,6 +29,8 @@ import ObjcHelper
 import RACoordinator
 
 final class GameStateListViewController: UIViewController {
+    private let gamePauseToken = RetroArchGamePauseToken()
+
     private let tableView = UITableView(frame: .zero, style: .plain)
 
     private let showClose: Bool
@@ -47,16 +49,10 @@ final class GameStateListViewController: UIViewController {
         self.gameStateItems = gameStateItems
         self.showClose = showClose
         super.init(nibName: nil, bundle: nil)
-
-        RetroArchX.shared().pause()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    deinit {
-        RetroArchX.shared().resume()
     }
 
     override func viewDidLoad() {

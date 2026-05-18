@@ -740,6 +740,31 @@ final class Retro​Rom​Persistence {
         }
     }
 
+    func getSavedStatesCount(romKey: String?, coreId: String) -> Int {
+        guard let romKey = romKey else {
+            return 0
+        }
+
+        do {
+            let db = Self.sqlite
+            let sql = """
+                SELECT COUNT(*)
+                FROM romstate
+                WHERE rom_key = ?
+                  AND core_id = ?
+                  AND raw_name NOT GLOB 'auto_*'
+            """
+            let count = try db.scalar(sql, romKey, coreId) as? Int64 ?? 0
+            return Int(count)
+        } catch {
+        #if DEBUG
+            fatalError("\(error.localizedDescription)")
+        #else
+            return 0
+        #endif
+        }
+    }
+
     // MARK: - File Tag Stuff
 
     private func getAllFileTagsFromDatabase() -> [RetroRomFileTag]? {

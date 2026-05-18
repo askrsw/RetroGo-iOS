@@ -84,15 +84,10 @@ final class HomePageViewController: UIViewController {
 
         if RetroArchX.shared().initialized {
             updateFileBrowser()
-
             WhatsNewViewController.showIfNeeded()
         } else {
             NotificationCenter.default.addObserver(self, selector: #selector(retroArchReadyNotification(_:)), name: .RetroArchXReady, object: nil)
         }
-
-        print(IAPProductID.monthly)
-        print(IAPProductID.yearly)
-        print(IAPProductID.lifetime)
     }
 
     override func viewDidLayoutSubviews() {
@@ -361,7 +356,7 @@ extension HomePageViewController {
     }
 
     private func configUI() {
-        let gearIcon = UIImage(systemName: "gear")
+        let gearIcon = UIImage(named: "Icon_symbol")
         let gearButton = UIBarButtonItem(image: gearIcon, landscapeImagePhone: gearIcon, style: .plain, target: self, action: #selector(settingsAction))
         navigationItem.leftBarButtonItem = gearButton
 

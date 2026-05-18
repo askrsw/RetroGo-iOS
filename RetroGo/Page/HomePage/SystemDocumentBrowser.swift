@@ -49,7 +49,7 @@ final class SystemDocumentBrowser: UIDocumentBrowserViewController {
         delegate = self
 
         additionalTrailingNavigationBarButtonItems = [
-            UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(settingsAction)),
+            UIBarButtonItem(image: UIImage(named: "Icon_symbol"), style: .plain, target: self, action: #selector(settingsAction)),
         ]
 
         WhatsNewViewController.showIfNeeded()

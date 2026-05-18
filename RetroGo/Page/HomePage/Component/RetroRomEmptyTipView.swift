@@ -24,13 +24,13 @@
 //
 
 import UIKit
-import YYText
 import SnapKit
 import ObjcHelper
 
 final class RetroRomEmptyTipView: UIView {
     let imageView = UIImageView(image: UIImage(systemName: "tray"))
-    let label = YYLabel(frame: .zero)
+    let titleLabel = UILabel()
+    let tipLabel = UILabel()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -45,33 +45,46 @@ final class RetroRomEmptyTipView: UIView {
     func updateTipText() {
         let paragraph: NSMutableParagraphStyle = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
         paragraph.alignment = .center
-        paragraph.lineSpacing = 5.0
+        paragraph.lineSpacing = 4.0
+        paragraph.lineBreakMode = .byWordWrapping
         let attributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.label,
+            .foregroundColor: UIColor.secondaryLabel,
             .paragraphStyle: paragraph,
-            .font: UIFont.systemFont(ofSize: UIFont.labelFontSize)
+            .font: UIFont.systemFont(ofSize: 15, weight: .regular)
         ]
 
+        titleLabel.text = Bundle.localizedString(forKey: "homepage_empty_title")
+
         let tip = Bundle.localizedString(forKey: "homepage_empty_tip")
-        label.attributedText = NSAttributedString(string: tip, attributes: attributes)
+        tipLabel.attributedText = NSAttributedString(string: tip, attributes: attributes)
     }
 
     private func configUI() {
         addSubview(imageView)
         imageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
-            make.top.equalToSuperview().offset(30)
+            make.top.equalToSuperview().offset(10)
             make.size.equalTo(CGSize(width: 120, height: 120))
         }
 
-        label.numberOfLines = 0
-        label.textVerticalAlignment = .top
-        addSubview(label)
-        label.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(20)
-            make.trailing.equalToSuperview().offset(-20)
-            make.top.equalTo(imageView.snp.bottom).offset(20)
-            make.bottom.equalToSuperview()
+        titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+        titleLabel.textColor = .label
+        titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 1
+        addSubview(titleLabel)
+        titleLabel.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(24)
+            make.top.equalTo(imageView.snp.bottom).offset(18)
+        }
+
+        tipLabel.numberOfLines = 0
+        tipLabel.lineBreakMode = .byWordWrapping
+        tipLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        addSubview(tipLabel)
+        tipLabel.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(28)
+            make.top.equalTo(titleLabel.snp.bottom).offset(8)
+            make.bottom.lessThanOrEqualToSuperview()
         }
     }
 }

@@ -25,12 +25,13 @@
 
 import UIKit
 import SnapKit
+import ObjcHelper
 
 final class GameConfigSegmentViewCell: GameConfigBaseViewCell {
     let segmentControl = UISegmentedControl(frame: .zero)
 
-    override func updateUI() {
-        super.updateUI()
+    override func updateUI(aniamted: Bool) {
+        super.updateUI(aniamted: aniamted)
 
         segmentControl.isEnabled = entry?.enabled ?? true
         segmentControl.removeAllSegments()
@@ -39,9 +40,9 @@ final class GameConfigSegmentViewCell: GameConfigBaseViewCell {
             for item in array {
                 switch item {
                 case .image(let img):
-                    segmentControl.insertSegment(with: img, at: segmentControl.numberOfSegments, animated: false)
+                    segmentControl.insertSegment(with: img, at: segmentControl.numberOfSegments, animated: aniamted)
                 case .text(let text):
-                    segmentControl.insertSegment(withTitle: text, at: segmentControl.numberOfSegments, animated: false)
+                    segmentControl.insertSegment(withTitle: text, at: segmentControl.numberOfSegments, animated: aniamted)
                 }
             }
         }
@@ -78,7 +79,19 @@ final class GameConfigSegmentViewCell: GameConfigBaseViewCell {
 extension GameConfigSegmentViewCell {
     @objc
     private func segmentIndexValueChanged(_ sender: UISegmentedControl) {
+        guard let entry else { return }
+
         Vibration.selection.vibrate()
-        entry?.setSegmentSelectedIndex?(sender.selectedSegmentIndex)
+
+        if let feature = entry.requiredProFeatureForSegmentIndex?(sender.selectedSegmentIndex) {
+            let allowed = AppStoreProFeatureGate.shared.requirePro(feature: feature, presentation: entry.proGatePresentation, from: UIViewController.currentActive())
+
+            guard allowed else {
+                updateUI(aniamted: true)
+                return
+            }
+        }
+
+        entry.setSegmentSelectedIndex?(sender.selectedSegmentIndex)
     }
 }

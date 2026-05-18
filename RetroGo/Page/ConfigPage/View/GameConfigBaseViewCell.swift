@@ -34,7 +34,7 @@ class GameConfigBaseViewCell: UITableViewCell {
     var entry: GameConfigEntry? {
         didSet {
             entryChanged(new: entry, old: oldValue)
-            updateUI()
+            updateUI(aniamted: false)
         }
     }
 
@@ -51,7 +51,7 @@ class GameConfigBaseViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func updateUI() {
+    func updateUI(aniamted: Bool) {
         tipLabel.text = entry?.title
 
         if let _ = entry?.desc {

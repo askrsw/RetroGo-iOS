@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
+<dict>
+	<key>homepage_import_completed</key>
 	<dict>
-		<key>homepage_import_completed</key>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@imported_count@</string>
+		<key>imported_count</key>
 		<dict>
-			<key>NSStringLocalizedFormatKey</key>
-			<string>%#@imported_count@</string>
-			<key>imported_count</key>
-			<dict>
-				<key>NSStringFormatSpecTypeKey</key>
-				<string>NSStringPluralRuleType</string>
-				<key>NSStringFormatValueTypeKey</key>
-				<string>d</string>
-				<key>one</key>
-				<string>Successfully imported %d ROM, game import completed.</string>
-				<key>other</key>
-				<string>Successfully imported %d ROMs, game import completed.</string>
-			</dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Successfully imported %d ROM, game import completed.</string>
+			<key>other</key>
+			<string>Successfully imported %d ROMs, game import completed.</string>
 		</dict>
-		<key>homepage_game_count</key>
-		<dict>
-			<key>NSStringLocalizedFormatKey</key>
-			<string>%#@num_games@</string>
+	</dict>
+	<key>homepage_game_count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_games@</string>
 		<key>num_games</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -32,6 +32,70 @@
 			<string>1 Game</string>
 			<key>other</key>
 			<string>%d Games</string>
+		</dict>
+	</dict>
+	<key>iap_period_unit_day</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_days@</string>
+		<key>num_days</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d days</string>
+			<key>one</key>
+			<string>%d day</string>
+		</dict>
+	</dict>
+	<key>iap_period_unit_week</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_weeks@</string>
+		<key>num_weeks</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d weeks</string>
+			<key>one</key>
+			<string>%d week</string>
+		</dict>
+	</dict>
+	<key>iap_period_unit_month</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_months@</string>
+		<key>num_months</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d months</string>
+			<key>one</key>
+			<string>%d month</string>
+		</dict>
+	</dict>
+	<key>iap_period_unit_year</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_years@</string>
+		<key>num_years</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d years</string>
+			<key>one</key>
+			<string>%d year</string>
 		</dict>
 	</dict>
 </dict>

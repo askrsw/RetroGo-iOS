@@ -34,8 +34,8 @@ final class GameConfigLabelViewCell: GameConfigBaseViewCell {
         true
     }
 
-    override func updateUI() {
-        super.updateUI()
+    override func updateUI(aniamted: Bool) {
+        super.updateUI(aniamted: aniamted)
 
         guard let entry else { return }
         switch entry.ui {

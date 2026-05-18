@@ -1,8 +1,8 @@
 //
-//  GameConfigSwitchViewCell.swift
+//  RetroArchGamePauseToken.swift
 //  RetroGo
 //
-//  Created by haharsw on 2026/4/18.
+//  Created by haharsw on 2026/5/15.
 //  Copyright © 2026 haharsw. All rights reserved.
 //
 //  ---------------------------------------------------------------------------------
@@ -23,33 +23,35 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-import UIKit
+import ObjectiveC
+import RACoordinator
 
-final class GameConfigSwitchViewCell: GameConfigBaseViewCell {
-    let `switch` = UISwitch(frame: .zero)
+@MainActor
+final class RetroArchGamePauseToken {
+    private var didPause = false
 
-    override var constrainTipLabelVertically: Bool {
-        true
+    init() {
+        didPause = RetroArchX.shared().pause()
     }
 
-    override func updateUI(aniamted: Bool) {
-        super.updateUI(aniamted: aniamted)
-        
-        `switch`.isEnabled = entry?.enabled ?? true
-        `switch`.isOn = entry?.getBoolValue?() ?? false
-    }
-
-    override func configUI() {
-        super.configUI()
-        `switch`.onTintColor = .mainColor
-        `switch`.addTarget(self, action: #selector(switchValueChanged(_:)), for: .valueChanged)
-        accessoryView = `switch`
+    deinit {
+        if didPause {
+            _ = RetroArchX.shared().resume()
+        }
     }
 }
 
-extension GameConfigSwitchViewCell {
-    @objc
-    private func switchValueChanged(_ sender: UISwitch) {
-        entry?.setBoolValue?(sender.isOn)
+private var retroArchPauseTokenKey: UInt8 = 0
+
+extension UIAlertController {
+    static func gamePausedAlert(
+        title: String?,
+        message: String?,
+        preferredStyle: UIAlertController.Style = .alert
+    ) -> UIAlertController {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: preferredStyle)
+        let token = RetroArchGamePauseToken()
+        objc_setAssociatedObject(alert, &retroArchPauseTokenKey, token, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        return alert
     }
 }

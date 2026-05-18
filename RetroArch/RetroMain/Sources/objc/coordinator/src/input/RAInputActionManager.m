@@ -773,14 +773,16 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 }
 
 - (void)emitFastForward:(BOOL)enabled {
-    double value = 2.0;
-    RAInputFastForwardMultiplierProvider provider = self.fastForwardMultiplierProvider;
-    if (provider != nil) {
-        value = provider();
-    }
+    double value = enabled ? 2.0 : 1.0;
+    if (enabled) {
+        RAInputFastForwardMultiplierProvider provider = self.fastForwardMultiplierProvider;
+        if (provider != nil) {
+            value = provider();
+        }
 
-    if (!isfinite(value) || value <= 0) {
-        value = 2.0;
+        if (!isfinite(value) || value <= 0) {
+            value = 2.0;
+        }
     }
 
     [[RetroArchX shared] setFastForwardEnabled:enabled multiplier:value];

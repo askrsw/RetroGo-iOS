@@ -187,6 +187,15 @@ extension GamePageHudView {
             return
         }
 
+        guard let currentCoreItem = RetroArchX.shared().currentCoreItem else {
+            return
+        }
+
+        let manulSavedCount = Retro​Rom​Persistence.shared.getSavedStatesCount(romKey: holder?.romItem?.key, coreId: currentCoreItem.coreId)
+        if manulSavedCount > 0, !AppStoreProFeatureGate.shared.requirePro(feature: .manualSaveSlot, presentation: .alert) {
+            return
+        }
+
         let title = Bundle.localizedString(forKey: "gamepage_save_state")
         let message = Bundle.localizedString(forKey: "gamepage_input_state_name")
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)

@@ -23,6 +23,9 @@
 "blue" = "Blue";
 "purple" = "Purple";
 "gray" = "Gray";
+"start" = "Start";
+"month" = "month";
+"year" = "year";
 
 "gamepage_save_state" = "Save State";
 "gamepage_input_state_name" = "Please input the name of the state";
@@ -105,7 +108,8 @@
 "homepage_rename" = "Rename";
 "homepage_delete" = "Delete";
 "homepage_info" = "Info";
-"homepage_empty_tip" = "The game library is empty. Please click the add button in the top right corner to load game ROMs. You need to obtain game ROMs through other means and save them to the local file system.";
+"homepage_empty_title" = "Your library is empty";
+"homepage_empty_tip" = "Tap + to import game ROMs.\nMake sure you own legal copies of the games you import.";
 "homepage_parent_folder" = "Parent";
 "homepage_root_folder" = "Root Folder";
 "homepage_jump" = "Jump To";
@@ -240,3 +244,76 @@
 "configpage_connected_controllers" = "Connected Controllers";
 "configpage_button_mapping" = "Button Mapping";
 "configpage_press_button" = "Press";
+
+// MARK: - In App Purchase
+
+"iap_main_title" = "RetroGo Pro";
+"iap_restore" = "Restore";
+"iap_chooseplan" = "Choose Your Plan";
+"iap_loading_products" = "Loading subscription products...";
+"iap_failed_load_products" = "Failed to load products.\n%@";
+"iap_no_subscription_products" = "No subscription products available.";
+"iap_yearly_trial_desc" = "%@ · then billed yearly";
+"iap_loading" = "Loading...";
+"iap_probenefits" = "Pro Benefits";
+"iap_probenefit1" = "Unlimited fast-forward controls.";
+"iap_probenefit2" = "Unlimited manual save slots per game.";
+"iap_probenefit3" = "Advanced controller button mapping.";
+"iap_probenefit4" = "Core & game-specific settings with finer control.";
+"iap_probenefit5" = "Support ongoing RetroGo development and future premium features.";
+"iap_foottiptext" = "The Pro unlock fee is charged to your App Store account at confirmation of purchase. Monthly and yearly subscriptions renew automatically unless auto-renew is turned off at least 24 hours before the end of the current subscription period. Lifetime unlock is a one-time purchase and does not renew. You can Manage Subscriptions on the App Store at any time. If you have any questions, please Contact Us.";
+"iap_foottipmanage" = "Manage Subscriptions";
+"iap_foottipcontact" = "Contact Us";
+"iap_privacypolicy" = "Privacy Policy";
+"iap_termsofuse" = "Terms of Use";
+"iap_monthly" = "Monthly";
+"iap_yearly" = "Yearly";
+"iap_lifetime" = "Lifetime";
+"iap_unlock_lifetime" = "Unlock Lifetime";
+"iap_subscribe_now" = "Subscribe Now";
+"iap_monthly_desc" = "Billed monthly. Cancel anytime.";
+"iap_yearly_desc" = "Billed yearly. Cancel anytime.";
+"iap_lifetime_desc" = "One-time purchase. Permanent unlock.";
+"iap_current_plan" = "Current";
+"iap_purchases_restored" = "Purchases restored.";
+"iap_select_a_plan" = "Please select a plan.";
+"iap_plan_already_unlocked" = "This plan is already unlocked.";
+"iap_purchase_successful" = "Purchase successful.";
+"iap_purchase_pending_approval" = "Purchase is pending approval.";
+"iap_purchase_cancelled" = "Purchase cancelled.";
+"iap_free_trial" = " free trial";
+"iap_error_invalid_product_id" = "Invalid product ID.";
+"iap_error_product_not_loaded" = "Product is not loaded from App Store.";
+"iap_error_transaction_verifi_failed" = "Transaction verification failed.";
+"iap_error_another_purchase_in_progress" = "Another purchase operation is in progress.";
+"iap_error_no_purchase_available_to_restore" = "No purchases available to restore.";
+"iap_error_unknown_purchase_error" = "Unknown purchase error.";
+"iap_hero_subtitle" = "Unlock the Full Retro Experience";
+"iap_monthly_badge" = "Flexible";
+"iap_yearly_badge" = "Popular";
+"iap_lifetime_badge" = "Best";
+"iap_save" = "Save";
+"iap_lifetime_tip" = "One-time";
+"iap_retrogo_pro_monthly" = "RetroGo Pro Monthly";
+"iap_retrogo_pro_yearly" = "RetroGo Pro Yearly";
+"iap_retrogo_pro_lifetime" = "RetroGo Pro Lifetime";
+"iap_retrogo_pro_is_active" = "RetroGo Pro is Active";
+"iap_retrogo_pro_active_alert_text" = "All Pro features are already available on this device.";
+"iap_retrogo_pro_is_trial" = "RetroGo Pro Trial";
+"iap_retrogo_pro_trial_thanks" = "Thanks for trying RetroGo Pro. All Pro features are unlocked.";
+"iap_retrogo_pro_purchase_thanks" = "Thanks for purchasing RetroGo Pro. All Pro features are unlocked.";
+"iap_retrogo_lifetime_unlock" = "Lifetime Unlock";
+"iap_retrogo_trial_ends_formatter" = "%@ · Trial ends on %@";
+"iap_retrogo_active_until_formatter" = "%@ · Active until %@";
+"iap_trial_status" = "Trial";
+
+// MARK: - Pro Feature Gate
+
+"progate_alert_title" = "RetroGo Pro";
+"progate_alert_message_format" = "%@\nUnlock RetroGo Pro to continue.";
+"progate_unlock_pro" = "Unlock Pro";
+"progate_not_now" = "Not Now";
+"progate_fast_forward_locked" = "Fast-forward speeds above 2x require Pro.";
+"progate_manual_save_slot_locked" = "Unlimited manual save slots are a Pro feature.";
+"progate_controller_mapping_locked" = "Advanced controller button mapping is a Pro feature.";
+"progate_advanced_configuration_locked" = "Advanced core and game settings are Pro features.";

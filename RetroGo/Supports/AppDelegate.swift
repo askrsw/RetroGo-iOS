@@ -36,6 +36,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         RetroRomFileManager.shared.performDataMigrationIfNeeded()
         DebugDataLink.sync()
 
+        let _ = AppStorePurchaseManager.shared
+
         let _ = RetroArchX.shared()
 
         configKeyboardManager()

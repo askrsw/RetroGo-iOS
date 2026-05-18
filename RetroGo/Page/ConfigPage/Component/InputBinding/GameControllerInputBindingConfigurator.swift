@@ -1,5 +1,5 @@
 //
-//  GameControllerInputBinding.swift
+//  GameControllerInputBindingConfigurator.swift
 //  RetroGo
 //
 //  Created by haharsw on 2026/4/29.
@@ -67,6 +67,17 @@ final class GameControllerInputBindingConfigurator: UIViewController {
         overlayView.onDirtyChanged = { [weak self] _ in
             self?.updateResetButtonEnabled()
         }
+        overlayView.shouldAllowBindingChange = { [weak self] in
+            guard let self, self.isBindingInteractionActive else {
+                return false
+            }
+
+            return AppStoreProFeatureGate.shared.requirePro(
+                feature: .controllerMapping,
+                presentation: .alert,
+                from: self
+            )
+        }
         updateResetButtonEnabled()
     }
 
@@ -96,6 +107,18 @@ extension GameControllerInputBindingConfigurator {
     private func updateResetButtonEnabled() {
         let hasNonDefault = RetroArchX.shared().inputActionManager.hasNonDefaultBindings(forPort: Int32(playerIndex), useLock: true)
         resetBarButton?.isEnabled = !isReadOnly && hasNonDefault
+    }
+
+    private var isBindingInteractionActive: Bool {
+        guard isViewLoaded, view.window != nil else { return false }
+        guard presentedViewController == nil else { return false }
+
+        if let navigationController {
+            guard navigationController.visibleViewController === self else { return false }
+            guard navigationController.presentedViewController == nil else { return false }
+        }
+
+        return UIViewController.currentActive() === self
     }
 
     private func persistBindingProfileIfNeeded() {

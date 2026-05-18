@@ -38,8 +38,8 @@ final class GameConfigTitleViewCell: GameConfigBaseViewCell {
         return button
     }()
 
-    override func updateUI() {
-        super.updateUI()
+    override func updateUI(aniamted: Bool) {
+        super.updateUI(aniamted: aniamted)
         titleLabel.text = entry?.getStringValue?()
         if entry?.detailButtonTapHandler != nil {
             accessoryView = detailButton
