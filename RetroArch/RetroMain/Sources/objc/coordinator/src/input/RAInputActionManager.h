@@ -25,7 +25,7 @@
 
 #import <Foundation/Foundation.h>
 #import "../RetroArchX.h"
-#import "../RetroArchX+Config.h"
+#import "../function/RetroArchX+Config.h"
 
 #include <stdint.h>
 
@@ -91,6 +91,9 @@ typedef void (^RAInputTopologyChangedHandler)(void);
 @property(nonatomic, assign) NSUInteger turboPeriodFrames;
 @property(nonatomic, assign) NSUInteger turboDutyFrames;
 @property(nonatomic, assign) BOOL allowsAxisSuppression;
+
++ (instancetype)shared;
+- (instancetype)init NS_UNAVAILABLE;
 
 - (void)applyInputBindingProfile:(nullable RAInputBindingProfile *)profile coreCapabilities:(nullable RAInputCoreCapabilities *)capabilities useLock:(BOOL)useLock;
 - (void)tickFrame:(BOOL)useLock;

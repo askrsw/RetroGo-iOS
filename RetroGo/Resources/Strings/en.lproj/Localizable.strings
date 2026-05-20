@@ -317,3 +317,31 @@
 "progate_manual_save_slot_locked" = "Unlimited manual save slots are a Pro feature.";
 "progate_controller_mapping_locked" = "Advanced controller button mapping is a Pro feature.";
 "progate_advanced_configuration_locked" = "Advanced core and game settings are Pro features.";
+
+// MARK: - Game Discover Page
+
+"discover_main_title" = "Discover";
+"discover_building_database" = "Building Database…";
+"discover_search_placeholder" = "Search games…";
+
+// MARK: - Game Detail Page
+
+"detail_section_basic"       = "Basic Info";
+"detail_section_description" = "Description";
+"detail_section_more"        = "More Info";
+"detail_section_rom"         = "ROM Info";
+
+"detail_developer"    = "Developer";
+"detail_publisher"    = "Publisher";
+"detail_release"      = "Released";
+"detail_genre"        = "Genre";
+"detail_region"       = "Region";
+"detail_franchise"    = "Franchise";
+"detail_max_players"  = "Max Players";
+"detail_serial"       = "Serial";
+"detail_rom_name"     = "File Name";
+"detail_file_size"    = "File Size";
+
+// MARK: - Game Cover
+
+"cover_load_failed"   = "No cover art found";

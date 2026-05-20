@@ -33,12 +33,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+
         RetroRomFileManager.shared.performDataMigrationIfNeeded()
+
         DebugDataLink.sync()
 
         let _ = AppStorePurchaseManager.shared
 
         let _ = RetroArchX.shared()
+
+        let _ = OnDemandResourceLoader.shared
 
         configKeyboardManager()
         return true

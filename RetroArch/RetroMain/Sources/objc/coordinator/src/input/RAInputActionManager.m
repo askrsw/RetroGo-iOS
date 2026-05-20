@@ -25,14 +25,13 @@
 
 #import "RAInputActionManager.h"
 #import "RAInputBindingProfile.h"
+#import "../RetroArchX.h"
 
 #include <defines/input_defines.h>
 #include <input/mfi_joypad.h>
 #include <stdatomic.h>
 #include <math.h>
 #include <os/lock.h>
-
-#import "../RetroArchX.h"
 
 @interface RAInputActionManager ()
 @property(nonatomic, strong) NSMutableDictionary<NSString *, RAInputActionDescriptor *> *actionDescriptors;
@@ -295,6 +294,15 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 
     os_unfair_lock d_stateLock;
     _Atomic(bool) d_pendingReconcile;
+}
+
++ (instancetype)shared {
+    static RAInputActionManager *instance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        instance = [[self alloc] init];
+    });
+    return instance;
 }
 
 - (instancetype)init {

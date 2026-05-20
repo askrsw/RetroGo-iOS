@@ -317,3 +317,31 @@
 "progate_manual_save_slot_locked" = "无限手动存档位是 Pro 功能。";
 "progate_controller_mapping_locked" = "高级物理手柄按键映射是 Pro 功能。";
 "progate_advanced_configuration_locked" = "核心与游戏的高级配置是 Pro 功能。";
+
+// MARK: - Game Discover Page
+
+"discover_main_title" = "游戏数据库";
+"discover_building_database" = "数据库构建中";
+"discover_search_placeholder" = "搜索游戏…";
+
+// MARK: - Game Detail Page
+
+"detail_section_basic"       = "基本信息";
+"detail_section_description" = "游戏简介";
+"detail_section_more"        = "更多信息";
+"detail_section_rom"         = "ROM 信息";
+
+"detail_developer"    = "开发商";
+"detail_publisher"    = "发行商";
+"detail_release"      = "发行日期";
+"detail_genre"        = "类型";
+"detail_region"       = "地区";
+"detail_franchise"    = "系列";
+"detail_max_players"  = "最多玩家";
+"detail_serial"       = "序列号";
+"detail_rom_name"     = "文件名";
+"detail_file_size"    = "文件大小";
+
+// MARK: - Game Cover
+
+"cover_load_failed"   = "暂无匹配的游戏封面";

@@ -93,6 +93,9 @@ typedef void (^RAInputTopologyChangedHandler)(void);
 @property(nonatomic, assign) NSUInteger turboPeriodFrames;
 @property(nonatomic, assign) NSUInteger turboDutyFrames;
 
++ (instancetype)shared;
+- (instancetype)init NS_UNAVAILABLE;
+
 - (void)applyInputBindingProfile:(nullable RAInputBindingProfile *)profile coreCapabilities:(nullable RAInputCoreCapabilities *)capabilities useLock:(BOOL)useLock;
 - (void)setActionDescriptor:(RAInputActionDescriptor *)descriptor useLock:(BOOL)useLock;
 - (void)bindPhysicalSourceIdentifier:(NSString *)sourceIdentifier toActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;

@@ -358,7 +358,11 @@ extension HomePageViewController {
     private func configUI() {
         let gearIcon = UIImage(named: "Icon_symbol")
         let gearButton = UIBarButtonItem(image: gearIcon, landscapeImagePhone: gearIcon, style: .plain, target: self, action: #selector(settingsAction))
-        navigationItem.leftBarButtonItem = gearButton
+
+        let discoverSymbolConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+        let discoverIcon = UIImage(systemName: "books.vertical.fill", withConfiguration: discoverSymbolConfig)
+        let discoverButton = UIBarButtonItem(image: discoverIcon, landscapeImagePhone: discoverIcon, style: .plain, target: self, action: #selector(discoverAction))
+        navigationItem.leftBarButtonItems = [gearButton, discoverButton]
 
         let plusIcon = UIImage(systemName: "plus")
         let plusButton = UIBarButtonItem(image: plusIcon, landscapeImagePhone: plusIcon, style: .plain, target: self, action: #selector(addAction))
@@ -518,6 +522,15 @@ extension HomePageViewController {
         Vibration.selection.vibrate()
 
         let controller = AppSettingViewController()
+        let naviController = UINavigationController(rootViewController: controller)
+        present(naviController, animated: true)
+    }
+
+    @objc
+    private func discoverAction() {
+        Vibration.selection.vibrate()
+
+        let controller = DiscoverPlatformViewController()
         let naviController = UINavigationController(rootViewController: controller)
         present(naviController, animated: true)
     }

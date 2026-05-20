@@ -63,7 +63,7 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
         self.config = config
         self.overlayLayoutResolver = GameOverlayLayoutResolver(config: config)
         self.playerIndex = playerIndex
-        self.inputActionManager = RetroArchX.shared().inputActionManager
+        self.inputActionManager = RAInputActionManager.shared()
         self.overlayTheme = overlayTheme
         self.isReadOnly = isReadOnly
         super.init(size: size)

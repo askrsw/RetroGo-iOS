@@ -65,7 +65,7 @@ final class GameConfigViewController: UIViewController {
         let ra = RetroArchX.shared()
 
         if installedTopologyHandler {
-            ra.inputActionManager.topologyChangedHandler = nil
+            RAInputActionManager.shared().topologyChangedHandler = nil
             installedTopologyHandler = false
         }
 
@@ -136,14 +136,14 @@ extension GameConfigViewController {
     func applyInputBindingIfNeeded() {
         guard applyInputBinding else { return }
         let cfg = session.config
-        RetroArchX.shared().inputActionManager.apply(cfg?.inputBindingProfile, coreCapabilities: cfg?.coreCaps, useLock: true)
+        RAInputActionManager.shared().apply(cfg?.inputBindingProfile, coreCapabilities: cfg?.coreCaps, useLock: true)
     }
 
     func installTopologyChangedHandler() {
         guard !installedTopologyHandler else { return }
         installedTopologyHandler = true
 
-        RetroArchX.shared().inputActionManager.topologyChangedHandler = { [weak self] in
+        RAInputActionManager.shared().topologyChangedHandler = { [weak self] in
             guard let self else { return }
             if let section = configData.first(where: { $0.0 == .controller}) {
                 section.entries.forEach({ $0.refresh.toggle() })

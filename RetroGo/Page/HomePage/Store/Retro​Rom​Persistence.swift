@@ -33,6 +33,10 @@ final class Retro​Rom​Persistence {
         _ = Retro​Rom​Persistence.sqlite
     }
 
+    var currentVersion: Int {
+        4
+    }
+
     // MARK: - Rom File and Rom Folder Stuff
 
     func deleteFolderItem(_ key: String) -> Bool {

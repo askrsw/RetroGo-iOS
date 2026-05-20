@@ -23,7 +23,7 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#import "RetroArchX.h"
+#import "../RetroArchX.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

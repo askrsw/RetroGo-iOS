@@ -57,7 +57,6 @@ NS_ENUM(unsigned, RetroArchJoypadAxis) {
 };
 
 @class EmuCoreInfoItem;
-@class RAInputActionManager;
 
 @interface RetroArchX : NSObject
 @property(nonatomic, strong, nullable, readonly) CADisplayLink *displayLink;
@@ -66,7 +65,6 @@ NS_ENUM(unsigned, RetroArchJoypadAxis) {
 @property(nonatomic, strong, readonly) NSArray<EmuCoreInfoItem *> *allCores;
 @property(nonatomic, strong, nullable, readonly) EmuCoreInfoItem *currentCoreItem;
 @property(nonatomic, strong, nullable, readonly) id<RAGameLoopRunner> gameLogicRunner;
-@property(nonatomic, strong, readonly) RAInputActionManager *inputActionManager;
 @property(nonatomic, assign, readonly) BOOL initialized;
 @property(nonatomic, assign, readonly) BOOL dummyCoreRunning;
 @property(nonatomic, assign, readonly) BOOL inputDriverOnlyRunning;

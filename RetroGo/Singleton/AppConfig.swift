@@ -57,6 +57,15 @@ final class AppConfig {
         }
     }()
 
+    private(set) lazy var gameRdbDatabasePath = { () -> String in
+        let folder = FileManager.default.applicationSupportFolder + "/data/database/"
+        if FileManager.default.createDirectoryIfNotExists(atPath: folder) {
+            return folder + "gamerdb.db"
+        } else {
+            fatalError()
+        }
+    }()
+
     private(set) lazy var romFolderPath = { () -> String in
         let folder = FileManager.default.applicationSupportFolder + "/data/roms/"
         if FileManager.default.createDirectoryIfNotExists(atPath: folder) {

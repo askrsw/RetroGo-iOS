@@ -105,7 +105,7 @@ extension GameControllerInputBindingConfigurator {
     }
 
     private func updateResetButtonEnabled() {
-        let hasNonDefault = RetroArchX.shared().inputActionManager.hasNonDefaultBindings(forPort: Int32(playerIndex), useLock: true)
+        let hasNonDefault = RAInputActionManager.shared().hasNonDefaultBindings(forPort: Int32(playerIndex), useLock: true)
         resetBarButton?.isEnabled = !isReadOnly && hasNonDefault
     }
 

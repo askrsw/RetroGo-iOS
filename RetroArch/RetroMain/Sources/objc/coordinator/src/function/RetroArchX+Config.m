@@ -24,8 +24,9 @@
 //
 
 #import "RetroArchX+Config.h"
-#import "input/RAInputBindingProfile.h"
-#import "input/RAInputActionManager.h"
+#import "../input/RAInputBindingProfile.h"
+#import "../input/RAInputActionManager.h"
+#import "../virtual/virtual_joypad.h"
 
 #include <gfx/video_driver.h>
 #include <utils/configuration.h>
@@ -34,8 +35,6 @@
 #include <input/input_driver.h>
 #include <defines/input_defines.h>
 #include <string.h>
-
-#include "virtual/virtual_joypad.h"
 
 @interface RAInputDevice()
 @property(nonatomic, readwrite, assign) NSInteger slot;
@@ -70,7 +69,7 @@
         [self setMuteOnFastForward:cfg.muteOnFastForward];
     }
 
-    [self.inputActionManager applyInputBindingProfile:cfg.inputBindingProfile coreCapabilities:cfg.coreCaps useLock:YES];
+    [[RAInputActionManager shared] applyInputBindingProfile:cfg.inputBindingProfile coreCapabilities:cfg.coreCaps useLock:YES];
 }
 
 - (void)setFastForwardMultiplier:(double)multiplier {

@@ -49,7 +49,6 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     NSSet<NSString *> *d_allExtensionsSet;
     NSArray<EmuCoreInfoItem *> *d_coreItems;
     __nullable id<RAGameLoopRunner> d_gameLogicRuner;
-    RAInputActionManager *d_inputActionManager;
     NSMutableDictionary<NSString *, RetroArchXEmuFrameAction> *d_emuPrevFrameActions;
 
     BOOL d_initialized;
@@ -58,7 +57,6 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 }
 
 @synthesize gameLogicRunner    = d_gameLogicRuner;
-@synthesize inputActionManager = d_inputActionManager;
 @synthesize initialized        = d_initialized;
 
 + (instancetype)shared {
@@ -77,11 +75,9 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         d_dummyCoreRunning = NO;
         d_inputDriverOnlyRunning = NO;
         d_emuPrevFrameActions = [NSMutableDictionary dictionary];
-        d_inputActionManager = [[RAInputActionManager alloc] init];
 
-        __weak RetroArchX *weakSelf = self;
         d_emuPrevFrameActions[@"RAInputActionManager.tick"] = ^{
-            [weakSelf.inputActionManager tickFrame:YES];
+            [[RAInputActionManager shared] tickFrame:YES];
         };
 
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
@@ -376,7 +372,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         */
 
         // A) 先静默输入，避免 teardown 期间收到 mfi 事件
-        [d_inputActionManager beginCoreTeardownGuard];
+        [[RAInputActionManager shared] beginCoreTeardownGuard];
 
         // B) 尝试先 pause，让 runloop/render 进入稳定态
         if (d_gameLogicRuner != nil) {
@@ -399,7 +395,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
     if (isYabause) {
         // D) 恢复回调链，避免影响下次开局
-        [d_inputActionManager endCoreTeardownGuard];
+        [[RAInputActionManager shared] endCoreTeardownGuard];
     }
 
     return ret;
