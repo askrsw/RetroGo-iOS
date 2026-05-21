@@ -58,14 +58,16 @@
 @implementation RetroArchX (Config)
 
 - (void)config:(RAConfig *)cfg {
+    [self p_enforceBuiltinTurboDisabled];
+
     video_driver_set_threaded(cfg.logicThread);
 
     [self setVirtualDevicePort:cfg.overlayTouchPlayer];
 
     settings_t *settings = config_get_ptr();
     if(settings != nil) {
-        [self writeCString:settings->arrays.video_driver cap:sizeof(settings->arrays.video_driver) value:cfg.videoDriver];
-        [self writeCString:settings->arrays.audio_driver cap:sizeof(settings->arrays.audio_driver) value:cfg.audioDriver];
+        [self p_writeCString:settings->arrays.video_driver cap:sizeof(settings->arrays.video_driver) value:cfg.videoDriver];
+        [self p_writeCString:settings->arrays.audio_driver cap:sizeof(settings->arrays.audio_driver) value:cfg.audioDriver];
         [self setMuteOnFastForward:cfg.muteOnFastForward];
     }
 
@@ -94,7 +96,7 @@
     }
 
     settings->bools.audio_fastforward_mute = value;
-    [self applyFastForwardMuteState:value];
+    [self p_applyFastForwardMuteState:value];
 }
 
 - (NSArray<NSString *> *)availableVideoDrivers {
@@ -104,7 +106,7 @@
     }
 
     NSString *options = @(rawOptions);
-    return [self convertDriverStringToArray:options];
+    return [self p_convertDriverStringToArray:options];
 }
 
 - (NSString *)defaultVideoDriver {
@@ -122,7 +124,7 @@
     }
 
     NSString *options = @(rawOptions);
-    return [self convertDriverStringToArray:options];
+    return [self p_convertDriverStringToArray:options];
 }
 
 - (NSString *)defaultAudioDriver {
@@ -233,7 +235,7 @@
 
 #pragma mark - Utils
 
-- (void)applyFastForwardMuteState:(BOOL)muteOnFastForward {
+- (void)p_applyFastForwardMuteState:(BOOL)muteOnFastForward {
     runloop_state_t *runloop_st = runloop_state_get_ptr();
     audio_driver_state_t *audio_st = audio_state_get_ptr();
     if (runloop_st == nil || audio_st == nil) {
@@ -251,7 +253,7 @@
     }
 }
 
-- (void)writeCString:(char *)dst cap:(size_t)cap value:(NSString *)value {
+- (void)p_writeCString:(char *)dst cap:(size_t)cap value:(NSString *)value {
     if (!dst || cap == 0) return;
     memset(dst, 0, cap);
     if (value.length == 0) return;
@@ -261,7 +263,7 @@
     dst[cap - 1] = '\0';
 }
 
-- (NSArray<NSString *> *)convertDriverStringToArray:(NSString *)options {
+- (NSArray<NSString *> *)p_convertDriverStringToArray:(NSString *)options {
     NSArray<NSString *> *parts = [options componentsSeparatedByString:@"|"];
     NSMutableArray<NSString *> *result = [NSMutableArray array];
 
@@ -276,6 +278,24 @@
     }
 
     return [result copy];
+}
+
+- (void)p_enforceBuiltinTurboDisabled {
+    settings_t *settings = config_get_ptr();
+    if(settings != nil) {
+        // RetroGo has its own turbo path (GameOverlayActionButton per-frame output +
+        // RAInputActionManager extended actions). RetroArch's built-in turbo in
+        // input_driver.c overlaps and duty-cycles overlay digital output — disable it
+        // every game launch so a stale settings state can never reintroduce the bug.
+        settings->bools.input_turbo_enable = false;
+        settings->uints.input_turbo_mode   = INPUT_TURBO_MODE_CLASSIC;
+    }
+
+    // Wipe any leftover runtime turbo state from a previous game in this app session.
+    input_driver_state_t *input_st = input_state_get_ptr();
+    if (input_st != NULL) {
+        memset(&input_st->turbo_btns, 0, sizeof(input_st->turbo_btns));
+    }
 }
 
 @end

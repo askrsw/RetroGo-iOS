@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		AB0A1DD52FB71C7800503077 /* RetroArchGamePauseToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0A1DD42FB71C7800503077 /* RetroArchGamePauseToken.swift */; };
-		AB0A1DD62FB76D5B00503077 /* emu.fceumm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB11A55F2F9941BF00C32E39 /* emu.dosbox-pure.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC12F5E5504007E1669 /* emu.dosbox-pure.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB11A5612F9941BF00C32E39 /* emu.gambatte.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC32F5E5504007E1669 /* emu.gambatte.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB11A5622F9941BF00C32E39 /* emu.gearboy.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC42F5E5504007E1669 /* emu.gearboy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -97,6 +96,8 @@
 		AB803A1A2F3B38D300DE8D33 /* IQKeyboardManagerSwift in Frameworks */ = {isa = PBXBuildFile; productRef = AB803A192F3B38D300DE8D33 /* IQKeyboardManagerSwift */; };
 		AB84001A2F911B4800E7FD49 /* GameOverLayFastButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8400192F911B4800E7FD49 /* GameOverLayFastButton.swift */; };
 		AB88D8FF2F962D0A00A04FEE /* GameConfigSegmentViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88D8FE2F962D0A00A04FEE /* GameConfigSegmentViewCell.swift */; };
+		AB898D802FBF091100113D10 /* emu.fceumm in Frameworks */ = {isa = PBXBuildFile; productRef = AB898D7F2FBF091100113D10 /* emu.fceumm */; };
+		AB898D812FBF091F00113D10 /* emu.fceumm in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AB898D7F2FBF091100113D10 /* emu.fceumm */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AB8B7EC02F4D4A7F00A56A64 /* RetroRomLocationSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B7EBF2F4D4A7F00A56A64 /* RetroRomLocationSelector.swift */; };
 		AB90A1F12F3DE2520078C74E /* RetroRomCoreSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB90A1F02F3DE24B0078C74E /* RetroRomCoreSelectViewController.swift */; };
 		AB92D8752F97A452001BE44F /* DebugDataLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB92D8742F97A452001BE44F /* DebugDataLink.swift */; };
@@ -175,7 +176,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				AB0A1DD62FB76D5B00503077 /* emu.fceumm.framework in CopyFiles */,
 				AB11A55F2F9941BF00C32E39 /* emu.dosbox-pure.framework in CopyFiles */,
 				AB11A5612F9941BF00C32E39 /* emu.gambatte.framework in CopyFiles */,
 				AB11A5622F9941BF00C32E39 /* emu.gearboy.framework in CopyFiles */,
@@ -198,6 +198,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				AB898D812FBF091F00113D10 /* emu.fceumm in Embed Frameworks */,
 				ABBC8B182F5E5690007E1669 /* MoltenVK.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -376,6 +377,7 @@
 				ABDAD2782F3BB429004100A9 /* YYText in Frameworks */,
 				AB803A1A2F3B38D300DE8D33 /* IQKeyboardManagerSwift in Frameworks */,
 				AB6F0E772F86682100282818 /* XMLTextRenderKit in Frameworks */,
+				AB898D802FBF091100113D10 /* emu.fceumm in Frameworks */,
 				ABA8F9682FBDB3CF0002B89D /* Kingfisher in Frameworks */,
 				ABDAD26B2F3BB0AA004100A9 /* PanModal in Frameworks */,
 				ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */,
@@ -843,6 +845,7 @@
 				ABDAD2772F3BB429004100A9 /* YYText */,
 				AB6F0E762F86682100282818 /* XMLTextRenderKit */,
 				ABA8F9672FBDB3CF0002B89D /* Kingfisher */,
+				AB898D7F2FBF091100113D10 /* emu.fceumm */,
 			);
 			productName = RetroGo;
 			productReference = ABD42B502F3A5EFC008B1771 /* RetroGo.app */;
@@ -896,6 +899,7 @@
 				ABDAD2692F3BB0AA004100A9 /* XCRemoteSwiftPackageReference "PanModal" */,
 				AB6F0E752F86682100282818 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */,
 				AB94AACD2FBDB1990046B830 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				AB898D7E2FBF091100113D10 /* XCLocalSwiftPackageReference "../../Working/RetroArchX/Packages/RetroCores/fceumm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ABD42B512F3A5EFC008B1771 /* Products */;
@@ -1366,6 +1370,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		AB898D7E2FBF091100113D10 /* XCLocalSwiftPackageReference "../../Working/RetroArchX/Packages/RetroCores/fceumm" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../Working/RetroArchX/Packages/RetroCores/fceumm;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1448,6 +1459,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AB803A182F3B38D300DE8D33 /* XCRemoteSwiftPackageReference "IQKeyboardManager" */;
 			productName = IQKeyboardManagerSwift;
+		};
+		AB898D7F2FBF091100113D10 /* emu.fceumm */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = emu.fceumm;
 		};
 		ABA8F9672FBDB3CF0002B89D /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
