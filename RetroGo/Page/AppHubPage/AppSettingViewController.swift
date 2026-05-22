@@ -119,6 +119,13 @@ extension AppSettingViewController {
                 }
             }
 
+            // Shared geometry for every leading icon on this page. Using
+            // the same size for the squircle icons and the language-row
+            // dot keeps the text leading edge aligned across all rows.
+            // Color semantics follow `12_ui_design_system.md`
+            // (AppSetting color convention).
+            let iconSize = CGSize(width: 28, height: 28)
+
             switch item {
             case .systemHomepage:
                 let switchControl = UISwitch()
@@ -126,7 +133,11 @@ extension AppSettingViewController {
                 switchControl.onTintColor = .mainColor
                 switchControl.addTarget(self, action: #selector(systemHomepageChanged(_:)), for: .valueChanged)
                 let cell = cellBuilder()
-                cell.imageView?.image = UIImage(systemName: "house")
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "house.fill",
+                    background: .systemBlue,
+                    size: iconSize
+                )
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_use_system_homepage")
                 cell.accessoryView = switchControl
                 return cell
@@ -136,7 +147,11 @@ extension AppSettingViewController {
                 switchControl.onTintColor = .mainColor
                 switchControl.addTarget(self, action: #selector(uiHapticChanged(_:)), for: .valueChanged)
                 let cell = cellBuilder()
-                cell.imageView?.image = UIImage(systemName: "hand.tap")
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "hand.tap.fill",
+                    background: .systemPink,
+                    size: iconSize
+                )
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_ui_haptic_feedback")
                 cell.accessoryView = switchControl
                 return cell
@@ -146,14 +161,20 @@ extension AppSettingViewController {
                 switchControl.onTintColor = .mainColor
                 switchControl.addTarget(self, action: #selector(languageFollowSystemChanged(_:)), for: .valueChanged)
                 let cell = cellBuilder()
-                cell.imageView?.image = UIImage(systemName: "globe")
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "globe",
+                    background: .systemIndigo,
+                    size: iconSize
+                )
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_language_follow_system")
                 cell.accessoryView = switchControl
                 return cell
             case .language(let key, let displayName):
+                // Sub-row radio selection — intentionally keeps the small
+                // dot pattern (not a colored squircle) per design doc.
                 let cell = cellBuilder()
                 cell.accessoryView = nil
-                cell.imageView?.image = IconRender.shared.dotImage(size: CGSize(width: 25, height: 25), color: .mainColor)
+                cell.imageView?.image = IconRender.shared.dotImage(size: iconSize, color: .mainColor)
                 cell.textLabel?.text = displayName
                 cell.accessoryType = Bundle.currentLanguage() == key ? .checkmark : .none
                 return cell
@@ -161,14 +182,22 @@ extension AppSettingViewController {
             case .coreList:
                 let cell = cellBuilder()
                 cell.accessoryView = nil
-                cell.imageView?.image = UIImage(systemName: "cpu")
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "cpu.fill",
+                    background: .systemOrange,
+                    size: iconSize
+                )
                 cell.textLabel?.text = Bundle.localizedString(forKey: "corelist_core_list")
                 cell.accessoryType = .disclosureIndicator
                 return cell
             case .coreSettingList:
                 let cell = cellBuilder()
                 cell.accessoryView = nil
-                cell.imageView?.image = UIImage(systemName: "gear")
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "slider.horizontal.3",
+                    background: .systemGray,
+                    size: iconSize
+                )
                 cell.textLabel?.text = Bundle.localizedString(forKey: "corelist_core_settings")
                 cell.accessoryType = .disclosureIndicator
                 return cell
@@ -178,7 +207,11 @@ extension AppSettingViewController {
                 switchControl.onTintColor = .mainColor
                 switchControl.addTarget(self, action: #selector(inGameHapticChanged(_:)), for: .valueChanged)
                 let cell = cellBuilder()
-                cell.imageView?.image = UIImage(systemName: "sensor.tag.radiowaves.forward")
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "sensor.tag.radiowaves.forward.fill",
+                    background: .systemPink,
+                    size: iconSize
+                )
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_ingame_haptic_feedback")
                 cell.accessoryView = switchControl
                 return cell
@@ -186,14 +219,22 @@ extension AppSettingViewController {
             case .versionHeistory:
                 let cell = cellBuilder()
                 cell.accessoryView = nil
-                cell.imageView?.image = UIImage(systemName: "clock.arrow.circlepath")
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "clock.fill",
+                    background: .systemIndigo,
+                    size: iconSize
+                )
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_version_history")
                 cell.accessoryType = .disclosureIndicator
                 return cell
             case .about:
                 let cell = cellBuilder()
                 cell.accessoryView = nil
-                cell.imageView?.image = UIImage(systemName: "info.circle")
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "info.circle.fill",
+                    background: .systemBlue,
+                    size: iconSize
+                )
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_about")
                 cell.accessoryType = .disclosureIndicator
                 return cell

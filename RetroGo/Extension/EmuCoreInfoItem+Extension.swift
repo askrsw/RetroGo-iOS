@@ -1,8 +1,8 @@
 //
-//  DefaultKeys.swift
+//  EmuCoreInfoItem+Extension.swift
 //  RetroGo
 //
-//  Created by haharsw on 2026/2/11.
+//  Created by haharsw on 2026/5/22.
 //  Copyright © 2026 haharsw. All rights reserved.
 //
 //  ---------------------------------------------------------------------------------
@@ -23,19 +23,27 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-import Defaults
-import Foundation
+import RACoordinator
 
-extension Defaults.Keys {
-    static let systemHomePage = Key<Bool?>("system_home_page")
-    static let languageFollowSystem = Key<Bool?>("language_follow_system")
-    static let homeFileSortType = Key<Int?>("home_file_sort_type")
-    static let homeCurrentFolder = Key<String?>("home_current_folder")
-    static let homeBrowserType = Key<Int?>("home_browser_type")
-    static let homeOrganizeType = Key<Int?>("home_organize_type")
-    static let autoSaveLoadState = Key<Bool?>("auto_save_load_state")
-    static let lastRateTime = Key<Date?>("last_rate_time")
-    static let isUIFeedbackEnabled = Key<Bool?>("is_ui_feedback_enabled")
-    static let versionNewContentViewed = Key<String?>("version_new_content_viewed")
-    static let hasShownWelcome = Key<Bool?>("has_shown_welcome")
+extension EmuCoreInfoItem {
+    var coreIcon: IconRender.PlatformIconKey? {
+        switch coreId {
+        case "dosbox-pure": return .dos
+        case "fceumm": return .nes
+        case "gambatte": return .gb
+        case "gearboy": return .gbc
+        case "mednafen-psx": return .psx
+        case "melondsds": return .ds
+        case "mesen": return .nes
+        case "mesen-s": return .snes
+        case "mupen64plus-next": return .n64
+        case "nestopia": return .nes
+        case "pcsx-rearmed": return .psx
+        case "ppsspp": return .psp
+        case "vbam": return .gba
+        case "yabause": return .saturn
+        default:
+            return nil
+        }
+    }
 }

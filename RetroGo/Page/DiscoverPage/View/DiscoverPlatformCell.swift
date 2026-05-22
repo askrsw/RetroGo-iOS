@@ -56,6 +56,12 @@ final class DiscoverPlatformCell: UITableViewCell {
         return l
     }()
 
+    private let iconView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFit
+        return iv
+    }()
+
     // MARK: - Init
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -67,11 +73,18 @@ final class DiscoverPlatformCell: UITableViewCell {
         stack.spacing = 8
         stack.alignment = .leading
 
+        contentView.addSubview(iconView)
         contentView.addSubview(stack)
         contentView.addSubview(countLabel)
 
-        stack.snp.makeConstraints { make in
+        iconView.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(20)
+            make.centerY.equalToSuperview()
+            make.size.equalTo(CGSize(width: 32, height: 32))
+        }
+
+        stack.snp.makeConstraints { make in
+            make.leading.equalTo(iconView.snp.trailing).offset(14)
             make.centerY.equalToSuperview()
             make.trailing.lessThanOrEqualTo(countLabel.snp.leading).offset(-20)
         }
@@ -109,5 +122,17 @@ final class DiscoverPlatformCell: UITableViewCell {
         countLabel.text = count > 0
             ? String(format: "%d", count)
             : nil
+
+        // Explicit rdbName → icon mapping lives in RAPlatformItem+Extension.
+        // If a future rdb is added without a mapping, the icon view simply
+        // stays empty rather than showing a guessed/wrong icon.
+        if let key = platform.platformIcon {
+            iconView.image = IconRender.shared.platformIcon(
+                key: key,
+                size: CGSize(width: 32, height: 32)
+            )
+        } else {
+            iconView.image = nil
+        }
     }
 }

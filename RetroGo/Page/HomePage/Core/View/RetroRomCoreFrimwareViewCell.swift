@@ -52,9 +52,11 @@ final class RetroRomCoreFrimwareViewCell: UICollectionViewListCell {
         let style = NSMutableParagraphStyle()
         style.lineSpacing = 10
         style.lineBreakMode = .byWordWrapping
+        // Key (tip) uses secondary color, value uses primary — same
+        // hierarchy convention as RetroRomCoreInfoViewCell.
         self.tipAttributes = [
             .font: UIFont.boldSystemFont(ofSize: UIFont.labelFontSize),
-            .foregroundColor: UIColor.label,
+            .foregroundColor: UIColor.secondaryLabel,
         ]
         self.valueAttributes = [
             .font: UIFont.systemFont(ofSize: UIFont.labelFontSize),
@@ -84,9 +86,11 @@ extension RetroRomCoreFrimwareViewCell {
 
         if !firmware.fileExists {
             // 3. 文件不存在：显示 “必须/可选” 气泡
+            //    必须 → 红（警示），可选 → 中性灰（仅信息标识，不是警告）。
+            //    "缺失"/"无效" 这两个真正的状态告警保留 红/橙 配色。
             let isRequired = !firmware.optional
             let tagText = isRequired ? Bundle.localizedString(forKey: "coreinfo_firmware_required") : Bundle.localizedString(forKey: "coreinfo_firmware_optional")
-            let tagColor = isRequired ? UIColor.systemRed : UIColor.systemOrange
+            let tagColor = isRequired ? UIColor.systemRed : UIColor.systemGray
             appendTag(to: fullString, text: tagText, color: tagColor)
         } else if !firmware.isValid {
             // 4. 文件存在但 MD5 无效：显示 “无效” 气泡
@@ -125,11 +129,16 @@ extension RetroRomCoreFrimwareViewCell {
 
         pathLabel.preferredMaxLayoutWidth = contentView.width - pathTipLabel.width - 16 - 10 - 16
 
+        // The path is tappable — tapping opens a file picker for the user
+        // to import the firmware. Render it as a real iOS link (blue text +
+        // matching underline) so the affordance is consistent with other
+        // tappable text on this page (源码地址 / 开源协议).
         let fullString = NSMutableAttributedString(string: firmware.path, attributes: valueAttributes)
         let allRange = fullString.rangeOfAll()
+        fullString.addAttribute(.foregroundColor, value: UIColor.link, range: allRange)
 
-        // 1. 设置普通状态下的下划线 (白色)
-        let normalUnderline = YYTextDecoration(style: .single, width: 1, color: .label)
+        // 1. 设置普通状态下的下划线 (link 蓝)
+        let normalUnderline = YYTextDecoration(style: .single, width: 1, color: .link)
         fullString.setTextUnderline(normalUnderline, range: allRange)
 
         // 2. 配置高亮状态

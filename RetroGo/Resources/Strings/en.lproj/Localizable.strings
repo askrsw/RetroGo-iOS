@@ -109,7 +109,20 @@
 "homepage_delete" = "Delete";
 "homepage_info" = "Info";
 "homepage_empty_title" = "Your library is empty";
-"homepage_empty_tip" = "Tap + to import game ROMs.\nMake sure you own legal copies of the games you import.";
+"homepage_empty_tip" = "Import your ROMs to start playing.";
+"homepage_empty_action" = "Import ROMs";
+"homepage_empty_legal" = "Import only ROMs you legally own.";
+
+// Welcome sheet (first launch)
+"welcome_title" = "Welcome to RetroGo";
+"welcome_subtitle" = "Bring back the classics, in iOS style.";
+"welcome_feature_native_title" = "Designed for iOS";
+"welcome_feature_native_desc" = "Polished and smooth, right at home on iOS.";
+"welcome_feature_platforms_title" = "From NES to PSP";
+"welcome_feature_platforms_desc" = "Play classics from over a dozen retro platforms.";
+"welcome_feature_roms_title" = "Bring Your Own ROMs";
+"welcome_feature_roms_desc" = "Add them through the Files app.";
+"welcome_action" = "Get Started";
 "homepage_parent_folder" = "Parent";
 "homepage_root_folder" = "Root Folder";
 "homepage_jump" = "Jump To";

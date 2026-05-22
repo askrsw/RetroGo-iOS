@@ -40,8 +40,8 @@ final class RetroRomCoreInfoViewCell: UICollectionViewListCell {
             switch item {
                 case .normal(let tip, let value):
                     updateTipAndValue(tip: tip, value: value)
-                case .extensions(let tip, let list):
-                    updateTipAndExtensions(tip: tip, extensions: list)
+                case .extensions(let tip, let list, let platformKey):
+                    updateTipAndExtensions(tip: tip, extensions: list, platformKey: platformKey)
                 case .runCore(let tip, let value, let action):
                     updateRunCoreActionText(tip: tip, value: value, action: action)
                 case .license(let tip, let licenses):
@@ -61,7 +61,10 @@ final class RetroRomCoreInfoViewCell: UICollectionViewListCell {
     override init(frame: CGRect) {
         let normalFont = UIFont.systemFont(ofSize: UIFont.labelFontSize)
         let boldFont = UIFont.boldSystemFont(ofSize: UIFont.labelFontSize)
-        let labelColor = UIColor.label
+        // Key (tip) uses secondary color, value uses primary — creates a
+        // visual hierarchy between the row label and its content.
+        let tipColor = UIColor.secondaryLabel
+        let valueColor = UIColor.label
 
         self.paragraphStyle = NSMutableParagraphStyle()
         self.paragraphStyle .lineSpacing = 5
@@ -70,13 +73,13 @@ final class RetroRomCoreInfoViewCell: UICollectionViewListCell {
 
         self.tipAttributes = [
             .font: boldFont,
-            .foregroundColor: labelColor,
+            .foregroundColor: tipColor,
             .paragraphStyle: self.paragraphStyle.copy() as! NSParagraphStyle
         ]
 
         self.normalAttributes = [
             .font: normalFont,
-            .foregroundColor: labelColor,
+            .foregroundColor: valueColor,
         ]
 
         super.init(frame: frame)
@@ -103,19 +106,27 @@ extension RetroRomCoreInfoViewCell {
         style.headIndent = tipRect.size.width
         style.firstLineHeadIndent = 0
 
-        // 1. 应用基础样式与缩进
-        var normalAttr = self.normalAttributes
-        normalAttr[.paragraphStyle] = style.copy() as! NSParagraphStyle
-        normalAttr[.baselineOffset] = 2
+        // 1. 应用基础样式与缩进 — license name acts as a tappable link,
+        //    so it adopts the iOS link blue + matching underline.
+        var linkAttr = self.normalAttributes
+        linkAttr[.foregroundColor] = UIColor.link
+        linkAttr[.paragraphStyle] = style.copy() as! NSParagraphStyle
+        linkAttr[.baselineOffset] = 2
+
+        // Non-link attributes for the separators between license names —
+        // keeps the commas neutral so only the names look tappable.
+        var separatorAttr = self.normalAttributes
+        separatorAttr[.paragraphStyle] = style.copy() as! NSParagraphStyle
+        separatorAttr[.baselineOffset] = 2
 
         // --- Value 部分 (复古链接风格) ---
         for i in 0 ..< licenses.count {
             let license = licenses[i]
 
-            let valueAttr = NSMutableAttributedString(string: license.showName, attributes: normalAttr)
+            let valueAttr = NSMutableAttributedString(string: license.showName, attributes: linkAttr)
 
             // 设置下划线样式 (使用 YYTextDecoration)
-            let underline = YYTextDecoration(style: .single, width: 1, color: .label)
+            let underline = YYTextDecoration(style: .single, width: 1, color: .link)
             valueAttr.setTextUnderline(underline, range: valueAttr.rangeOfAll())
 
             // 3. 核心功能：点击高亮与 Action
@@ -137,7 +148,7 @@ extension RetroRomCoreInfoViewCell {
             fullString.append(valueAttr)
 
             if i != licenses.count - 1 {
-                fullString.append(NSMutableAttributedString(string: ",  ", attributes: normalAttr))
+                fullString.append(NSMutableAttributedString(string: ",  ", attributes: separatorAttr))
             }
         }
 
@@ -162,12 +173,13 @@ extension RetroRomCoreInfoViewCell {
 
         // 1. 应用基础样式与缩进
         var normalAttr = self.normalAttributes
+        normalAttr[.foregroundColor] = UIColor.link
         normalAttr[.paragraphStyle] = style.copy() as! NSParagraphStyle
         normalAttr[.baselineOffset] = 2
         valueAttr.addAttributes(normalAttr, range: valueAttr.rangeOfAll())
 
         // 设置下划线样式 (使用 YYTextDecoration)
-        let underline = YYTextDecoration(style: .single, width: 1, color: .label)
+        let underline = YYTextDecoration(style: .single, width: 1, color: .link)
         valueAttr.setTextUnderline(underline, range: valueAttr.rangeOfAll())
 
         // 3. 核心功能：点击高亮与 Action
@@ -202,12 +214,15 @@ extension RetroRomCoreInfoViewCell {
 
         let valueAttr = NSMutableAttributedString(string: url)
 
+        // Override the value color with the iOS link blue, matching iOS
+        // convention for tappable text.
         var normalAttr = self.normalAttributes
+        normalAttr[.foregroundColor] = UIColor.link
         normalAttr[.paragraphStyle] = style.copy() as! NSParagraphStyle
         normalAttr[.baselineOffset] = 2
         valueAttr.addAttributes(normalAttr, range: valueAttr.rangeOfAll())
 
-        let underline = YYTextDecoration(style: .single, width: 1, color: .label)
+        let underline = YYTextDecoration(style: .single, width: 1, color: .link)
         valueAttr.setTextUnderline(underline, range: valueAttr.rangeOfAll())
 
         let highlight = YYTextHighlight()
@@ -261,7 +276,11 @@ extension RetroRomCoreInfoViewCell {
         label.attributedText = fullString
     }
 
-    private func updateTipAndExtensions(tip: String, extensions: [String]) {
+    private func updateTipAndExtensions(
+        tip: String,
+        extensions: [String],
+        platformKey: IconRender.PlatformIconKey?
+    ) {
         label.preferredMaxLayoutWidth = contentView.width - 32
 
         let fullString = NSMutableAttributedString()
@@ -282,6 +301,24 @@ extension RetroRomCoreInfoViewCell {
         normalAttributes[.paragraphStyle] = style.copy() as! NSParagraphStyle
         normalAttributes[.font] = tagFont
 
+        // All tags inside one core share the same color — the core's
+        // platform accent. Ties the format chips visually to the nav-bar
+        // icon and reads calmer than per-extension random colors.
+        //
+        // Use the *tag* variant (not the raw icon color): for dark-themed
+        // platforms like PSP, the raw color is near-black and would
+        // disappear into systemBackground. `platformTagColor` auto-lifts
+        // brightness only when needed; bright platforms are unchanged.
+        //
+        // Fallback: keep the original mainColor when the platform isn't
+        // mapped (so non-platform cores like noneCore still look sane).
+        let tagFill: UIColor = {
+            if let key = platformKey {
+                return IconRender.shared.platformTagColor(for: key)
+            }
+            return .mainColor
+        }()
+
         // 3. 循环添加 Extensions 气泡
         for ext in extensions {
             // 创建标签文本
@@ -289,7 +326,7 @@ extension RetroRomCoreInfoViewCell {
 
             // 创建气泡背景 (Border)
             let border = YYTextBorder()
-            border.fillColor = UIColor.mainColor // 气泡背景色
+            border.fillColor = tagFill
             border.cornerRadius = 6               // 圆角
             border.insets = UIEdgeInsets(top: -2, left: -6, bottom: -2, right: -6) // 调整气泡高度
 

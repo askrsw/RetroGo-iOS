@@ -57,14 +57,47 @@ final class RetroRomCoreInfoViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         navigationItem.title = coreInfoItem.coreName
+        navigationItem.titleView = makeTitleView()
 
         if showCloseButton {
             navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(closeAction))
             navigationItem.leftBarButtonItem?.tintColor = .label
         }
-        
+
         _ = collectionView
         applySnapshot()
+    }
+
+    /// Builds an icon + bold-title compound titleView for the nav bar.
+    /// Falls back to the system text title (returns nil) when the core has
+    /// no mapped platform icon, so we don't show an awkward empty slot.
+    private func makeTitleView() -> UIView? {
+        guard let key = coreInfoItem.coreIcon else { return nil }
+
+        let iconSize: CGFloat = 22
+        let icon = IconRender.shared.platformIcon(
+            key: key,
+            size: CGSize(width: iconSize, height: iconSize)
+        )
+        let imageView = UIImageView(image: icon)
+        imageView.contentMode = .scaleAspectFit
+        // Lock the intrinsic size — the stack view honors it without an
+        // explicit constraint, but pinning both axes keeps it consistent
+        // across older SDKs / rotation.
+        imageView.snp.makeConstraints { make in
+            make.size.equalTo(CGSize(width: iconSize, height: iconSize))
+        }
+
+        let titleLabel = UILabel()
+        titleLabel.text = coreInfoItem.coreName
+        titleLabel.font = .boldSystemFont(ofSize: 17)
+        titleLabel.textColor = .label
+
+        let stack = UIStackView(arrangedSubviews: [imageView, titleLabel])
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = 6
+        return stack
     }
 
     func updateFirmware(_ firmware: EmuCoreFirmware) {
@@ -201,7 +234,11 @@ extension RetroRomCoreInfoViewController {
         }
 
         if let exts = coreInfoItem.extensions {
-            basicItems.append(.extensions(tip: Bundle.localizedString(forKey: "coreinfo_extensions"), list: exts))
+            basicItems.append(.extensions(
+                tip: Bundle.localizedString(forKey: "coreinfo_extensions"),
+                list: exts,
+                platformKey: coreInfoItem.coreIcon
+            ))
         }
 
         if interactive, coreInfoItem.supportNoContent {
@@ -434,7 +471,11 @@ extension RetroRomCoreInfoViewController {
 
     enum Item: Hashable {
         case normal(tip: String, value: String)
-        case extensions(tip: String, list: [String])
+        /// `platformKey` is used by the cell to color the extension tags
+        /// with the platform's accent color. Carried in the Item so the
+        /// cell stays stateless and doesn't need to know which core it
+        /// belongs to.
+        case extensions(tip: String, list: [String], platformKey: IconRender.PlatformIconKey?)
         case runCore(tip: String, value: String, action: (() -> Void)?)
         case firmware(data: EmuCoreFirmware)
         case mameFirmwareTip(core: EmuCoreInfoItem)
@@ -448,10 +489,11 @@ extension RetroRomCoreInfoViewController {
                     hasher.combine("normal")
                     hasher.combine(tip)
                     hasher.combine(value)
-                case .extensions(let tip, let list):
+                case .extensions(let tip, let list, let key):
                     hasher.combine("exts")
                     hasher.combine(tip)
                     hasher.combine(list)
+                    hasher.combine(key?.rawValue)
                 case .runCore(let tip, let value, _):
                     hasher.combine("run_core")
                     hasher.combine(tip)
@@ -477,8 +519,8 @@ extension RetroRomCoreInfoViewController {
             switch (lhs, rhs) {
                 case (.normal(let lt, let lv), .normal(let rt, let rv)):
                     return lt == rt && lv == rv
-                case (.extensions(let lt, let ll), .extensions(let rt, let rl)):
-                    return lt == rt && ll == rl
+                case (.extensions(let lt, let ll, let lk), .extensions(let rt, let rl, let rk)):
+                    return lt == rt && ll == rl && lk == rk
                 case (.runCore(let lt, let lv, _), .runCore(let rt, let rv, _)):
                     return lt == rt && lv == rv
                 case (.firmware(let ld), .firmware(let rd)):

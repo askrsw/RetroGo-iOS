@@ -169,10 +169,29 @@ final class GamePageViewController: RAGameViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
+        // Unlock orientation while a game is on screen — most cores need
+        // landscape. Reverted in viewWillDisappear.
+        AppDelegate.setOrientationLock(.allButUpsideDown)
+
         if !loaded {
             myLoadingView = GamePageLoadingView(frame: .zero)
             myLoadingView?.install()
         }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        // Restore the app-wide portrait lock so the home/browsing UI
+        // doesn't have to handle landscape.
+        AppDelegate.setOrientationLock(.portrait)
+    }
+
+    /// Belt-and-suspenders: if some other code path queries this VC
+    /// directly (without the app-wide hook), still advertise that we
+    /// accept any non-upside-down orientation.
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return .allButUpsideDown
     }
 
     override func showInGameMessage(_ message: EmuInGameMessage) {

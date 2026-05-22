@@ -32,4 +32,25 @@ extension UIColor {
     static var isDarkMode: Bool {
         UIScreen.main.traitCollection.userInterfaceStyle == .dark
     }
+
+    /// Return a copy of this color whose HSB brightness is at least
+    /// `minBrightness`. Useful for keeping small UI elements (tags, chips,
+    /// thin strokes) readable on dark backgrounds when the underlying
+    /// brand/platform color happens to be very dark.
+    ///
+    /// Brightness in HSB is a better measure than luminance here because
+    /// saturated colors (e.g. NES red) read as "bright" to the eye even
+    /// when their relative luminance is low — only desaturated dark
+    /// colors (PSP's near-black) need lifting.
+    func ensuringMinimumBrightness(_ minBrightness: CGFloat) -> UIColor {
+        var h: CGFloat = 0
+        var s: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
+        guard getHue(&h, saturation: &s, brightness: &b, alpha: &a) else {
+            return self
+        }
+        if b >= minBrightness { return self }
+        return UIColor(hue: h, saturation: s, brightness: minBrightness, alpha: a)
+    }
 }

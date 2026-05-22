@@ -30,7 +30,7 @@ import ObjcHelper
 import RACoordinator
 
 final class RetroRomCoreItemTableViewCell: UITableViewCell {
-    let iconButton = UIButton(type: .system)
+    let iconImageView = UIImageView(frame: .zero)
     let titleLabel = YYLabel(frame: .zero)
     let subtitleLabel = YYLabel(frame: .zero)
 
@@ -46,6 +46,7 @@ final class RetroRomCoreItemTableViewCell: UITableViewCell {
             if let systemName = item.systemName {
                 subtitleLabel.text = "System: " + systemName
             }
+            updateIconImage(for: item)
         }
     }
 
@@ -74,13 +75,11 @@ final class RetroRomCoreItemTableViewCell: UITableViewCell {
     }
 
     private func configViews() {
-        iconButton.contentMode = .scaleAspectFit
-        iconButton.tintColor = .label
-        iconButton.setImage(UIImage(systemName: "cpu.fill"), for: .normal)
-        iconButton.addTarget(self, action: #selector(iconButtonTapped(_:)), for: .touchUpInside)
-        contentView.addSubview(iconButton)
-        iconButton.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(10)
+        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.tintColor = .label
+        contentView.addSubview(iconImageView)
+        iconImageView.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(20)
             make.top.equalToSuperview().offset(15)
             make.bottom.equalToSuperview().offset(-15)
             make.size.equalTo(CGSize(width: 30, height: 30))
@@ -91,8 +90,8 @@ final class RetroRomCoreItemTableViewCell: UITableViewCell {
         titleLabel.font = UIFont.boldSystemFont(ofSize: UIFont.labelFontSize)
         contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
-            make.leading.equalTo(iconButton.snp.trailing).offset(10)
-            make.trailing.equalTo(contentView.snp.trailing).offset(-10)
+            make.leading.equalTo(iconImageView.snp.trailing).offset(10)
+            make.trailing.equalTo(contentView.snp.trailing).offset(-20)
             make.top.equalToSuperview().offset(10)
             make.height.equalTo(30 - 10)
         }
@@ -109,11 +108,19 @@ final class RetroRomCoreItemTableViewCell: UITableViewCell {
         }
     }
 
-    @objc
-    private func iconButtonTapped(_ sender: UIButton) {
-        guard let core = coreInfoItem, core != .noneCore() else { return }
-        let coreInfoViewController = RetroRomCoreInfoViewController(coreInfoItem: core, interactive: false)
-        let current = UIViewController.currentActive()
-        current?.navigationController?.pushViewController(coreInfoViewController, animated: true)
+    private func updateIconImage(for item: EmuCoreInfoItem) {
+        // Use the explicit per-core mapping from EmuCoreInfoItem+Extension.
+        // Fall back to the chip glyph for the synthetic "no core" placeholder
+        // and any core that hasn't been mapped yet.
+        if let key = item.coreIcon {
+            let icon = IconRender.shared.platformIcon(
+                key: key,
+                size: CGSize(width: 30, height: 30)
+            )
+            iconImageView.image = icon
+        } else {
+            iconImageView.tintColor = .label
+            iconImageView.image = UIImage(systemName: "cpu.fill")
+        }
     }
 }

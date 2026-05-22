@@ -109,7 +109,21 @@
 "homepage_delete" = "删除";
 "homepage_info" = "信息";
 "homepage_empty_title" = "游戏库为空";
-"homepage_empty_tip" = "点击右上角 + 导入游戏 ROM。\n请确保你拥有所导入游戏的合法副本。";
+"homepage_empty_tip" = "导入你的游戏 ROM，开始游玩。";
+"homepage_empty_action" = "导入 ROM";
+"homepage_empty_legal" = "请仅导入你合法拥有的游戏 ROM。";
+
+// Welcome sheet (first launch)
+"welcome_title" = "欢迎使用 RetroGo";
+"welcome_subtitle" = "重温经典，原生体验";
+"welcome_feature_native_title" = "原生 iOS 设计";
+"welcome_feature_native_desc" = "精致流畅，如同系统应用一般";
+"welcome_feature_platforms_title" = "多平台一站式";
+"welcome_feature_platforms_desc" = "NES、GBA、PSX、DS 等十余款经典主机";
+"welcome_feature_roms_title" = "使用你自己的 ROM";
+"welcome_feature_roms_desc" = "通过 iOS 文件 app 自由导入";
+"welcome_action" = "开始使用";
+
 "homepage_parent_folder" = "上一级目录";
 "homepage_root_folder" = "根目录";
 "homepage_jump" = "跳转到";

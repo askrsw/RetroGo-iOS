@@ -53,6 +53,7 @@ final class SystemDocumentBrowser: UIDocumentBrowserViewController {
         ]
 
         WhatsNewViewController.showIfNeeded()
+        AppWelcomeViewController.showIfNeeded()
     }
 }
 

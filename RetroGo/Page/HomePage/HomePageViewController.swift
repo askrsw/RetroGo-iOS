@@ -88,6 +88,12 @@ final class HomePageViewController: UIViewController {
         } else {
             NotificationCenter.default.addObserver(self, selector: #selector(retroArchReadyNotification(_:)), name: .RetroArchXReady, object: nil)
         }
+
+        // First-launch onboarding. Internally no-ops on every subsequent
+        // launch (checks `AppSettings.shared.hasShownWelcome`). Safe to
+        // call regardless of RetroArch readiness — it doesn't depend on
+        // the runtime.
+        AppWelcomeViewController.showIfNeeded()
     }
 
     override func viewDidLayoutSubviews() {
@@ -541,6 +547,12 @@ extension HomePageViewController {
 
         if fileBrowser.couldShowEmptyTip {
             let tipView = RetroRomEmptyTipView()
+            // Route the empty-state primary CTA through the same
+            // `addAction` flow as the nav-bar `+` button so import lands
+            // in the correct current folder.
+            tipView.onImportTapped = { [weak self] in
+                self?.addAction()
+            }
             view.addSubview(tipView)
             tipView.snp.makeConstraints { make in
                 make.leading.equalTo(view.safeAreaLayoutGuide.snp.leading)

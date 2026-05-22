@@ -33,6 +33,7 @@ final class AppSettings {
         self.languageFollowSystem  = Defaults[.languageFollowSystem] ?? true
         self.autoSaveLoadState     = Defaults[.autoSaveLoadState] ?? true
         self.isUIFeedbackEnabled   = Defaults[.isUIFeedbackEnabled] ?? true
+        self.hasShownWelcome       = Defaults[.hasShownWelcome] ?? false
     }
 
     var systemHomePage: Bool {
@@ -56,6 +57,14 @@ final class AppSettings {
     var isUIFeedbackEnabled: Bool {
         didSet {
             Defaults[.isUIFeedbackEnabled] = isUIFeedbackEnabled
+        }
+    }
+
+    /// Set to true once the first-launch welcome sheet has been seen.
+    /// Persisted so the sheet only shows once per install.
+    var hasShownWelcome: Bool {
+        didSet {
+            Defaults[.hasShownWelcome] = hasShownWelcome
         }
     }
 
