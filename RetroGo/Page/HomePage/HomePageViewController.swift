@@ -32,11 +32,7 @@ import RACoordinator
 final class HomePageViewController: UIViewController {
     static weak var instance: HomePageViewController?
 
-    private let titleView = RetroRomPageTitleView()
-    private var addBarButtonItem: UIBarButtonItem?
-
     private(set) var fileBrowser: RetroRomFileBrowser!
-    private var viewSafeInsets = UIEdgeInsets.zero
     private var parentFileBrowser: RetroRomFileBrowser?
 
     private var emptyTipView: RetroRomEmptyTipView?
@@ -74,9 +70,10 @@ final class HomePageViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        navigationItem.titleView = titleView
 
-        titleView.updatePageTitle()
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.largeTitleDisplayMode = .automatic
+        updateNavigationTitle()
 
         configUI()
 
@@ -96,18 +93,8 @@ final class HomePageViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-
-        if viewSafeInsets != view.safeAreaInsets {
-            viewSafeInsets = view.safeAreaInsets
-
-            let x = viewSafeInsets.left
-            let y = viewSafeInsets.top
-            let w = view.width - viewSafeInsets.left - viewSafeInsets.right
-            let h = view.height - viewSafeInsets.top - viewSafeInsets.bottom
-
-            if fileBrowser != nil {
-                fileBrowser.frame = CGRect(x: x, y: y, width: w, height: h)
-            }
+        if fileBrowser != nil {
+            fileBrowser.frame = view.bounds
         }
     }
 
@@ -160,7 +147,7 @@ final class HomePageViewController: UIViewController {
         RetroRomHomePageState.shared.homeOrganizeType = .byFolder
         updateFileBrowser()
 
-        titleView.updatePageTitle()
+        updateNavigationTitle()
         navigationController?.navigationBar.setNeedsLayout()
     }
 
@@ -174,7 +161,7 @@ final class HomePageViewController: UIViewController {
         RetroRomHomePageState.shared.homeOrganizeType = .byTag
         updateFileBrowser()
 
-        titleView.updatePageTitle()
+        updateNavigationTitle()
         navigationController?.navigationBar.setNeedsLayout()
     }
 
@@ -188,7 +175,7 @@ final class HomePageViewController: UIViewController {
         RetroRomHomePageState.shared.homeOrganizeType = .byCore
         updateFileBrowser()
 
-        titleView.updatePageTitle()
+        updateNavigationTitle()
         navigationController?.navigationBar.setNeedsLayout()
     }
 
@@ -250,33 +237,30 @@ final class HomePageViewController: UIViewController {
         let browser = getFileBrowser(meta: meta)
         view.addSubview(browser)
 
-        let x = viewSafeInsets.left
-        let y = viewSafeInsets.top
-        let w = view.width - viewSafeInsets.left - viewSafeInsets.right
-        let h = view.height - viewSafeInsets.top - viewSafeInsets.bottom
+        let w = view.width
 
         if forward {
-            browser.frame = CGRect(x: x + w, y: y, width: w, height: h)
+            browser.frame = view.bounds.offsetBy(dx: w, dy: 0)
             UIView.animate(withDuration: 0.25) { [unowned self] in
-                browser.frame = CGRect(x: x, y: y, width: w, height: h)
-                fileBrowser.frame = CGRect(x: x - w, y: y, width: w, height: h)
+                browser.frame = view.bounds
+                fileBrowser.frame = view.bounds.offsetBy(dx: -w, dy: 0)
             } completion: { [unowned self] _ in
                 fileBrowser.removeFromSuperview()
                 fileBrowser = browser
-                titleView.updatePageTitle()
+                updateNavigationTitle()
                 navigationController?.navigationBar.setNeedsLayout()
 
                 completion?()
             }
         } else {
-            browser.frame = CGRect(x: x - w, y: y, width: w, height: h)
+            browser.frame = view.bounds.offsetBy(dx: -w, dy: 0)
             UIView.animate(withDuration: 0.25) { [unowned self] in
-                browser.frame = CGRect(x: x, y: y, width: w, height: h)
-                fileBrowser.frame = CGRect(x: x + w, y: y, width: w, height: h)
+                browser.frame = view.bounds
+                fileBrowser.frame = view.bounds.offsetBy(dx: w, dy: 0)
             } completion: { [unowned self] _ in
                 fileBrowser.removeFromSuperview()
                 fileBrowser = browser
-                titleView.updatePageTitle()
+                updateNavigationTitle()
                 navigationController?.navigationBar.setNeedsLayout()
 
                 completion?()
@@ -293,14 +277,7 @@ extension HomePageViewController {
 
         fileBrowser = getFileBrowser(meta: RetroRomHomePageState.shared.browserMeta)
         view.addSubview(fileBrowser)
-
-        do {
-            let x = viewSafeInsets.left
-            let y = viewSafeInsets.top
-            let w = view.width - viewSafeInsets.left - viewSafeInsets.right
-            let h = view.height - viewSafeInsets.top - viewSafeInsets.bottom
-            fileBrowser.frame = CGRect(x: x, y: y, width: w, height: h)
-        }
+        fileBrowser.frame = view.bounds
 
         checkRetroItemIsEmpty()
     }
@@ -352,17 +329,8 @@ extension HomePageViewController {
     }
 
     private func configUI() {
-        let gearIcon = UIImage(named: "Icon_symbol")
-        let gearButton = UIBarButtonItem(image: gearIcon, landscapeImagePhone: gearIcon, style: .plain, target: self, action: #selector(settingsAction))
-
-        let discoverSymbolConfig = UIImage.SymbolConfiguration(pointSize: 14, weight: .medium)
-        let discoverIcon = UIImage(systemName: "books.vertical.fill", withConfiguration: discoverSymbolConfig)
-        let discoverButton = UIBarButtonItem(image: discoverIcon, landscapeImagePhone: discoverIcon, style: .plain, target: self, action: #selector(discoverAction))
-        navigationItem.leftBarButtonItems = [gearButton, discoverButton]
-
         let plusIcon = UIImage(systemName: "plus")
         let plusButton = UIBarButtonItem(image: plusIcon, landscapeImagePhone: plusIcon, style: .plain, target: self, action: #selector(addAction))
-        addBarButtonItem = plusButton
 
         let configIcon = UIImage(systemName: "slider.horizontal.3")
         let configButton = UIBarButtonItem(image: configIcon, landscapeImagePhone: configIcon, style: .plain, target: nil, action: nil)
@@ -417,13 +385,7 @@ extension HomePageViewController {
                 }
                 parentFileBrowser = getFileBrowser(meta: meta)
                 view.addSubview(parentFileBrowser!)
-                do {
-                    let x = viewSafeInsets.left
-                    let y = viewSafeInsets.top
-                    let w = view.width - viewSafeInsets.left - viewSafeInsets.right
-                    let h = view.height - viewSafeInsets.top - viewSafeInsets.bottom
-                    parentFileBrowser?.frame = CGRect(x: x - w, y: y, width: w, height: h)
-                }
+                parentFileBrowser?.frame = view.bounds.offsetBy(dx: -view.width, dy: 0)
                 Vibration.selection.vibrate()
                 break
             case .changed:
@@ -450,20 +412,14 @@ extension HomePageViewController {
 
                         parentFileBrowser.transform = .identity
                         fileBrowser = parentFileBrowser
-                        do {
-                            let x = viewSafeInsets.left
-                            let y = viewSafeInsets.top
-                            let w = view.width - viewSafeInsets.left - viewSafeInsets.right
-                            let h = view.height - viewSafeInsets.top - viewSafeInsets.bottom
-                            fileBrowser.frame = CGRect(x: x, y: y, width: w, height: h)
-                        }
+                        fileBrowser.frame = view.bounds
 
                         let parent = RetroRomHomePageState.shared.homeCurrentFolderItem.parent
                         guard let parentItem = RetroRomFileManager.shared.folderItem(key: parent) else {
                             return
                         }
                         RetroRomHomePageState.shared.homeCurrentFolder = parentItem.key
-                        self.titleView.updatePageTitle()
+                        self.updateNavigationTitle()
                         self.navigationController?.navigationBar.setNeedsLayout()
                         self.parentFileBrowser = nil
                     }
@@ -488,6 +444,22 @@ extension HomePageViewController {
         fileBrowser.languageChanged()
     }
 
+    /// Sync `navigationItem.title` with the current browse state so the
+    /// large title always reflects what the user is looking at.
+    private func updateNavigationTitle() {
+        let state = RetroRomHomePageState.shared
+        if state.homeBrowserType == .tree {
+            navigationItem.title = "Retro Go"
+        } else {
+            switch state.homeOrganizeType {
+            case .byFolder:
+                navigationItem.title = state.homeCurrentFolderItem.itemPageTitle
+            case .byTag, .byCore:
+                navigationItem.title = "Retro Go"
+            }
+        }
+    }
+
     @objc
     private func addAction() {
         Vibration.selection.vibrate()
@@ -504,24 +476,6 @@ extension HomePageViewController {
         }
 
         showGameImportSelector()
-    }
-
-    @objc
-    private func settingsAction() {
-        Vibration.selection.vibrate()
-
-        let controller = AppSettingViewController()
-        let naviController = UINavigationController(rootViewController: controller)
-        present(naviController, animated: true)
-    }
-
-    @objc
-    private func discoverAction() {
-        Vibration.selection.vibrate()
-
-        let controller = DiscoverPlatformViewController()
-        let naviController = UINavigationController(rootViewController: controller)
-        present(naviController, animated: true)
     }
 
     @objc

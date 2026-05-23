@@ -6,6 +6,10 @@
   
 */
 
+"tab_library"  = "Library";
+"tab_discover" = "Discover";
+"tab_settings" = "Settings";
+
 "cancel" = "Cancel";
 "ok" = "OK";
 "skip" = "Skip";
@@ -334,6 +338,7 @@
 // MARK: - Game Discover Page
 
 "discover_main_title" = "Discover";
+"settings_main_title" = "Settings";
 "discover_building_database" = "Building Database…";
 "discover_search_placeholder" = "Search games…";
 

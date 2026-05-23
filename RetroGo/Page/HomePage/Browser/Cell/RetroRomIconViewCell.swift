@@ -337,6 +337,8 @@ final class RetroRomParentFolderIconViewCell: UICollectionViewCell {
     private let imageViewHost = UIView(frame: .zero)
     private let titleLabel = YYLabel(frame: .zero)
 
+    private var languageObserver: NSObjectProtocol?
+
     override init(frame: CGRect) {
         super.init(frame: frame)
 
@@ -357,13 +359,19 @@ final class RetroRomParentFolderIconViewCell: UICollectionViewCell {
         titleLabel.text = Bundle.localizedString(forKey: "homepage_parent_folder")
         contentView.addSubview(titleLabel)
 
-        NotificationCenter.default.addObserver(forName: .languageChanged, object: nil, queue: .main) { [weak self] _ in
+        languageObserver = NotificationCenter.default.addObserver(forName: .languageChanged, object: nil, queue: .main) { [weak self] _ in
             self?.titleLabel.text = Bundle.localizedString(forKey: "homepage_parent_folder")
         }
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit {
+        if let token = languageObserver {
+            NotificationCenter.default.removeObserver(token)
+        }
     }
 
     override func layoutSubviews() {

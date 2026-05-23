@@ -43,7 +43,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if AppSettings.shared.systemHomePage {
             controller = SystemDocumentBrowser()
         } else {
-            controller = UINavigationController(rootViewController: HomePageViewController())
+            controller = RetroGoTabBarController()
         }
 
         window?.rootViewController = controller
@@ -57,7 +57,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if AppSettings.shared.systemHomePage {
             controller = SystemDocumentBrowser()
         } else {
-            controller = UINavigationController(rootViewController: HomePageViewController())
+            controller = RetroGoTabBarController()
         }
 
         window.rootViewController = controller

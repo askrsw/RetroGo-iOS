@@ -44,10 +44,8 @@ final class AppSettingViewController: UIViewController {
         super.viewDidLoad()
 
         view.backgroundColor = .systemBackground
-        navigationItem.title = Bundle.localizedString(forKey: "homepage_main_title")
-
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark.circle"), landscapeImagePhone: UIImage(systemName: "xmark.circle"), style: .plain, target: self, action: #selector(closeAction(_:)))
-        navigationItem.leftBarButtonItem?.tintColor = .mainColor
+        navigationItem.title = Bundle.localizedString(forKey: "settings_main_title")
+        navigationItem.largeTitleDisplayMode = .automatic
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: proButton)
 
@@ -99,10 +97,14 @@ extension AppSettingViewController {
         tableView.estimatedRowHeight = 50
         tableView.tintColor = .mainColor
         view.addSubview(tableView)
+        // Extend edge-to-edge so the scroll view passes UNDER the nav bar.
+        // UIKit needs an under-bar scroll view to drive the large-title
+        // collapse animation; clipping to `safeAreaLayoutGuide` would leave
+        // the bar with nothing to track and the small-title fallback would
+        // never appear. Content inset is adjusted automatically via the
+        // default `contentInsetAdjustmentBehavior = .automatic`.
         tableView.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+            make.edges.equalToSuperview()
         }
         return tableView
     }
@@ -332,7 +334,7 @@ extension AppSettingViewController {
     }
 
     private func updateText() {
-        navigationItem.title = Bundle.localizedString(forKey: "homepage_main_title")
+        navigationItem.title = Bundle.localizedString(forKey: "settings_main_title")
         proButton.reloadPurchaseState()
     }
 
@@ -414,12 +416,6 @@ extension AppSettingViewController {
             guard !Task.isCancelled else { return }
             self?.proButton.reloadPurchaseState()
         }
-    }
-
-    @objc
-    private func closeAction(_ sender: UIBarButtonItem) {
-        Vibration.selection.vibrate()
-        navigationController?.dismiss(animated: true)
     }
 }
 

@@ -83,6 +83,7 @@
 		AB79E7492F659FA5007C480E /* GamePageHudView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB79E7482F659FA5007C480E /* GamePageHudView.swift */; };
 		AB79E74B2F65CFAA007C480E /* GamePageLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB79E74A2F65CFA4007C480E /* GamePageLoadingView.swift */; };
 		AB7A8B042FC15D1200000A68 /* RetroRomImportSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7A8B032FC15D1200000A68 /* RetroRomImportSheetViewController.swift */; };
+		AB7A8B062FC1790500000A68 /* RetroGoTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7A8B052FC1790500000A68 /* RetroGoTabBarController.swift */; };
 		AB7C3A702F80049C004C872A /* Retro​Rom​Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7C3A6F2F80049C004C872A /* Retro​Rom​Persistence.swift */; };
 		AB7C3A732F8042EC004C872A /* Retro​Rom​Persistence+v1.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7C3A722F8042EC004C872A /* Retro​Rom​Persistence+v1.swift */; };
 		AB7C3A752F8043DA004C872A /* Retro​Rom​Persistence+v2.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7C3A742F8043DA004C872A /* Retro​Rom​Persistence+v2.swift */; };
@@ -268,6 +269,7 @@
 		AB79E7482F659FA5007C480E /* GamePageHudView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageHudView.swift; sourceTree = "<group>"; };
 		AB79E74A2F65CFA4007C480E /* GamePageLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageLoadingView.swift; sourceTree = "<group>"; };
 		AB7A8B032FC15D1200000A68 /* RetroRomImportSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomImportSheetViewController.swift; sourceTree = "<group>"; };
+		AB7A8B052FC1790500000A68 /* RetroGoTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroGoTabBarController.swift; sourceTree = "<group>"; };
 		AB7C3A6F2F80049C004C872A /* Retro​Rom​Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Retro​Rom​Persistence.swift"; sourceTree = "<group>"; };
 		AB7C3A722F8042EC004C872A /* Retro​Rom​Persistence+v1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Retro​Rom​Persistence+v1.swift"; sourceTree = "<group>"; };
 		AB7C3A742F8043DA004C872A /* Retro​Rom​Persistence+v2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Retro​Rom​Persistence+v2.swift"; sourceTree = "<group>"; };
@@ -440,6 +442,7 @@
 		AB55BC792F3B8BAC00569A84 /* Page */ = {
 			isa = PBXGroup;
 			children = (
+				AB7A8B072FC2275200000A68 /* FolderPage */,
 				AB70DD8F2FBCF47400277B74 /* DiscoverPage */,
 				ABDAD2A12F3BBAAB004100A9 /* AppHubPage */,
 				AB55BC7D2F3B8D2500569A84 /* HomePage */,
@@ -524,6 +527,37 @@
 				ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AB7A8B072FC2275200000A68 /* FolderPage */ = {
+			isa = PBXGroup;
+			children = (
+				AB7A8B0A2FC2276300000A68 /* Component */,
+				AB7A8B092FC2275E00000A68 /* Model */,
+				AB7A8B082FC2275700000A68 /* View */,
+			);
+			path = FolderPage;
+			sourceTree = "<group>";
+		};
+		AB7A8B082FC2275700000A68 /* View */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		AB7A8B092FC2275E00000A68 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		AB7A8B0A2FC2276300000A68 /* Component */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Component;
 			sourceTree = "<group>";
 		};
 		AB7C3A712F8042A6004C872A /* Store */ = {
@@ -674,6 +708,7 @@
 				AB7720682F3B2EB3004F5B75 /* MyApplication.swift */,
 				ABD42B792F3A66E7008B1771 /* AppDelegate.swift */,
 				ABD42B7B2F3A66E7008B1771 /* SceneDelegate.swift */,
+				AB7A8B052FC1790500000A68 /* RetroGoTabBarController.swift */,
 				ABB34DC92F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy */,
 				ABD42B7A2F3A66E7008B1771 /* Info.plist */,
 			);
@@ -1047,6 +1082,7 @@
 				ABDAD29A2F3BB939004100A9 /* RetroRomIconSectionFileBrowser.swift in Sources */,
 				AB462F142F92AAF2006ABEDD /* GameConfigViewController.swift in Sources */,
 				AB70DD8E2FBCE9C300277B74 /* OnDemandResourceLoader.swift in Sources */,
+				AB7A8B062FC1790500000A68 /* RetroGoTabBarController.swift in Sources */,
 				ABA1E5E72FA4557E00A0F5E1 /* GameConfigControllerSelector.swift in Sources */,
 				ABDAD2962F3BB910004100A9 /* RetroRomTableFolderFileBrowser.swift in Sources */,
 				ABB6F6E42FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift in Sources */,

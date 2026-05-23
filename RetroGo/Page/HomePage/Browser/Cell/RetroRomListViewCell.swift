@@ -323,6 +323,8 @@ final class RetroRomParentFolderListViewCell: UICollectionViewListCell {
     let thumbnailView = YYLabel(frame: .zero)
     let titleLabel = YYLabel(frame: .zero)
 
+    private var languageObserver: NSObjectProtocol?
+
     override init(frame: CGRect) {
         super.init(frame: frame)
 
@@ -339,13 +341,19 @@ final class RetroRomParentFolderListViewCell: UICollectionViewListCell {
         titleLabel.textColor = .label
         contentView.addSubview(titleLabel)
 
-        NotificationCenter.default.addObserver(forName: .languageChanged, object: nil, queue: .main) { [weak self] _ in
+        languageObserver = NotificationCenter.default.addObserver(forName: .languageChanged, object: nil, queue: .main) { [weak self] _ in
             self?.titleLabel.text = Bundle.localizedString(forKey: "homepage_parent_folder")
         }
     }
 
     required init?(coder: NSCoder) {
         fatalError()
+    }
+
+    deinit {
+        if let token = languageObserver {
+            NotificationCenter.default.removeObserver(token)
+        }
     }
 
     override func layoutSubviews() {

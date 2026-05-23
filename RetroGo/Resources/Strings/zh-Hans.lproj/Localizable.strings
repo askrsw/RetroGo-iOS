@@ -6,6 +6,10 @@
   
 */
 
+"tab_library"  = "游戏库";
+"tab_discover" = "发现";
+"tab_settings" = "设置";
+
 "cancel" = "取消";
 "ok" = "确定";
 "skip" = "跳过";
@@ -334,7 +338,8 @@
 
 // MARK: - Game Discover Page
 
-"discover_main_title" = "游戏数据库";
+"discover_main_title" = "发现";
+"settings_main_title" = "设置";
 "discover_building_database" = "数据库构建中";
 "discover_search_placeholder" = "搜索游戏…";
 

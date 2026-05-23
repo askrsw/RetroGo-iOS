@@ -109,9 +109,7 @@ final class DiscoverPlatformViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         navigationItem.title = Bundle.localizedString(forKey: "discover_main_title")
-
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark.circle"), landscapeImagePhone: UIImage(systemName: "xmark.circle"), style: .plain, target: self, action: #selector(closeAction(_:)))
-        navigationItem.leftBarButtonItem?.tintColor = .mainColor
+        navigationItem.largeTitleDisplayMode = .automatic
 
         // Trigger lazy view/dataSource initialisation
         _ = tableView
@@ -177,12 +175,6 @@ final class DiscoverPlatformViewController: UIViewController {
         // Only animate when the view is actually visible; otherwise a layout
         // pass outside the window hierarchy would reproduce the same warning.
         dataSource.apply(snapshot, animatingDifferences: view.window != nil)
-    }
-
-    @objc
-    private func closeAction(_ sender: UIBarButtonItem) {
-        Vibration.selection.vibrate()
-        navigationController?.dismiss(animated: true)
     }
 }
 
