@@ -117,6 +117,7 @@
 		ABB6F6E42FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB6F6E32FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift */; };
 		ABB6F6E62FC0257D00A13412 /* RAPlatformItem+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB6F6E52FC0257D00A13412 /* RAPlatformItem+Extension.swift */; };
 		ABB6F6E82FC0C58D00A13412 /* AppWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB6F6E72FC0C58D00A13412 /* AppWelcomeViewController.swift */; };
+		ABB6F6EA2FC0D73600A13412 /* RetroRomFileBrowserConfigMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB6F6E92FC0D73600A13412 /* RetroRomFileBrowserConfigMenu.swift */; };
 		ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */; };
 		ABBC8B182F5E5690007E1669 /* MoltenVK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABBDE0212F860010004A6469 /* WhatsNewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */; };
@@ -141,7 +142,6 @@
 		ABDAD2682F3BABF5004100A9 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = ABDAD2672F3BABF5004100A9 /* SnapKit */; };
 		ABDAD26B2F3BB0AA004100A9 /* PanModal in Frameworks */ = {isa = PBXBuildFile; productRef = ABDAD26A2F3BB0AA004100A9 /* PanModal */; };
 		ABDAD26D2F3BB0D1004100A9 /* GameImportSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD26C2F3BB0CF004100A9 /* GameImportSelector.swift */; };
-		ABDAD26F2F3BB0FA004100A9 /* RetroRomFileBrowserConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD26E2F3BB0F9004100A9 /* RetroRomFileBrowserConfigView.swift */; };
 		ABDAD2712F3BB11C004100A9 /* RetroRomFileTagSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD2702F3BB11A004100A9 /* RetroRomFileTagSelector.swift */; };
 		ABDAD2752F3BB163004100A9 /* RetroRomIconViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD2742F3BB162004100A9 /* RetroRomIconViewCell.swift */; };
 		ABDAD2782F3BB429004100A9 /* YYText in Frameworks */ = {isa = PBXBuildFile; productRef = ABDAD2772F3BB429004100A9 /* YYText */; };
@@ -303,6 +303,7 @@
 		ABB6F6E32FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmuCoreInfoItem+Extension.swift"; sourceTree = "<group>"; };
 		ABB6F6E52FC0257D00A13412 /* RAPlatformItem+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RAPlatformItem+Extension.swift"; sourceTree = "<group>"; };
 		ABB6F6E72FC0C58D00A13412 /* AppWelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppWelcomeViewController.swift; sourceTree = "<group>"; };
+		ABB6F6E92FC0D73600A13412 /* RetroRomFileBrowserConfigMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFileBrowserConfigMenu.swift; sourceTree = "<group>"; };
 		ABBC8AC12F5E5504007E1669 /* emu.dosbox-pure.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = "emu.dosbox-pure.framework"; sourceTree = "<group>"; };
 		ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.fceumm.framework; sourceTree = "<group>"; };
 		ABBC8AC32F5E5504007E1669 /* emu.gambatte.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.gambatte.framework; sourceTree = "<group>"; };
@@ -339,7 +340,6 @@
 		ABDAD2622F3BABB1004100A9 /* RetroRomActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomActivityView.swift; sourceTree = "<group>"; };
 		ABDAD2642F3BABC7004100A9 /* RetroRomPageTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomPageTitleView.swift; sourceTree = "<group>"; };
 		ABDAD26C2F3BB0CF004100A9 /* GameImportSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameImportSelector.swift; sourceTree = "<group>"; };
-		ABDAD26E2F3BB0F9004100A9 /* RetroRomFileBrowserConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFileBrowserConfigView.swift; sourceTree = "<group>"; };
 		ABDAD2702F3BB11A004100A9 /* RetroRomFileTagSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFileTagSelector.swift; sourceTree = "<group>"; };
 		ABDAD2742F3BB162004100A9 /* RetroRomIconViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomIconViewCell.swift; sourceTree = "<group>"; };
 		ABDAD2792F3BB459004100A9 /* RetroRomListViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomListViewCell.swift; sourceTree = "<group>"; };
@@ -734,7 +734,7 @@
 			children = (
 				ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */,
 				ABDAD2702F3BB11A004100A9 /* RetroRomFileTagSelector.swift */,
-				ABDAD26E2F3BB0F9004100A9 /* RetroRomFileBrowserConfigView.swift */,
+				ABB6F6E92FC0D73600A13412 /* RetroRomFileBrowserConfigMenu.swift */,
 				ABDAD26C2F3BB0CF004100A9 /* GameImportSelector.swift */,
 				ABDAD2622F3BABB1004100A9 /* RetroRomActivityView.swift */,
 				ABDAD2642F3BABC7004100A9 /* RetroRomPageTitleView.swift */,
@@ -990,7 +990,6 @@
 				ABDAD2A52F3BBAE7004100A9 /* SystemDocumentBrowser.swift in Sources */,
 				AB55BC742F3B8A9A00569A84 /* AppToastManager.swift in Sources */,
 				ABDAD2882F3BB5B6004100A9 /* RetroRomCoreInfoViewCell.swift in Sources */,
-				ABDAD26F2F3BB0FA004100A9 /* RetroRomFileBrowserConfigView.swift in Sources */,
 				AB55BC642F3B804600569A84 /* DefaultKeys.swift in Sources */,
 				AB7C3A732F8042EC004C872A /* Retro​Rom​Persistence+v1.swift in Sources */,
 				AB94AAC42FBD90190046B830 /* DiscoverGameCell.swift in Sources */,
@@ -1067,6 +1066,7 @@
 				AB4DCCDB2FA26AD8004691BD /* GameConfigBindingBubbleNode.swift in Sources */,
 				AB4DCCDC2FA26AD8004691BD /* GameConfigBindingSettingPresenting.swift in Sources */,
 				AB0A1DD52FB71C7800503077 /* RetroArchGamePauseToken.swift in Sources */,
+				ABB6F6EA2FC0D73600A13412 /* RetroRomFileBrowserConfigMenu.swift in Sources */,
 				AB4DCCDE2FA2F0A0004691BD /* GameOverlayTheme.swift in Sources */,
 				ABDAD29C2F3BB962004100A9 /* RetroRomListSectionFileBrowser.swift in Sources */,
 				AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */,

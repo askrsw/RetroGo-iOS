@@ -35,8 +35,7 @@ final class HomePageViewController: UIViewController {
     private let titleView = RetroRomPageTitleView()
     private var addBarButtonItem: UIBarButtonItem?
 
-    private var fileBrowser: RetroRomFileBrowser!
-    private var configView: RetroRomFileBrowserConfigView?
+    private(set) var fileBrowser: RetroRomFileBrowser!
     private var viewSafeInsets = UIEdgeInsets.zero
     private var parentFileBrowser: RetroRomFileBrowser?
 
@@ -46,7 +45,6 @@ final class HomePageViewController: UIViewController {
         didSet {
             if fileSortType.rawValue != oldValue.rawValue {
                 RetroRomHomePageState.shared.homeFileSortType = fileSortType
-                configView?.updateState()
                 fileBrowser.reloadData(reload: false, sortType: fileSortType)
             }
         }
@@ -115,10 +113,8 @@ final class HomePageViewController: UIViewController {
 
     override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        configView?.removeFromSuperview()
-        configView?.maskedView?.removeFromSuperview()
-        configView?.barButtonItem.tintColor = UIColor.mainColor
-        configView = nil
+        // The options menu (UIMenu) auto-dismisses on rotation — no
+        // teardown needed here.
     }
 
     func iconOption() {
@@ -129,7 +125,6 @@ final class HomePageViewController: UIViewController {
         }
 
         RetroRomHomePageState.shared.homeBrowserType = .icon
-        configView?.updateState()
         updateFileBrowser()
     }
 
@@ -141,7 +136,6 @@ final class HomePageViewController: UIViewController {
         }
 
         RetroRomHomePageState.shared.homeBrowserType = .list
-        configView?.updateState()
         updateFileBrowser()
     }
 
@@ -153,7 +147,6 @@ final class HomePageViewController: UIViewController {
         }
 
         RetroRomHomePageState.shared.homeBrowserType = .tree
-        configView?.updateState()
         updateFileBrowser()
     }
 
@@ -165,7 +158,6 @@ final class HomePageViewController: UIViewController {
         }
 
         RetroRomHomePageState.shared.homeOrganizeType = .byFolder
-        configView?.updateState()
         updateFileBrowser()
 
         titleView.updatePageTitle()
@@ -180,7 +172,6 @@ final class HomePageViewController: UIViewController {
         }
 
         RetroRomHomePageState.shared.homeOrganizeType = .byTag
-        configView?.updateState()
         updateFileBrowser()
 
         titleView.updatePageTitle()
@@ -195,7 +186,6 @@ final class HomePageViewController: UIViewController {
         }
 
         RetroRomHomePageState.shared.homeOrganizeType = .byCore
-        configView?.updateState()
         updateFileBrowser()
 
         titleView.updatePageTitle()
@@ -375,7 +365,12 @@ extension HomePageViewController {
         addBarButtonItem = plusButton
 
         let configIcon = UIImage(systemName: "slider.horizontal.3")
-        let configButton = UIBarButtonItem(image: configIcon, landscapeImagePhone: configIcon, style: .plain, target: self, action: #selector(configAction))
+        let configButton = UIBarButtonItem(image: configIcon, landscapeImagePhone: configIcon, style: .plain, target: nil, action: nil)
+        // UIMenu attached directly to the bar button — tapping shows the
+        // native menu, no custom popup required. Content is built on
+        // every open by `UIDeferredMenuElement.uncached`, so checkmarks
+        // stay in sync with `RetroRomHomePageState` without manual plumbing.
+        configButton.menu = RetroRomFileBrowserConfigMenu.make(target: self)
         navigationItem.rightBarButtonItems = [configButton, plusButton]
     }
 
@@ -592,19 +587,6 @@ extension HomePageViewController {
             return
         }
         fileBrowser.fileTagColorChanged(tagId: tagId)
-    }
-
-    @objc
-    private func configAction(_ sender: UIBarButtonItem) {
-        Vibration.selection.vibrate()
-
-        guard RetroArchX.shared().initialized else { return }
-
-        fileBrowser.resignKeyboardFocus()
-
-        let configView = RetroRomFileBrowserConfigView(barButtonItem: sender)
-        configView.install()
-        self.configView = configView
     }
 }
 
