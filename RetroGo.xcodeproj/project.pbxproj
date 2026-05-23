@@ -82,6 +82,7 @@
 		AB7720692F3B2EB3004F5B75 /* MyApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7720682F3B2EB3004F5B75 /* MyApplication.swift */; };
 		AB79E7492F659FA5007C480E /* GamePageHudView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB79E7482F659FA5007C480E /* GamePageHudView.swift */; };
 		AB79E74B2F65CFAA007C480E /* GamePageLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB79E74A2F65CFA4007C480E /* GamePageLoadingView.swift */; };
+		AB7A8B042FC15D1200000A68 /* RetroRomImportSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7A8B032FC15D1200000A68 /* RetroRomImportSheetViewController.swift */; };
 		AB7C3A702F80049C004C872A /* Retro​Rom​Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7C3A6F2F80049C004C872A /* Retro​Rom​Persistence.swift */; };
 		AB7C3A732F8042EC004C872A /* Retro​Rom​Persistence+v1.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7C3A722F8042EC004C872A /* Retro​Rom​Persistence+v1.swift */; };
 		AB7C3A752F8043DA004C872A /* Retro​Rom​Persistence+v2.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7C3A742F8043DA004C872A /* Retro​Rom​Persistence+v2.swift */; };
@@ -140,8 +141,6 @@
 		ABDAD2632F3BABB2004100A9 /* RetroRomActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD2622F3BABB1004100A9 /* RetroRomActivityView.swift */; };
 		ABDAD2652F3BABC8004100A9 /* RetroRomPageTitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD2642F3BABC7004100A9 /* RetroRomPageTitleView.swift */; };
 		ABDAD2682F3BABF5004100A9 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = ABDAD2672F3BABF5004100A9 /* SnapKit */; };
-		ABDAD26B2F3BB0AA004100A9 /* PanModal in Frameworks */ = {isa = PBXBuildFile; productRef = ABDAD26A2F3BB0AA004100A9 /* PanModal */; };
-		ABDAD26D2F3BB0D1004100A9 /* GameImportSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD26C2F3BB0CF004100A9 /* GameImportSelector.swift */; };
 		ABDAD2712F3BB11C004100A9 /* RetroRomFileTagSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD2702F3BB11A004100A9 /* RetroRomFileTagSelector.swift */; };
 		ABDAD2752F3BB163004100A9 /* RetroRomIconViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD2742F3BB162004100A9 /* RetroRomIconViewCell.swift */; };
 		ABDAD2782F3BB429004100A9 /* YYText in Frameworks */ = {isa = PBXBuildFile; productRef = ABDAD2772F3BB429004100A9 /* YYText */; };
@@ -268,6 +267,7 @@
 		AB7720682F3B2EB3004F5B75 /* MyApplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyApplication.swift; sourceTree = "<group>"; };
 		AB79E7482F659FA5007C480E /* GamePageHudView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageHudView.swift; sourceTree = "<group>"; };
 		AB79E74A2F65CFA4007C480E /* GamePageLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageLoadingView.swift; sourceTree = "<group>"; };
+		AB7A8B032FC15D1200000A68 /* RetroRomImportSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomImportSheetViewController.swift; sourceTree = "<group>"; };
 		AB7C3A6F2F80049C004C872A /* Retro​Rom​Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Retro​Rom​Persistence.swift"; sourceTree = "<group>"; };
 		AB7C3A722F8042EC004C872A /* Retro​Rom​Persistence+v1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Retro​Rom​Persistence+v1.swift"; sourceTree = "<group>"; };
 		AB7C3A742F8043DA004C872A /* Retro​Rom​Persistence+v2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Retro​Rom​Persistence+v2.swift"; sourceTree = "<group>"; };
@@ -339,7 +339,6 @@
 		ABDAD25F2F3BAB7D004100A9 /* RetroRomHomePageState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomHomePageState.swift; sourceTree = "<group>"; };
 		ABDAD2622F3BABB1004100A9 /* RetroRomActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomActivityView.swift; sourceTree = "<group>"; };
 		ABDAD2642F3BABC7004100A9 /* RetroRomPageTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomPageTitleView.swift; sourceTree = "<group>"; };
-		ABDAD26C2F3BB0CF004100A9 /* GameImportSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameImportSelector.swift; sourceTree = "<group>"; };
 		ABDAD2702F3BB11A004100A9 /* RetroRomFileTagSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFileTagSelector.swift; sourceTree = "<group>"; };
 		ABDAD2742F3BB162004100A9 /* RetroRomIconViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomIconViewCell.swift; sourceTree = "<group>"; };
 		ABDAD2792F3BB459004100A9 /* RetroRomListViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomListViewCell.swift; sourceTree = "<group>"; };
@@ -385,7 +384,6 @@
 				AB6F0E772F86682100282818 /* XMLTextRenderKit in Frameworks */,
 				AB898D802FBF091100113D10 /* emu.fceumm in Frameworks */,
 				ABA8F9682FBDB3CF0002B89D /* Kingfisher in Frameworks */,
-				ABDAD26B2F3BB0AA004100A9 /* PanModal in Frameworks */,
 				ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -735,7 +733,7 @@
 				ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */,
 				ABDAD2702F3BB11A004100A9 /* RetroRomFileTagSelector.swift */,
 				ABB6F6E92FC0D73600A13412 /* RetroRomFileBrowserConfigMenu.swift */,
-				ABDAD26C2F3BB0CF004100A9 /* GameImportSelector.swift */,
+				AB7A8B032FC15D1200000A68 /* RetroRomImportSheetViewController.swift */,
 				ABDAD2622F3BABB1004100A9 /* RetroRomActivityView.swift */,
 				ABDAD2642F3BABC7004100A9 /* RetroRomPageTitleView.swift */,
 				AB8B7EBF2F4D4A7F00A56A64 /* RetroRomLocationSelector.swift */,
@@ -850,7 +848,6 @@
 				AB55BC612F3B587F00569A84 /* Defaults */,
 				ABDAD2592F3BAA8C004100A9 /* SQLite */,
 				ABDAD2672F3BABF5004100A9 /* SnapKit */,
-				ABDAD26A2F3BB0AA004100A9 /* PanModal */,
 				ABDAD2772F3BB429004100A9 /* YYText */,
 				AB6F0E762F86682100282818 /* XMLTextRenderKit */,
 				ABA8F9672FBDB3CF0002B89D /* Kingfisher */,
@@ -905,7 +902,6 @@
 				AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */,
 				ABDAD2582F3BAA8C004100A9 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 				ABDAD2662F3BABF5004100A9 /* XCRemoteSwiftPackageReference "SnapKit" */,
-				ABDAD2692F3BB0AA004100A9 /* XCRemoteSwiftPackageReference "PanModal" */,
 				AB6F0E752F86682100282818 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */,
 				AB94AACD2FBDB1990046B830 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				AB898D7E2FBF091100113D10 /* XCLocalSwiftPackageReference "../../Working/RetroArchX/Packages/RetroCores/fceumm" */,
@@ -1016,7 +1012,6 @@
 				ABC0BDCE2FAF831A004A6A40 /* AppStorePurchaseManager.swift in Sources */,
 				AB79E7492F659FA5007C480E /* GamePageHudView.swift in Sources */,
 				AB7C3A752F8043DA004C872A /* Retro​Rom​Persistence+v2.swift in Sources */,
-				ABDAD26D2F3BB0D1004100A9 /* GameImportSelector.swift in Sources */,
 				ABDAD2502F3BA9BA004100A9 /* RetroRomFileTag.swift in Sources */,
 				AB495F832F9B94750092BCDB /* GameConfigListItemSelector.swift in Sources */,
 				ABDAD2822F3BB558004100A9 /* RetroRomCoreFirmwareFooterView.swift in Sources */,
@@ -1033,6 +1028,7 @@
 				AB55BC8A2F3BA0B500569A84 /* RetroRomFolderItem.swift in Sources */,
 				AB3D70422F7D57610008A6AA /* GameOverlayButtonShape.swift in Sources */,
 				ABD42B852F3A66E7008B1771 /* SceneDelegate.swift in Sources */,
+				AB7A8B042FC15D1200000A68 /* RetroRomImportSheetViewController.swift in Sources */,
 				AB462F102F926C45006ABEDD /* GameConfigSession.swift in Sources */,
 				ABDAD2982F3BB922004100A9 /* RetroRomSectionFileBrowser.swift in Sources */,
 				ABDAD2922F3BB8EA004100A9 /* RetroRomFolderFileBrowser.swift in Sources */,
@@ -1438,14 +1434,6 @@
 				minimumVersion = 5.7.1;
 			};
 		};
-		ABDAD2692F3BB0AA004100A9 /* XCRemoteSwiftPackageReference "PanModal" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/slackhq/PanModal.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.7;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1490,11 +1478,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = ABDAD2662F3BABF5004100A9 /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
-		};
-		ABDAD26A2F3BB0AA004100A9 /* PanModal */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = ABDAD2692F3BB0AA004100A9 /* XCRemoteSwiftPackageReference "PanModal" */;
-			productName = PanModal;
 		};
 		ABDAD2772F3BB429004100A9 /* YYText */ = {
 			isa = XCSwiftPackageProductDependency;

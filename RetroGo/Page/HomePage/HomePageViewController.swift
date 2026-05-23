@@ -375,25 +375,13 @@ extension HomePageViewController {
     }
 
     private func showGameImportSelector() {
-        let selector = GameImportSelector { [unowned self] type in
+        let sheet = RetroRomImportSheetViewController { [unowned self] type in
             importGame(fileType: type)
         }
-
-        if traitCollection.userInterfaceIdiom == .pad {
-            selector.modalPresentationStyle = .popover
-            selector.preferredContentSize = CGSize(width: 320, height: GameImportSelectorHeaderView.headerHeight + GameImportSelectorTableViewCell.cellHeight * 2)
-            if let popover = selector.popoverPresentationController {
-                popover.barButtonItem = addBarButtonItem
-                popover.permittedArrowDirections = .up
-                popover.delegate = self
-            }
-            present(selector, animated: true)
-        } else {
-            presentPanModal(selector)
-        }
+        present(sheet, animated: true)
     }
 
-    private func importGame(fileType: GameImportSelector.FileType) {
+    private func importGame(fileType: RetroRomImportSheetViewController.FileType) {
         let types: [UTType] = fileType == .file ? RetroArchX.shared().allSupportedExtensions : [.folder]
         let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: types)
         documentPicker.delegate = self
