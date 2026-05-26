@@ -23,7 +23,7 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-import Foundation
+import Combine
 import ObjcHelper
 import RACoordinator
 
@@ -94,7 +94,9 @@ final class RetroRomFileManager {
         var lacked: [Int] = []
         var result: [RetroRomFileTag] = []
         for id in idArray {
-            if let tag = fileTagCache[id] {
+            if id == 0 {
+                result.append(.untaged)
+            } else if let tag = fileTagCache[id] {
                 result.append(tag)
             } else {
                 lacked.append(id)
@@ -195,7 +197,14 @@ final class RetroRomFileManager {
         }
     }
 
-    func deleteItem(_ item: RetroRomBaseItem, browser: RetroRomFileBrowser) {
+    /// Delete a file or folder item asynchronously. Shows a progress
+    /// indicator, posts `.romCountChanged` on success, fires `completion`
+    /// on the main queue with the final outcome.
+    ///
+    /// Decoupled from any view-layer protocol — callers wire their own
+    /// post-delete reaction (snapshot update, empty-state refresh, etc.)
+    /// in the `completion` closure.
+    func deleteItem(_ item: RetroRomBaseItem, completion: ((Bool) -> Void)? = nil) {
         let indicatorView = RetroRomActivityView(mainTitle: Bundle.localizedString(forKey: "homepage_delete_deleting"))
         indicatorView.install()
 
@@ -205,14 +214,153 @@ final class RetroRomFileManager {
                     NotificationCenter.default.post(name: .romCountChanged, object: nil)
                     let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_success"), item.itemName)
                     indicatorView.successMessage(message, title: Bundle.localizedString(forKey: "info"), canDismiss: true)
-                    browser.itemDeleted(item, success: true)
+                    completion?(true)
                 }
             } else {
                 DispatchQueue.main.async {
-                    browser.itemDeleted(item, success: false)
+                    completion?(false)
                 }
             }
         }
+    }
+
+    /// Move an item into a destination folder, then surface the result
+    /// through the user-facing UI (success/failure toast, forbidden-
+    /// destination alert). `onSuccess` fires only when the move actually
+    /// landed — useful for post-move side effects like navigating into
+    /// the destination folder.
+    ///
+    /// The "forbidden destination" alert is presented from `presentingVC`
+    /// (forbidden case: dst is a descendant of src, or a name collision).
+    /// Toasts are global via `AppToastManager` and don't need a VC.
+    ///
+    /// Decoupled from any browser protocol. Callers (legacy browsers,
+    /// new FolderHost) invoke this directly and react via `onSuccess`.
+    func moveItem(
+        _ srcItem: RetroRomBaseItem,
+        to dstFolder: RetroRomFolderItem,
+        presentingVC: UIViewController,
+        onSuccess: (() -> Void)? = nil
+    ) {
+        guard dstFolder.canAddItem(srcItem) else {
+            let title   = Bundle.localizedString(forKey: "homepage_move_forbidden_title")
+            let format  = Bundle.localizedString(forKey: "homepage_move_forbidden_detail")
+            let message = String(format: format, dstFolder.itemName, srcItem.itemName, srcItem.itemName)
+            let alert   = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
+            presentingVC.present(alert, animated: true)
+            return
+        }
+
+        if dstFolder.addNewItem(srcItem) {
+            let format = srcItem.isFile
+                ? Bundle.localizedString(forKey: "homepage_move_file_success")
+                : Bundle.localizedString(forKey: "homepage_move_folder_success")
+            AppToastManager.shared.toast(
+                String(format: format, srcItem.itemName),
+                context: .ui,
+                level: .success
+            )
+            // Inform the destination host (which may be sitting in the
+            // nav stack, currently off-screen) that a new item landed
+            // under its folder. Without this, the parent host stays
+            // stale until the user manually refreshes — the source
+            // host already updates itself through `onSuccess` below.
+            //
+            // Posted BEFORE `onSuccess` so the destination's subview
+            // has already absorbed the item by the time the source's
+            // closure runs — no race even though both run on main.
+            RetroRomFolderPageState.shared.itemMoved.send(
+                .init(item: srcItem, destinationFolderKey: dstFolder.key)
+            )
+            onSuccess?()
+        } else {
+            let format = srcItem.isFile
+                ? Bundle.localizedString(forKey: "homepage_move_file_failed")
+                : Bundle.localizedString(forKey: "homepage_move_folder_failed")
+            AppToastManager.shared.toast(
+                String(format: format, srcItem.itemName),
+                context: .ui,
+                level: .error
+            )
+        }
+    }
+
+    /// Create a new subfolder under `parentFolderKey`. Returns the newly
+    /// created `RetroRomFolderItem` on success, or `nil` on any failure
+    /// (parent missing, unique-key generation failed, mkdir failed,
+    /// SQLite insert failed). All failure paths roll back any partial
+    /// state — the on-disk directory is removed if SQLite insert fails —
+    /// so a `nil` return guarantees the filesystem and database are both
+    /// untouched.
+    ///
+    /// User-facing toast (success / failure) is emitted from here so all
+    /// call sites get consistent messaging. The default `showName` is the
+    /// localized "New Folder" string; callers that immediately follow up
+    /// with a rename flow (the blank-menu "New Folder" action) overwrite
+    /// it through `item.updateShowName(_:)`.
+    func createNewFolder(in parentFolderKey: String) -> RetroRomFolderItem? {
+        // Lookup parent + unique key in one go; either failing means we
+        // can't proceed, both produce the same user-facing error.
+        guard let parent = folderItem(key: parentFolderKey),
+              let uniqueKey = Retro​Rom​Persistence.shared.getUniqueKey(parent) else {
+            AppToastManager.shared.toast(
+                Bundle.localizedString(forKey: "homepage_new_folder_failed"),
+                context: .ui, level: .error, shouldVibrate: false
+            )
+            return nil
+        }
+
+        let showName = Bundle.localizedString(forKey: "homepage_new_folder")
+        let newFolder = RetroRomFolderItem(
+            key: uniqueKey,
+            rawName: uniqueKey,
+            showName: showName,
+            parent: parentFolderKey,
+            createAt: Date(),
+            updateAt: Date()
+        )
+
+        // mkdir first — if this fails we haven't touched SQLite yet, so
+        // no rollback is needed.
+        guard let fullPath = newFolder.fullPath else {
+            AppToastManager.shared.toast(
+                Bundle.localizedString(forKey: "homepage_new_folder_failed"),
+                context: .ui, level: .error, shouldVibrate: false
+            )
+            return nil
+        }
+        do {
+            try FileManager.default.createDirectory(atPath: fullPath, withIntermediateDirectories: false)
+        } catch {
+            AppToastManager.shared.toast(
+                Bundle.localizedString(forKey: "homepage_new_folder_failed"),
+                context: .ui, level: .error, shouldVibrate: false
+            )
+            return nil
+        }
+
+        // Persistence write. On failure, undo the mkdir so we don't leak
+        // an empty directory tracked by nothing.
+        guard Retro​Rom​Persistence.shared.storeRomFiles([], folders: [newFolder]) else {
+            try? FileManager.default.removeItem(atPath: fullPath)
+            AppToastManager.shared.toast(
+                Bundle.localizedString(forKey: "homepage_new_folder_failed"),
+                context: .ui, level: .error, shouldVibrate: false
+            )
+            return nil
+        }
+
+        // Wire the new folder into the parent's in-memory child set so
+        // subsequent reads (sort, subItems queries) see it without going
+        // back to SQLite.
+        parent.addSubItemKeys(newFolderKeys: [newFolder.key], newFileKeys: [])
+
+        AppToastManager.shared.toast(
+            Bundle.localizedString(forKey: "homepage_new_folder_success"),
+            context: .ui, level: .success
+        )
+        return newFolder
     }
 
     @discardableResult

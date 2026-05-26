@@ -108,6 +108,7 @@
 "homepage_import_exist_same_name_file_with_folder" = "A file with the same name as %@ already exists, unable to import the folder %@.";
 "homepage_rename_success" = "Rename successful.";
 "homepage_rename_failed" = "Rename failed.";
+"homepage_rename_empty" = "Name cannot be empty.";
 "homepage_play" = "Play";
 "homepage_rename" = "Rename";
 "homepage_delete" = "Delete";
@@ -157,6 +158,7 @@
 "homepage_config_last_play" = "Last Play";
 "homepage_config_add_date" = "Add Date";
 "homepage_config_game_duration" = "Game Duration";
+"homepage_sort_by" = "Sort By";
 "homepage_config_by_folder" = "By Folder";
 "Homepage_config_by_tag" = "By Tag";
 "homepage_config_by_core" = "By Core";
@@ -179,6 +181,11 @@
 "homepage_new_folder_failed" = "Failed to create folder!";
 "homepage_game_count" = "%d Games";
 "homepage_move_to" = "Move to ...";
+"homepage_choose_destination" = "Choose Destination";
+"homepage_root_folder_name" = "My Library";
+"homepage_location_selector_moving_file" = "Moving game";
+"homepage_location_selector_moving_folder" = "Moving folder";
+"homepage_location_selector_item_count" = "%d items";
 "homepage_same_folder" = "Target is the same as the current location.";
 "homepage_descendant_folder" = "Cannot move a folder into its own subfolder.";
 "homepage_whats_new" = "What's New";

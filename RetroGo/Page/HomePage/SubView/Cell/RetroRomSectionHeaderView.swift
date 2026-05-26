@@ -28,9 +28,79 @@ import SnapKit
 import ObjcHelper
 import RACoordinator
 
-enum RetroRomSectionHeaderType {
-    case tag(tag: RetroRomFileTag)
-    case core(core: EmuCoreInfoItem)
+final class RetroRomSectionParam: NSObject {
+    var expanded: Bool = false
+    var isHidden: Bool = false
+
+    @objc
+    dynamic var itemCount: Int = 0
+
+    let type: RetroRomGameGroupType
+    init(type: RetroRomGameGroupType) {
+        self.type = type
+        super.init()
+    }
+
+    var key: String {
+        switch type {
+        case .byTag(let tag): return String(tag.id)
+        case .byCore(let core): return core.coreId
+        }
+    }
+
+    var title: String {
+        switch type {
+        case .byCore(let core):
+            if core == .noneCore() {
+                return Bundle.localizedString(forKey: "homepage_unidentified_core")
+            } else {
+                return core.coreName
+            }
+        case .byTag(let tag): return tag.showTitle
+        }
+    }
+
+    var icon: UIImage? {
+        switch type {
+        case .byTag(let tag): return tag.tagImage
+        case .byCore(let core):
+            let iconSize = CGSize(width: 22, height: 22)
+            if core == .noneCore() {
+                return IconRender.shared.settingsIcon(symbol: "questionmark", background: .systemGray, size: iconSize)
+            } else if let platformKey = core.coreIcon {
+                return IconRender.shared.platformIcon(key: platformKey, size: iconSize)
+            } else {
+                return UIImage(systemName: "cpu")
+            }
+        }
+    }
+
+    var tintColor: UIColor? {
+        switch type {
+        case .byCore(_): return nil
+        case .byTag(let tag): return tag.showColor ?? .label
+        }
+    }
+}
+
+/// Minimal "header → host" callback contract used by
+/// `RetroRomSectionHeaderView` to tell its owner that the user toggled
+/// the expand/collapse chevron. Decouples the header from the legacy
+/// `RetroRomSectionFileBrowser` protocol so the new architecture
+/// (`RetroRomFolderByCoreSubview`, future `RetroRomFolderByTagSubview`)
+/// can adopt the same header without inheriting the legacy browser's
+/// shape.
+///
+/// `show == true` means the user wants the section expanded; `false`
+/// means collapsed. The host is responsible for both:
+///   1. Recording the new state on the model (`core.expanded` /
+///      `tag.expanded`) — the header already does this in
+///      `expandSection()` before calling us, so the holder reads
+///      authoritative state from the model.
+///   2. Re-applying the section's items to / removing them from the
+///      diffable data source.
+protocol RetroRomSectionHeaderHolder: AnyObject {
+    func toggleSection(key: String, show: Bool)
 }
 
 final class RetroRomSectionHeaderView: UICollectionReusableView {
@@ -46,41 +116,22 @@ final class RetroRomSectionHeaderView: UICollectionReusableView {
 
     private var countObservation: NSKeyValueObservation?
 
-    var type: RetroRomSectionHeaderType? {
+    var param: RetroRomSectionParam? {
         didSet {
-            if let type = type {
-                switch type {
-                    case .tag(let tag):
-                        titleLabel.text = tag.showTitle
-                        iconButton.setImage(tag.tagImage, for: .normal)
-                        iconButton.tintColor = tag.showColor ?? .label
-                        updateGameCount(tag.itemCount)
-                        checkExpandStatus(animating: false)
-                        countObservation = tag.observe(\.itemCount, options: .new, changeHandler: { [weak self] _, change in
-                            guard let self = self, let count = change.newValue else { return }
-                            DispatchQueue.main.async {
-                                self.updateGameCount(count)
-                            }
-                        })
-                    case .core(let core):
-                        if core != .noneCore() {
-                            titleLabel.text = core.coreName
-                            iconButton.setImage(UIImage(systemName: "cpu"), for: .normal)
-                            iconButton.tintColor = .mainColor
-                        } else {
-                            titleLabel.text = Bundle.localizedString(forKey: "homepage_unidentified_core")
-                            iconButton.setImage(UIImage(systemName: "circle.slash"), for: .normal)
-                            iconButton.tintColor = .label
-                        }
-                        updateGameCount(core.itemCount)
-                        checkExpandStatus(animating: false)
-                        countObservation = core.observe(\.itemCount, options: .new, changeHandler: { [weak self] _, change in
-                            guard let self = self, let count = change.newValue else { return }
-                            DispatchQueue.main.async {
-                                self.updateGameCount(count)
-                            }
-                        })
+            if let param = param {
+                titleLabel.text = param.title
+                iconButton.setImage(param.icon, for: .normal)
+                if let color = param.tintColor {
+                    iconButton.tintColor = color
                 }
+                updateGameCount(param.itemCount)
+                checkExpandStatus(animating: false)
+                countObservation = param.observe(\.itemCount, options: .new, changeHandler: { [weak self] _, change in
+                    guard let self = self, let count = change.newValue else { return }
+                    DispatchQueue.main.async {
+                        self.updateGameCount(count)
+                    }
+                })
             } else {
                 countObservation = nil
                 titleLabel.text = nil
@@ -90,7 +141,7 @@ final class RetroRomSectionHeaderView: UICollectionReusableView {
         }
     }
 
-    weak var holder: RetroRomSectionFileBrowser?
+    weak var holder: RetroRomSectionHeaderHolder?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -122,18 +173,10 @@ final class RetroRomSectionHeaderView: UICollectionReusableView {
 
     override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes) {
         super.apply(layoutAttributes)
-        guard let headerAttr = layoutAttributes as? RetroRomHeaderLayoutAttributes else { return }
+        guard let headerAttr = layoutAttributes as? RetroRomHeaderLayoutAttributes, let param = param else { return }
 
         // 1. 核心逻辑：只有【钉住】+【展开】+【有货】才应该显示模糊
-        let shouldShowBlurNow: Bool
-        switch type {
-        case .tag(let tag):
-            shouldShowBlurNow = headerAttr.isPinned && tag.expanded && tag.itemCount > 0
-        case .core(let core):
-            shouldShowBlurNow = headerAttr.isPinned && core.expanded && core.itemCount > 0
-        default:
-            shouldShowBlurNow = false
-        }
+        let shouldShowBlurNow: Bool = headerAttr.isPinned && param.expanded && param.itemCount > 0
 
         // 2. 只有状态变化时才执行动画
         if self.isCurrentlyBlured != shouldShowBlurNow {
@@ -147,16 +190,9 @@ final class RetroRomSectionHeaderView: UICollectionReusableView {
     }
 
     func checkExpandStatus(animating: Bool) {
-        guard let type = type else { return }
+        guard let param = param else { return }
 
-        let expanded: Bool
-        if case .tag(let tag) = type {
-            expanded = tag.expanded
-        } else if case .core(let core) = type {
-            expanded = core.expanded
-        } else {
-            return
-        }
+        let expanded: Bool = param.expanded
 
         if animating {
             UIView.animate(withDuration: 0.1) { [unowned self] in
@@ -181,14 +217,16 @@ final class RetroRomSectionHeaderView: UICollectionReusableView {
     }
 
     func updateTagColor() {
-        guard let type = type else { return }
-        if case .tag(let tag) = type {
-            iconButton.tintColor = tag.showColor ?? .label
-        }
+        guard let param = param else { return }
+        iconButton.tintColor = param.tintColor
     }
 
     func updateTitle(_ text: String) {
         titleLabel.text = text
+    }
+
+    func languageChanged() {
+        titleLabel.text = param?.title
     }
 }
 
@@ -209,17 +247,31 @@ extension RetroRomSectionHeaderView {
         iconButton.tintColor = .label
         iconButton.addTarget(self, action: #selector(coreButtonAction(_:)), for: .touchUpInside)
         addSubview(iconButton)
+        // 22×22 — same as the design-system nav-bar titleView icon size,
+        // gives `IconRender` squircles enough room to read clearly while
+        // staying balanced against the body-sized title label. Earlier
+        // we had 18×18 with a tiny `cpu` SF Symbol; both the squircles
+        // and SF Symbol glyphs felt too thin at that size.
+        //
+        // The 20pt horizontal inset lives inside the header (not on
+        // `section.contentInsets`) so the section can keep its
+        // horizontal contentInsets at 0 — the list cells already bake
+        // 20pt into their own contentView constraints, and stacking
+        // another 20pt at the section level would squeeze cells into
+        // the middle 60% of the screen. With the inset baked into the
+        // header instead, header subviews and cell content end up
+        // perfectly aligned at the same 20pt-from-edge gutter.
         iconButton.snp.makeConstraints { make in
-            make.leading.equalToSuperview()
+            make.leading.equalToSuperview().offset(20)
             make.centerY.equalToSuperview().offset(-5)
-            make.size.equalTo(CGSize(width: 18, height: 18))
+            make.size.equalTo(CGSize(width: 22, height: 22))
         }
 
         expandButton.setImage(UIImage(named: "Icon_chevron"), for: .normal)
         expandButton.addTarget(self, action: #selector(chevronButtonAction(_:)), for: .touchUpInside)
         addSubview(expandButton)
         expandButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview()
+            make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalTo(iconButton)
             make.size.equalTo(CGSize(width: 30, height: 30))
         }
@@ -301,16 +353,17 @@ extension RetroRomSectionHeaderView {
 
     @objc
     private func coreButtonAction(_ sender: UIButton) {
-        if case .core(let core) = type {
-            Vibration.selection.vibrate()
-
-            guard core != .noneCore(), let current = UIViewController.currentActive() else {
-                return
-            }
-
-            let coreInfoViewController = RetroRomCoreInfoViewController(coreInfoItem: core, interactive: true)
-            current.navigationController?.pushViewController(coreInfoViewController, animated: true)
+        guard case .byCore(let core) = param?.type else {
+            return
         }
+        Vibration.selection.vibrate()
+
+        guard core != .noneCore(), let current = UIViewController.currentActive() else {
+            return
+        }
+
+        let coreInfoViewController = RetroRomCoreInfoViewController(coreInfoItem: core, interactive: true)
+        current.navigationController?.pushViewController(coreInfoViewController, animated: true)
     }
 
     @objc
@@ -321,21 +374,12 @@ extension RetroRomSectionHeaderView {
     }
 
     private func expandSection() {
-        guard let type = type else { return }
+        guard let param = param else { return }
 
-        let key: String
-        let show: Bool
-        if case .tag(let tag) = type {
-            tag.expanded.toggle()
-            show = tag.expanded
-            key = String(tag.id)
-        } else if case .core(let core) = type {
-            core.expanded.toggle()
-            show = core.expanded
-            key = core.coreId
-        } else {
-            return
-        }
+        param.expanded.toggle()
+
+        let key = param.key
+        let show = param.expanded
 
         holder?.toggleSection(key: key, show: show)
         checkExpandStatus(animating: true)

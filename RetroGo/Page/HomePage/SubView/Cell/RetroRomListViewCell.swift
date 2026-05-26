@@ -28,13 +28,12 @@ import YYText
 import ObjcHelper
 
 class RetroRomBaseListViewCell: UICollectionViewListCell {
-    static let rowHeight: CGFloat = 60.0
+    static let rowHeight: CGFloat = 68.0
 
     let thumbnailView = UIImageView(frame: .zero)
     let titleLabel = UILabel(frame: .zero)
     let infoLabel  = YYLabel(frame: .zero)
 
-    private(set) var titleEditor: UITextView?
     private(set) var titleAttributes: [NSAttributedString.Key: Any]
 
     var item: RetroRomBaseItem? {
@@ -146,7 +145,7 @@ class RetroRomBaseListViewCell: UICollectionViewListCell {
             return makeInfoAtrributedText(name: name, value: value)
         }
 
-        let sortType = RetroRomHomePageState.shared.homeFileSortType
+        let sortType = RetroRomFolderPageState.shared.sortType
 
         switch sortType {
             case .fileNameAsc, .fileNameDesc, .addDateAsc, .addDateDesc:
@@ -161,64 +160,6 @@ class RetroRomBaseListViewCell: UICollectionViewListCell {
                 let value = (item as? RetroRomFileItem)?.playTimeString ?? "-"
                 let name = Bundle.localizedString(forKey: "homepage_game_duration_colon")
                 makeInfoAtrributedText(name: name, value: value)
-        }
-    }
-
-    func editFileName() {
-        if titleEditor != nil {
-            return
-        }
-
-        RetroRomHomePageState.shared.couldShowItemMenu = false
-
-        let editor = UITextView(frame: .zero)
-        editor.textColor = .label
-        editor.textAlignment = .left
-        editor.font = UIFont.systemFont(ofSize: UIFont.labelFontSize)
-        editor.backgroundColor = UIColor.systemBackground.withAlphaComponent(1.0)
-        editor.tintColor = .accent
-        editor.delegate  = self
-        editor.returnKeyType = .done
-        editor.text = titleLabel.text
-        editor.frame = titleLabel.frame
-        contentView.addSubview(editor)
-
-        if let title = titleLabel.text as? NSString {
-            let dotRange = title.range(of: ".")
-            if dotRange.location != NSNotFound {
-                editor.selectedRange = NSRange(location: 0, length: dotRange.location)
-            } else {
-                editor.selectedRange = NSRange(location: 0, length: title.length)
-            }
-        }
-        editor.becomeFirstResponder()
-        titleEditor = editor
-    }
-}
-
-extension RetroRomBaseListViewCell: UITextViewDelegate {
-    func textViewDidEndEditing(_ textView: UITextView) {
-        titleEditor?.removeFromSuperview()
-        titleEditor = nil
-        RetroRomHomePageState.shared.couldShowItemMenu = true
-    }
-
-    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-        if text == "\n" {
-            if textView.text != item?.showName {
-                if let ret = item?.updateShowName(textView.text), ret {
-                    let message = Bundle.localizedString(forKey: "homepage_rename_success")
-                    AppToastManager.shared.toast(message, context: .ui, level: .success)
-                } else {
-                    let message = Bundle.localizedString(forKey: "homepage_operation_failed")
-                    AppToastManager.shared.toast(message, context: .ui, level: .error)
-                }
-            }
-            textView.resignFirstResponder()
-            RetroRomHomePageState.shared.couldShowItemMenu = true
-            return false
-        } else {
-            return true
         }
     }
 }
@@ -237,20 +178,55 @@ extension RetroRomBaseListViewCell {
     }()
 
     private func configUI() {
-        let thumbWidth = (Self.rowHeight - 6 - 6) / 240 * 256
-        let thumbHeight = Self.rowHeight - 6 - 6
+        // `verticalInset` controls the breathing room between the
+        // thumbnail and the cell's top/bottom edges. Together with
+        // `Self.rowHeight = 68`, this gives:
+        //   rowHeight 68 = top inset 8 + thumbHeight 52 + bottom inset 8
+        let verticalInset: CGFloat = 8
+        let thumbHeight = Self.rowHeight - verticalInset * 2
+        let thumbWidth  = thumbHeight / 240 * 256
         thumbnailView.layer.cornerRadius = 6.0
         thumbnailView.layer.masksToBounds = true
         thumbnailView.contentMode = .scaleAspectFill
         thumbnailView.clipsToBounds = true
         thumbnailView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(thumbnailView)
+
+        // Required-priority constraints define how the thumbnail floats
+        // inside contentView (anchors, width). The height is "preferred"
+        // at priority 999, NOT required — see the rationale below the
+        // activate block.
         NSLayoutConstraint.activate([
-            thumbnailView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 0),
-            thumbnailView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),
+            thumbnailView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            thumbnailView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: verticalInset),
+            thumbnailView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -verticalInset),
             thumbnailView.widthAnchor.constraint(equalToConstant: thumbWidth),
-            thumbnailView.heightAnchor.constraint(equalToConstant: thumbHeight),
         ])
+
+        // Why priority 999, not 1000:
+        //
+        // `UICollectionViewListCell` under
+        // `UICollectionLayoutListConfiguration` is self-sizing. The layout
+        // first places the cell at an estimated height (~52pt), THEN asks
+        // the cell to report its preferred size via systemLayoutSizeFitting.
+        //
+        // During that estimated-height frame, `contentView.height = 52` is
+        // imposed by `UIView-Encapsulated-Layout-Height` at required
+        // priority. Our other required constraints (top:+8, bottom:-8)
+        // derive thumbnail height = 52-16 = 36 from that. If we ALSO say
+        // thumbnail height == 52 at required priority, we have two
+        // required constraints contradicting each other → UIKit logs the
+        // "Unable to simultaneously satisfy constraints" warning and
+        // breaks one of them.
+        //
+        // Lowering this explicit height to priority 999 lets it break
+        // silently during the estimated frame. Once `preferredLayoutAttributesFitting`
+        // returns 68pt (below) and the cell is resized, contentView
+        // becomes 68pt and the 999-priority height==52 is satisfiable
+        // again. Same trick applies to the title and info label heights.
+        let thumbHeightConstraint = thumbnailView.heightAnchor.constraint(equalToConstant: thumbHeight)
+        thumbHeightConstraint.priority = UILayoutPriority(999)
+        thumbHeightConstraint.isActive = true
 
         titleLabel.numberOfLines = 1
         titleLabel.textColor = UIColor.label
@@ -258,10 +234,12 @@ extension RetroRomBaseListViewCell {
         contentView.addSubview(titleLabel)
         NSLayoutConstraint.activate([
             titleLabel.leadingAnchor.constraint(equalTo: thumbnailView.trailingAnchor, constant: 10),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 0),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             titleLabel.topAnchor.constraint(equalTo: thumbnailView.topAnchor),
-            titleLabel.heightAnchor.constraint(equalToConstant: thumbHeight * 0.5),
         ])
+        let titleHeightConstraint = titleLabel.heightAnchor.constraint(equalToConstant: thumbHeight * 0.5)
+        titleHeightConstraint.priority = UILayoutPriority(999)
+        titleHeightConstraint.isActive = true
 
         infoLabel.numberOfLines = 1
         infoLabel.textVerticalAlignment = .bottom
@@ -269,10 +247,49 @@ extension RetroRomBaseListViewCell {
         contentView.addSubview(infoLabel)
         NSLayoutConstraint.activate([
             infoLabel.leadingAnchor.constraint(equalTo: thumbnailView.trailingAnchor, constant: 10),
-            infoLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 0),
+            infoLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
             infoLabel.bottomAnchor.constraint(equalTo: thumbnailView.bottomAnchor),
-            infoLabel.heightAnchor.constraint(equalToConstant: thumbHeight * 0.5),
         ])
+        let infoHeightConstraint = infoLabel.heightAnchor.constraint(equalToConstant: thumbHeight * 0.5)
+        infoHeightConstraint.priority = UILayoutPriority(999)
+        infoHeightConstraint.isActive = true
+
+        // Align the system list separator with the title text (not the
+        // cell's leading edge). Matches iOS Files / Settings / Mail
+        // convention: separators visually delimit content rows, so they
+        // should start where content starts, not where the cell's
+        // hit-test rectangle starts. `separatorLayoutGuide` is provided
+        // by `UICollectionViewListCell` for exactly this purpose.
+        NSLayoutConstraint.activate([
+            separatorLayoutGuide.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor)
+        ])
+    }
+
+    /// Force the cell to self-size to `rowHeight` (68pt) rather than
+    /// letting `UICollectionLayoutListConfiguration`'s estimated-height
+    /// pass settle at whatever it picks first. This is the second half
+    /// of the fix for "Unable to satisfy constraints" warnings (the
+    /// first half being the 999-priority dance in `configUI`):
+    ///
+    /// - Without this override, the cell self-sizes via
+    ///   `systemLayoutSizeFitting`, which respects priority-999
+    ///   constraints. The result tends to be 68pt (our 999-preferences
+    ///   resolve correctly), but the estimated-height frame BEFORE the
+    ///   self-sizing call would still trip the warning if we'd kept
+    ///   `thumbnail.height == 52` at required priority.
+    /// - With this override, the layout knows our preferred height
+    ///   up-front. The cell goes from estimated → 68pt → final layout
+    ///   in one step, and the 999-priority preferences never have to
+    ///   "break" in practice — they're satisfied from the first real
+    ///   layout pass.
+    ///
+    /// `UIView.noIntrinsicMetric` on width preserves whatever width the
+    /// layout assigns (full-width in our list config; would be the grid
+    /// item width if reused in a flow layout later).
+    override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
+        let attrs = super.preferredLayoutAttributesFitting(layoutAttributes)
+        attrs.size.height = Self.rowHeight
+        return attrs
     }
 }
 
@@ -314,57 +331,5 @@ final class RetroRomFileListViewCell: RetroRomBaseListViewCell {
             attributedString.append(attributedTitle)
             titleLabel.attributedText = attributedString
         }
-    }
-}
-
-final class RetroRomParentFolderListViewCell: UICollectionViewListCell {
-    static let rowHeight: CGFloat = 44
-
-    let thumbnailView = YYLabel(frame: .zero)
-    let titleLabel = YYLabel(frame: .zero)
-
-    private var languageObserver: NSObjectProtocol?
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-
-        thumbnailView.text = "··"
-        thumbnailView.textColor = .mainColor
-        thumbnailView.textAlignment = .center
-        thumbnailView.textVerticalAlignment = .center
-        thumbnailView.font = UIFont.systemFont(ofSize: 40, weight: .bold)
-        contentView.addSubview(thumbnailView)
-
-        titleLabel.textAlignment = .left
-        titleLabel.textVerticalAlignment = .center
-        titleLabel.text = Bundle.localizedString(forKey: "homepage_parent_folder")
-        titleLabel.textColor = .label
-        contentView.addSubview(titleLabel)
-
-        languageObserver = NotificationCenter.default.addObserver(forName: .languageChanged, object: nil, queue: .main) { [weak self] _ in
-            self?.titleLabel.text = Bundle.localizedString(forKey: "homepage_parent_folder")
-        }
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError()
-    }
-
-    deinit {
-        if let token = languageObserver {
-            NotificationCenter.default.removeObserver(token)
-        }
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        let imgH: CGFloat = 36
-        let imgW: CGFloat = (RetroRomBaseTableViewCell.rowHeight - 6 - 6) / 240 * 256
-        let imgX: CGFloat = 20
-        let imgY: CGFloat = (height - imgH) * 0.5
-        thumbnailView.frame = CGRect(x: imgX, y: imgY, width: imgW, height: imgH)
-
-        titleLabel.frame = CGRect(x: thumbnailView.maxX + 10, y: imgY, width: width - 20 - thumbnailView.maxX - 10, height: imgH)
     }
 }

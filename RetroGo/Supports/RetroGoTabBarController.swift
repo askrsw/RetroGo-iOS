@@ -142,11 +142,10 @@ private extension RetroGoTabBarController {
 // MARK: - Tab assembly
 
 private extension RetroGoTabBarController {
-
     func buildTabs() {
         viewControllers = [
             makeNav(
-                root:          HomePageViewController(),
+                root:          RetroRomFolderHostViewController(),
                 title:         Bundle.localizedString(forKey: "tab_library"),
                 image:         UIImage(systemName: "books.vertical"),
                 selectedImage: UIImage(systemName: "books.vertical.fill")

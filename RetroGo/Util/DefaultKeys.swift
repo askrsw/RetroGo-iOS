@@ -38,4 +38,11 @@ extension Defaults.Keys {
     static let isUIFeedbackEnabled = Key<Bool?>("is_ui_feedback_enabled")
     static let versionNewContentViewed = Key<String?>("version_new_content_viewed")
     static let hasShownWelcome = Key<Bool?>("has_shown_welcome")
+
+    // MARK: - FolderPage (new state, supersedes home_browser_type /
+    // home_organize_type / home_file_sort_type / home_current_folder)
+
+    static let folderPageOrganizeMode = Key<Int?>("folder_page_organize_mode")
+    static let folderPageViewLayout   = Key<Int?>("folder_page_view_layout")
+    static let folderPageSortType     = Key<Int?>("folder_page_sort_type")
 }

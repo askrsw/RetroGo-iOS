@@ -57,10 +57,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable, readonly) NSString *licensesLine;
 @property(nonatomic, copy, readonly) NSString *frameworkName;
 
-@property(nonatomic, assign) BOOL expanded;
-@property(nonatomic, assign) BOOL isHidden;
-@property(nonatomic, assign) NSInteger itemCount;
-
 @property(nonatomic, assign, readonly) BOOL supportsAnalog;
 @property(nonatomic, copy, nullable, readonly) NSString *overlayName;
 @property(nonatomic, assign, readonly) BOOL supportsLogicThread;

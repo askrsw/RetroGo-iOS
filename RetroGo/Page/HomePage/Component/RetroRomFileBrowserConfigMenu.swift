@@ -24,50 +24,47 @@
 //
 
 import UIKit
+import Combine
 import ObjcHelper
 import RACoordinator
 
-/// `UIMenu` factory for the home-page file-browser "options" button
-/// (the `slider.horizontal.3` icon in the nav bar). Replaces the legacy
-/// custom popup `RetroRomFileBrowserConfigView` so the look, animations,
-/// haptics, accessibility, and dismissal behavior come from UIKit for
-/// free — matching the rest of the app's native-iOS design language.
+/// `UIMenu` factory for the FolderPage's options bar button
+/// (the `slider.horizontal.3` icon in the nav bar).
 ///
-/// Functional parity with the legacy view:
-/// - **View mode** section (Icon / List / Tree) — single selection.
-/// - **Organize by** section (By Folder / By Core / By Tag) — single
-///   selection. Shown only when the view mode is NOT Tree (mirrors the
-///   legacy `addSubViews()` conditional).
-/// - **Sort** section (Name / Last Play / Add Date / Game Duration) —
-///   single selection. Name and Add Date carry a trailing arrow that
-///   reflects the current sort direction (↑ asc, ↓ desc).
-/// - **Refresh** action — single tap, no state.
+/// ## Targetless design
 ///
-/// Implementation: the entire menu is wrapped in
-/// `UIDeferredMenuElement.uncached`, which means the system rebuilds
-/// the children every time the user opens the menu. That gives us
-/// always-fresh checkmarks AND lets us conditionally include/exclude
-/// the Organize section without any manual "updateState()" plumbing.
+/// The factory takes **no host VC parameter**. Every action mutates
+/// `RetroRomFolderPageState.shared` (a Combine `ObservableObject`); all
+/// live `RetroRomFolderHostViewController` instances subscribe to the
+/// resulting `@Published` change and update independently. This drops the
+/// menu's coupling to any particular host — the same `UIMenu` is safe to
+/// install on any number of bar buttons across the nav stack.
+///
+/// ## Section order
+///
+/// 1. **Organize** — Folder / Core / Tag / Tree (always shown)
+/// 2. **View layout** — Icon / List (hidden in Tree mode, which dictates
+///    its own outline layout)
+/// 3. **Sort** — Name / Last Play / Add Date / Game Duration
+///    (Name and Add Date carry a trailing arrow showing direction)
+/// 4. **Refresh** — one-shot tick on `state.refreshRequested`
+///
+/// Built eagerly from current `RetroRomFolderPageState`. Hosts that
+/// observe state changes (via Combine) must reassign the bar button's
+/// `menu` with a fresh `make()` result whenever organize / layout / sort
+/// changes — otherwise checkmarks and the View Layout section visibility
+/// will go stale.
+///
+/// We previously wrapped the children in `UIDeferredMenuElement.uncached`
+/// to avoid manual invalidation, but on iOS 17+ that triggers a benign
+/// but noisy `-[UIContextMenuInteraction updateVisibleMenuWithBlock:]
+/// while no context menu is visible` warning every time a host with this
+/// menu attached is laid out. Eager build sidesteps that.
 enum RetroRomFileBrowserConfigMenu {
 
-    /// Build the menu attached to the options bar-button. `target` is
-    /// captured weakly so the menu can't extend the home page's
-    /// lifetime past dismissal.
-    static func make(target: HomePageViewController) -> UIMenu {
-        UIMenu(children: [
-            UIDeferredMenuElement.uncached { [weak target] completion in
-                DispatchQueue.main.async {
-                    Vibration.selection.vibrate()
-                }
-
-                // Side effect: dismiss the search keyboard if it's
-                // active. The legacy ConfigView did this on present;
-                // we replicate it here so the menu doesn't open with
-                // a stale keyboard hovering behind it.
-                target?.fileBrowser.resignKeyboardFocus()
-                completion(buildSections(target: target))
-            }
-        ])
+    /// Build the menu attached to the options bar-button.
+    static func make() -> UIMenu {
+        UIMenu(children: buildSections())
     }
 }
 
@@ -75,134 +72,220 @@ enum RetroRomFileBrowserConfigMenu {
 
 private extension RetroRomFileBrowserConfigMenu {
 
-    static func buildSections(target: HomePageViewController?) -> [UIMenuElement] {
-        // Defensive: if RetroArch hasn't finished booting yet, present
-        // an empty menu (matches the legacy `guard initialized` gate).
-        guard let target = target, RetroArchX.shared().initialized else {
-            return []
+    static func buildSections() -> [UIMenuElement] {
+        // Defensive: if RetroArch hasn't finished booting yet, present an
+        // empty menu — mode switches and sorts would write to state but
+        // the host might not be ready to react.
+        guard RetroArchX.shared().initialized else { return [] }
+
+        let state = RetroRomFolderPageState.shared
+        var sections: [UIMenuElement] = [organizeSection(state: state)]
+
+        // View layout meaningless in tree mode (tree has its own layout).
+        if state.organizeMode != .tree {
+            sections.append(viewLayoutSection(state: state))
         }
 
-        var sections: [UIMenuElement] = [
-            viewModeSection(target: target)
-        ]
-
-        // Organize section hidden in tree mode — tree has its own
-        // implicit hierarchy and doesn't take a separate grouping.
-        if RetroRomHomePageState.shared.homeBrowserType != .tree {
-            sections.append(organizeSection(target: target))
-        }
-
-        sections.append(sortSection(target: target))
-        sections.append(refreshAction(target: target))
-
+        sections.append(sortSection(state: state))
+        sections.append(refreshAction())
         return sections
     }
+}
 
-    static func viewModeSection(target: HomePageViewController) -> UIMenu {
-        let current = RetroRomHomePageState.shared.homeBrowserType
+// MARK: - Organize section
+
+private extension RetroRomFileBrowserConfigMenu {
+
+    /// Folder / Core / Tag / Tree — the four mutually-exclusive ways to
+    /// organize the library. Selection state reads directly from
+    /// `state.organizeMode`; user picks just write a new value, and the
+    /// `@Published` change propagates to all hosts.
+    static func organizeSection(state: RetroRomFolderPageState) -> UIMenu {
+        let current = state.organizeMode
         return UIMenu(options: .displayInline, children: [
-            UIAction(
-                title: Bundle.localizedString(forKey: "homepage_config_icon"),
-                image: UIImage(systemName: "square.grid.2x2"),
-                state: current == .icon ? .on : .off
-            ) { [weak target] _ in target?.iconOption() },
-            UIAction(
-                title: Bundle.localizedString(forKey: "homepage_config_list"),
-                image: UIImage(systemName: "list.bullet"),
-                state: current == .list ? .on : .off
-            ) { [weak target] _ in target?.listOption() },
-            UIAction(
-                title: Bundle.localizedString(forKey: "homepage_config_tree"),
-                image: UIImage(named: "Icon_tree"),
-                state: current == .tree ? .on : .off
-            ) { [weak target] _ in target?.treeOption() }
+            organizeAction(.byFolder,
+                           titleKey: "homepage_config_by_folder",
+                           image: UIImage(systemName: "folder"),
+                           current: current),
+            organizeAction(.byCore,
+                           titleKey: "homepage_config_by_core",
+                           image: UIImage(systemName: "cpu"),
+                           current: current),
+            organizeAction(.byTag,
+                           titleKey: "Homepage_config_by_tag",     // legacy capital "H" key
+                           image: UIImage(systemName: "tag"),
+                           current: current),
+            organizeAction(.tree,
+                           titleKey: "homepage_config_tree",
+                           image: IconRender.shared.treeSymbol(size: CGSize(width: 24, height: 24)),
+                           current: current)
         ])
     }
 
-    static func organizeSection(target: HomePageViewController) -> UIMenu {
-        let current = RetroRomHomePageState.shared.homeOrganizeType
+    static func organizeAction(_ mode: RetroRomOrganizeMode,
+                               titleKey: String,
+                               image: UIImage?,
+                               current: RetroRomOrganizeMode) -> UIAction {
+        UIAction(
+            title: Bundle.localizedString(forKey: titleKey),
+            image: image,
+            state: current == mode ? .on : .off
+        ) { _ in
+            Vibration.selection.vibrate()
+            guard current != mode else { return }
+            RetroRomFolderPageState.shared.organizeMode = mode
+        }
+    }
+}
+
+// MARK: - View layout section
+
+private extension RetroRomFileBrowserConfigMenu {
+
+    static func viewLayoutSection(state: RetroRomFolderPageState) -> UIMenu {
+        let current = state.viewLayout
         return UIMenu(options: .displayInline, children: [
-            UIAction(
-                title: Bundle.localizedString(forKey: "homepage_config_by_folder"),
-                image: UIImage(systemName: "folder"),
-                state: current == .byFolder ? .on : .off
-            ) { [weak target] _ in target?.folderOption() },
-            UIAction(
-                title: Bundle.localizedString(forKey: "homepage_config_by_core"),
-                image: UIImage(systemName: "cpu"),
-                state: current == .byCore ? .on : .off
-            ) { [weak target] _ in target?.coreOption() },
-            // Note: the localization key intentionally keeps the
-            // legacy capital "H" ("Homepage_config_by_tag") — changing
-            // it would orphan the existing translations.
-            UIAction(
-                title: Bundle.localizedString(forKey: "Homepage_config_by_tag"),
-                image: UIImage(systemName: "tag"),
-                state: current == .byTag ? .on : .off
-            ) { [weak target] _ in target?.tagOption() }
+            layoutAction(.icon,
+                         titleKey: "homepage_config_icon",
+                         image: UIImage(systemName: "square.grid.2x2"),
+                         current: current),
+            layoutAction(.list,
+                         titleKey: "homepage_config_list",
+                         image: UIImage(systemName: "list.bullet"),
+                         current: current)
         ])
     }
 
-    static func sortSection(target: HomePageViewController) -> UIMenu {
-        let sort = RetroRomHomePageState.shared.homeFileSortType
+    static func layoutAction(_ layout: RetroRomViewLayout,
+                             titleKey: String,
+                             image: UIImage?,
+                             current: RetroRomViewLayout) -> UIAction {
+        UIAction(
+            title: Bundle.localizedString(forKey: titleKey),
+            image: image,
+            state: current == layout ? .on : .off
+        ) { _ in
+            Vibration.selection.vibrate()
+            guard current != layout else { return }
+            RetroRomFolderPageState.shared.viewLayout = layout
+        }
+    }
+}
+
+// MARK: - Sort section
+
+extension RetroRomFileBrowserConfigMenu {
+
+    enum SortDirection { case asc, desc }
+
+    /// Build the four sort `UIAction`s reflecting the current global
+    /// `sortType`. Exposed (not `private`) so both wrappers can share
+    /// one source of truth:
+    /// - The nav-bar config menu wraps these in an inline section
+    ///   (`UIMenu(options: .displayInline, children: sortActions())`).
+    /// - The blank-area menu wraps them in a titled non-inline submenu
+    ///   (`UIMenu(title: "Sort By", children: sortActions())`).
+    static func sortActions() -> [UIAction] {
+        let sort = RetroRomFolderPageState.shared.sortType
 
         // Resolve the current direction-bearing sort field, if any.
-        let nameDirection:    SortDirection? = sort == .fileNameAsc ? .asc
-                                             : sort == .fileNameDesc ? .desc : nil
-        let addDateDirection: SortDirection? = sort == .addDateAsc ? .asc
+        let nameDirection: SortDirection? = sort == .fileNameAsc  ? .asc
+                                          : sort == .fileNameDesc ? .desc : nil
+        let addDateDirection: SortDirection? = sort == .addDateAsc  ? .asc
                                              : sort == .addDateDesc ? .desc : nil
 
-        return UIMenu(options: .displayInline, children: [
+        return [
             UIAction(
                 title: titleWithDirection(key: "homepage_config_name",
                                           direction: nameDirection),
-                image: UIImage(systemName: "textformat.abc"),
+                // `textformat.abc` localizes to "甲乙丙" / "あ" / etc. by
+                // default. Lock to English so the icon stays a stable
+                // alphabetical metaphor across system languages.
+                image: UIImage(systemName: "textformat.abc",
+                               withConfiguration: UIImage.SymbolConfiguration(locale: Locale(identifier: "en"))),
                 state: nameDirection != nil ? .on : .off
-            ) { [weak target] _ in target?.nameOption() },
+            ) { _ in
+                Vibration.selection.vibrate()
+                let next: RetroRomFileSortType
+                switch nameDirection {
+                case .asc:  next = .fileNameDesc
+                case .desc: next = .fileNameAsc
+                case nil:   next = .fileNameAsc
+                }
+                RetroRomFolderPageState.shared.sortType = next
+            },
             UIAction(
                 title: Bundle.localizedString(forKey: "homepage_config_last_play"),
                 image: UIImage(systemName: "gamecontroller"),
                 state: sort == .lastPlay ? .on : .off
-            ) { [weak target] _ in target?.lastPlayOption() },
+            ) { _ in
+                Vibration.selection.vibrate()
+                guard sort != .lastPlay else { return }
+                RetroRomFolderPageState.shared.sortType = .lastPlay
+            },
             UIAction(
                 title: titleWithDirection(key: "homepage_config_add_date",
                                           direction: addDateDirection),
                 image: UIImage(systemName: "calendar.badge.plus"),
                 state: addDateDirection != nil ? .on : .off
-            ) { [weak target] _ in target?.addDateOption() },
+            ) { _ in
+                Vibration.selection.vibrate()
+                let next: RetroRomFileSortType
+                switch addDateDirection {
+                case .asc:  next = .addDateDesc
+                case .desc: next = .addDateAsc
+                case nil:   next = .addDateDesc   // first selection: newest first
+                }
+                RetroRomFolderPageState.shared.sortType = next
+            },
             UIAction(
                 title: Bundle.localizedString(forKey: "homepage_config_game_duration"),
                 image: UIImage(systemName: "stopwatch"),
                 state: sort == .playTime ? .on : .off
-            ) { [weak target] _ in target?.gameDurationOption() }
-        ])
-    }
-
-    static func refreshAction(target: HomePageViewController) -> UIAction {
-        UIAction(
-            title: Bundle.localizedString(forKey: "refresh"),
-            image: UIImage(systemName: "arrow.clockwise")
-        ) { [weak target] _ in target?.refresh() }
+            ) { _ in
+                Vibration.selection.vibrate()
+                guard sort != .playTime else { return }
+                RetroRomFolderPageState.shared.sortType = .playTime
+            }
+        ]
     }
 }
 
-// MARK: - Sort direction helper
-
 private extension RetroRomFileBrowserConfigMenu {
 
-    enum SortDirection { case asc, desc }
+    /// Nav-bar config menu wrapper: actions surface as an inline section.
+    static func sortSection(state: RetroRomFolderPageState) -> UIMenu {
+        UIMenu(options: .displayInline, children: sortActions())
+    }
 
-    /// Compose the menu-item title for a sort field whose direction
-    /// matters. The arrow is appended to the localized base title so
-    /// translations don't need extra direction-specific strings.
-    ///
-    /// Examples (zh-Hans): `"按名称 ↑"`, `"按添加日期 ↓"`.
+    /// Append a direction arrow to a sort title. The arrow doubles as the
+    /// "selected" affordance — the row also carries a checkmark (.on),
+    /// but the arrow shows which DIRECTION is currently active.
     static func titleWithDirection(key: String, direction: SortDirection?) -> String {
         let base = Bundle.localizedString(forKey: key)
         switch direction {
         case .asc:  return "\(base) ↑"
         case .desc: return "\(base) ↓"
         case nil:   return base
+        }
+    }
+}
+
+// MARK: - Refresh action
+
+private extension RetroRomFileBrowserConfigMenu {
+
+    /// Stateless tick on `state.refreshRequested`. The visible host (top
+    /// of the active nav stack) gates its subscription on visibility and
+    /// re-fetches + scrolls to top; non-visible hosts in the stack ignore
+    /// the tick.
+    static func refreshAction() -> UIAction {
+        UIAction(
+            title: Bundle.localizedString(forKey: "refresh"),
+            image: UIImage(systemName: "arrow.clockwise")
+        ) { _ in
+            Vibration.selection.vibrate()
+            RetroRomFolderPageState.shared.refreshRequested.send()
         }
     }
 }

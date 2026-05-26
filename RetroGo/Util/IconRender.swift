@@ -162,6 +162,39 @@ final class IconRender {
         platformIconCache.setObject(image, forKey: cacheKey)
         return image
     }
+
+    // MARK: - Menu / UI Symbols
+
+    private let menuSymbolCache = NSCache<NSString, UIImage>()
+
+    /// Hierarchy/tree symbol drawn to match SF Symbol Regular weight, so it
+    /// can sit alongside system symbols (`folder`, `cpu`, `tag`, …) in the
+    /// config menu's organize section without looking like an outsider.
+    ///
+    /// Visual: one parent dot with three indented children connected by a
+    /// trunk and ASCII-tree branches (├ ├ └). Stroke width (1.5 / 24 of the
+    /// side length) and rounded line caps/joins mirror SF Symbol Regular at
+    /// the same point size.
+    ///
+    /// Returned image uses `.alwaysTemplate` so the surrounding context
+    /// (UIMenu, UIBarButtonItem, etc.) can re-tint it to match its text
+    /// color — exactly the contract SF Symbols honor.
+    func treeSymbol(size: CGSize) -> UIImage {
+        let cacheKey = "menu.tree.\(Int(size.width))x\(Int(size.height))" as NSString
+        if let cached = menuSymbolCache.object(forKey: cacheKey) {
+            return cached
+        }
+
+        let format = UIGraphicsImageRendererFormat.default()
+        format.opaque = false
+        let renderer = UIGraphicsImageRenderer(size: size, format: format)
+        let image = renderer.image { _ in
+            drawTreeSymbol(in: CGRect(origin: .zero, size: size))
+        }.withRenderingMode(.alwaysTemplate)
+
+        menuSymbolCache.setObject(image, forKey: cacheKey)
+        return image
+    }
 }
 
 // MARK: - Drawing
@@ -191,6 +224,90 @@ private extension IconRender {
         let path = Self.continuousRoundedRectPath(in: rect, cornerRadius: corner)
         color.setFill()
         path.fill()
+    }
+
+    /// Render geometry for `treeSymbol(size:)`. Coordinates are described in
+    /// a 24×24 design canvas, then uniformly scaled to fit `rect`. Drawn in
+    /// solid white because the caller wraps the output as `.alwaysTemplate`
+    /// — only the alpha matters; the system re-tints at composite time.
+    ///
+    /// Layout (design space):
+    /// ```
+    ///       ●
+    ///       │
+    ///       ├───●
+    ///       │
+    ///       ├───●
+    ///       │
+    ///       └───●
+    /// ```
+    /// The horizontal extent (x ≈ 6 → 18) is centered on the 24-wide canvas
+    /// so the icon's optical mass sits in the middle of its box — important
+    /// for use cases outside the left-aligned UIMenu list (e.g. button bars
+    /// where the icon is centered). Vertical extent (y ≈ 2 → 22) was
+    /// already centered.
+    ///
+    /// The trunk + bottom branch are drawn as one path with rounded joins,
+    /// so the `└` corner renders cleanly without a notch. The two upper
+    /// branches are drawn as straight ├ segments crossing the trunk —
+    /// rounded line caps keep their visual weight identical to the corner.
+    func drawTreeSymbol(in rect: CGRect) {
+        let designSide: CGFloat = 24
+        let scale = min(rect.width, rect.height) / designSide
+        let strokeWidth = 1.5 * scale
+        let dotRadius   = 1.9 * scale
+
+        // Center the design canvas inside `rect` (no-op for square rects).
+        let dx = rect.minX + (rect.width  - designSide * scale) / 2
+        let dy = rect.minY + (rect.height - designSide * scale) / 2
+
+        // Design-space → render-space.
+        func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(x: dx + x * scale, y: dy + y * scale)
+        }
+
+        UIColor.white.set()   // template image — alpha is what carries through
+
+        // Trunk + last branch as one path: starts just below the parent dot,
+        // descends through both upper crossings, then turns right into the
+        // bottom child. lineJoinStyle = .round gives a smooth └ corner.
+        let trunk = UIBezierPath()
+        trunk.move(to:    p(8,  6))
+        trunk.addLine(to: p(8, 20))
+        trunk.addLine(to: p(14, 20))
+        trunk.lineWidth     = strokeWidth
+        trunk.lineCapStyle  = .round
+        trunk.lineJoinStyle = .round
+        trunk.stroke()
+
+        // Upper two branches (├). Same stroke style, drawn as separate
+        // sub-paths in one UIBezierPath to share a single stroke call.
+        let branches = UIBezierPath()
+        for y: CGFloat in [9, 14] {
+            branches.move(to:    p(8,  y))
+            branches.addLine(to: p(14, y))
+        }
+        branches.lineWidth    = strokeWidth
+        branches.lineCapStyle = .round
+        branches.stroke()
+
+        // Four filled dots: parent + 3 children. Drawn last so they sit on
+        // top of the line endpoints, hiding any sub-pixel seams.
+        let dotCenters: [CGPoint] = [
+            p(8,  4),   // parent
+            p(16, 9),   // child 1
+            p(16, 14),  // child 2
+            p(16, 20)   // child 3
+        ]
+        for center in dotCenters {
+            UIBezierPath(
+                arcCenter: center,
+                radius: dotRadius,
+                startAngle: 0,
+                endAngle: .pi * 2,
+                clockwise: true
+            ).fill()
+        }
     }
 
     /// Approximation of iOS's "continuous" rounded rectangle (the same

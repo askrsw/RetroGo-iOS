@@ -35,7 +35,6 @@ class RetroRomBaseIconViewCell: UICollectionViewCell {
     fileprivate let titleLabel = TopAlignedLabel(frame: .zero)
     let infoLabel = UILabel(frame: .zero)
 
-    private(set) var titleEditor: UITextView?
     private var imageViewSizeFactor: CGFloat = 0
     private(set) var titleAttributes: [NSAttributedString.Key: Any]
 
@@ -166,7 +165,7 @@ class RetroRomBaseIconViewCell: UICollectionViewCell {
             return
         }
 
-        switch RetroRomHomePageState.shared.homeFileSortType {
+        switch RetroRomFolderPageState.shared.sortType {
             case .fileNameAsc, .fileNameDesc:
                 infoLabel.text = nil
             case .addDateAsc, .addDateDesc:
@@ -208,37 +207,6 @@ class RetroRomBaseIconViewCell: UICollectionViewCell {
         }
     }
 
-    func editFileName() {
-        if titleEditor != nil {
-            return
-        }
-
-        RetroRomHomePageState.shared.couldShowItemMenu = false
-
-        let editor = UITextView(frame: .zero)
-        editor.textColor = .label
-        editor.textAlignment = .center
-        editor.font = UIFont.systemFont(ofSize: UIFont.labelFontSize - 3)
-        editor.backgroundColor = UIColor.systemBackground.withAlphaComponent(1.0)
-        editor.tintColor = .accent
-        editor.delegate  = self
-        editor.returnKeyType = .done
-        editor.text = titleLabel.text
-        editor.contentInset = .zero
-        editor.frame = CGRect(x: 0, y: imageView.maxY + 5, width: width, height: height - 5 - imageView.maxY)
-        contentView.addSubview(editor)
-
-        if let title = titleLabel.text as? NSString {
-            let dotRange = title.range(of: ".")
-            if dotRange.location != NSNotFound {
-                editor.selectedRange = NSRange(location: 0, length: dotRange.location)
-            } else {
-                editor.selectedRange = NSRange(location: 0, length: title.length)
-            }
-        }
-        editor.becomeFirstResponder()
-        titleEditor = editor
-    }
 }
 
 extension RetroRomBaseIconViewCell {
@@ -261,33 +229,6 @@ extension RetroRomBaseIconViewCell {
         infoLabel.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize)
         infoLabel.textColor = UIColor(hex: 0x999999, alpha: 1.0)
         contentView.addSubview(infoLabel)
-    }
-}
-
-extension RetroRomBaseIconViewCell: UITextViewDelegate {
-    func textViewDidEndEditing(_ textView: UITextView) {
-        titleEditor?.removeFromSuperview()
-        titleEditor = nil
-        RetroRomHomePageState.shared.couldShowItemMenu = true
-    }
-
-    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
-        if text == "\n" {
-            if textView.text != item?.showName {
-                if let ret = item?.updateShowName(textView.text), ret {
-                    let message = Bundle.localizedString(forKey: "homepage_rename_success")
-                    AppToastManager.shared.toast(message, context: .ui, level: .success)
-                } else {
-                    let message = Bundle.localizedString(forKey: "homepage_rename_failed")
-                    AppToastManager.shared.toast(message, context: .ui, level: .error)
-                }
-            }
-            textView.resignFirstResponder()
-            RetroRomHomePageState.shared.couldShowItemMenu = true
-            return false
-        } else {
-            return true
-        }
     }
 }
 
@@ -330,63 +271,6 @@ final class RetroRomFileIconViewCell: RetroRomBaseIconViewCell {
 
 final class RetroRomFolderIconViewCell: RetroRomBaseIconViewCell {
 
-}
-
-final class RetroRomParentFolderIconViewCell: UICollectionViewCell {
-    private let imageView = YYLabel(frame: .zero)
-    private let imageViewHost = UIView(frame: .zero)
-    private let titleLabel = YYLabel(frame: .zero)
-
-    private var languageObserver: NSObjectProtocol?
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-
-        contentView.addSubview(imageViewHost)
-
-        imageView.text = "··"
-        imageView.textColor = .mainColor
-        imageView.textAlignment = .center
-        imageView.textVerticalAlignment = .center
-        imageView.font = UIFont.systemFont(ofSize: 50, weight: .bold)
-        imageViewHost.addSubview(imageView)
-
-        titleLabel.textAlignment = .center
-        titleLabel.numberOfLines = 1
-        titleLabel.textVerticalAlignment = .top
-        titleLabel.textColor = UIColor.label
-        titleLabel.font = UIFont.systemFont(ofSize: UIFont.labelFontSize - 3)
-        titleLabel.text = Bundle.localizedString(forKey: "homepage_parent_folder")
-        contentView.addSubview(titleLabel)
-
-        languageObserver = NotificationCenter.default.addObserver(forName: .languageChanged, object: nil, queue: .main) { [weak self] _ in
-            self?.titleLabel.text = Bundle.localizedString(forKey: "homepage_parent_folder")
-        }
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    deinit {
-        if let token = languageObserver {
-            NotificationCenter.default.removeObserver(token)
-        }
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        imageViewHost.frame = CGRect(x: 0, y: 0, width: width, height: height - RetroRomBaseIconViewCell.titleHeight)
-        let imgX = imageViewHost.width * 0.15
-        let imgY = imageViewHost.height * 0.15
-        let imgW = imageViewHost.width - imgX * 2
-        let imgH = imageViewHost.height - imgY * 2
-        imageView.frame = CGRect(x: imgX, y: imgY, width: imgW, height: imgH)
-
-        titleLabel.sizeToFit()
-        titleLabel.frame = CGRect(x: 0, y: imageViewHost.maxY + 5, width: width, height: titleLabel.height)
-    }
 }
 
 fileprivate final class TopAlignedLabel: UILabel {

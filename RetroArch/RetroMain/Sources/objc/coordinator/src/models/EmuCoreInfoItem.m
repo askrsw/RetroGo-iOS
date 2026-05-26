@@ -93,10 +93,6 @@ NS_ASSUME_NONNULL_BEGIN
         if([_coreId isEqualToString:@"ppsspp"] && ![_firmwares.firstObject fileExists]) {
             [self extractPPSSPPAssets];
         }
-
-        _expanded  = NO;
-        _isHidden  = NO;
-        _itemCount = 0;
     }
     return self;
 }
@@ -173,9 +169,6 @@ NS_ASSUME_NONNULL_BEGIN
         none->_coreId      = @"0";
         none->_displayName = @"";
         none->_corePath    = @"";
-        none->_expanded    = NO;
-        none->_isHidden    = NO;
-        none->_itemCount   = 0;
     });
     return none;
 }

@@ -547,16 +547,17 @@ extension RetroRomFolderImportor {
         if success {
             let files = fileItemPaths.map({ fileItems[$0]! })
             let newFileKeys = files.map({ $0.key })
-            RetroRomHomePageState.shared.lastImportDate = startDate
+            var infos: [String: Any] =  ["fileKeys": newFileKeys]
             if self.rootKey != nil {
+                infos["folderKey"] = self.rootKey!
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .romCountChanged, object: nil)
-                    NotificationCenter.default.post(name: .retroFolderImported, object: self.rootKey, userInfo: ["fileKeys": newFileKeys])
+                    NotificationCenter.default.post(name: .retroFolderImported, object: nil, userInfo:infos)
                 }
             } else if files.count > 0 {
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: .romCountChanged, object: nil)
-                    NotificationCenter.default.post(name: .retroFileImported, object: newFileKeys)
+                    NotificationCenter.default.post(name: .retroFileImported, object: nil, userInfo: infos)
                 }
             }
         }

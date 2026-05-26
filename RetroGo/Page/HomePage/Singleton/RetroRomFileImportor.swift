@@ -84,10 +84,9 @@ extension RetroRomFileImportor {
     private func postProcess() {
         if success {
             let newFileKeys = fileItems.map({ $0.key })
-            RetroRomHomePageState.shared.lastImportDate = startDate
             DispatchQueue.main.async {
                 NotificationCenter.default.post(name: .romCountChanged, object: nil)
-                NotificationCenter.default.post(name: .retroFileImported, object: newFileKeys)
+                NotificationCenter.default.post(name: .retroFileImported, object: nil, userInfo:  ["fileKeys": newFileKeys])
             }
         }
     }

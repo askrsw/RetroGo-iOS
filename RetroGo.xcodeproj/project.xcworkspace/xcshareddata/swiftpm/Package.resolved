@@ -1,5 +1,5 @@
 {
-  "originHash" : "046c2e147ae87d9e61bcaef4d840a01c49e8fe585cae94d803785ed64a52f9f1",
+  "originHash" : "92e630817152dc70431b835525d8946c990a89646e26f09dc2c3735bcc1c5c9f",
   "pins" : [
     {
       "identity" : "defaults",
@@ -83,12 +83,12 @@
       }
     },
     {
-      "identity" : "panmodal",
+      "identity" : "kingfisher",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/slackhq/PanModal.git",
+      "location" : "https://github.com/onevcat/Kingfisher",
       "state" : {
-        "revision" : "b012aecb6b67a8e46369227f893c12544846613f",
-        "version" : "1.2.7"
+        "revision" : "cf8be20d07654570554c8a8a4952bc8a5766a8b0",
+        "version" : "8.9.0"
       }
     },
     {

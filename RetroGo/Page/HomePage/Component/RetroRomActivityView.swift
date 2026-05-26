@@ -83,14 +83,34 @@ final class RetroRomActivityView: UIView {
     }
 
     func install() {
-        if let maskedView = maskedView {
-            let x = self.minX
-            let y = self.minY
-            let w = self.width
-            let frame = CGRect(x: x, y: y, width: w, height: messageLabel.frame.maxY + 20)
-            self.frame = frame
-            maskedView.install()
-            maskedView.addSubview(self)
+        guard let maskedView = maskedView else { return }
+
+        let x = self.minX
+        let y = self.minY
+        let w = self.width
+        self.frame = CGRect(x: x, y: y, width: w, height: messageLabel.frame.maxY + 20)
+
+        maskedView.alpha = 0
+
+        maskedView.install()
+        maskedView.addSubview(self)
+
+        // Force a layout pass before the fade-in starts. `layoutSubviews`
+        // builds the `CAShapeLayer` bezier mask that gives the panel its
+        // rounded-corner-with-top-notch shape; without this, the first
+        // visible frame is the un-masked rectangle and we get a one-frame
+        // shape pop as the mask gets applied next runloop.
+        maskedView.layoutIfNeeded()
+
+        // Cross-fade in. `deleteItem` and similar entry points install
+        // this view synchronously from a UIAlertAction handler — at that
+        // moment the alert is still mid-dismiss, so a hard alpha=1 attach
+        // overlaps visibly with the alert's exit animation. A short
+        // fade lets the two transitions overlap gracefully instead.
+        UIView.animate(withDuration: 0.2,
+                       delay: 0,
+                       options: [.curveEaseOut, .allowUserInteraction]) {
+            maskedView.alpha = 1
         }
     }
 
