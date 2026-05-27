@@ -25,6 +25,7 @@
 
 #import "UIViewController+Extension.h"
 #import "UIWindow+Extension.h"
+#import "UIView+Extension.h"
 
 @implementation UIViewController (Extension)
 
@@ -60,6 +61,32 @@
     } else {
         return rootViewController;
     }
+}
+
++ (UIView *)makeIconTitleView:(NSString *)title icon:(UIImage *)icon {
+    UIImageView *iconView = [[UIImageView alloc] initWithImage:icon];
+    iconView.contentMode         = UIViewContentModeScaleAspectFit;
+    iconView.layer.cornerRadius  = 6;
+    iconView.layer.masksToBounds = YES;
+    iconView.clipsToBounds       = YES;
+    iconView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    // 用约束锁死尺寸，Stack View 才会遵从
+    [NSLayoutConstraint activateConstraints:@[
+        [iconView.widthAnchor  constraintEqualToConstant:22],
+        [iconView.heightAnchor constraintEqualToConstant:22],
+    ]];
+
+    UILabel *titleLabel   = [[UILabel alloc] initWithFrame:CGRectZero];
+    titleLabel.text       = title;
+    titleLabel.font       = [UIFont boldSystemFontOfSize:17.0];
+    titleLabel.textColor  = UIColor.labelColor;
+
+    UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[iconView, titleLabel]];
+    stack.axis         = UILayoutConstraintAxisHorizontal;
+    stack.alignment    = UIStackViewAlignmentCenter;
+    stack.spacing      = 8.0;
+    return stack;
 }
 
 - (void)setLargeTitleDisplayMode:(UINavigationItemLargeTitleDisplayMode)largeTitleDisplayMode {

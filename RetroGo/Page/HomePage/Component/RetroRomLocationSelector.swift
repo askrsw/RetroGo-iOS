@@ -288,10 +288,7 @@ private extension RetroRomLocationSelector {
         // Trailing detail = total child count (folders + files). Helps
         // users distinguish empty folders from populated ones at a glance.
         let childCount = folder.subFolderKeys.count + folder.subFileKeys.count
-        content.secondaryText = String(
-            format: Bundle.localizedString(forKey: "homepage_location_selector_item_count"),
-            childCount
-        )
+        content.secondaryText = Bundle.localizedString(forKey: "homepage_location_selector_item_count", count: childCount)
         content.secondaryTextProperties.color = .secondaryLabel
         content.secondaryTextProperties.font  = .monospacedDigitSystemFont(
             ofSize: UIFont.smallSystemFontSize, weight: .regular)

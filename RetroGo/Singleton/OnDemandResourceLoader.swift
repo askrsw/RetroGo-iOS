@@ -51,6 +51,11 @@ final class OnDemandResourceLoader: NSObject {
     private var activeRequests: [String: NSBundleResourceRequest] = [:]
     private let lock = NSLock()
 
+    /// 专属串行队列，所有 importRdb 调用均在此队列上执行。
+    /// 串行保证多平台并发 ODR 回调不会同时写 SQLite；
+    /// 独立于主线程和 RAGameRDBManager 的 sqlitequeue，避免死锁。
+    private let importQueue = DispatchQueue(label: "com.retrogo.odr.import", qos: .utility)
+
     @objc
     private(set) dynamic var rdbReady = false
 
@@ -62,32 +67,58 @@ final class OnDemandResourceLoader: NSObject {
     // MARK: - Load
 
     private func loadRDB() {
-        // Step 1: 初始化 SQLite DB；completion 在主线程触发，DB 已就绪
+        // initialize 的 completion 在主线程触发（ObjC 内部 dispatch_async 到 main_queue）。
+        // 立即跳出到 importQueue，避免在主线程上执行 isPlatformImported 的
+        // dispatch_sync 阻塞 UI，以及避免在主线程上触发耗时的 rdb 导入流程。
         RAGameRDBManager.shared().initialize(AppConfig.shared.gameRdbDatabasePath) { [weak self] in
-            self?.importMissingPlatforms()
-
-            self?.rdbReady = true
+            guard let self else { return }
+            self.importQueue.async {
+                self.importMissingPlatforms()
+            }
         }
     }
 
     // MARK: - Missing platform check
 
+    /// 运行在 importQueue（串行）上。
+    /// isPlatformImported 内部 dispatch_sync 到 d_dbQueue，
+    /// 从 importQueue 发起不会死锁（两个不同的队列）。
     private func importMissingPlatforms() {
-        // 过滤出尚未导入的平台（isPlatformImported 内部走 dispatch_sync，此处在主线程调用安全）
         let missing = rdb.filter { _, rdbName in
             !RAGameRDBManager.shared().isPlatformImported(rdbName)
         }
 
-        guard !missing.isEmpty else { return }
+        // 所有平台均已导入，直接就绪
+        guard !missing.isEmpty else {
+            DispatchQueue.main.async { [weak self] in
+                self?.rdbReady = true
+            }
+            return
+        }
+
+        // 用 DispatchGroup 追踪所有平台的导入完成情况（含失败），
+        // 全部结束后才将 rdbReady 置为 true
+        let group = DispatchGroup()
 
         for (tag, rdbName) in missing {
-            requestAndImport(tag: tag, rdbName: rdbName)
+            group.enter()
+            requestAndImport(tag: tag, rdbName: rdbName) {
+                group.leave()
+            }
+        }
+
+        // 所有平台导入流程（无论成败）全部结束后通知主线程
+        group.notify(queue: .main) { [weak self] in
+            NSLog("[ODR] ✅ 所有平台导入流程结束，rdbReady = true")
+            self?.rdbReady = true
         }
     }
 
     // MARK: - Per-platform ODR request
 
-    private func requestAndImport(tag: String, rdbName: String) {
+    /// `completion` 在每个平台的导入流程结束（成功或失败）后调用，
+    /// 保证 DispatchGroup 的 leave 能在所有路径上被触发到。
+    private func requestAndImport(tag: String, rdbName: String, completion: @escaping () -> Void) {
         let request = NSBundleResourceRequest(tags: [tag])
         request.loadingPriority = NSBundleResourceRequestLoadingPriorityUrgent
 
@@ -96,24 +127,32 @@ final class OnDemandResourceLoader: NSObject {
         activeRequests[tag] = request
         lock.unlock()
 
+        // beginAccessingResources 的 completion 在 OS 内部未知队列上回调。
+        // importRdb 内部会 dispatch_async 到 d_dbQueue，任意队列调用均安全；
+        // completion 最终由 d_dbQueue 回调到主线程，group.leave() 在主线程执行。
         request.beginAccessingResources { [weak self] error in
-            guard let self else { return }
+            guard let self else {
+                completion()
+                return
+            }
 
             if let error {
                 NSLog("[ODR] ❌ %@ 资源请求失败: %@", tag, error.localizedDescription)
                 self.releaseRequest(tag: tag)
+                completion()
                 return
             }
 
-            // 在 Bundle 中定位 .rdb 文件
+            // 在 Bundle 中定位 .rdb 文件（只读元数据，ODR 回调队列上可以做）
             guard let rdbURL = Bundle.main.url(forResource: rdbName, withExtension: "rdb") else {
                 NSLog("[ODR] ❌ Bundle 中找不到 %@.rdb（tag=%@）", rdbName, tag)
                 request.endAccessingResources()
                 self.releaseRequest(tag: tag)
+                completion()
                 return
             }
 
-            // 导入到 SQLite；completion 在主线程
+
             RAGameRDBManager.shared().importRdb(atPath: rdbURL.path) { importedCount, importError in
                 if let importError {
                     NSLog("[ODR] ❌ %@ 导入失败: %@", rdbName, importError.localizedDescription)
@@ -124,6 +163,7 @@ final class OnDemandResourceLoader: NSObject {
                 // 数据已落盘 SQLite，释放 ODR 资源
                 request.endAccessingResources()
                 self.releaseRequest(tag: tag)
+                completion()
             }
         }
     }

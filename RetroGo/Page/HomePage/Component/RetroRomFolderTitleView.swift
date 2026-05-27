@@ -177,8 +177,8 @@ final class RetroRomFolderTitleView: UIView {
     // 20pt is the outer diameter of the chevron's circular background,
     // matching iOS Files' title-chevron metrics.
     private let chevronSize: CGFloat = 20
-    private let iconToTitlePadding: CGFloat = 6
-    private let titleToChevronPadding: CGFloat = 6
+    private let iconToTitlePadding: CGFloat = 8
+    private let titleToChevronPadding: CGFloat = 8
 
     // MARK: - Init
 

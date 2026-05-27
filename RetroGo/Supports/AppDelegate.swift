@@ -26,7 +26,6 @@
 import UIKit
 import ObjcHelper
 import RACoordinator
-import IQKeyboardManagerSwift
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -49,7 +48,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let _ = RetroArchX.shared()
         let _ = OnDemandResourceLoader.shared
 
-        configKeyboardManager()
         configNavigationBarAppearance()
 
         return true
@@ -119,11 +117,6 @@ extension AppDelegate {
 }
 
 extension AppDelegate {
-    private func configKeyboardManager() {
-        IQKeyboardManager.shared.isDebuggingEnabled = false
-        IQKeyboardManager.shared.isEnabled = true
-    }
-
     private func configNavigationBarAppearance() {
         let appearance = UINavigationBarAppearance()
         // Opaque background — prevents the iOS 15+ default transparent

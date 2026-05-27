@@ -21,7 +21,7 @@
 		AB11A56A2F9941BF00C32E39 /* emu.ppsspp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8ACC2F5E5504007E1669 /* emu.ppsspp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB11A56B2F9941BF00C32E39 /* emu.vbam.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8ACD2F5E5504007E1669 /* emu.vbam.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB11A56C2F9941BF00C32E39 /* emu.yabause.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8ACE2F5E5504007E1669 /* emu.yabause.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		AB12C2342F503262000B07BF /* EmuCoreListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12C2332F503262000B07BF /* EmuCoreListViewController.swift */; };
+		AB12C2342F503262000B07BF /* RetroRomCoreListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12C2332F503262000B07BF /* RetroRomCoreListViewController.swift */; };
 		AB12C2362F503FB5000B07BF /* RetroRomCoreItemTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12C2352F503FB5000B07BF /* RetroRomCoreItemTableViewCell.swift */; };
 		AB38A12E2FB519D4009E3915 /* AppStoreProFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38A12D2FB519D4009E3915 /* AppStoreProFeatureGate.swift */; };
 		AB3D70382F7D49F70008A6AA /* GamePageOverlayScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D70372F7D49F70008A6AA /* GamePageOverlayScene.swift */; };
@@ -91,16 +91,14 @@
 		AB7CA0662F3B057100EFACA9 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = AB7CA0652F3B057100EFACA9 /* Data */; };
 		AB7CA06A2F3B05F000EFACA9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AB7CA0682F3B05F000EFACA9 /* InfoPlist.strings */; };
 		AB7CA06F2F3B067400EFACA9 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AB7CA06D2F3B067400EFACA9 /* Localizable.strings */; };
+		AB7EDE9A2FC7423C004BAEC9 /* emu.fceumm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB80162C2F9333860031643C /* GameConfigSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB80162B2F9333860031643C /* GameConfigSection.swift */; };
 		AB80162F2F9384A80031643C /* GameConfigTitleViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB80162E2F9384980031643C /* GameConfigTitleViewCell.swift */; };
 		AB8016312F93DAF80031643C /* GameConfigFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8016302F93DAED0031643C /* GameConfigFooterView.swift */; };
 		AB8016332F93E08F0031643C /* GameConfigSwitchViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8016322F93E07F0031643C /* GameConfigSwitchViewCell.swift */; };
 		AB8016352F9403020031643C /* GameConfigBaseViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8016342F9403020031643C /* GameConfigBaseViewCell.swift */; };
-		AB803A1A2F3B38D300DE8D33 /* IQKeyboardManagerSwift in Frameworks */ = {isa = PBXBuildFile; productRef = AB803A192F3B38D300DE8D33 /* IQKeyboardManagerSwift */; };
 		AB84001A2F911B4800E7FD49 /* GameOverLayFastButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8400192F911B4800E7FD49 /* GameOverLayFastButton.swift */; };
 		AB88D8FF2F962D0A00A04FEE /* GameConfigSegmentViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88D8FE2F962D0A00A04FEE /* GameConfigSegmentViewCell.swift */; };
-		AB898D802FBF091100113D10 /* emu.fceumm in Frameworks */ = {isa = PBXBuildFile; productRef = AB898D7F2FBF091100113D10 /* emu.fceumm */; };
-		AB898D812FBF091F00113D10 /* emu.fceumm in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AB898D7F2FBF091100113D10 /* emu.fceumm */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AB8B7EC02F4D4A7F00A56A64 /* RetroRomLocationSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B7EBF2F4D4A7F00A56A64 /* RetroRomLocationSelector.swift */; };
 		AB8FDDD72FC31D9A008607E0 /* RetroRomFolderHostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8FDDD62FC31D9A008607E0 /* RetroRomFolderHostViewController.swift */; };
 		AB8FDDDB2FC369CB008607E0 /* RetroRomFolderSubview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8FDDDA2FC369CB008607E0 /* RetroRomFolderSubview.swift */; };
@@ -178,6 +176,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				AB7EDE9A2FC7423C004BAEC9 /* emu.fceumm.framework in CopyFiles */,
 				AB11A55F2F9941BF00C32E39 /* emu.dosbox-pure.framework in CopyFiles */,
 				AB11A5612F9941BF00C32E39 /* emu.gambatte.framework in CopyFiles */,
 				AB11A5622F9941BF00C32E39 /* emu.gearboy.framework in CopyFiles */,
@@ -200,7 +199,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				AB898D812FBF091F00113D10 /* emu.fceumm in Embed Frameworks */,
 				ABBC8B182F5E5690007E1669 /* MoltenVK.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -210,7 +208,7 @@
 
 /* Begin PBXFileReference section */
 		AB0A1DD42FB71C7800503077 /* RetroArchGamePauseToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroArchGamePauseToken.swift; sourceTree = "<group>"; };
-		AB12C2332F503262000B07BF /* EmuCoreListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmuCoreListViewController.swift; sourceTree = "<group>"; };
+		AB12C2332F503262000B07BF /* RetroRomCoreListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomCoreListViewController.swift; sourceTree = "<group>"; };
 		AB12C2352F503FB5000B07BF /* RetroRomCoreItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomCoreItemTableViewCell.swift; sourceTree = "<group>"; };
 		AB38A12D2FB519D4009E3915 /* AppStoreProFeatureGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreProFeatureGate.swift; sourceTree = "<group>"; };
 		AB3D70372F7D49F70008A6AA /* GamePageOverlayScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageOverlayScene.swift; sourceTree = "<group>"; };
@@ -380,9 +378,7 @@
 				ABDAD2682F3BABF5004100A9 /* SnapKit in Frameworks */,
 				AB7720652F3B1B31004F5B75 /* RACoordinator in Frameworks */,
 				ABDAD2782F3BB429004100A9 /* YYText in Frameworks */,
-				AB803A1A2F3B38D300DE8D33 /* IQKeyboardManagerSwift in Frameworks */,
 				AB6F0E772F86682100282818 /* XMLTextRenderKit in Frameworks */,
-				AB898D802FBF091100113D10 /* emu.fceumm in Frameworks */,
 				ABA8F9682FBDB3CF0002B89D /* Kingfisher in Frameworks */,
 				ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */,
 			);
@@ -773,7 +769,7 @@
 				ABDAD28B2F3BB5E1004100A9 /* RetroRomCoreInfoViewController.swift */,
 				ABDAD28D2F3BB606004100A9 /* RetroRomCoreLicenseViewController.swift */,
 				AB90A1F02F3DE24B0078C74E /* RetroRomCoreSelectViewController.swift */,
-				AB12C2332F503262000B07BF /* EmuCoreListViewController.swift */,
+				AB12C2332F503262000B07BF /* RetroRomCoreListViewController.swift */,
 			);
 			path = CorePage;
 			sourceTree = "<group>";
@@ -852,14 +848,12 @@
 			packageProductDependencies = (
 				AB7720642F3B1B31004F5B75 /* RACoordinator */,
 				AB7720662F3B1B33004F5B75 /* ObjcHelper */,
-				AB803A192F3B38D300DE8D33 /* IQKeyboardManagerSwift */,
 				AB55BC612F3B587F00569A84 /* Defaults */,
 				ABDAD2592F3BAA8C004100A9 /* SQLite */,
 				ABDAD2672F3BABF5004100A9 /* SnapKit */,
 				ABDAD2772F3BB429004100A9 /* YYText */,
 				AB6F0E762F86682100282818 /* XMLTextRenderKit */,
 				ABA8F9672FBDB3CF0002B89D /* Kingfisher */,
-				AB898D7F2FBF091100113D10 /* emu.fceumm */,
 			);
 			productName = RetroGo;
 			productReference = ABD42B502F3A5EFC008B1771 /* RetroGo.app */;
@@ -906,13 +900,11 @@
 			mainGroup = ABD42B472F3A5EFC008B1771;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AB803A182F3B38D300DE8D33 /* XCRemoteSwiftPackageReference "IQKeyboardManager" */,
 				AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */,
 				ABDAD2582F3BAA8C004100A9 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 				ABDAD2662F3BABF5004100A9 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				AB6F0E752F86682100282818 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */,
 				AB94AACD2FBDB1990046B830 /* XCRemoteSwiftPackageReference "Kingfisher" */,
-				AB898D7E2FBF091100113D10 /* XCLocalSwiftPackageReference "../../Working/RetroArchX/Packages/RetroCores/fceumm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ABD42B512F3A5EFC008B1771 /* Products */;
@@ -1049,7 +1041,7 @@
 				AB94AAC92FBDA27D0046B830 /* DiscoverGameHeaderView.swift in Sources */,
 				AB94AACA2FBDA27D0046B830 /* DiscoverInfoCell.swift in Sources */,
 				AB3D703C2F7D4FEA0008A6AA /* GameOverlayDirectionPad.swift in Sources */,
-				AB12C2342F503262000B07BF /* EmuCoreListViewController.swift in Sources */,
+				AB12C2342F503262000B07BF /* RetroRomCoreListViewController.swift in Sources */,
 				ABF60F8C2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift in Sources */,
 				ABDAD28E2F3BB609004100A9 /* RetroRomCoreLicenseViewController.swift in Sources */,
 				ABDAD25C2F3BAA9B004100A9 /* RetroRomFileManager.swift in Sources */,
@@ -1128,7 +1120,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1159,7 +1151,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.1;
+				MARKETING_VERSION = 1.4.0;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1185,7 +1177,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1216,7 +1208,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.1;
+				MARKETING_VERSION = 1.4.0;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1386,13 +1378,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		AB898D7E2FBF091100113D10 /* XCLocalSwiftPackageReference "../../Working/RetroArchX/Packages/RetroCores/fceumm" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../Working/RetroArchX/Packages/RetroCores/fceumm;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1407,15 +1392,7 @@
 			repositoryURL = "https://github.com/askrsw/XMLTextRenderKit.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.0;
-			};
-		};
-		AB803A182F3B38D300DE8D33 /* XCRemoteSwiftPackageReference "IQKeyboardManager" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/hackiftekhar/IQKeyboardManager.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 8.0.2;
+				minimumVersion = 1.3.0;
 			};
 		};
 		AB94AACD2FBDB1990046B830 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
@@ -1462,15 +1439,6 @@
 		AB7720662F3B1B33004F5B75 /* ObjcHelper */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ObjcHelper;
-		};
-		AB803A192F3B38D300DE8D33 /* IQKeyboardManagerSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AB803A182F3B38D300DE8D33 /* XCRemoteSwiftPackageReference "IQKeyboardManager" */;
-			productName = IQKeyboardManagerSwift;
-		};
-		AB898D7F2FBF091100113D10 /* emu.fceumm */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = emu.fceumm;
 		};
 		ABA8F9672FBDB3CF0002B89D /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

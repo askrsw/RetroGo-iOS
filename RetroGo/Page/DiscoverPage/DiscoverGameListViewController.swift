@@ -119,9 +119,12 @@ final class DiscoverGameListViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         navigationItem.title = platform.displayName
+        navigationItem.titleView = makeTitleView()
+
         // Prevent the long platform name from becoming the back button title
         // on the next level (Game Detail), which causes a width-==0 layout conflict.
         navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.largeTitleDisplayMode = .never
 
         setupSearch()
 
@@ -286,6 +289,17 @@ final class DiscoverGameListViewController: UIViewController {
         guard let cell = tableView.cellForRow(at: indexPath) as? DiscoverGameCell else { return }
 
         cell.setCoverImage(image)
+    }
+
+    // MARK: - Icon title view
+
+    private func makeTitleView() -> UIView? {
+        guard let platformIcon = platform.platformIcon else {
+            return nil
+        }
+        let icon = IconRender.shared.platformIcon(key: platformIcon, size: CGSize(width: 22, height: 22))
+        let title = platform.displayName
+        return Self.makeIconTitleView(title, icon: icon)
     }
 }
 

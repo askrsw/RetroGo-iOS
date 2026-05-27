@@ -411,9 +411,9 @@ private extension RetroRomFolderHostViewController {
     /// row in the nav-bar config menu.
     func organizeModeIcon() -> UIImage? {
         switch RetroRomFolderPageState.shared.organizeMode {
-        case .byFolder: return UIImage(systemName: "folder")
-        case .byCore:   return UIImage(systemName: "cpu")
-        case .byTag:    return UIImage(systemName: "tag")
+        case .byFolder: return UIImage(systemName: "folder.fill")
+        case .byCore:   return UIImage(systemName: "cpu.fill")
+        case .byTag:    return UIImage(systemName: "tag.fill")
         case .tree:     return IconRender.shared.treeSymbol(size: CGSize(width: 22, height: 22))
         }
     }

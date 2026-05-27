@@ -45,7 +45,9 @@ final class AppSettingViewController: UIViewController {
 
         view.backgroundColor = .systemBackground
         navigationItem.title = Bundle.localizedString(forKey: "settings_main_title")
-        navigationItem.largeTitleDisplayMode = .automatic
+
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.largeTitleDisplayMode = .always
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: proButton)
 
@@ -88,7 +90,8 @@ extension AppSettingViewController {
 
         // about
         case about
-        case versionHeistory
+        case versionHistory
+        case rattingApp
     }
 
     private func configUI() -> UITableView {
@@ -218,7 +221,7 @@ extension AppSettingViewController {
                 cell.accessoryView = switchControl
                 return cell
 
-            case .versionHeistory:
+            case .versionHistory:
                 let cell = cellBuilder()
                 cell.accessoryView = nil
                 cell.imageView?.image = IconRender.shared.settingsIcon(
@@ -240,7 +243,17 @@ extension AppSettingViewController {
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_about")
                 cell.accessoryType = .disclosureIndicator
                 return cell
-
+            case .rattingApp:
+                let cell = cellBuilder()
+                cell.accessoryView = nil
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "star.bubble.fill",
+                    background: UIColor(red: 0.78, green: 0.56, blue: 0.06, alpha: 1.0),
+                    size: iconSize
+                )
+                cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_rating_app")
+                cell.accessoryType = .disclosureIndicator
+                return cell
             }
         }
         return ds
@@ -260,7 +273,7 @@ extension AppSettingViewController {
         let gameItems: [Item] = [.coreList, .coreSettingList]
         snapshot.appendItems(gameItems, toSection: .game)
 
-        let aboutItems: [Item] = [.versionHeistory, .about]
+        let aboutItems: [Item] = [.about, .versionHistory, .rattingApp]
         snapshot.appendItems(aboutItems, toSection: .about)
 
         dataSource.apply(snapshot, animatingDifferences: animated)
@@ -277,7 +290,7 @@ extension AppSettingViewController: UITableViewDelegate {
         switch item {
         case .language: return true
         case .coreList, .coreSettingList: return true
-        case .about, .versionHeistory: return true
+        case .about, .versionHistory, .rattingApp: return true
         default: return false
         }
     }
@@ -291,13 +304,21 @@ extension AppSettingViewController: UITableViewDelegate {
         case .coreList: showCoreList(action: .showCoreInfo)
         case .coreSettingList: showCoreList(action: .configureCore)
         case .about: showAbout()
-        case .versionHeistory: showVersionHistory()
+        case .versionHistory: showVersionHistory()
+        case .rattingApp: openAppStoreReview()
         default: break
         }
     }
 }
 
 extension AppSettingViewController {
+    private func openAppStoreReview() {
+        let urlString = "itms-apps://itunes.apple.com/app/id\(6758611562)?action=write-review"
+        if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
+    }
+
     private func showVersionHistory() {
         Vibration.selection.vibrate()
 
@@ -306,17 +327,18 @@ extension AppSettingViewController {
             let title = Bundle.localizedString(forKey: "appsetting_version_history")
             let config = XMLRenderConfig()
             config.mainColor = .mainColor
-            let controller = XMLTextRenderViewController(xmlUrl: url, mainTitle: title, config: config)
+            let icon = IconRender.shared.settingsIcon(symbol: "clock.fill", background: .systemIndigo, size: CGSize(width: 22, height: 22))
+            let controller = XMLTextRenderViewController(xmlUrl: url, title: title, icon: icon, config: config)
             navigationController?.pushViewController(controller, animated: true)
         }
     }
 
-    private func showCoreList(action: EmuCoreListViewController.Action) {
+    private func showCoreList(action: RetroRomCoreListViewController.Action) {
         Vibration.selection.vibrate()
 
         guard RetroArchX.shared().initialized else { return }
 
-        let controller = EmuCoreListViewController(action: action)
+        let controller = RetroRomCoreListViewController(action: action)
         navigationController?.pushViewController(controller, animated: true)
     }
 
@@ -328,7 +350,8 @@ extension AppSettingViewController {
             let title = Bundle.localizedString(forKey: "appsetting_about")
             let config = XMLRenderConfig()
             config.mainColor = .mainColor
-            let controller = XMLTextRenderViewController(xmlUrl: url, mainTitle: title, config: config)
+            let icon =  IconRender.shared.settingsIcon(symbol: "info.circle.fill", background: .systemBlue, size: CGSize(width: 22, height: 22))
+            let controller = XMLTextRenderViewController(xmlUrl: url, title: title, icon: icon, config: config)
             navigationController?.pushViewController(controller, animated: true)
         }
     }

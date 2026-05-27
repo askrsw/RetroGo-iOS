@@ -86,5 +86,19 @@
 			<string>%d 年</string>
 		</dict>
 	</dict>
+	<key>homepage_location_selector_item_count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_items@</string>
+		<key>num_items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d 项</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

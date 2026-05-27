@@ -63,6 +63,7 @@
 "appsetting_ingame_haptic_feedback" = "游戏震动反馈";
 "appsetting_about" = "关于 Retro Go";
 "appsetting_version_history" = "版本历史";
+"appsetting_rating_app" = "喜欢 RetroGo？来评个分";
 
 // MARK: - Homepage
 
@@ -186,7 +187,6 @@
 "homepage_root_folder_name" = "我的游戏库";
 "homepage_location_selector_moving_file" = "正在移动游戏";
 "homepage_location_selector_moving_folder" = "正在移动目录";
-"homepage_location_selector_item_count" = "%d 项";
 "homepage_same_folder" = "目标文件夹与当前位置相同。";
 "homepage_descendant_folder" = "无法将文件夹移动到它自己的子文件夹中。";
 "homepage_whats_new" = "新内容";

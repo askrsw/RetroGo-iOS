@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.4.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.4.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 5 月 28 日</i>。
+        </p-paragraph>
+        <p-list id="v1.4.0" style="number">
+            <p-item>新增<b>游戏发现</b>标签页，通过按需资源（On-Demand Resources）加载各平台游戏数据库，可直接在应用内查询游戏信息。</p-item>
+            <p-item>引入<b>标签栏导航</b>，游戏库、游戏发现、设置三大功能模块各占独立标签，切换更直接，整体布局更清晰。</p-item>
+            <p-item>全面重构游戏库文件浏览方式：每层页面对应一个文件夹，支持<b>图标平铺、列表平铺、按核心分类、按标签分类</b>四种视图，以及可一览完整目录层级的<b>树状结构</b>视图。</p-item>
+            <p-item>为各游戏平台设计专属<b>平台图标</b>，让游戏库一目了然；同时对应用其它模块的图标进行全面精细化更新。</p-item>
+            <p-item>修复自定义 RetroArch 按键映射中 <b>Turbo 按键冲突</b>问题，该问题曾导致 PSP 赛车游戏中赛车加速无法正常触发。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.3.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.3.0</p-title>
         <p-paragraph fontsize="13">

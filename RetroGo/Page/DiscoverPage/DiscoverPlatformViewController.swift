@@ -109,7 +109,9 @@ final class DiscoverPlatformViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         navigationItem.title = Bundle.localizedString(forKey: "discover_main_title")
-        navigationItem.largeTitleDisplayMode = .automatic
+
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.largeTitleDisplayMode = .always
 
         // Trigger lazy view/dataSource initialisation
         _ = tableView

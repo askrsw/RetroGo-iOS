@@ -45,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIViewController (Extension)
 + (nullable UIViewController *)currentActiveViewController;
++ (UIView *)makeIconTitleView:(NSString *)title icon:(UIImage *)icon;
 - (void)setLargeTitleDisplayMode:(UINavigationItemLargeTitleDisplayMode)largeTitleDisplayMode;
 @end
 

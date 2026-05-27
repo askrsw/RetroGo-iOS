@@ -42,6 +42,9 @@ private final class RetroGoNavigationController: UINavigationController {
     override func viewDidLoad() {
         super.viewDidLoad()
         installAppearance()
+
+        WhatsNewViewController.showIfNeeded()
+        AppWelcomeViewController.showIfNeeded()
     }
 
     override func viewWillAppear(_ animated: Bool) {

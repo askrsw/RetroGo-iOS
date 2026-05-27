@@ -130,6 +130,8 @@ final class DiscoverGameDetailViewController: UIViewController {
         view.backgroundColor   = .systemGroupedBackground
         navigationItem.title   = game.name
 
+        navigationItem.largeTitleDisplayMode = .never
+
         buildSections()
 
         _ = tableView

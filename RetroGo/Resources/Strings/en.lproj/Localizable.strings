@@ -13,13 +13,13 @@
 "cancel" = "Cancel";
 "ok" = "OK";
 "skip" = "Skip";
-"info" = "Infomation";
+"info" = "Info";
 "error" = "Error";
 "warning" = "Warning";
 "refresh" = "Refresh";
 "tags" = "Tags";
 "delete" = "Delete";
-"setting" = "Setting";
+"setting" = "Settings";
 "red" = "Red";
 "orange" = "Orange";
 "yellow" = "Yellow";
@@ -63,6 +63,7 @@
 "appsetting_ingame_haptic_feedback" = "In-Game Haptic Feedback";
 "appsetting_about" = "About Retro Go";
 "appsetting_version_history" = "Version ​History";
+"appsetting_rating_app" = "Love RetroGo? Rate Us";
 
 // MARK: - Homepage
 
@@ -185,7 +186,6 @@
 "homepage_root_folder_name" = "My Library";
 "homepage_location_selector_moving_file" = "Moving game";
 "homepage_location_selector_moving_folder" = "Moving folder";
-"homepage_location_selector_item_count" = "%d items";
 "homepage_same_folder" = "Target is the same as the current location.";
 "homepage_descendant_folder" = "Cannot move a folder into its own subfolder.";
 "homepage_whats_new" = "What's New";

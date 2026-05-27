@@ -58,6 +58,7 @@ final class RetroRomCoreInfoViewController: UIViewController {
         view.backgroundColor = .systemBackground
         navigationItem.title = coreInfoItem.coreName
         navigationItem.titleView = makeTitleView()
+        navigationItem.largeTitleDisplayMode = .never
 
         if showCloseButton {
             navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(closeAction))
@@ -66,38 +67,6 @@ final class RetroRomCoreInfoViewController: UIViewController {
 
         _ = collectionView
         applySnapshot()
-    }
-
-    /// Builds an icon + bold-title compound titleView for the nav bar.
-    /// Falls back to the system text title (returns nil) when the core has
-    /// no mapped platform icon, so we don't show an awkward empty slot.
-    private func makeTitleView() -> UIView? {
-        guard let key = coreInfoItem.coreIcon else { return nil }
-
-        let iconSize: CGFloat = 22
-        let icon = IconRender.shared.platformIcon(
-            key: key,
-            size: CGSize(width: iconSize, height: iconSize)
-        )
-        let imageView = UIImageView(image: icon)
-        imageView.contentMode = .scaleAspectFit
-        // Lock the intrinsic size — the stack view honors it without an
-        // explicit constraint, but pinning both axes keeps it consistent
-        // across older SDKs / rotation.
-        imageView.snp.makeConstraints { make in
-            make.size.equalTo(CGSize(width: iconSize, height: iconSize))
-        }
-
-        let titleLabel = UILabel()
-        titleLabel.text = coreInfoItem.coreName
-        titleLabel.font = .boldSystemFont(ofSize: 17)
-        titleLabel.textColor = .label
-
-        let stack = UIStackView(arrangedSubviews: [imageView, titleLabel])
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.spacing = 6
-        return stack
     }
 
     func updateFirmware(_ firmware: EmuCoreFirmware) {
@@ -112,6 +81,13 @@ final class RetroRomCoreInfoViewController: UIViewController {
 }
 
 extension RetroRomCoreInfoViewController {
+    private func makeTitleView() -> UIView? {
+        guard let key = coreInfoItem.coreIcon else { return nil }
+        let iconSize: CGFloat = 22
+        let icon = IconRender.shared.platformIcon(key: key, size: CGSize(width: iconSize, height: iconSize))
+        return Self.makeIconTitleView(coreInfoItem.coreName, icon: icon)
+    }
+
     private func configUI() -> UICollectionView {
         var config = UICollectionLayoutListConfiguration(appearance: .insetGrouped)
         config.headerMode = .supplementary

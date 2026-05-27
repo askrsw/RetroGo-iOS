@@ -86,6 +86,8 @@ final class GameConfigViewController: UIViewController {
 
         view.backgroundColor = .systemBackground
         navigationItem.title = getMainTitle()
+        navigationItem.titleView = makeTitleView()
+        navigationItem.largeTitleDisplayMode = .never
 
         if showCloseButton {
             navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), style: .plain, target: self, action: #selector(closeAction))
@@ -114,6 +116,22 @@ extension GameConfigViewController {
             case .core: return Bundle.localizedString(forKey: "configpage_core_setting")
             case .game: return Bundle.localizedString(forKey: "configpage_rom_setting")
         }
+    }
+
+    func makeTitleView() -> UIView? {
+        let icon: UIImage?
+        switch session.scope {
+        case .global: icon = UIImage(systemName: "globe")
+        case .game: icon = UIImage(named: "Icon_file")
+        case .core:
+            if let key = session.core?.coreIcon {
+                icon = IconRender.shared.platformIcon(key: key, size: CGSize(width: 20, height: 20))
+            } else {
+                icon = nil
+            }
+        }
+        guard let icon = icon else { return nil }
+        return Self.makeIconTitleView(getMainTitle(), icon: icon)
     }
 
     func prepareInputRuntimeIfNeeded() {

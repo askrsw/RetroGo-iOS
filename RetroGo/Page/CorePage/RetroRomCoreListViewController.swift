@@ -1,5 +1,5 @@
 //
-//  EmuCoreListViewController.swift
+//  RetroRomCoreListViewController.swift
 //  RetroGo
 //
 //  Created by haharsw on 2026/2/26.
@@ -28,10 +28,26 @@ import SnapKit
 import ObjcHelper
 import RACoordinator
 
-final class EmuCoreListViewController: UIViewController {
+final class RetroRomCoreListViewController: UIViewController {
     enum Action {
         case showCoreInfo      // 进入 RetroRomCoreInfoViewController
         case configureCore     // 进入 GameConfigViewController（核心设置）
+
+        var desc: String {
+            switch self {
+            case .showCoreInfo: return Bundle.localizedString(forKey: "info")
+            case .configureCore: return Bundle.localizedString(forKey: "setting")
+            }
+        }
+
+        var icon: UIImage {
+            switch self {
+            case .showCoreInfo:
+                return IconRender.shared.settingsIcon(symbol: "cpu.fill", background: .systemOrange, size: CGSize(width: 22, height: 22))
+            case .configureCore:
+                return IconRender.shared.settingsIcon(symbol: "slider.horizontal.3", background: .systemGray, size: CGSize(width: 22, height: 22))
+            }
+        }
     }
 
     private lazy var tableView  = self.configUI()
@@ -52,7 +68,9 @@ final class EmuCoreListViewController: UIViewController {
         super.viewDidLoad()
 
         view.backgroundColor = .systemBackground
-        navigationItem.title = Bundle.localizedString(forKey: "corelist_core_list")
+        navigationItem.title = Bundle.localizedString(forKey: "corelist_core_list") + " - \(action.desc)"
+        navigationItem.titleView = makeTitleView()
+        navigationItem.largeTitleDisplayMode = .never
 
         _ = tableView
         _ = dataSource
@@ -61,7 +79,7 @@ final class EmuCoreListViewController: UIViewController {
     }
 }
 
-extension EmuCoreListViewController {
+extension RetroRomCoreListViewController {
     enum Section: Hashable {
         case main
     }
@@ -105,9 +123,15 @@ extension EmuCoreListViewController {
         snapshot.appendItems(RetroArchX.shared().allCores, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: false)
     }
+
+    private func makeTitleView() -> UIView? {
+        let title = Bundle.localizedString(forKey: "corelist_core_list") + " - \(action.desc)"
+        let icon  = action.icon
+        return Self.makeIconTitleView(title, icon: icon)
+    }
 }
 
-extension EmuCoreListViewController: UITableViewDelegate {
+extension RetroRomCoreListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         Vibration.selection.vibrate()
