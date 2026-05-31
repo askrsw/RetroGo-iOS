@@ -102,5 +102,6 @@ OUINotifications/
 Main.xcconfig
 
 /LocalDocs/
+/AppStoreScreenshots/
 /Backup/
 /.claude/

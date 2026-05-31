@@ -301,7 +301,7 @@ private extension RetroRomFolderSectionedSubview {
         case 4:
             itemWidth = (min(width, 430) - 30 - 30 * 3 - 30) / 4
         default:
-            itemWidth = 150
+            itemWidth = (width - 30 - 30 * CGFloat(columnCount - 1) - 30) / CGFloat(columnCount)
         }
         let itemHeight = itemWidth / 256 * 240 + RetroRomBaseIconViewCell.titleHeight
         return CGSize(width: max(itemWidth, 1), height: max(itemHeight, 1))

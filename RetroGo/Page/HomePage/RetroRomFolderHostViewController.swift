@@ -742,6 +742,8 @@ private extension RetroRomFolderHostViewController {
     @objc
     func handleLanguageChanged() {
         updateNavigationTitle()
+        refreshConfigMenu()
+        folderTitleView?.menu = makeFolderTitleMenu()
         subview?.languageChanged()
     }
 
