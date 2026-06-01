@@ -351,7 +351,15 @@ extension AppSettingViewController {
             let config = XMLRenderConfig()
             config.mainColor = .mainColor
             let icon =  IconRender.shared.settingsIcon(symbol: "info.circle.fill", background: .systemBlue, size: CGSize(width: 22, height: 22))
-            let controller = XMLTextRenderViewController(xmlUrl: url, title: title, icon: icon, config: config)
+            let controller = XMLTextRenderViewController(xmlUrl: url, title: title, icon: icon, config: config, commandHandlers: [
+                "openAcknowledgments": {
+                    guard let activeController = UIViewController.currentActive() else { return }
+                    guard let url = Bundle.main.url(forResource: "acknowledgments", withExtension: "xml", subdirectory: "Data/xmls/\(languageKey)") else { return }
+                    let title = Bundle.localizedString(forKey: "appsetting_acknowledgments")
+                    let c = XMLTextRenderViewController(xmlUrl: url, title: title, config: config)
+                    activeController.navigationController?.pushViewController(c, animated: true)
+                }
+            ])
             navigationController?.pushViewController(controller, animated: true)
         }
     }

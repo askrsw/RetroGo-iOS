@@ -2,7 +2,7 @@
 <p-contents>
     <p-section id="about_intro">
         <p-paragraph bottompadding="10" toppadding="20">
-            <b>RetroGo</b> 是一款基于 RetroArch/Libretro 框架的高性能 iOS 模拟器前端。我们通过原生 UIKit 重新定义了移动端交互逻辑，在提供沉浸式复古游戏体验的同时，严格遵循各模拟核心的精度与兼容性要求。
+            <b>RetroGo</b> 是一款专为 iPhone 和 iPad 打造的高性能复古游戏模拟器前端，基于 RetroArch/Libretro 框架构建。它将原生 UIKit 界面、SpriteKit 触控按键、即时存档、手柄支持、游戏发现与强大的文件式游戏库整合到一个专注的 iOS 体验中。
         </p-paragraph>
     </p-section>
     <p-section id="about_open_source" bottompadding="15" toppadding="10">
@@ -14,7 +14,13 @@
     <p-section id="about_cores" bottompadding="15" toppadding="10">
         <p-title level="3" underline="false">核心组件说明</p-title>
         <p-paragraph>
-            本应用集成了多个经过授权的 Libretro 核心。各核心均独立遵循其原有的开源许可证（包括 GPLv2、GPLv3、LGPL、MIT 及 BSD 等）。详细的核心列表及对应的许可证文本，请参阅应用内的「核心列表」页面。
+            本应用集成了多个 Libretro 核心。各核心均独立遵循其原有的开源许可证，包括 GPL、LGPL、MIT、BSD 以及其他兼容许可证。详细的核心列表及对应的许可证文本，请参阅应用内的「核心列表」页面。
+        </p-paragraph>
+    </p-section>
+    <p-section id="about_library" bottompadding="15" toppadding="10">
+        <p-title level="3" underline="false">游戏库与本地数据</p-title>
+        <p-paragraph>
+            RetroGo 面向自行管理合法游戏文件的用户设计。导入的游戏、存档、截图、资料、设置与手柄映射均保存在您的设备本地。
         </p-paragraph>
     </p-section>
     <p-section id="about_policies" bottompadding="15" toppadding="10">
@@ -26,16 +32,19 @@
     <p-section id="about_content" bottompadding="15" toppadding="10">
         <p-title level="3" underline="false">版权与法律声明</p-title>
         <p-paragraph>
-            RetroGo 仅作为通用的游戏引擎前端软件提供，<b>不内置、不提供、亦不分发</b> 任何受版权保护的游戏镜像（ROM）或系统固件（BIOS）。
+            RetroGo 仅作为通用模拟器前端软件提供，<b>不内置、不提供、亦不分发</b> 任何商业游戏镜像（ROM）或系统固件（BIOS）。
         </p-paragraph>
         <p-paragraph>
-            用户须自行确保所加载的内容拥有合法授权，并符合当地法律法规。RetroGo 与任何游戏主机制造商或软件发行商均无关联。
+            用户须自行确保所加载的内容拥有合法授权，并符合当地法律法规。RetroGo 与任何游戏主机制造商、平台方、发行商、开发者或商标持有人均无关联。
         </p-paragraph>
     </p-section>
-    <p-section id="about_thanks">
+    <p-section id="about_thanks" bottompadding="15" toppadding="10">
         <p-title level="3" underline="false">致谢</p-title>
-        <p-paragraph bottompadding="20" toppadding="10">
-            诚挚感谢 RetroArch/Libretro 团队以及全球成千上万名模拟核心贡献者。正是因为开源精神，才让经典的数字文化得以在现代设备上延续。
+        <p-paragraph bottompadding="10" toppadding="10">
+            诚挚感谢 RetroArch/Libretro 团队、开源社区贡献者以及自制游戏作者。正是这些工作，让 RetroGo 得以不断完善。
+        </p-paragraph>
+        <p-paragraph bottompadding="20" toppadding="0">
+            <command key="openAcknowledgments">查看致谢名单</command>
         </p-paragraph>
     </p-section>
     <p-section id="about_icp" bottompadding="10" toppadding="0">
@@ -47,4 +56,3 @@
         </p-paragraph>
     </p-section>
 </p-contents>
-

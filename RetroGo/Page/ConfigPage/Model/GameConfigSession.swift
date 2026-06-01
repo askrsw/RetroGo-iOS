@@ -60,6 +60,11 @@ final class GameConfigSession {
             array.append((section: .title, entries: titleEntries))
         }
 
+        let discEntries = makeDiscConfigEntries()
+        if discEntries.count > 0 {
+            array.append((section: .disc, entries: discEntries))
+        }
+
         let restartRequiredEntries = makeRestartRequiredConfigEntries()
         if restartRequiredEntries.count > 0 {
             array.append((section: .restartRequired, entries: restartRequiredEntries))
