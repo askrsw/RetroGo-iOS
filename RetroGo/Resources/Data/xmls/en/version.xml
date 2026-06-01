@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.4.1" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.4.1</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>May 31, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.4.1" style="number">
+            <p-item>Added in-game disc switching support for multidisc games, including M3U-based game sets.</p-item>
+            <p-item>Added an <b>Acknowledgments</b> page to credit open-source projects, Libretro contributors, and homebrew games used in RetroGo promotional materials.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.4.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.4.0</p-title>
         <p-paragraph fontsize="13">
@@ -11,6 +21,16 @@
             <p-item>Overhauled the game library with a fully rearchitected file browser: each page represents a folder in your library, with four view modes — <b>flat icon grid, flat list, grouped by core, grouped by tag</b>, and a <b>tree outline</b> for a full folder hierarchy at a glance.</p-item>
             <p-item>Added distinctive <b>platform icons</b> for each game system so your library is easier to scan at a glance, along with refined iconography throughout the rest of the app.</p-item>
             <p-item>Fixed a <b>Turbo button conflict</b> in the custom RetroArch key mapping that prevented acceleration from working correctly in PSP racing games.</p-item>
+        </p-list>
+    </p-section>
+    <p-section id="version-1.3.1" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.3.1</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>May 15, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.3.1" style="number">
+            <p-item>Introduced <b>RetroGo Pro</b> to support continued development, with monthly, yearly, and lifetime unlock options.</p-item>
+            <p-item>Added feature access management for Pro-only functionality.</p-item>
         </p-list>
     </p-section>
     <p-section id="version-1.3.0" bottompadding="10" toppadding="5">

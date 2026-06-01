@@ -28,6 +28,7 @@ import RACoordinator
 
 enum GameConfigSection: Hashable {
     case title
+    case disc
     case restartRequired
     case overlay
     case controller
@@ -46,6 +47,8 @@ extension GameConfigSection {
             }
         case .restartRequired:
             return Bundle.localizedString(forKey: "configpage_restart_required_section_footer")
+        case .disc:
+            return Bundle.localizedString(forKey: "configpage_disc_section_footer")
         default:
             return nil
         }
@@ -54,6 +57,8 @@ extension GameConfigSection {
 
     func getSectionHeaderText(session: GameConfigSession) -> String? {
         switch self {
+            case .disc:
+                return Bundle.localizedString(forKey: "configpage_disc_section_header")
             case .overlay:
                 return Bundle.localizedString(forKey: "configpage_overlay_section_header")
             case .controller:

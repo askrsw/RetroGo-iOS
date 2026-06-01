@@ -62,6 +62,7 @@
 "appsetting_ui_haptic_feedback" = "界面触感反馈";
 "appsetting_ingame_haptic_feedback" = "游戏震动反馈";
 "appsetting_about" = "关于 Retro Go";
+"appsetting_acknowledgments" = "致谢";
 "appsetting_version_history" = "版本历史";
 "appsetting_rating_app" = "喜欢 RetroGo？来评个分";
 
@@ -245,6 +246,11 @@
 "configpage_title_section_core_footer" = "仅影响核心 %@​，优先于全局设置。";
 "configpage_title_section_game_footer" = "仅影响游戏 %@​，优先于核心和全局设置。";
 "configpage_restart_required_section_footer" = "此分组中的设置会在下次打开游戏时生效。";
+"configpage_disc_section_header" = "光盘";
+"configpage_disc_section_footer" = "请在游戏要求换盘时切换。在其他时机切换可能导致游戏读盘异常。";
+"configpage_disc_current" = "当前光盘";
+"configpage_disc_item_format" = "光盘 %d";
+"configpage_disc_item_label_format" = "光盘 %d - %@";
 "configpage_overlay_section_header" = "屏幕按键";
 "configpage_controller_section_header" = "外接手柄";
 "configpage_runtime_section_footer" = "此分组中的设置会立即生效。";

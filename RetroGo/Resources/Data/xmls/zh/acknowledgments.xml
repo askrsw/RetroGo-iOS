@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<p-contents>
+    <p-section id="ack_intro">
+        <p-paragraph bottompadding="10" toppadding="20">
+            RetroGo 的诞生离不开开源模拟器社区、Libretro 生态以及独立自制游戏作者的贡献。我们诚挚感谢所有让经典数字文化得以在现代设备上延续的人。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="ack_retroarch" bottompadding="15" toppadding="10">
+        <p-title level="3" underline="false">RetroArch / Libretro</p-title>
+        <p-paragraph>
+            RetroGo 基于 RetroArch / Libretro 技术构建，并集成了多个 Libretro 核心。各核心均遵循其各自的开源许可证。详细的核心信息与许可证文本，请参阅应用内的「核心列表」页面。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="ack_screenshot_games" bottompadding="15" toppadding="10">
+        <p-title level="3" underline="false">截图中使用的自制游戏</p-title>
+        <p-paragraph>
+            以下游戏用于制作 RetroGo 的 App Store 截图、演示画面与相关宣传素材。RetroGo 不提供商业游戏 ROM 或 BIOS 文件。
+        </p-paragraph>
+        <p-list id="screenshot-games" style="bullet">
+            <p-item><b>Tobu Tobu Girl Deluxe</b> — Tangram Games 制作。代码许可证：MIT。素材许可证：CC BY 4.0。<a href="https://github.com/SimonLarsen/tobutobugirl-dx">GitHub</a> / <a href="https://tangramgames.itch.io/tobutobugirldx">itch.io</a></p-item>
+            <p-item><b>Twin Dragons</b> — Garydos 制作。代码许可证：zlib。部分美术由 surt 创作，采用 CC BY 3.0。音乐由 Garydos 创作，采用 CC BY 4.0。使用 Shiru 与 nesdoug 的 FamiTone2/FamiTone5。<a href="https://github.com/Garydos/twin-dragons-nes">GitHub</a></p-item>
+            <p-item><b>Super Sudoku</b> — Raphaël Assenat 制作。许可证：MIT。<a href="https://github.com/raphnet/super_sudoku">GitHub</a> / <a href="https://raphnet.itch.io/super-sudoku">itch.io</a></p-item>
+            <p-item><b>Falling</b> — copyright © 2018 tragicmuffin。许可证：MIT。<a href="https://github.com/xram64/falling-nes">GitHub</a></p-item>
+            <p-item><b>GBHack</b> — statico 制作。代码许可证：MIT。美术来自 Kenney，采用 CC0。音乐来自 Beatscribe 与 Yoki/Trominal。<a href="https://github.com/statico/gbhack">GitHub</a></p-item>
+            <p-item><b>uCity</b> — AntonioND / SkyLyrac 制作。代码采用 GPLv3+ 及其他兼容许可证。图像与音乐采用 CC BY-SA 4.0。<a href="https://codeberg.org/SkyLyrac/ucity">Codeberg</a></p-item>
+            <p-item><b>Rhythm Land</b> — martendo 与 Adrian-kwok 制作。许可证：MIT。音乐与音效：martendo。美术与设计：Adrian-kwok。使用 SoundSystem、gb-vwf、Libbet code 与 uCity code。<a href="https://github.com/sinusoid-studios/rhythm-land">GitHub</a></p-item>
+            <p-item><b>Skyland</b> — Evan Bowman 制作。许可证：MPL-2.0。包含若干采用开源许可证的第三方组件。<a href="https://github.com/evanbowman/skyland-gba">GitHub</a></p-item>
+            <p-item><b>2048-GBA</b> — Basil Termini 制作。许可证：CC0 1.0 Universal。<a href="https://github.com/Paperdomo101/2048-GBA">GitHub</a> / <a href="https://basil-termini.itch.io/2048-advance">itch.io</a></p-item>
+            <p-item><b>Coquiman</b> — Marq Watkin 制作。许可证：MIT。<a href="https://github.com/pmprog/coquiman_jam">GitHub</a></p-item>
+            <p-item><b>Dungeon Master / Dungeon Rogue</b> — Maksim Jaroslavcevas 制作。许可证：MIT。</p-item>
+            <p-item><b>Bugtris</b> — NotImplementedLife 制作。许可证：GPLv3。<a href="https://github.com/NotImplementedLife/Bugtris">GitHub</a></p-item>
+            <p-item><b>Glacia Dungeon</b> — NotImplementedLife 制作。许可证：GPLv3。<a href="https://github.com/NotImplementedLife/GlaciaDungeon">GitHub</a></p-item>
+            <p-item><b>Collie Defense</b> — Yann Vaillant 制作。发行：The Retro Room。美术：Yulianto Hiu、Lea Espanet。代码许可证：GPLv3。美术许可证：CC BY-SA 4.0。音乐许可证：CC0 1.0。<a href="https://github.com/vayan/collie-defense">GitHub</a></p-item>
+            <p-item><b>HEXES</b> — Dania Rifki (Kaleidosium) 制作。音乐与音效：Kathryn Hathaway (Kathound)。Squarewave 字体：Jeti。许可证：MIT。<a href="https://github.com/Kaleidosium/HEXES">GitHub</a></p-item>
+            <p-item><b>Feline</b> — Jono Shields 制作。代码许可证：MIT。Feline 图像与音效：CC0。<a href="https://github.com/foopod/gbaGamejam2021">GitHub</a> / <a href="https://foopod.itch.io/feline">itch.io</a></p-item>
+            <p-item><b>MeteoRain (GBA)</b> — Dr. Ludos 制作。许可证：MIT。基于 Evan Bowman 的 BPCore-Engine 构建。<a href="https://github.com/DrLudos/meteorain-gba">GitHub</a> / <a href="https://drludos.itch.io/meteorain-gba-jam-2021">itch.io</a></p-item>
+        </p-list>
+    </p-section>
+
+    <p-section id="ack_bite_the_chili" bottompadding="15" toppadding="10">
+        <p-title level="3" underline="false">Bite the Chili Productions</p-title>
+        <p-paragraph>
+            特别感谢 Nathan Tolbert / Bite the Chili Productions 授权 RetroGo 在宣传素材中使用以下自制游戏的画面：
+        </p-paragraph>
+        <p-list id="bite-the-chili-games" style="bullet">
+            <p-item>The Storied Sword Demo</p-item>
+            <p-item>Anguna</p-item>
+            <p-item>Super Homebrew War</p-item>
+            <p-item>Robo-Ninja Climb</p-item>
+            <p-item>Arkade Rush</p-item>
+            <p-item>NNNNNN</p-item>
+            <p-item>Spacey McRacey</p-item>
+        </p-list>
+        <p-paragraph>
+            网站：<a href="https://www.bitethechili.com">https://www.bitethechili.com</a>
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="ack_notice" bottompadding="20" toppadding="10">
+        <p-title level="3" underline="false">说明</p-title>
+        <p-paragraph>
+            所有商标、游戏名称、项目名称、美术、音乐与源代码均归其各自作者与许可持有人所有。本页面用于署名、说明与表达感谢。
+        </p-paragraph>
+    </p-section>
+</p-contents>

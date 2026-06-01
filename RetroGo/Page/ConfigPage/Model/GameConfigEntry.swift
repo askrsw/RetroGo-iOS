@@ -276,6 +276,57 @@ extension GameConfigSession {
         return entries
     }
 
+    func makeDiscConfigEntries() -> [GameConfigEntry] {
+        guard scope == .game else { return [] }
+
+        let x = RetroArchX.shared()
+        guard x.diskControlAvailable, x.diskImageCount > 1 else { return [] }
+
+        let title = Bundle.localizedString(forKey: "configpage_disc_current")
+        let entry = GameConfigEntry(type: .int, ui: .list, title: title)
+
+        entry.getListArray = {
+            let x = RetroArchX.shared()
+            let count = x.diskImageCount
+            guard count > 0 else { return (list: [], selected: nil) }
+            let itemFormat = Bundle.localizedString(forKey: "configpage_disc_item_format")
+            let labelFormat = Bundle.localizedString(forKey: "configpage_disc_item_label_format")
+            var list: [(title: String, value: AnyHashable)] = []
+            list.reserveCapacity(Int(count))
+            for i in 0 ..< count {
+                let label = x.labelForDiskImage(at: i)
+                let display: String
+                if let label, !label.isEmpty {
+                    display = String(format: labelFormat, i + 1, label)
+                } else {
+                    display = String(format: itemFormat, i + 1)
+                }
+                list.append((title: display, value: i))
+            }
+            return (list: list, selected: Int(x.currentDiskImageIndex))
+        }
+
+        entry.getListSelectedTitle = {
+            let x = RetroArchX.shared()
+            let current = x.currentDiskImageIndex
+            let itemFormat = Bundle.localizedString(forKey: "configpage_disc_item_format")
+            let labelFormat = Bundle.localizedString(forKey: "configpage_disc_item_label_format")
+            let label = x.labelForDiskImage(at: current)
+            if let label, !label.isEmpty {
+                return String(format: labelFormat, current + 1, label)
+            } else {
+                return String(format: itemFormat, current + 1)
+            }
+        }
+
+        entry.setListSelectedValue = { value in
+            guard let index = value as? Int else { return }
+            _ = RetroArchX.shared().switchToDiskImage(at: UInt(index))
+        }
+
+        return [entry]
+    }
+
     func makeTitleConfigEntries() -> [GameConfigEntry] {
         var entries: [GameConfigEntry] = []
 

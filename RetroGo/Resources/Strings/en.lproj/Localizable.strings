@@ -62,6 +62,7 @@
 "appsetting_ui_haptic_feedback" = "UI Haptic Feedback";
 "appsetting_ingame_haptic_feedback" = "In-Game Haptic Feedback";
 "appsetting_about" = "About Retro Go";
+"appsetting_acknowledgments" = "Acknowledgments";
 "appsetting_version_history" = "Version ​History";
 "appsetting_rating_app" = "Love RetroGo? Rate Us";
 
@@ -244,6 +245,11 @@
 "configpage_title_section_core_footer" = "Applies only to core %@ and overrides global settings.";
 "configpage_title_section_game_footer" = "Applies only to game %@ and overrides core and global settings.";
 "configpage_restart_required_section_footer" = "Settings in this section take effect the next time you open the game.";
+"configpage_disc_section_header" = "Disc";
+"configpage_disc_section_footer" = "Only switch discs when the game asks for it. Switching at other times can confuse the game.";
+"configpage_disc_current" = "Current Disc";
+"configpage_disc_item_format" = "Disc %d";
+"configpage_disc_item_label_format" = "Disc %d - %@";
 "configpage_overlay_section_header" = "Touch Controls";
 "configpage_controller_section_header" = "External Controllers";
 "configpage_runtime_section_footer" = "Settings in this section take effect immediately.";
