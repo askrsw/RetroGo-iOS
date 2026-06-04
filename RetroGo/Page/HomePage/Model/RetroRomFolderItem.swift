@@ -151,7 +151,7 @@ final class RetroRomFolderItem: RetroRomBaseItem {
     }
 
     func updateSubItemKeys() {
-        if let subs = Retro​Rom​Persistence.shared.getFolderSubItemKeys(key) {
+        if let subs = RetroRomPersistence.shared.getFolderSubItemKeys(key) {
             subFolderKeys = subs.folderKeys
             subFileKeys   = subs.fileKeys
         }

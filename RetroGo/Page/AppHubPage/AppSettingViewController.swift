@@ -25,8 +25,10 @@
 
 import UIKit
 import SnapKit
+import MessageUI
 import ObjcHelper
 import RACoordinator
+import GameController
 import XMLTextRenderKit
 
 final class AppSettingViewController: UIViewController {
@@ -91,6 +93,7 @@ extension AppSettingViewController {
         // about
         case about
         case versionHistory
+        case contactUs
         case rattingApp
     }
 
@@ -243,6 +246,17 @@ extension AppSettingViewController {
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_about")
                 cell.accessoryType = .disclosureIndicator
                 return cell
+            case .contactUs:
+                let cell = cellBuilder()
+                cell.accessoryView = nil
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "envelope.fill",
+                    background: UIColor(red: 0.11, green: 0.56, blue: 0.91, alpha: 1.0),
+                    size: iconSize
+                )
+                cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_contact_us")
+                cell.accessoryType = .disclosureIndicator
+                return cell
             case .rattingApp:
                 let cell = cellBuilder()
                 cell.accessoryView = nil
@@ -273,7 +287,7 @@ extension AppSettingViewController {
         let gameItems: [Item] = [.coreList, .coreSettingList]
         snapshot.appendItems(gameItems, toSection: .game)
 
-        let aboutItems: [Item] = [.about, .versionHistory, .rattingApp]
+        let aboutItems: [Item] = [.about, .versionHistory, .contactUs, .rattingApp]
         snapshot.appendItems(aboutItems, toSection: .about)
 
         dataSource.apply(snapshot, animatingDifferences: animated)
@@ -290,7 +304,7 @@ extension AppSettingViewController: UITableViewDelegate {
         switch item {
         case .language: return true
         case .coreList, .coreSettingList: return true
-        case .about, .versionHistory, .rattingApp: return true
+        case .about, .versionHistory, .contactUs, .rattingApp: return true
         default: return false
         }
     }
@@ -305,6 +319,7 @@ extension AppSettingViewController: UITableViewDelegate {
         case .coreSettingList: showCoreList(action: .configureCore)
         case .about: showAbout()
         case .versionHistory: showVersionHistory()
+        case .contactUs: emailToHaharsw()
         case .rattingApp: openAppStoreReview()
         default: break
         }
@@ -362,6 +377,111 @@ extension AppSettingViewController {
             ])
             navigationController?.pushViewController(controller, animated: true)
         }
+    }
+
+    private func emailToHaharsw() {
+        guard MFMailComposeViewController.canSendMail() else { return }
+
+        let appVersion  = Bundle.main.infoDictionary?["CFBundleShortVersionString"] ?? ""
+
+        let mailCompose = MFMailComposeViewController()
+        let subject = "RetroGo \(Bundle.localizedString(forKey: "appsetting_mail_subject")) - \(appVersion)"
+        mailCompose.setSubject(subject)
+        mailCompose.setToRecipients(["askrsw@163.com"])
+        mailCompose.setMessageBody(feedbackEmailBody(), isHTML: false)
+        mailCompose.mailComposeDelegate = self
+        present(mailCompose, animated: true, completion: nil)
+    }
+
+    /// Builds a plain-text email body pre-filled with app and device diagnostics
+    /// so feedback is immediately actionable without asking the user to
+    /// copy-paste details manually.
+    private func feedbackEmailBody() -> String {
+        // ── App ──────────────────────────────────────────────
+        let appVersion  = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+        let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"]            as? String ?? "—"
+        let appLanguage = Bundle.currentLanguage()
+
+        // ── Device ───────────────────────────────────────────
+        let iosVersion  = UIDevice.current.systemVersion
+        let deviceModel = Self.hardwareModelIdentifier()  // e.g. "iPhone17,1"
+        let ramGB       = Self.formatBytes(ProcessInfo.processInfo.physicalMemory)
+
+        // ── Screen ───────────────────────────────────────────
+        let screen      = UIScreen.main
+        let bounds      = screen.bounds
+        let screenInfo  = String(format: "%.0f×%.0f @%.0fx",
+                                 bounds.width, bounds.height, screen.scale)
+
+        // ── Storage ──────────────────────────────────────────
+        let freeStorage = Self.freeStorageString()
+
+        // ── Locale / Time zone ───────────────────────────────
+        let locale      = Locale.current.identifier          // e.g. "en_US"
+        let timeZone    = TimeZone.current.identifier        // e.g. "America/New_York"
+
+        // ── Controllers ──────────────────────────────────────
+        let controllers = GCController.controllers()
+        let controllerInfo: String
+        if controllers.isEmpty {
+            controllerInfo = "None"
+        } else {
+            controllerInfo = controllers
+                .map { $0.vendorName ?? "Unknown" }
+                .joined(separator: ", ")
+        }
+
+        let diagnosticHint = Bundle.localizedString(forKey: "appsetting_email_diagnostic_hint")
+
+        return """
+
+
+
+        \(diagnosticHint)
+        ———————————————————
+        App Version  : \(appVersion) (\(buildNumber))
+        App Language : \(appLanguage)
+        ———————————————————
+        iOS Version  : \(iosVersion)
+        Device       : \(deviceModel)
+        RAM          : \(ramGB)
+        Screen       : \(screenInfo)
+        Free Storage : \(freeStorage)
+        Locale       : \(locale)
+        Time Zone    : \(timeZone)
+        Controllers  : \(controllerInfo)
+        ———————————————————
+        """
+    }
+
+    /// Returns the raw hardware model identifier via `uname` syscall,
+    /// e.g. "iPhone17,1" or "arm64" when running on Simulator.
+    private static func hardwareModelIdentifier() -> String {
+        var systemInfo = utsname()
+        uname(&systemInfo)
+        return withUnsafeBytes(of: &systemInfo.machine) { bytes in
+            bytes.compactMap { $0 == 0 ? nil : String(UnicodeScalar($0)) }.joined()
+        }
+    }
+
+    /// Formats a byte count into a human-readable string (GB or MB).
+    private static func formatBytes(_ bytes: UInt64) -> String {
+        let gb = Double(bytes) / 1_073_741_824
+        if gb >= 1 {
+            return String(format: "%.0f GB", gb.rounded())
+        }
+        let mb = Double(bytes) / 1_048_576
+        return String(format: "%.0f MB", mb.rounded())
+    }
+
+    /// Returns the device's available disk space using the iOS-recommended
+    /// "important usage" capacity key (accounts for purgeable space).
+    private static func freeStorageString() -> String {
+        guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last,
+              let values = try? url.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]),
+              let capacity = values.volumeAvailableCapacityForImportantUsage
+        else { return "—" }
+        return formatBytes(UInt64(capacity))
     }
 
     private func updateText() {
@@ -590,5 +710,22 @@ private final class AppSettingProButton: UIControl {
         frame.size = intrinsicContentSize
         setNeedsLayout()
         layoutIfNeeded()
+    }
+}
+
+extension AppSettingViewController: MFMailComposeViewControllerDelegate {
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        controller.dismiss(animated: true, completion: nil)
+        switch result {
+            case .cancelled: break
+            case .saved: break
+            case .sent:
+                let info = Bundle.localizedString(forKey: "appsetting_send_succ")
+                AppToastManager.shared.toast(info, context: .ui, level: .success)
+            case .failed:
+                let info = Bundle.localizedString(forKey: "appsetting_send_fail")
+                AppToastManager.shared.toast(info, context: .ui, level: .error)
+            default: break
+        }
     }
 }

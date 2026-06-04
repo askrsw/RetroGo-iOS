@@ -1,5 +1,5 @@
 //
-//  Retro​Rom​Persistence+v1.swift
+//  RetroRomPersistence+v1.swift
 //  RetroGo
 //
 //  Created by haharsw on 2026/4/4.
@@ -26,7 +26,7 @@
 import SQLite
 import Foundation
 
-extension Retro​Rom​Persistence {
+extension RetroRomPersistence {
     // deprecated
     static let romInfoTable    = SQLite.Table("rominfo")
     static let folderInfoTable = SQLite.Table("folderinfo")

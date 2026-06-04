@@ -358,11 +358,18 @@ extension DiscoverGameListViewController: UISearchControllerDelegate {
 
     func willPresentSearchController(_ searchController: UISearchController) {
         isSearchActive = true
+        // Hide the custom titleView while the search bar is active.
+        // Having both titleView and searchController visible simultaneously
+        // causes NSAutoresizingMaskLayoutConstraint conflicts inside
+        // UIKit's NavigationButtonBar.ItemWrapperView, especially during rotation.
+        navigationItem.titleView = nil
     }
 
     func willDismissSearchController(_ searchController: UISearchController) {
         isSearchActive = false
         searchResults  = []
         applyBrowseSnapshot()
+        // Restore the icon+title view once the search bar is dismissed.
+        navigationItem.titleView = makeTitleView()
     }
 }

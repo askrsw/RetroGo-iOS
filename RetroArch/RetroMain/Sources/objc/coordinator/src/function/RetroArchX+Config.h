@@ -51,6 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) double fastForwardMultiplier;
 @property(nonatomic, assign) BOOL   muteOnFastForward;
 @property(nonatomic, assign) int    overlayTouchPlayer;
+@property(nonatomic, assign) BOOL   overlayTurboTapLatch;
+@property(nonatomic, assign) int    overlayTurboSpeedTier;
 
 @property(nonatomic, strong, nullable) RAInputCoreCapabilities *coreCaps;
 @property(nonatomic, strong, nullable) RAInputBindingProfile *inputBindingProfile;

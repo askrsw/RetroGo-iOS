@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.5.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.5.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 6 月 4 日</i>。
+        </p-paragraph>
+        <p-list id="v1.5.0" style="number">
+            <p-item>新增<b>可自定义的游戏内工具栏</b>：可重新排列、固定或隐藏顶部按钮，其余按钮收纳进 <b>More</b> 菜单——按你的习惯打造游戏内操作栏。</p-item>
+            <p-item>新增<b>横屏锁定</b>按钮，游玩时可将画面固定为横屏。</p-item>
+            <p-item>整个应用现已<b>跟随设备方向旋转</b>——不再只有游戏页面，所有界面都会随设备方向旋转。</p-item>
+            <p-item>新增 <b>Turbo 连发速度</b>档位——<b>极慢、慢、中等、快、极快</b>——支持按核心、按游戏分别配置。</p-item>
+            <p-item>为 X/Y 按键新增<b>点按锁定连发</b>选项：轻点一下即可让连发持续触发、无需一直按住，再次点按即可取消——同样支持按核心、按游戏分别配置。</p-item>
+            <p-item>优化游戏内工具栏图标，添加细腻<b>阴影</b>，即使在明亮或纯白的游戏画面上也清晰可辨。</p-item>
+            <p-item>在设置中新增<b>联系我们</b>，可通过邮件向我们反馈。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.4.1" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.4.1</p-title>
         <p-paragraph fontsize="13">

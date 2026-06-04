@@ -38,4 +38,7 @@ extension NSNotification.Name {
     static let fileTagDeleted      = NSNotification.Name(rawValue: "notif_fileTagDeleted")
     static let fileTagAdded        = NSNotification.Name(rawValue: "notif_fileTagAdded")
     static let fileCoreAssigned    = NSNotification.Name(rawValue: "notif_fileCoreAssigned")
+    static let gameToolbarLayoutChanged = NSNotification.Name(rawValue: "notif_gameToolbarLayoutChanged")
+    static let overlayTurboTapLatchChanged = NSNotification.Name(rawValue: "notif_overlayTurboTapLatchChanged")
+    static let overlayTurboSpeedChanged = NSNotification.Name(rawValue: "notif_overlayTurboSpeedChanged")
 }

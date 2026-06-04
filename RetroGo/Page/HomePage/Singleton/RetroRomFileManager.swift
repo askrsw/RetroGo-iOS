@@ -38,7 +38,7 @@ final class RetroRomFileManager {
         if let item = folderItemCache[key] {
             return item
         } else {
-            if let item = Retro​Rom​Persistence.shared.getFolderItem(key: key) {
+            if let item = RetroRomPersistence.shared.getFolderItem(key: key) {
                 folderItemCache[key] = item
                 return item
             } else {
@@ -48,7 +48,7 @@ final class RetroRomFileManager {
     }
 
     func folderItem(parent: String, rawName: String) -> RetroRomFolderItem? {
-        if let item = Retro​Rom​Persistence.shared.getFolderItem(parent: parent, rawName: rawName) {
+        if let item = RetroRomPersistence.shared.getFolderItem(parent: parent, rawName: rawName) {
             if let stored = folderItemCache[item.key] {
                 return stored
             } else {
@@ -64,7 +64,7 @@ final class RetroRomFileManager {
         if let item = fileItemCache[key] {
             return item
         } else {
-            if let item = Retro​Rom​Persistence.shared.getFileItem(key: key) {
+            if let item = RetroRomPersistence.shared.getFileItem(key: key) {
                 fileItemCache[key] = item
                 return item
             } else {
@@ -81,7 +81,7 @@ final class RetroRomFileManager {
         if let tag = fileTagCache[id] {
             return tag
         } else {
-            if let tag = Retro​Rom​Persistence.shared.getFileTag(id: id) {
+            if let tag = RetroRomPersistence.shared.getFileTag(id: id) {
                 fileTagCache[id] = tag
                 return tag
             } else {
@@ -103,7 +103,7 @@ final class RetroRomFileManager {
             }
         }
         if !lacked.isEmpty {
-            let fetched = Retro​Rom​Persistence.shared.getFileTags(in: lacked) ?? []
+            let fetched = RetroRomPersistence.shared.getFileTags(in: lacked) ?? []
             for tag in fetched {
                 fileTagCache[tag.id] = tag
             }
@@ -123,8 +123,8 @@ final class RetroRomFileManager {
     }
 
     func retroItems(parent: String) -> [RetroRomBaseItem]? {
-        let files = Retro​Rom​Persistence.shared.getFileItems(parent: parent)
-        let folders = Retro​Rom​Persistence.shared.getFolderItems(parent: parent)
+        let files = RetroRomPersistence.shared.getFileItems(parent: parent)
+        let folders = RetroRomPersistence.shared.getFolderItems(parent: parent)
         guard let files = files, let folders = folders else {
             return nil
         }
@@ -143,7 +143,7 @@ final class RetroRomFileManager {
         }
 
         if !lacked.isEmpty {
-            let fetched = Retro​Rom​Persistence.shared.getFileItems(in: lacked) ?? []
+            let fetched = RetroRomPersistence.shared.getFileItems(in: lacked) ?? []
             for item in fetched {
                 fileItemCache[item.key] = item
             }
@@ -165,7 +165,7 @@ final class RetroRomFileManager {
         }
 
         if !lacked.isEmpty {
-            let fetched = Retro​Rom​Persistence.shared.getFolderItems(in: lacked) ?? []
+            let fetched = RetroRomPersistence.shared.getFolderItems(in: lacked) ?? []
             for item in fetched {
                 folderItemCache[item.key] = item
             }
@@ -303,7 +303,7 @@ final class RetroRomFileManager {
         // Lookup parent + unique key in one go; either failing means we
         // can't proceed, both produce the same user-facing error.
         guard let parent = folderItem(key: parentFolderKey),
-              let uniqueKey = Retro​Rom​Persistence.shared.getUniqueKey(parent) else {
+              let uniqueKey = RetroRomPersistence.shared.getUniqueKey(parent) else {
             AppToastManager.shared.toast(
                 Bundle.localizedString(forKey: "homepage_new_folder_failed"),
                 context: .ui, level: .error, shouldVibrate: false
@@ -342,7 +342,7 @@ final class RetroRomFileManager {
 
         // Persistence write. On failure, undo the mkdir so we don't leak
         // an empty directory tracked by nothing.
-        guard Retro​Rom​Persistence.shared.storeRomFiles([], folders: [newFolder]) else {
+        guard RetroRomPersistence.shared.storeRomFiles([], folders: [newFolder]) else {
             try? FileManager.default.removeItem(atPath: fullPath)
             AppToastManager.shared.toast(
                 Bundle.localizedString(forKey: "homepage_new_folder_failed"),
@@ -365,7 +365,7 @@ final class RetroRomFileManager {
 
     @discardableResult
     func deleteGameStateItem(_ item: RetroRomGameStateItem) -> Bool {
-        let ret1 = Retro​Rom​Persistence.shared.deleteGameState(coreId: item.coreId, sha256: item.sha256, fileName: item.rawName)
+        let ret1 = RetroRomPersistence.shared.deleteGameState(coreId: item.coreId, sha256: item.sha256, fileName: item.rawName)
         let ret2 = {
             do {
                 try FileManager.default.removeItem(atPath: item.statePath)
@@ -401,7 +401,7 @@ final class RetroRomFileManager {
 
         if RetroArchX.shared().saveState(to: stateFolder, imageFolder: imageFolder, name: rawName) {
             let item = RetroRomGameStateItem(rawName: rawName, coreId: currentCoreItem.coreId, showName: showName, romKey: romKey, sha256: sha256, createAt: Date())
-            if !Retro​Rom​Persistence.shared.insertGameStateItem(item) {
+            if !RetroRomPersistence.shared.insertGameStateItem(item) {
                 deleteGameStateItem(item)
                 return false
             } else {
@@ -414,7 +414,7 @@ final class RetroRomFileManager {
 
     @discardableResult
     func deleteGameStateItem(_ romKey: String) -> Bool {
-        let items = Retro​Rom​Persistence.shared.getGameStateItems(romKey: romKey) ?? []
+        let items = RetroRomPersistence.shared.getGameStateItems(romKey: romKey) ?? []
         var result = true
         for item in items {
             if !deleteGameStateItem(item) {
@@ -426,7 +426,7 @@ final class RetroRomFileManager {
 
     @discardableResult
     func deleteFileTag(_ tag: RetroRomFileTag) -> Bool {
-        guard Retro​Rom​Persistence.shared.deleteFileTag(id: tag.id) else {
+        guard RetroRomPersistence.shared.deleteFileTag(id: tag.id) else {
             return false
         }
 
@@ -442,7 +442,7 @@ final class RetroRomFileManager {
     }
 
     func getAllFileTags() -> [RetroRomFileTag] {
-        guard let tagIds = Retro​Rom​Persistence.shared.getAllFileTagIDs() else {
+        guard let tagIds = RetroRomPersistence.shared.getAllFileTagIDs() else {
             return []
         }
 
@@ -451,7 +451,7 @@ final class RetroRomFileManager {
 
     func getRomFileArrayByTag() -> [Int: [RetroRomFileItem]] {
         var result = [Int: [RetroRomFileItem]]()
-        guard let tagFileKeys = Retro​Rom​Persistence.shared.getAllTagFileKeys() else {
+        guard let tagFileKeys = RetroRomPersistence.shared.getAllTagFileKeys() else {
             return result
         }
 
@@ -467,7 +467,7 @@ final class RetroRomFileManager {
     }
 
     func getUntagFileItems() -> [RetroRomFileItem] {
-        guard let keys = Retro​Rom​Persistence.shared.getUntagFileItemKeys() else {
+        guard let keys = RetroRomPersistence.shared.getUntagFileItemKeys() else {
             return []
         }
 
@@ -475,7 +475,7 @@ final class RetroRomFileManager {
     }
 
     func getRomFileArrayByCore() -> [String: [RetroRomFileItem]] {
-        guard let keys = Retro​Rom​Persistence.shared.getAllFileItemKeys() else {
+        guard let keys = RetroRomPersistence.shared.getAllFileItemKeys() else {
             return [:]
         }
         let noneKey = RetroRomFileItemWrapper.uncategorizedKey
@@ -510,7 +510,7 @@ final class RetroRomFileManager {
     }
 
     func storeFileTag(_ tag: RetroRomFileTag) -> Bool {
-        if Retro​Rom​Persistence.shared.storeFileTag(tag) {
+        if RetroRomPersistence.shared.storeFileTag(tag) {
             fileTagCache[tag.id] = tag
             return true
         } else {
@@ -519,7 +519,7 @@ final class RetroRomFileManager {
     }
 
     func deleteFolderItem(_ key: String) -> Bool {
-        if Retro​Rom​Persistence.shared.deleteFolderItem(key) {
+        if RetroRomPersistence.shared.deleteFolderItem(key) {
             folderItemCache.removeValue(forKey: key)
             return true
         } else {
@@ -528,7 +528,7 @@ final class RetroRomFileManager {
     }
 
     func deleteFileItem(_ key: String) -> Bool {
-        if Retro​Rom​Persistence.shared.deleteFileItem(key) {
+        if RetroRomPersistence.shared.deleteFileItem(key) {
             fileItemCache.removeValue(forKey: key)
             return true
         } else {

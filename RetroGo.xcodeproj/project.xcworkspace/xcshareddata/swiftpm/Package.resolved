@@ -1,5 +1,5 @@
 {
-  "originHash" : "92e630817152dc70431b835525d8946c990a89646e26f09dc2c3735bcc1c5c9f",
+  "originHash" : "1cd5ac0d989dd8c57d955b7850177f32b2670fd3d4d300b525240dde7c6ebc7e",
   "pins" : [
     {
       "identity" : "defaults",
@@ -8,78 +8,6 @@
       "state" : {
         "revision" : "5bfac4928f000fabdbef7e4ed0251399bb0841c9",
         "version" : "9.0.8"
-      }
-    },
-    {
-      "identity" : "iqkeyboardcore",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hackiftekhar/IQKeyboardCore.git",
-      "state" : {
-        "revision" : "6501e93b03161ce1c9355d2d689bad91c534104e",
-        "version" : "1.0.8"
-      }
-    },
-    {
-      "identity" : "iqkeyboardmanager",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hackiftekhar/IQKeyboardManager.git",
-      "state" : {
-        "revision" : "5e15518eaa4966527140aeeae96dc306f96cf7b8",
-        "version" : "8.0.2"
-      }
-    },
-    {
-      "identity" : "iqkeyboardnotification",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hackiftekhar/IQKeyboardNotification.git",
-      "state" : {
-        "revision" : "08bdc90e7db64ac88f51da5dc9e82f4c247e7057",
-        "version" : "1.0.6"
-      }
-    },
-    {
-      "identity" : "iqkeyboardreturnmanager",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hackiftekhar/IQKeyboardReturnManager.git",
-      "state" : {
-        "revision" : "495f694a6e62e431d776b4926a18fc26c62db317",
-        "version" : "1.0.6"
-      }
-    },
-    {
-      "identity" : "iqkeyboardtoolbar",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hackiftekhar/IQKeyboardToolbar.git",
-      "state" : {
-        "revision" : "9fef421f6fb39a3e0495f0004f9111b8eaaf0e69",
-        "version" : "1.1.3"
-      }
-    },
-    {
-      "identity" : "iqkeyboardtoolbarmanager",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hackiftekhar/IQKeyboardToolbarManager.git",
-      "state" : {
-        "revision" : "9907fa3ef1f1aec26cb11ea752c96ef62359e251",
-        "version" : "1.1.5"
-      }
-    },
-    {
-      "identity" : "iqtextinputviewnotification",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hackiftekhar/IQTextInputViewNotification.git",
-      "state" : {
-        "revision" : "723784a2197121bb76a940cc6d79fd2fa6c23f43",
-        "version" : "1.0.9"
-      }
-    },
-    {
-      "identity" : "iqtextview",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/hackiftekhar/IQTextView.git",
-      "state" : {
-        "revision" : "76f514eba5218bdf67659168ba227c77da5f75fe",
-        "version" : "1.0.5"
       }
     },
     {
@@ -132,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/askrsw/XMLTextRenderKit.git",
       "state" : {
-        "revision" : "abd3ee60ee48a7c93a7fa391d4f8c6f72cefd663",
-        "version" : "1.1.0"
+        "revision" : "ea7bcdcb88d79a9bdfc312e6791dfc09dce471e4",
+        "version" : "1.4.0"
       }
     }
   ],

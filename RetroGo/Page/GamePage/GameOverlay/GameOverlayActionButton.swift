@@ -28,9 +28,27 @@ import RACoordinator
 
 final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
     // MARK: - Constants
-    private let period: Int = 4
-    private let duty: Int = 2
     private let longPressThreshold: TimeInterval = 0.15
+
+    // Turbo cadence in emulator frames: each cycle is `period` frames with `duty`
+    // of them held down. Injected from the game config's TurboSpeed preset and
+    // updatable at runtime via setTurboTiming(period:duty:). Defaults to the
+    // historical 4/2 (≈15Hz @60fps). The button itself is preset-agnostic — the
+    // scene maps the tier to frames.
+    private var period: Int
+    private var duty: Int
+
+    // Latch indicator (the pulsing ring shown when turbo is latched but untouched —
+    // i.e. "hands-off auto-fire", the state most likely to be mistaken for a stuck
+    // button). Kept as named constants so the brand-color ring is easy to retune
+    // after on-device contrast checking.
+    // Latched (hands-off auto-fire) is marked only by a slow, gentle breathing of
+    // the button's own fill alpha — deliberately subtle so it confirms the state at
+    // a glance without pulling the player's eye away from gameplay. The border never
+    // moves; there is no halo. Breathes between activeFillAlpha and
+    // emphasizedActiveFillAlpha (read from the theme at runtime).
+    private static let latchBreatheActionKey = "latch-breathe"
+    private static let latchBreatheCycle: TimeInterval = 1.0
 
     // MARK: - Properties
 
@@ -109,11 +127,13 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
     private let theme: GameOverlayTheme
 
     // MARK: - Init
-    init(element: GamePageOverlayElement, isTurboSupported: Bool, autoKeepTurbo: Bool, theme: GameOverlayTheme = .default, digitalChangeHandler: GameOverlayButtonDigitalChanged?) {
+    init(element: GamePageOverlayElement, isTurboSupported: Bool, autoKeepTurbo: Bool, turboPeriod: Int = 4, turboDuty: Int = 2, theme: GameOverlayTheme = .default, digitalChangeHandler: GameOverlayButtonDigitalChanged?) {
         self.element = element
         self.joypadCodes = element.binds.map({ $0.code })
         self.autoKeepTurbo = autoKeepTurbo
         self.isTurboSupported = isTurboSupported
+        self.period = max(1, turboPeriod)
+        self.duty = max(0, min(turboDuty, max(1, turboPeriod)))
         self.digitalChangeHandler = digitalChangeHandler
         self.theme = theme
         super.init()
@@ -176,6 +196,30 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
             // Switching from turbo -> normal should reflect current touch state immediately.
             emit(isTouching)
         }
+    }
+
+    /// Toggle the 0.15s tap-to-latch shortcut at runtime (driven by the game config
+    /// switch). Disabling it must also drop any currently latched turbo: a button
+    /// left latched would keep bursting after the user turned the feature off, which
+    /// reads as a stuck button. Holding (finger-down) turbo is unaffected.
+    func setAutoKeepTurbo(_ enabled: Bool) {
+        guard autoKeepTurbo != enabled else { return }
+        autoKeepTurbo = enabled
+        if !enabled {
+            isTurboLatched = false
+        }
+    }
+
+    /// Update the turbo cadence at runtime (driven by the game config TurboSpeed
+    /// preset). Clamps to valid frames and resets the cycle index so a shrunk
+    /// period can't leave a stale out-of-range index.
+    func setTurboTiming(period: Int, duty: Int) {
+        let p = max(1, period)
+        let d = max(0, min(duty, p))
+        guard p != self.period || d != self.duty else { return }
+        self.period = p
+        self.duty = d
+        frameIndex = 0
     }
 
     func applyBindingBubbleTouch(_ touching: Bool) {
@@ -318,11 +362,17 @@ extension GameOverlayActionButton {
         let fillColor: SKColor
         let foregroundAlpha: CGFloat
 
+        // Latched-and-untouched (the only way to reach isTurboActive && !isTouching,
+        // since holding always implies isTouching) gets a gentle fill breathing
+        // instead of a static color, handled by updateLatchBreathing below.
+        let latchedHandsOff = isTurboActive && !isTouching
+
         if isTouching {
             fillColor = theme.primaryColor(alpha: theme.pressedFillAlpha)
             foregroundAlpha = theme.pressedContentAlpha
-        } else if isTurboActive {
-            // Turbo active (latched or holding) but not touching.
+        } else if latchedHandsOff {
+            // Fill is driven by the breathing action; seed a sensible static value
+            // for the frame before the action's first tick.
             fillColor = theme.primaryColor(alpha: theme.activeFillAlpha)
             foregroundAlpha = 0.95
         } else {
@@ -330,9 +380,37 @@ extension GameOverlayActionButton {
             foregroundAlpha = theme.normalContentAlpha
         }
 
-        shapeNode.fillColor = fillColor
+        if !latchedHandsOff {
+            shapeNode.fillColor = fillColor
+        }
         labelNode?.fontColor = theme.primaryColor(alpha: foregroundAlpha)
         updatePSIconAppearance(alpha: foregroundAlpha)
+        updateLatchBreathing(latchedHandsOff, seedFill: fillColor)
+    }
+
+    /// Slow, subtle breathing of the fill alpha for the hands-off latched state.
+    /// Centralized here because every state change that can enter/leave latch
+    /// (touch, latch/hold didSet, reset, runtime turbo/auto-keep toggles) funnels
+    /// through `updateAppearance`, so a single condition can't leave it stuck on.
+    /// Pure per-frame fill writes on one node — negligible CPU, no GPU cost.
+    private func updateLatchBreathing(_ active: Bool, seedFill: SKColor) {
+        guard active else {
+            shapeNode.removeAction(forKey: Self.latchBreatheActionKey)
+            return
+        }
+        guard shapeNode.action(forKey: Self.latchBreatheActionKey) == nil else { return }
+
+        shapeNode.fillColor = seedFill
+        let lo = theme.activeFillAlpha
+        let hi = theme.emphasizedActiveFillAlpha
+        let cycle = Self.latchBreatheCycle
+        let breathe = SKAction.customAction(withDuration: cycle) { [weak self] node, elapsed in
+            guard let self, let shape = node as? SKShapeNode else { return }
+            let phase = cycle > 0 ? CGFloat(elapsed) / CGFloat(cycle) : 0
+            let wave = 0.5 - 0.5 * cos(phase * 2 * .pi)   // 0 -> 1 -> 0
+            shape.fillColor = self.theme.primaryColor(alpha: lo + (hi - lo) * wave)
+        }
+        shapeNode.run(.repeatForever(breathe), withKey: Self.latchBreatheActionKey)
     }
 
     private func updateShape(_ s: GameOverlayButtonShape) {

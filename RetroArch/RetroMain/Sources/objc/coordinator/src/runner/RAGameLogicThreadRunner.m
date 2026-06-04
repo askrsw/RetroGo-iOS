@@ -187,7 +187,7 @@ typedef _Atomic double atomic_double;
     [d_thread start];
 
     __weak __typeof__(self) weakSelf = self;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         __strong __typeof__(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) {
             return;

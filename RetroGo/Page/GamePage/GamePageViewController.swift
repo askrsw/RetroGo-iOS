@@ -33,8 +33,14 @@ final class GamePageViewController: RAGameViewController {
     static private(set) weak var instance: GamePageViewController?
 
     let inGameInfoView = GamePageInGameInfoView(frame: .zero)
-    private(set) lazy var myHudView = GamePageHudView(holder: self)
+    private(set) lazy var myToolbarView = GamePageToolbarView(holder: self)
     private(set) lazy var myOverlayView = GamePageOverlayView(coreInfoItem: core)
+
+    /// Runtime-only landscape lock — intentionally NOT persisted. Entering a
+    /// game should match the device's current orientation (no jarring auto-
+    /// rotate with no user action); the user taps once to lock landscape.
+    /// Resets to free rotation every game session.
+    private(set) var isLandscapeLocked = false
 
     let romItem: RetroRomFileItem?
     let romUrl: URL?
@@ -117,8 +123,8 @@ final class GamePageViewController: RAGameViewController {
         }
     }
 
-    override var hudView: UIView {
-        myHudView
+    override var toolbarView: UIView {
+        myToolbarView
     }
 
     override var overlayView: UIView {
@@ -135,7 +141,7 @@ final class GamePageViewController: RAGameViewController {
             myLoadingView?.uninstall()
             myLoadingView = nil
 
-            myHudView.configLoadSaveStateButons()
+            myToolbarView.configLoadSaveStateButons()
 
             startDate = Date()
 
@@ -169,29 +175,38 @@ final class GamePageViewController: RAGameViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        // Unlock orientation while a game is on screen — most cores need
-        // landscape. Reverted in viewWillDisappear.
-        AppDelegate.setOrientationLock(.allButUpsideDown)
-
         if !loaded {
             myLoadingView = GamePageLoadingView(frame: .zero)
             myLoadingView?.install()
         }
+
+        // Apply persisted orientation lock on entry.
+        applyOrientationLock()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        // Restore the app-wide portrait lock so the home/browsing UI
-        // doesn't have to handle landscape.
-        AppDelegate.setOrientationLock(.portrait)
+        // Restore free rotation for all other pages.
+        AppDelegate.setOrientationLock(.allButUpsideDown)
     }
 
-    /// Belt-and-suspenders: if some other code path queries this VC
-    /// directly (without the app-wide hook), still advertise that we
-    /// accept any non-upside-down orientation.
+    /// Applies the current (runtime) landscape-lock state to the app-wide mask
+    /// and this VC's `supportedInterfaceOrientations`.
+    func applyOrientationLock() {
+        let mask: UIInterfaceOrientationMask = isLandscapeLocked ? .landscape : .allButUpsideDown
+        AppDelegate.setOrientationLock(mask)
+        setNeedsUpdateOfSupportedInterfaceOrientations()
+    }
+
+    /// Toggles the runtime landscape lock (called by the toolbar button).
+    func toggleLandscapeLock() {
+        isLandscapeLocked.toggle()
+        applyOrientationLock()
+    }
+
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        return .allButUpsideDown
+        isLandscapeLocked ? .landscape : .allButUpsideDown
     }
 
     override func showInGameMessage(_ message: EmuInGameMessage) {

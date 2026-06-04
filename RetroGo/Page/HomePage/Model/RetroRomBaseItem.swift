@@ -149,7 +149,7 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
     }
 
     func updateShowName(_ name: String) -> Bool {
-        if Retro​Rom​Persistence.shared.updateShowName(name, key: key, isFolder: isFolder) {
+        if RetroRomPersistence.shared.updateShowName(name, key: key, isFolder: isFolder) {
             showName = name
             pulseText = !pulseText
             return true
@@ -163,7 +163,7 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
     }
 
     func moveToFolder(_ folder: String) -> Bool {
-        if Retro​Rom​Persistence.shared.updateItemParent(folder, key: key, isFolder: isFolder) {
+        if RetroRomPersistence.shared.updateItemParent(folder, key: key, isFolder: isFolder) {
             let parentFolderItem = self.parentFolderItem
             if self.isFile {
                 parentFolderItem?.removeSubFileItemKey(key)
@@ -182,9 +182,9 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
 
         let result: Bool
         if isFolder {
-            result = Retro​Rom​Persistence.shared.updateFolderPreferCore(key: key, core: core.coreId)
+            result = RetroRomPersistence.shared.updateFolderPreferCore(key: key, core: core.coreId)
         } else if isFile {
-            result = Retro​Rom​Persistence.shared.updateFilePreferCore(key: key, core: core.coreId)
+            result = RetroRomPersistence.shared.updateFilePreferCore(key: key, core: core.coreId)
         } else {
             result = false
         }

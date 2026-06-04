@@ -82,8 +82,8 @@ final class RetroRomFolderSectionedSubview: UIView, RetroRomFolderSubview {
     /// empty subfolder of a populated library shouldn't claim the
     /// library is empty).
     var couldShowEmptyTip: Bool {
-        let folderCount = Retro​Rom​Persistence.shared.getFolderCount() ?? 0
-        let romCount    = Retro​Rom​Persistence.shared.getRomFileCount() ?? 0
+        let folderCount = RetroRomPersistence.shared.getFolderCount() ?? 0
+        let romCount    = RetroRomPersistence.shared.getRomFileCount() ?? 0
         return folderCount + romCount == 0
     }
 

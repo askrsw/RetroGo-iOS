@@ -122,7 +122,10 @@ extension GameConfigViewController {
         let icon: UIImage?
         switch session.scope {
         case .global: icon = UIImage(systemName: "globe")
-        case .game: icon = UIImage(named: "Icon_file")
+        // Use the gamecontroller SF Symbol (template, transparent) like `.global`'s
+        // globe — the old `Icon_file` asset is a JPG, so it carried an opaque black
+        // box into the title view instead of a clean glyph.
+        case .game: icon = UIImage(systemName: "gamecontroller")
         case .core:
             if let key = session.core?.coreIcon {
                 icon = IconRender.shared.platformIcon(key: key, size: CGSize(width: 20, height: 20))

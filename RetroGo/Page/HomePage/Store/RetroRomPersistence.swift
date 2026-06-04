@@ -1,5 +1,5 @@
 //
-//  Retro​Rom​Persistence.swift
+//  RetroRomPersistence.swift
 //  RetroGo
 //
 //  Created by haharsw on 2026/4/3.
@@ -27,14 +27,14 @@ import SQLite
 import Foundation
 import ObjcHelper
 
-final class Retro​Rom​Persistence {
-    static let shared = Retro​Rom​Persistence()
+final class RetroRomPersistence {
+    static let shared = RetroRomPersistence()
     private init() {
-        _ = Retro​Rom​Persistence.sqlite
+        _ = RetroRomPersistence.sqlite
     }
 
     var currentVersion: Int {
-        4
+        5
     }
 
     // MARK: - Rom File and Rom Folder Stuff
@@ -1024,7 +1024,7 @@ final class Retro​Rom​Persistence {
     }
 }
 
-extension Retro​Rom​Persistence {
+extension RetroRomPersistence {
     static let key        = SQLite.Expression<String>("key")
     static let parent     = SQLite.Expression<String>("parent")
     static let path       = SQLite.Expression<String>("path")
@@ -1093,19 +1093,25 @@ extension Retro​Rom​Persistence {
 
             switch version {
                 case 0:
-                    try databaseV4(db: db)
+                    try databaseV5(db: db)
                     return true
                 case 1:
                     try migrationV1ToV2(db: db)
                     try migrationV2ToV3(db: db)
                     try migrationV3ToV4(db: db)
+                    try migrationV4ToV5(db: db)
                     return true
                 case 2:
                     try migrationV2ToV3(db: db)
                     try migrationV3ToV4(db: db)
+                    try migrationV4ToV5(db: db)
                     return true
                 case 3:
                     try migrationV3ToV4(db: db)
+                    try migrationV4ToV5(db: db)
+                    return true
+                case 4:
+                    try migrationV4ToV5(db: db)
                     return true
                 default:
                     return true
@@ -1123,72 +1129,72 @@ extension Retro​Rom​Persistence {
 
 extension RetroRomFolderItem {
     var insert: SQLite.Insert {
-        Retro​Rom​Persistence.romFolderTable.insert(
-            Retro​Rom​Persistence.key      <- key,
-            Retro​Rom​Persistence.rawName  <- rawName,
-            Retro​Rom​Persistence.showName <- showName,
-            Retro​Rom​Persistence.parent   <- parent,
-            Retro​Rom​Persistence.createAt <- createAt,
-            Retro​Rom​Persistence.updateAt <- updateAt,
-            Retro​Rom​Persistence.preferCore <- preferCore,
-            Retro​Rom​Persistence.preferIcon <- preferIcon,
+        RetroRomPersistence.romFolderTable.insert(
+            RetroRomPersistence.key      <- key,
+            RetroRomPersistence.rawName  <- rawName,
+            RetroRomPersistence.showName <- showName,
+            RetroRomPersistence.parent   <- parent,
+            RetroRomPersistence.createAt <- createAt,
+            RetroRomPersistence.updateAt <- updateAt,
+            RetroRomPersistence.preferCore <- preferCore,
+            RetroRomPersistence.preferIcon <- preferIcon,
         )
     }
 }
 
 extension RetroRomFileSubItem {
     var insert: SQLite.Insert {
-        Retro​Rom​Persistence.romGameFileTable.insert(
-            Retro​Rom​Persistence.key <- key,
-            Retro​Rom​Persistence.rawName <- rawName,
-            Retro​Rom​Persistence.fileRole <- fileRole,
-            Retro​Rom​Persistence.sha256 <- sha256,
-            Retro​Rom​Persistence.fileSize <- fileSize,
-            Retro​Rom​Persistence.sortIndex <- sortIndex
+        RetroRomPersistence.romGameFileTable.insert(
+            RetroRomPersistence.key <- key,
+            RetroRomPersistence.rawName <- rawName,
+            RetroRomPersistence.fileRole <- fileRole,
+            RetroRomPersistence.sha256 <- sha256,
+            RetroRomPersistence.fileSize <- fileSize,
+            RetroRomPersistence.sortIndex <- sortIndex
         )
     }
 }
 
 extension RetroRomFileItem {
     var insert: SQLite.Insert {
-        Retro​Rom​Persistence.romGameTable.insert(
-            Retro​Rom​Persistence.key        <- key,
-            Retro​Rom​Persistence.entryFileKey <- rawName,
-            Retro​Rom​Persistence.showName   <- showName,
-            Retro​Rom​Persistence.parent     <- parent,
-            Retro​Rom​Persistence.createAt   <- createAt,
-            Retro​Rom​Persistence.updateAt   <- updateAt,
-            Retro​Rom​Persistence.sha256     <- sha256,
-            Retro​Rom​Persistence.lastPlayAt <- lastPlayAt,
-            Retro​Rom​Persistence.playTime   <- playTime,
-            Retro​Rom​Persistence.preferCore <- preferCore,
-            Retro​Rom​Persistence.preferIcon <- preferIcon,
-            Retro​Rom​Persistence.fileGroupType <- fileGroupType,
+        RetroRomPersistence.romGameTable.insert(
+            RetroRomPersistence.key        <- key,
+            RetroRomPersistence.entryFileKey <- rawName,
+            RetroRomPersistence.showName   <- showName,
+            RetroRomPersistence.parent     <- parent,
+            RetroRomPersistence.createAt   <- createAt,
+            RetroRomPersistence.updateAt   <- updateAt,
+            RetroRomPersistence.sha256     <- sha256,
+            RetroRomPersistence.lastPlayAt <- lastPlayAt,
+            RetroRomPersistence.playTime   <- playTime,
+            RetroRomPersistence.preferCore <- preferCore,
+            RetroRomPersistence.preferIcon <- preferIcon,
+            RetroRomPersistence.fileGroupType <- fileGroupType,
         )
     }
 }
 
 extension RetroRomGameStateItem {
     var insert: SQLite.Insert {
-        Retro​Rom​Persistence.romStateTable.insert(or: .replace,
-            Retro​Rom​Persistence.rawName  <- rawName,
-            Retro​Rom​Persistence.coreId   <- coreId,
-            Retro​Rom​Persistence.showName <- showName,
-            Retro​Rom​Persistence.romKey   <- romKey,
-            Retro​Rom​Persistence.sha256   <- sha256,
-            Retro​Rom​Persistence.createAt <- createAt,
+        RetroRomPersistence.romStateTable.insert(or: .replace,
+            RetroRomPersistence.rawName  <- rawName,
+            RetroRomPersistence.coreId   <- coreId,
+            RetroRomPersistence.showName <- showName,
+            RetroRomPersistence.romKey   <- romKey,
+            RetroRomPersistence.sha256   <- sha256,
+            RetroRomPersistence.createAt <- createAt,
         )
     }
 }
 
 extension RetroRomFileTag {
     var insert: SQLite.Insert {
-        Retro​Rom​Persistence.romTagTable.insert(or: .replace,
-            Retro​Rom​Persistence.id <- id,
-            Retro​Rom​Persistence.title <- title,
-            Retro​Rom​Persistence.colorArgb <- color,
-            Retro​Rom​Persistence.createAt <- createAt,
-            Retro​Rom​Persistence.isHidden <- isHidden,
+        RetroRomPersistence.romTagTable.insert(or: .replace,
+            RetroRomPersistence.id <- id,
+            RetroRomPersistence.title <- title,
+            RetroRomPersistence.colorArgb <- color,
+            RetroRomPersistence.createAt <- createAt,
+            RetroRomPersistence.isHidden <- isHidden,
         )
     }
 }
