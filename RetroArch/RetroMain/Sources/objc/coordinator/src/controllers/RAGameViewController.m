@@ -112,11 +112,11 @@
 - (void)loadView {
     [super loadView];
 
-    self.hudView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:self.hudView];
+    self.toolbarView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.toolbarView];
 
     self.overlayView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view insertSubview:self.overlayView belowSubview:self.hudView];
+    [self.view insertSubview:self.overlayView belowSubview:self.toolbarView];
 }
 
 - (void)viewDidLoad {
@@ -125,11 +125,11 @@
     self.view.backgroundColor = UIColor.systemBackgroundColor;
 
     [NSLayoutConstraint activateConstraints:@[
-        [self.hudView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [self.hudView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
-        [self.hudView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
-        [self.hudView.heightAnchor constraintEqualToConstant:44],
-        [self.overlayView.topAnchor constraintEqualToAnchor:self.hudView.bottomAnchor],
+        [self.toolbarView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
+        [self.toolbarView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+        [self.toolbarView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
+        [self.toolbarView.heightAnchor constraintEqualToConstant:44],
+        [self.overlayView.topAnchor constraintEqualToAnchor:self.toolbarView.bottomAnchor],
         [self.overlayView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
         [self.overlayView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
         [self.overlayView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
@@ -174,7 +174,7 @@
 
 #pragma mark - Interface
 
-- (UIView *)hudView {
+- (UIView *)toolbarView {
     return nil;
 }
 
@@ -243,7 +243,7 @@
 
     if(d_layoutViewSize.width < d_layoutViewSize.height) {
         d_viewConstraints = @[
-            [d_renderView.topAnchor constraintEqualToAnchor:self.hudView.bottomAnchor],
+            [d_renderView.topAnchor constraintEqualToAnchor:self.toolbarView.bottomAnchor],
             [d_renderView.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
             [d_renderView.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
             [d_renderView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor]

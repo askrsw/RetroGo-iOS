@@ -31,13 +31,13 @@ import RACoordinator
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
-    /// Global orientation mask. Locked to portrait by default so the
-    /// browsing/settings UI never has to consider landscape layout.
-    /// `GamePageViewController` flips this to `.allButUpsideDown` while
-    /// it is on screen and restores `.portrait` on disappear.
+    /// Global orientation mask. Defaults to `.allButUpsideDown` so all
+    /// pages support free rotation. `GamePageViewController` may narrow
+    /// this further (e.g. lock to landscape) and must restore the default
+    /// on disappear.
     ///
     /// Mutated only through `AppDelegate.setOrientationLock(_:)`.
-    fileprivate(set) var orientationLock: UIInterfaceOrientationMask = .portrait
+    fileprivate(set) var orientationLock: UIInterfaceOrientationMask = .allButUpsideDown
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
@@ -73,8 +73,8 @@ extension AppDelegate {
     /// waiting for the user to rotate the device.
     ///
     /// Call sites:
-    /// - `GamePageViewController.viewWillAppear` → `.allButUpsideDown`
-    /// - `GamePageViewController.viewWillDisappear` → `.portrait`
+    /// - `GamePageViewController.viewWillDisappear` → `.allButUpsideDown` (restore default)
+    /// - Future: game page landscape-lock button → `.landscape`
     ///
     /// Targets iOS 17+, so we use the modern scene geometry API
     /// exclusively. `UIViewController.attemptRotationToDeviceOrientation()`

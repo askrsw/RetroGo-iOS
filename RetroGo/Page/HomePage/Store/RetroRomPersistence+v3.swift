@@ -1,5 +1,5 @@
 //
-//  Retro​Rom​Persistence+v3.swift
+//  RetroRomPersistence+v3.swift
 //  RetroGo
 //
 //  Created by haharsw on 2026/4/17.
@@ -26,7 +26,7 @@
 import SQLite
 import Foundation
 
-extension Retro​Rom​Persistence {
+extension RetroRomPersistence {
     static func migrationV2ToV3(db: Connection) throws {
         try commonV3(db: db)
     }
@@ -51,7 +51,7 @@ extension Retro​Rom​Persistence {
     }
 }
 
-extension Retro​Rom​Persistence {
+extension RetroRomPersistence {
     static func migrationV3ToV4(db: Connection) throws {
         try commonV4(db: db)
     }
@@ -72,11 +72,61 @@ extension Retro​Rom​Persistence {
         try db.run("PRAGMA user_version = \(4)")
     }
 
-    private static func addColumnIfNeeded(db: Connection, table: String, column: String, type: String) throws {
+    static func addColumnIfNeeded(db: Connection, table: String, column: String, type: String) throws {
         let sql = "SELECT COUNT(*) FROM pragma_table_info('" + table + "') WHERE name = ?"
         let count = try db.scalar(sql, column) as? Int64 ?? 0
         if count == 0 {
             try db.run("ALTER TABLE " + table + " ADD COLUMN " + column + " " + type)
         }
+    }
+}
+
+extension RetroRomPersistence {
+    static func migrationV4ToV5(db: Connection) throws {
+        try commonV5(db: db)
+    }
+
+    // app version 1.5.0
+    static func databaseV5(db: Connection) throws {
+        try Self.databaseV4(db: db)
+        try Self.commonV5(db: db)
+    }
+
+    private static func commonV5(db: Connection) throws {
+        // In-game top toolbar layout (global scope only) — a single JSON blob so
+        // future toolbar settings need no further columns/migrations.
+        try addColumnIfNeeded(db: db, table: "romconfig", column: "toolbar_layout", type: "BLOB")
+
+        // Overlay X/Y turbo "tap to latch" preference (cascade scope). nil/0 = off
+        // (pure hold-to-burst); 1 = the 0.15s tap latch is allowed. Folded into the
+        // still-unreleased v5 so it costs no extra schema version.
+        try addColumnIfNeeded(db: db, table: "romconfig", column: "overlay_turbo_tap_latch", type: "INTEGER")
+
+        // Turbo speed tier (cascade scope) — stores a TurboSpeed raw value, not the
+        // raw period/duty frames. nil = the default medium tier. Folded into the
+        // still-unreleased v5 so it costs no extra schema version.
+        try addColumnIfNeeded(db: db, table: "romconfig", column: "overlay_turbo_speed", type: "INTEGER")
+
+        // The v3 schema created `fast_forward_multiplier` with U+200B zero-width
+        // spaces in its name (copy-paste contamination). Rename it to the clean
+        // name so existing users keep their stored value. Fresh installs already
+        // create the clean column, so this is a no-op there.
+        try renameColumnIfNeeded(
+            db: db,
+            table: "romconfig",
+            from: "fast\u{200B}_forward\u{200B}_multiplier",
+            to: "fast_forward_multiplier"
+        )
+
+        try db.run("PRAGMA user_version = \(5)")
+    }
+
+    private static func renameColumnIfNeeded(db: Connection, table: String, from: String, to: String) throws {
+        let info = "SELECT COUNT(*) FROM pragma_table_info('" + table + "') WHERE name = ?"
+        let toExists = (try db.scalar(info, to) as? Int64 ?? 0) > 0
+        if toExists { return }
+        let fromExists = (try db.scalar(info, from) as? Int64 ?? 0) > 0
+        guard fromExists else { return }
+        try db.run("ALTER TABLE \"" + table + "\" RENAME COLUMN \"" + from + "\" TO \"" + to + "\"")
     }
 }

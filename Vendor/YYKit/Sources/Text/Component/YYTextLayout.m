@@ -1648,8 +1648,7 @@ fail:
         } else {
             position = fabs(left - point.x) < fabs(right - point.x) < (right ? prev : next);
         }*/
-        
-        // [PATCH] Fixed By Gemini 3 Pro
+
         if (isVertical) {
             // 比较 Y 轴距离：如果距离 left 更近，位置取 prev；否则取 next
             position = (fabs(left - point.y) < fabs(right - point.y)) ? prev : next;
@@ -1667,7 +1666,6 @@ fail:
             position = fabs(left - point.x) < fabs(right - point.x) < (right ? prev : next);
         }*/
 
-        // [PATCH] Fixed By Gemini 3 Pro
         if (isVertical) {
             // 比较 Y 轴距离：如果离 top/left 近，取 prev；否则取 next
             position = (fabs(left - point.y) < fabs(right - point.y)) ? prev : next;

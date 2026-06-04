@@ -128,6 +128,18 @@ extension GameConfigSession {
         return entries
     }
 
+    fileprivate static func turboSpeedTitle(_ speed: TurboSpeed) -> String {
+        let key: String
+        switch speed {
+        case .verySlow: key = "configpage_turbo_speed_very_slow"
+        case .slow:     key = "configpage_turbo_speed_slow"
+        case .medium:   key = "configpage_turbo_speed_medium"
+        case .fast:     key = "configpage_turbo_speed_fast"
+        case .veryFast: key = "configpage_turbo_speed_very_fast"
+        }
+        return Bundle.localizedString(forKey: key)
+    }
+
     func makeOverlayConfigEntries() -> [GameConfigEntry] {
         var entries: [GameConfigEntry] = []
         do {
@@ -169,6 +181,46 @@ extension GameConfigSession {
                 self?.setMuteOnFastForward(value: value)
             }
             entry.desc = Bundle.localizedString(forKey: "configpage_game_mute_when_fast_desc")
+            entries.append(entry)
+        }
+
+        do {
+            let title = Bundle.localizedString(forKey: "configpage_overlay_turbo_tap_latch")
+            let entry = GameConfigEntry(type: .bool, ui: .switch, title: title)
+            entry.getBoolValue = { [weak self] in
+                self?.getOverlayTurboTapLatch() ?? false
+            }
+            entry.setBoolValue = { [weak self] value in
+                // The setter persists and posts `.overlayTurboTapLatchChanged`, which
+                // the live overlay scene observes to re-apply latch behavior in place.
+                self?.setOverlayTurboTapLatch(value: value)
+            }
+            entry.desc = Bundle.localizedString(forKey: "configpage_overlay_turbo_tap_latch_desc")
+            entries.append(entry)
+        }
+
+        do {
+            let title = Bundle.localizedString(forKey: "configpage_turbo_speed")
+            let entry = GameConfigEntry(type: .int, ui: .list, title: title)
+            entry.getListArray = { [weak self] in
+                guard let self = self else { return ([], nil) }
+                let list: [(title: String, value: AnyHashable)] = TurboSpeed.allCases.map {
+                    (Self.turboSpeedTitle($0), $0.rawValue)
+                }
+                let selected = TurboSpeed.allCases.firstIndex(of: getOverlayTurboSpeed())
+                return (list, selected)
+            }
+            entry.getListSelectedTitle = { [weak self] in
+                guard let self = self else { return nil }
+                return Self.turboSpeedTitle(getOverlayTurboSpeed())
+            }
+            entry.setListSelectedValue = { [weak self] v in
+                guard let self = self, let raw = v as? Int, let speed = TurboSpeed(rawValue: raw) else { return }
+                // Setter persists, pushes period/duty to the engine ticker, and posts
+                // `.overlayTurboSpeedChanged` so the live overlay re-applies its timing.
+                setOverlayTurboSpeed(speed)
+            }
+            entry.desc = Bundle.localizedString(forKey: "configpage_turbo_speed_desc")
             entries.append(entry)
         }
 

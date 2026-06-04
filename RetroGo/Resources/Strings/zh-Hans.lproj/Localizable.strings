@@ -37,6 +37,27 @@
 "gamepage_state_saved" = "存档 %@ 已保存。";
 "gamepage_state_save_failed" = "存档 %@ 失败。";
 "gamepage_autosave" = "自动存档";
+
+"gamepage_toolbar_snapshot" = "截图";
+"gamepage_toolbar_mute" = "静音";
+"gamepage_toolbar_unmute" = "取消静音";
+"gamepage_toolbar_settings" = "设置";
+"gamepage_toolbar_restart" = "重启";
+"gamepage_toolbar_pause" = "暂停";
+"gamepage_toolbar_resume" = "继续";
+"gamepage_toolbar_edit_layout" = "编辑菜单";
+"gamepage_toolbar_lock_landscape" = "锁定横屏";
+"gamepage_toolbar_unlock_landscape" = "解锁横屏";
+"gamepage_toolbar_hide_menu" = "隐藏菜单";
+"gamepage_toolbar_show_menu" = "显示菜单";
+"gamepage_toolbar_layout_title" = "顶部菜单布局";
+"gamepage_toolbar_restore_default" = "恢复默认";
+"gamepage_toolbar_restore_confirm_title" = "恢复默认顺序？";
+"gamepage_toolbar_restore_confirm_message" = "你自定义的按钮排列将被清除。";
+"gamepage_toolbar_layout_pinned" = "常驻菜单栏（最多 5 个）";
+"gamepage_toolbar_layout_overflow" = "收起到 More 菜单";
+"gamepage_toolbar_layout_footer" = "常驻按钮显示在顶部菜单栏，其余按钮收起在 More 按钮中。拖动可排序，或在两个分组之间移动。";
+
 "gamestate_load_state" = "读取存档";
 "gamestate_empty_tip" = "还没有存档 :)";
 "gamestate_state_loaded" = "存档 %@ 已加载。";
@@ -64,7 +85,14 @@
 "appsetting_about" = "关于 Retro Go";
 "appsetting_acknowledgments" = "致谢";
 "appsetting_version_history" = "版本历史";
+"appsetting_contact_us" = "联系我们";
+"appsetting_email_diagnostic_hint" = "你可以在发送前编辑或删除下方的诊断信息。";
 "appsetting_rating_app" = "喜欢 RetroGo？来评个分";
+"appsetting_send_succ" = "发送完成。";
+"appsetting_send_fail" = "发送失败。";
+"appsetting_mail_subject" = "—— 问题反馈";
+"appsetting_notlogin_mailbox" = "无法发送邮件";
+"appsetting_loginto_mailbox" = "你还未登录系统邮箱，请先登录系统邮箱。";
 
 // MARK: - Homepage
 
@@ -243,8 +271,8 @@
 "configpage_global_setting" = "全局设置";
 "configpage_core_setting" = "核心设置";
 "configpage_rom_setting" = "游戏设置";
-"configpage_title_section_core_footer" = "仅影响核心 %@​，优先于全局设置。";
-"configpage_title_section_game_footer" = "仅影响游戏 %@​，优先于核心和全局设置。";
+"configpage_title_section_core_footer" = "仅影响核心 %@，优先于全局设置。";
+"configpage_title_section_game_footer" = "仅影响游戏 %@，优先于核心和全局设置。";
 "configpage_restart_required_section_footer" = "此分组中的设置会在下次打开游戏时生效。";
 "configpage_disc_section_header" = "光盘";
 "configpage_disc_section_footer" = "请在游戏要求换盘时切换。在其他时机切换可能导致游戏读盘异常。";
@@ -257,7 +285,7 @@
 "configpage_core" = "核心:";
 "configpage_rom" = "游戏:";
 "configpage_game_thread" = "独立游戏线程";
-"configpage_game_thread_desc" = "将游戏逻辑放到独立线程运行​，可能提升流畅度与快进表现​，但部分核心或设备上可能出现兼容性问题。";
+"configpage_game_thread_desc" = "将游戏逻辑放到独立线程运行，可能提升流畅度与快进表现，但部分核心或设备上可能出现兼容性问题。";
 "configpage_game_thread_forbiden_desc" = "核心 %@ 不支持开启独立游戏线程。";
 "configpage_video_driver" = "视频驱动";
 "configpage_video_driver_desc" = "Vulkan 兼容性与稳定性最佳（推荐）；Metal、GL 为实验性选项，可能有性能或兼容性问题。";
@@ -267,6 +295,15 @@
 "configpage_game_mute_when_fast"  = "快进时静音";
 "configpage_game_mute_when_fast_desc" = "未开启独立游戏线程时，高倍速快进可能产生明显杂音。如遇到此问题，可开启快进静音。";
 "configpage_overlay_touch_player" = "按键玩家";
+"configpage_overlay_turbo_tap_latch" = "X/Y 点按锁定连发";
+"configpage_overlay_turbo_tap_latch_desc" = "快速点按 X/Y 即锁定 A/B 连发，手可松开；再次点按取消。关闭后 X/Y 仅在按住时连发。";
+"configpage_turbo_speed" = "连发速度";
+"configpage_turbo_speed_desc" = "连发的快慢（A/B 反复触发的频率）。同时影响屏幕虚拟 X/Y 按键和外接手柄上的 X/Y 连发。";
+"configpage_turbo_speed_very_slow" = "非常慢";
+"configpage_turbo_speed_slow" = "慢";
+"configpage_turbo_speed_medium" = "中";
+"configpage_turbo_speed_fast" = "快";
+"configpage_turbo_speed_very_fast" = "非常快";
 "configpage_controllers" = "玩家控制器";
 "configpage_player" = "玩家 %d";
 "configpage_touchscreen" = "触摸屏";

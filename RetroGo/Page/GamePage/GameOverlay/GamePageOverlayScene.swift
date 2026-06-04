@@ -45,7 +45,7 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     var usePolarLayout = true
 
     private var dpad: GameOverlayDirectionPad?
-    private var stick: Game​Overlay​ThumbStick?
+    private var stick: GameOverlayThumbStick?
     private var dpadStickSwitch: GameOverlayDpadStickSwitch?
     private var overlayCollapseButton: GameOverlayCollapseButton?
     private var actionButtons: [GameOverlayActionButton] = []
@@ -81,12 +81,36 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
         updateOverlayLayout(for: size)
         buildNodes()
         updateEmuFrameCallbackRegistration()
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleTurboTapLatchChanged),
+            name: .overlayTurboTapLatchChanged,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleTurboSpeedChanged),
+            name: .overlayTurboSpeedChanged,
+            object: nil
+        )
     }
 
     deinit {
         if let emuFrameActionToken {
             RetroArchX.shared().removeEmuPrevFrameAction(forToken: emuFrameActionToken)
         }
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func handleTurboTapLatchChanged() {
+        let enabled = turboTapLatchEnabled
+        actionButtons.forEach { $0.setAutoKeepTurbo(enabled) }
+    }
+
+    @objc private func handleTurboSpeedChanged() {
+        let speed = currentTurboSpeed
+        actionButtons.forEach { $0.setTurboTiming(period: speed.period, duty: speed.duty) }
     }
 
     required init?(coder: NSCoder) {
@@ -206,14 +230,14 @@ extension GamePageOverlayScene {
     }
 
     private func makeStickNode(element: GamePageOverlayElement) -> SKNode {
-        let node: Game​Overlay​ThumbStick
+        let node: GameOverlayThumbStick
         if supportsAnalog {
-            node = Game​Overlay​ThumbStick(element: element, theme: theme, analogHandler: { x, y in
+            node = GameOverlayThumbStick(element: element, theme: theme, analogHandler: { x, y in
                 RetroArchX.shared().send(.leftX, value: x)
                 RetroArchX.shared().send(.leftY, value: y)
             })
         } else {
-            node = Game​Overlay​ThumbStick(element: element, theme: theme, digitalHandler: { code, down in
+            node = GameOverlayThumbStick(element: element, theme: theme, digitalHandler: { code, down in
                 RetroArchX.shared().send(code, down: down)
             })
         }
@@ -264,11 +288,23 @@ extension GamePageOverlayScene {
     }
 
     private func makeButtonNode(element: GamePageOverlayElement) -> SKNode {
-        let node = GameOverlayActionButton(element: element, isTurboSupported: element.isTurbo, autoKeepTurbo: element.isTurboAutoKeep, theme: theme) { code, down in
+        // JSON decides which buttons *can* latch (`is_turbo_auto_keep`); the game
+        // config switch decides whether tap-latch is allowed at all. Default off.
+        let autoKeep = element.isTurboAutoKeep && turboTapLatchEnabled
+        let speed = currentTurboSpeed
+        let node = GameOverlayActionButton(element: element, isTurboSupported: element.isTurbo, autoKeepTurbo: autoKeep, turboPeriod: speed.period, turboDuty: speed.duty, theme: theme) { code, down in
             RetroArchX.shared().send(code, down: down)
         }
         self.actionButtons.append(node)
         return node
+    }
+
+    private var turboTapLatchEnabled: Bool {
+        GamePageViewController.instance?.configSession.getOverlayTurboTapLatch() ?? false
+    }
+
+    private var currentTurboSpeed: TurboSpeed {
+        GamePageViewController.instance?.configSession.getOverlayTurboSpeed() ?? .default
     }
 
     private func makeFastButtonNode(element: GamePageOverlayElement) -> SKNode {

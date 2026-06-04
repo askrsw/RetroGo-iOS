@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.5.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.5.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>June 4, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.5.0" style="number">
+            <p-item>Added a <b>customizable in-game toolbar</b>: rearrange, pin, or hide the top buttons, with the rest tucked into a <b>More</b> menu — set up the in-game bar exactly the way you like it.</p-item>
+            <p-item>Added a <b>landscape lock</b> button to keep the game fixed in landscape while you play.</p-item>
+            <p-item>The entire app now <b>rotates with your device</b> — every screen follows the device orientation, not just the game.</p-item>
+            <p-item>Added <b>Turbo speed</b> levels — <b>Very Slow, Slow, Medium, Fast, Very Fast</b> — configurable per core, and per game.</p-item>
+            <p-item>Added a <b>tap-to-lock Turbo</b> option for the X/Y buttons: a quick tap keeps auto-fire running hands-free, tap again to release — also configurable per core, and per game.</p-item>
+            <p-item>Improved the in-game toolbar icons with subtle <b>shadows</b> so they stay clearly visible even over bright or white game scenes.</p-item>
+            <p-item>Added a <b>Contact Us</b> option in Settings to send feedback by email.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.4.1" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.4.1</p-title>
         <p-paragraph fontsize="13">

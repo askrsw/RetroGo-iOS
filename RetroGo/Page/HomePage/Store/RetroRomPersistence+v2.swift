@@ -1,5 +1,5 @@
 //
-//  Retro​Rom​Persistence+v2.swift
+//  RetroRomPersistence+v2.swift
 //  RetroGo
 //
 //  Created by haharsw on 2026/4/4.
@@ -26,7 +26,7 @@
 import SQLite
 import Foundation
 
-extension Retro​Rom​Persistence {
+extension RetroRomPersistence {
     static func migrationV1ToV2(db: Connection) throws {
         try db.transaction {
             // 1. delete view

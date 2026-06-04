@@ -1,5 +1,5 @@
 //
-//  Game​Overlay​ThumbStick.swift
+//  GameOverlayThumbStick.swift
 //  RetroGo
 //
 //  Created by haharsw on 2026/3/15.
@@ -26,7 +26,7 @@
 import SpriteKit
 import RACoordinator
 
-final class Game​Overlay​ThumbStick: SKNode, GameOverlayElementLayout {
+final class GameOverlayThumbStick: SKNode, GameOverlayElementLayout {
     private(set) var radius: CGFloat = 0
     private var smallRaidusSquare: CGFloat = 0
 
@@ -159,7 +159,7 @@ final class Game​Overlay​ThumbStick: SKNode, GameOverlayElementLayout {
     }
 }
 
-extension Game​Overlay​ThumbStick {
+extension GameOverlayThumbStick {
     private func updateRadius(_ radius: CGFloat) {
         self.radius = radius
         self.smallRaidusSquare = radius * 0.2 * radius * 0.2

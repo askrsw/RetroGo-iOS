@@ -108,7 +108,7 @@ extension RetroRomFileImportor {
             }
 
             fileItems = try builder.buildFileItems(groups: analysis.groups, map: analysis.map, parent: rootParent) {
-                Retro​Rom​Persistence.shared.getUniqueKey()
+                RetroRomPersistence.shared.getUniqueKey()
             }
 
             var filteredItems: [RetroRomFileItem] = []
@@ -157,7 +157,7 @@ extension RetroRomFileImportor {
         }
 
         if !errorOccured {
-            if !Retro​Rom​Persistence.shared.storeRomFiles(fileItems, folders: []) {
+            if !RetroRomPersistence.shared.storeRomFiles(fileItems, folders: []) {
                 errorProcess(.saveToDatabaseFailed)
                 deleteFiles()
                 return

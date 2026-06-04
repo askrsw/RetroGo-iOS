@@ -38,6 +38,26 @@
 "gamepage_state_save_failed" = "State %@ save failed.";
 "gamepage_autosave" = "Auto Save";
 
+"gamepage_toolbar_snapshot" = "Screenshot";
+"gamepage_toolbar_mute" = "Mute";
+"gamepage_toolbar_unmute" = "Unmute";
+"gamepage_toolbar_settings" = "Settings";
+"gamepage_toolbar_restart" = "Restart";
+"gamepage_toolbar_pause" = "Pause";
+"gamepage_toolbar_resume" = "Resume";
+"gamepage_toolbar_edit_layout" = "Edit Menu";
+"gamepage_toolbar_lock_landscape" = "Lock Landscape";
+"gamepage_toolbar_unlock_landscape" = "Unlock Landscape";
+"gamepage_toolbar_hide_menu" = "Hide Menu";
+"gamepage_toolbar_show_menu" = "Show Menu";
+"gamepage_toolbar_layout_title" = "Top Menu Layout";
+"gamepage_toolbar_restore_default" = "Restore";
+"gamepage_toolbar_restore_confirm_title" = "Restore Default Order?";
+"gamepage_toolbar_restore_confirm_message" = "Your custom button arrangement will be discarded.";
+"gamepage_toolbar_layout_pinned" = "Pinned to Bar (max 5)";
+"gamepage_toolbar_layout_overflow" = "In More Menu";
+"gamepage_toolbar_layout_footer" = "Pinned buttons show in the top bar. The rest are collected under the More button. Drag to reorder or move between sections.";
+
 "gamestate_load_state" = "Load State";
 "gamestate_empty_tip" = "No game saves yet :)";
 "gamestate_state_loaded" = "State %@ loaded.";
@@ -63,8 +83,15 @@
 "appsetting_ingame_haptic_feedback" = "In-Game Haptic Feedback";
 "appsetting_about" = "About Retro Go";
 "appsetting_acknowledgments" = "Acknowledgments";
-"appsetting_version_history" = "Version ​History";
+"appsetting_version_history" = "Version History";
+"appsetting_contact_us" = "Contact Us";
+"appsetting_email_diagnostic_hint" = "You can edit or remove the diagnostic information below before sending.";
 "appsetting_rating_app" = "Love RetroGo? Rate Us";
+"appsetting_send_succ" = "Send completed.";
+"appsetting_send_fail" = "Failed to send.";
+"appsetting_mail_subject" = " - Feedback";
+"appsetting_notlogin_mailbox" = "Can't send emails";
+"appsetting_loginto_mailbox" = "You haven't signed in your email in this iPhone. Please login to your email first.";
 
 // MARK: - Homepage
 
@@ -266,6 +293,15 @@
 "configpage_game_mute_when_fast"  = "Mute on Fast-Forward";
 "configpage_game_mute_when_fast_desc" = "When the separate game thread is disabled, high-speed fast-forward may cause noticeable audio noise. Enable this option if that happens.";
 "configpage_overlay_touch_player" = "Touch Player";
+"configpage_overlay_turbo_tap_latch" = "X/Y Tap to Lock Turbo";
+"configpage_overlay_turbo_tap_latch_desc" = "A quick tap on X/Y locks turbo A/B on so you can let go; tap again to release. When off, X/Y fire turbo only while held.";
+"configpage_turbo_speed" = "Turbo Speed";
+"configpage_turbo_speed_desc" = "How fast turbo fires (the A/B auto-repeat rate). Applies to both the on-screen X/Y buttons and the X/Y turbo on a connected controller.";
+"configpage_turbo_speed_very_slow" = "Very Slow";
+"configpage_turbo_speed_slow" = "Slow";
+"configpage_turbo_speed_medium" = "Medium";
+"configpage_turbo_speed_fast" = "Fast";
+"configpage_turbo_speed_very_fast" = "Very Fast";
 "configpage_controllers" = "Controllers";
 "configpage_player" = "Player %d";
 "configpage_touchscreen" = "Touch Screen";

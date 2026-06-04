@@ -74,6 +74,17 @@ final class RetroRomImportSheetViewController: UIViewController {
         super.viewDidLoad()
         buildUI()
     }
+
+    /// Dismiss the sheet on any orientation change.
+    ///
+    /// `UISheetPresentationController` expands a custom detent to full-screen
+    /// in landscape, which hides the grabber and leaves no way to close the
+    /// sheet. Auto-dismissing on rotation avoids the stuck-full-screen state
+    /// and the cell-highlight artifact that appears when rotating back.
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        dismiss(animated: true)
+    }
 }
 
 // MARK: - Sheet configuration

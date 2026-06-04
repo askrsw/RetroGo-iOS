@@ -268,14 +268,14 @@ final class RetroRomFileItem: RetroRomBaseItem {
 
     func updateLastPlayAt() {
         let now = Date()
-        if Retro​Rom​Persistence.shared.updateLastPlayAt(key: key, date: now) {
+        if RetroRomPersistence.shared.updateLastPlayAt(key: key, date: now) {
             lastPlayAt = now
             pulseText = !pulseText
         }
     }
 
     func updatePlayTime(seconds: Int) {
-        if Retro​Rom​Persistence.shared.updatePlayTime(key: key, seconds: playTime + seconds) {
+        if RetroRomPersistence.shared.updatePlayTime(key: key, seconds: playTime + seconds) {
             playTime += seconds
             pulseText = !pulseText
         }
@@ -287,7 +287,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
         let removed = oldTags.subtracting(newTags)
 
         if added.count > 0 || removed.count > 0 {
-            let ret = Retro​Rom​Persistence.shared.updateRetroFileTags(romKey: key, addedTags: added, removedTags: removed)
+            let ret = RetroRomPersistence.shared.updateRetroFileTags(romKey: key, addedTags: added, removedTags: removed)
             tagIdArray = Array(newTags).sorted()
             pulseText = !pulseText
             NotificationCenter.default.post(name: .fileTagFileChanged, object: self, userInfo: ["added": added, "removed": removed])

@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class EmuInGameMessage;
 
 @interface RAGameViewController : UIViewController
-@property(nonatomic, strong, readonly) UIView *hudView;
+@property(nonatomic, strong, readonly) UIView *toolbarView;
 @property(nonatomic, strong, readonly) UIView *overlayView;
 @property(nonatomic, assign, readwrite) BOOL useRetroArchOverlay;
 @property(nonatomic, assign, readwrite) BOOL useSpriteKitOverlay;
