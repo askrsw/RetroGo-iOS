@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.6.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.6.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 6 月 15 日</i>。
+        </p-paragraph>
+        <p-list id="v1.6.0" style="number">
+            <p-item>新增<b>金手指</b>功能：支持用户创建自定义金手指，在游戏中开启使用，并浏览受支持平台的系统金手指模版。</p-item>
+            <p-item>新增<b>金手指模版搜索</b>与自动匹配：RetroGo 可根据 ROM 的 CRC32 查询游戏信息，并在可用时自动绑定匹配的金手指模版。</p-item>
+            <p-item>金手指模版库现通过可选的<b>按需资源</b>提供，保持 App 本体更轻量，需要时再下载完整离线金手指数据库。</p-item>
+            <p-item>优化<b>发现</b>页面：同一游戏的不同变体会聚合到同一个条目中，浏览游戏时更清爽，重复项更少。</p-item>
+            <p-item>为发现页游戏数据库新增<b>中文游戏名称</b>，游戏标题可跟随 App 语言显示，同时在需要时保留更权威的英文名称。</p-item>
+            <p-item>通过新的 <b>GamePauseCoordinator</b> 优化游戏内同步机制，让菜单、弹窗页面与游戏恢复时机更加可靠。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.5.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.5.0</p-title>
         <p-paragraph fontsize="13">

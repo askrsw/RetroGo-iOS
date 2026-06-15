@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSData (Extension)
 - (NSString *)sha256Hash;
+- (NSString *)crc32Hash;
 @end
 
 NS_ASSUME_NONNULL_END

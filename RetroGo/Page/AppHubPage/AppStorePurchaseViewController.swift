@@ -29,7 +29,7 @@ import ObjcHelper
 import SafariServices
 
 final class AppStorePurchaseViewController: UIViewController {
-    private let gamePauseToken = RetroArchGamePauseToken()
+    private var gamePauseLease: GamePauseCoordinator.Lease?
 
     // MARK: UI
     let scrollView    = UIScrollView()
@@ -56,6 +56,8 @@ final class AppStorePurchaseViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        gamePauseLease = acquireGamePause(reason: "purchase")
+        attachGamePauseLeaseToPresentation(gamePauseLease)
 
         view.backgroundColor       = .systemGroupedBackground
         navigationItem.hidesBackButton = true
@@ -71,6 +73,19 @@ final class AppStorePurchaseViewController: UIViewController {
         configUI()
 
         AppStorePurchaseManager.shared.ensureBootstrapped()
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if isClosingOrBeingDismissedFromGamePauseContext() {
+            gamePauseLease?.release()
+            gamePauseLease = nil
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        attachGamePauseLeaseToPresentation(gamePauseLease)
     }
 
     override func viewDidLayoutSubviews() {
@@ -948,6 +963,7 @@ private final class BenefitSectionView: UIStackView {
         addArrangedSubview(benefitsStack)
 
         let benefits: [(String, UIColor)] = [
+            (Bundle.localizedString(forKey: "iap_probenefit_cheats"), .cheatIconColor),
             (Bundle.localizedString(forKey: "iap_probenefit1"), UIColor(hex: 0x2ECC71, alpha: 1.0)),
             (Bundle.localizedString(forKey: "iap_probenefit2"), UIColor(hex: 0xF1C40F, alpha: 1.0)),
             (Bundle.localizedString(forKey: "iap_probenefit3"), UIColor(hex: 0xE74C3C, alpha: 1.0)),

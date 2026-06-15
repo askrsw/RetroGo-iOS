@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 计算文件的 SHA256 哈希值（十六进制字符串），低内存占用
 - (nullable NSString *)computeSHA256String:(NSError **)error;
+- (nullable NSString *)computeCRC32String:(NSError **)error;
 
 @end
 

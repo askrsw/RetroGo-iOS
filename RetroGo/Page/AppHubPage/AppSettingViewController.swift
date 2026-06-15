@@ -89,6 +89,7 @@ extension AppSettingViewController {
         case coreList
         case inGameHaptic
         case coreSettingList
+        case odrResources
 
         // about
         case about
@@ -209,6 +210,17 @@ extension AppSettingViewController {
                 cell.textLabel?.text = Bundle.localizedString(forKey: "corelist_core_settings")
                 cell.accessoryType = .disclosureIndicator
                 return cell
+            case .odrResources:
+                let cell = cellBuilder()
+                cell.accessoryView = nil
+                cell.imageView?.image = IconRender.shared.settingsIcon(
+                    symbol: "externaldrive.fill",
+                    background: .systemTeal,
+                    size: iconSize
+                )
+                cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_odr_resources")
+                cell.accessoryType = .disclosureIndicator
+                return cell
             case .inGameHaptic:
                 let switchControl = UISwitch()
                 switchControl.isOn = true
@@ -284,7 +296,7 @@ extension AppSettingViewController {
         }
         snapshot.appendItems(mainItems, toSection: .main)
 
-        let gameItems: [Item] = [.coreList, .coreSettingList]
+        let gameItems: [Item] = [.coreList, .coreSettingList, .odrResources]
         snapshot.appendItems(gameItems, toSection: .game)
 
         let aboutItems: [Item] = [.about, .versionHistory, .contactUs, .rattingApp]
@@ -303,7 +315,7 @@ extension AppSettingViewController: UITableViewDelegate {
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return false }
         switch item {
         case .language: return true
-        case .coreList, .coreSettingList: return true
+        case .coreList, .coreSettingList, .odrResources: return true
         case .about, .versionHistory, .contactUs, .rattingApp: return true
         default: return false
         }
@@ -317,6 +329,7 @@ extension AppSettingViewController: UITableViewDelegate {
         case .language(let key, _): changeLanguage(key: key)
         case .coreList: showCoreList(action: .showCoreInfo)
         case .coreSettingList: showCoreList(action: .configureCore)
+        case .odrResources: showODRResources()
         case .about: showAbout()
         case .versionHistory: showVersionHistory()
         case .contactUs: emailToHaharsw()
@@ -354,6 +367,12 @@ extension AppSettingViewController {
         guard RetroArchX.shared().initialized else { return }
 
         let controller = RetroRomCoreListViewController(action: action)
+        navigationController?.pushViewController(controller, animated: true)
+    }
+
+    private func showODRResources() {
+        Vibration.selection.vibrate()
+        let controller = ODRResourceViewController()
         navigationController?.pushViewController(controller, animated: true)
     }
 

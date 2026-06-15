@@ -40,10 +40,11 @@ enum GameToolbarAction: String, CaseIterable {
     // in the default pinned set, nearest the More button.) Reordering cases is
     // safe — the raw value strings are the persisted identity.
     case lockLandscape
+    case cheat
     case saveState
     case loadState
-    case restart
     case setting
+    case restart
     case snap
     case mute
 
@@ -55,7 +56,7 @@ enum GameToolbarAction: String, CaseIterable {
     /// both the default layout and where a newly added action lands.
     var priority: ToolbarPriority {
         switch self {
-        case .lockLandscape, .setting: return .high
+        case .lockLandscape, .setting, .cheat: return .high
         case .saveState, .loadState,  .restart: return .medium
         case .snap, .mute: return .low
         }
@@ -73,6 +74,7 @@ enum GameToolbarAction: String, CaseIterable {
         case .lockLandscape: return Bundle.localizedString(forKey: "gamepage_toolbar_lock_landscape")
         case .setting:       return Bundle.localizedString(forKey: "gamepage_toolbar_settings")
         case .restart:   return Bundle.localizedString(forKey: "gamepage_toolbar_restart")
+        case .cheat:     return Bundle.localizedString(forKey: "cheat_title")
         }
     }
 
@@ -87,6 +89,7 @@ enum GameToolbarAction: String, CaseIterable {
         case .lockLandscape: return "lock.rotation"
         case .setting:       return "gear.circle"
         case .restart:   return "arrow.clockwise.circle"
+        case .cheat:     return "star.circle"
         }
     }
 }

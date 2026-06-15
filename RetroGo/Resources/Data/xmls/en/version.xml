@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.6.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.6.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>June 15, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.6.0" style="number">
+            <p-item>Added <b>Cheats</b>: create custom cheat codes, enable them in game, and browse built-in cheat templates for supported platforms.</p-item>
+            <p-item>Added <b>cheat template search</b> and automatic template matching: RetroGo can use a ROM's CRC32 to look up game metadata and bind a matching cheat template when available.</p-item>
+            <p-item>Cheat templates are now delivered as an optional <b>On-Demand Resource</b>, keeping the base app smaller while allowing the full offline cheat database to be downloaded when needed.</p-item>
+            <p-item>Improved the <b>Discover</b> page by grouping different variants of the same game into one entry, making game browsing cleaner and less repetitive.</p-item>
+            <p-item>Added <b>Chinese game names</b> to the Discover database, so game titles can follow the app language while still preserving authoritative English names where useful.</p-item>
+            <p-item>Improved in-game synchronization with the new <b>GamePauseCoordinator</b>, making menus, sheets, and game resume timing more reliable.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.5.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.5.0</p-title>
         <p-paragraph fontsize="13">

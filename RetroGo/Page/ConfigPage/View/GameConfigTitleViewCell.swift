@@ -68,6 +68,7 @@ final class GameConfigTitleViewCell: GameConfigBaseViewCell {
 extension GameConfigTitleViewCell {
     @objc
     private func detailButtonTapAction(_ sender: UIButton) {
+        Vibration.selection.vibrate()
         entry?.detailButtonTapHandler?()
     }
 }

@@ -63,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSData (Extension)
 - (NSString *)sha256Hash;
+- (NSString *)crc32Hash;
 @end
 
 @interface NSFileManager (Extension)
@@ -87,6 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURL (Extension)
 - (nullable NSString *)computeSHA256String:(NSError **)error;
+- (nullable NSString *)computeCRC32String:(NSError **)error;
 @end
 
 NS_ASSUME_NONNULL_END

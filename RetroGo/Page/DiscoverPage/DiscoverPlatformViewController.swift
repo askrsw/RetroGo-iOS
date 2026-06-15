@@ -118,6 +118,10 @@ final class DiscoverPlatformViewController: UIViewController {
         _ = dataSource
         _ = loadingView
 
+    #if DEBUG
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(debugExportDatabase))
+    #endif
+
         observeRdbReady()
     }
 
@@ -195,3 +199,35 @@ extension DiscoverPlatformViewController: UITableViewDelegate {
         navigationController?.pushViewController(vc, animated: true)
     }
 }
+
+#if DEBUG
+// MARK: - DEBUG：离线生成预制 sqlite
+
+extension DiscoverPlatformViewController {
+
+    @objc fileprivate func debugExportDatabase() {
+        let progress = UIAlertController(title: "正在导出…",
+                                         message: "从 .rdb 构建预制库，请稍候",
+                                         preferredStyle: .alert)
+        present(progress, animated: true)
+
+        OnDemandResourceLoader.shared.debugExportCombinedDatabase { [weak self] path, error in
+            // completion 已在主线程回调
+            progress.dismiss(animated: true) {
+                let title: String
+                let message: String
+                if let path {
+                    title = "导出成功"
+                    message = "已生成预制库：\n\(path)\n\n用 Devices and Simulators 或容器路径取出 gamerdb.sqlite，重命名后作为 ODR 资源打包。"
+                } else {
+                    title = "导出失败"
+                    message = error?.localizedDescription ?? "未知错误"
+                }
+                let done = UIAlertController(title: title, message: message, preferredStyle: .alert)
+                done.addAction(UIAlertAction(title: "好", style: .default))
+                self?.present(done, animated: true)
+            }
+        }
+    }
+}
+#endif

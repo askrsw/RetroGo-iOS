@@ -26,152 +26,315 @@
 import Foundation
 import RACoordinator
 
+extension Notification.Name {
+    /// Posted (on main) when an ODR resource finishes installing or is deleted.
+    /// `object` = the resource id (String).
+    static let odrResourceStateDidChange = Notification.Name("RetroGoODRResourceStateDidChange")
+}
+
+/// One downloadable On-Demand Resource = a prebuilt file shipped as an ODR tag
+/// (the game DB, the cheat library, the game-name localization DB, and — later —
+/// large filter/shader config packs). Every fact is hardcoded in
+/// `OnDemandResourceLoader.resources`; adding a new resource is one entry.
+struct ODRResource: Hashable {
+    /// Stable id (also the UserDefaults / notification key suffix).
+    let id: String
+    /// On-Demand Resource tag (set in the Xcode resource's ODR tags).
+    let odrTag: String
+    /// Resource name + extension inside the app bundle.
+    let bundleResource: String
+    let bundleExtension: String
+    /// File name written into the app's database folder.
+    let installedFileName: String
+    /// Hardcoded approximate byte size, for display before any download.
+    let approxByteSize: Int64
+    /// Snapshot version. Bump when repacking the prebuilt file so installed
+    /// users re-copy the newer one. (Independent of the SQLite schema version.)
+    let bundledVersion: Int
+    /// Required = auto-downloaded on launch and not user-deletable (the game DB).
+    /// Optional = user downloads / deletes it from the resource management page.
+    let isRequired: Bool
+    /// Localized string keys (Localizable.strings: odr_*_title / odr_*_desc).
+    let titleKey: String
+    let descKey: String
+
+    var installedVersionKey: String { "RetroGoODRInstalledVersion_\(id)" }
+
+    static func == (l: ODRResource, r: ODRResource) -> Bool { l.id == r.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+}
+
+/// Install / download state of an ODR resource.
+enum ODRResourceState {
+    case ready                    // installed and up to date
+    case notDownloaded
+    case downloading(Double)      // fractionCompleted 0…1
+}
+
 final class OnDemandResourceLoader: NSObject {
 
     static let shared = OnDemandResourceLoader()
 
-    // ODR tag → rdb 文件名（不含扩展名，与 Xcode ODR tag 一一对应）
-    let rdb: [String: String] = [
-        "rdb-DOS":    "DOS",
-        "rdb-FDS":    "Nintendo - Family Computer Disk System",
-        "rdb-GB":     "Nintendo - Game Boy",
-        "rdb-GBA":    "Nintendo - Game Boy Advance",
-        "rdb-GBC":    "Nintendo - Game Boy Color",
-        "rdb-MAME":   "MAME",
-        "rdb-N64":    "Nintendo - Nintendo 64",
-        "rdb-NDS":    "Nintendo - Nintendo DS",
-        "rdb-NES":    "Nintendo - Nintendo Entertainment System",
-        "rdb-PS":     "Sony - PlayStation",
-        "rdb-PSP":    "Sony - PlayStation Portable",
-        "rdb-Saturn": "Sega - Saturn",
-        "rdb-SNES":   "Nintendo - Super Nintendo Entertainment System",
+    // MARK: - Hardcoded resource catalog
+
+    /// The full set of On-Demand Resources. Order = display order.
+    static let resources: [ODRResource] = [
+        ODRResource(
+            id: "gamerdb", odrTag: "game-db",
+            bundleResource: "gamerdb", bundleExtension: "sqlite",
+            installedFileName: "gamerdb.db",
+            approxByteSize: 71_794_688, bundledVersion: 1,
+            isRequired: true,
+            titleKey: "odr_gamerdb_title", descKey: "odr_gamerdb_desc"),
+        ODRResource(
+            id: "gameloc", odrTag: "gameloc-db",
+            bundleResource: "gameloc", bundleExtension: "sqlite",
+            installedFileName: "gameloc.sqlite",
+            approxByteSize: 9_457_664, bundledVersion: 1,
+            isRequired: true,   // required: small, and language is easily toggled
+            titleKey: "odr_gameloc_title", descKey: "odr_gameloc_desc"),
+        ODRResource(
+            id: "cheat", odrTag: "cheat-db",
+            bundleResource: "cheat", bundleExtension: "sqlite",
+            installedFileName: "cheat.sqlite",
+            approxByteSize: 130_015_232, bundledVersion: 1,
+            isRequired: false,
+            titleKey: "odr_cheat_title", descKey: "odr_cheat_desc"),
     ]
 
-    // 持有进行中的 NSBundleResourceRequest，防止 ARC 提前释放
+    static func resource(id: String) -> ODRResource? {
+        resources.first { $0.id == id }
+    }
+
+    // MARK: - State
+
+    /// `true` once the (required) game database is open and queryable.
+    @objc private(set) dynamic var rdbReady = false
+
+    /// Live requests keyed by resource id (kept alive while downloading) + their
+    /// progress observers. Touched only on the main thread.
     private var activeRequests: [String: NSBundleResourceRequest] = [:]
-    private let lock = NSLock()
+    private var progressObservers: [String: NSKeyValueObservation] = [:]
 
-    /// 专属串行队列，所有 importRdb 调用均在此队列上执行。
-    /// 串行保证多平台并发 ODR 回调不会同时写 SQLite；
-    /// 独立于主线程和 RAGameRDBManager 的 sqlitequeue，避免死锁。
-    private let importQueue = DispatchQueue(label: "com.retrogo.odr.import", qos: .utility)
+    /// Serial queue for file copy / version bookkeeping — never the main thread.
+    private let importQueue = DispatchQueue(label: "com.retrogo.odr.install", qos: .utility)
 
-    @objc
-    private(set) dynamic var rdbReady = false
+    private var databaseFolder: String {
+        (AppConfig.shared.gameRdbDatabasePath as NSString).deletingLastPathComponent + "/"
+    }
+
+    func targetPath(_ r: ODRResource) -> String { databaseFolder + r.installedFileName }
 
     private override init() {
         super.init()
-        loadRDB()
+        importQueue.async { [weak self] in self?.ensureRequiredThenOpenGameDB() }
     }
 
-    // MARK: - Load
+    // MARK: - Public API (resource management page)
 
-    private func loadRDB() {
-        // initialize 的 completion 在主线程触发（ObjC 内部 dispatch_async 到 main_queue）。
-        // 立即跳出到 importQueue，避免在主线程上执行 isPlatformImported 的
-        // dispatch_sync 阻塞 UI，以及避免在主线程上触发耗时的 rdb 导入流程。
-        RAGameRDBManager.shared().initialize(AppConfig.shared.gameRdbDatabasePath) { [weak self] in
+    func state(for r: ODRResource) -> ODRResourceState {
+        if let req = activeRequests[r.id] {
+            return .downloading(req.progress.fractionCompleted)
+        }
+        let installed = UserDefaults.standard.integer(forKey: r.installedVersionKey)
+        if installed >= r.bundledVersion,
+           FileManager.default.fileExists(atPath: targetPath(r)) {
+            return .ready
+        }
+        return .notDownloaded
+    }
+
+    /// Begin (or resume) downloading + installing a resource. `progress` and
+    /// `completion` are delivered on the main thread. The ODR download runs while
+    /// the app is in the foreground holding the request (not a true background
+    /// task — keep the progress UI up).
+    func startDownload(_ r: ODRResource,
+                       progress: @escaping (Double) -> Void,
+                       completion: @escaping (Bool, Error?) -> Void) {
+        assert(Thread.isMainThread)
+        if case .ready = state(for: r) { completion(true, nil); return }
+        if activeRequests[r.id] != nil { return }     // already downloading
+
+        let request = NSBundleResourceRequest(tags: [r.odrTag])
+        request.loadingPriority = NSBundleResourceRequestLoadingPriorityUrgent
+        activeRequests[r.id] = request
+        progressObservers[r.id] = request.progress.observe(\.fractionCompleted) { p, _ in
+            DispatchQueue.main.async { progress(p.fractionCompleted) }
+        }
+
+        request.beginAccessingResources { [weak self] error in
             guard let self else { return }
+            if let error {
+                DispatchQueue.main.async {
+                    self.cleanup(r.id)
+                    completion(false, error)
+                }
+                return
+            }
             self.importQueue.async {
-                self.importMissingPlatforms()
+                let ok = self.installFromBundle(r)
+                if ok {
+                    UserDefaults.standard.set(r.bundledVersion, forKey: r.installedVersionKey)
+                }
+                request.endAccessingResources()
+                DispatchQueue.main.async {
+                    self.cleanup(r.id)
+                    if ok {
+                        NotificationCenter.default.post(name: .odrResourceStateDidChange, object: r.id)
+                    }
+                    completion(ok, ok ? nil : NSError(
+                        domain: "OnDemandResourceLoader", code: -2,
+                        userInfo: [NSLocalizedDescriptionKey: "install failed"]))
+                }
             }
         }
     }
 
-    // MARK: - Missing platform check
-
-    /// 运行在 importQueue（串行）上。
-    /// isPlatformImported 内部 dispatch_sync 到 d_dbQueue，
-    /// 从 importQueue 发起不会死锁（两个不同的队列）。
-    private func importMissingPlatforms() {
-        let missing = rdb.filter { _, rdbName in
-            !RAGameRDBManager.shared().isPlatformImported(rdbName)
-        }
-
-        // 所有平台均已导入，直接就绪
-        guard !missing.isEmpty else {
-            DispatchQueue.main.async { [weak self] in
-                self?.rdbReady = true
+    /// Delete an optional resource's installed file to reclaim space. Required
+    /// resources can't be deleted. Returns `true` if anything was removed.
+    @discardableResult
+    func delete(_ r: ODRResource) -> Bool {
+        guard !r.isRequired else { return false }
+        let fm = FileManager.default
+        var removed = false
+        for suffix in ["", "-wal", "-shm"] {
+            let p = targetPath(r) + suffix
+            if fm.fileExists(atPath: p), (try? fm.removeItem(atPath: p)) != nil {
+                removed = true
             }
+        }
+        UserDefaults.standard.removeObject(forKey: r.installedVersionKey)
+        if removed {
+            NotificationCenter.default.post(name: .odrResourceStateDidChange, object: r.id)
+        }
+        return removed
+    }
+
+    private func cleanup(_ id: String) {
+        progressObservers[id]?.invalidate()
+        progressObservers[id] = nil
+        activeRequests[id] = nil
+    }
+
+    // MARK: - Launch: ensure required resources, then open the game DB
+
+    /// Auto-installs every required resource (the game DB + the localization DB)
+    /// the first time / after a repack, then opens the game DB (`rdbReady`).
+    private func ensureRequiredThenOpenGameDB() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            for r in Self.resources where r.isRequired {
+                self.ensureInstalled(r) { [weak self] in
+                    // Open the game DB once gamerdb is in place. Open regardless
+                    // of download success: worst case we open an empty/old DB so
+                    // the UI still works and launch is never blocked.
+                    if r.id == "gamerdb" {
+                        self?.importQueue.async { self?.openGameDatabase() }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Main-thread. Ensure a resource is installed (download if needed), then
+    /// call `completion` (also on main).
+    private func ensureInstalled(_ r: ODRResource, completion: @escaping () -> Void) {
+        if case .ready = state(for: r) { completion(); return }
+        startDownload(r, progress: { _ in }) { _, _ in completion() }
+    }
+
+    /// Open the game SQLite. The prebuilt DB's user_version is aligned with
+    /// `RAGameRDBManager.currentDBVersion`, so initialize skips DDL and just opens.
+    private func openGameDatabase() {
+        let path = AppConfig.shared.gameRdbDatabasePath
+        if let loc = Self.resource(id: "gameloc") {
+            RAGameLocalizationManager.shared().initialize(targetPath(loc), completion: nil)
+        }
+        RAGameRDBManager.shared().initialize(path) { [weak self] in
+            self?.rdbReady = true
+            NSLog("[ODR] ✅ 游戏数据库就绪，rdbReady = true")
+        }
+    }
+
+    /// Copy the bundled prebuilt file over the install path, clearing any old
+    /// file + its WAL/SHM sidecars first. Runs on importQueue.
+    private func installFromBundle(_ r: ODRResource) -> Bool {
+        guard let srcURL = Bundle.main.url(forResource: r.bundleResource,
+                                           withExtension: r.bundleExtension) else {
+            NSLog("[ODR] ❌ Bundle 中找不到资源 %@.%@", r.bundleResource, r.bundleExtension)
+            return false
+        }
+        let fm = FileManager.default
+        let dst = URL(fileURLWithPath: targetPath(r))
+        do {
+            for suffix in ["", "-wal", "-shm"] {
+                let p = targetPath(r) + suffix
+                if fm.fileExists(atPath: p) { try fm.removeItem(atPath: p) }
+            }
+            try fm.createDirectory(at: dst.deletingLastPathComponent(),
+                                   withIntermediateDirectories: true)
+            try fm.copyItem(at: srcURL, to: dst)
+            NSLog("[ODR] ✅ 预制资源已安装 → %@", targetPath(r))
+            return true
+        } catch {
+            NSLog("[ODR] ❌ 安装资源失败 (%@): %@", r.id, error.localizedDescription)
+            return false
+        }
+    }
+}
+
+#if DEBUG
+// MARK: - DEBUG：从 Bundle 内的 .rdb 离线生成预制库
+
+extension OnDemandResourceLoader {
+
+    /// 用于离线导出的 13 个 .rdb 资源名（Bundle 资源名，不含扩展名）。
+    static let debugRdbNames: [String] = [
+        "DOS",
+        "Nintendo - Family Computer Disk System",
+        "Nintendo - Game Boy",
+        "Nintendo - Game Boy Advance",
+        "Nintendo - Game Boy Color",
+        "MAME",
+        "Nintendo - Nintendo 64",
+        "Nintendo - Nintendo DS",
+        "Nintendo - Nintendo Entertainment System",
+        "Sony - PlayStation",
+        "Sony - PlayStation Portable",
+        "Sega - Saturn",
+        "Nintendo - Super Nintendo Entertainment System",
+    ]
+
+    /// DEBUG：把 Bundle 内的 .rdb 合并构建成成品预制库，
+    /// 落地到 <Documents>/gamerdb.sqlite，并把路径回调出来供从模拟器容器取出。
+    func debugExportCombinedDatabase(completion: @escaping (String?, Error?) -> Void) {
+        // Resources/Data 是蓝色 folder reference，保留层级打进包，
+        // 故 rdb 运行时位于 <bundle>/Data/rdb/，必须带 subdirectory 才能定位。
+        let rdbPaths: [String] = OnDemandResourceLoader.debugRdbNames.compactMap {
+            Bundle.main.url(forResource: $0,
+                            withExtension: "rdb",
+                            subdirectory: "Data/rdb")?.path
+        }
+        guard !rdbPaths.isEmpty else {
+            completion(nil, NSError(domain: "OnDemandResourceLoader", code: -1,
+                                    userInfo: [NSLocalizedDescriptionKey:
+                                                "Bundle 内找不到任何 .rdb 文件，请确认它们仍包含在 Debug target 的资源中"]))
             return
         }
 
-        // 用 DispatchGroup 追踪所有平台的导入完成情况（含失败），
-        // 全部结束后才将 rdbReady 置为 true
-        let group = DispatchGroup()
+        let docs = NSSearchPathForDirectoriesInDomains(.documentDirectory,
+                                                       .userDomainMask, true).first!
+        let dest = (docs as NSString).appendingPathComponent("gamerdb.sqlite")
 
-        for (tag, rdbName) in missing {
-            group.enter()
-            requestAndImport(tag: tag, rdbName: rdbName) {
-                group.leave()
-            }
-        }
-
-        // 所有平台导入流程（无论成败）全部结束后通知主线程
-        group.notify(queue: .main) { [weak self] in
-            NSLog("[ODR] ✅ 所有平台导入流程结束，rdbReady = true")
-            self?.rdbReady = true
-        }
-    }
-
-    // MARK: - Per-platform ODR request
-
-    /// `completion` 在每个平台的导入流程结束（成功或失败）后调用，
-    /// 保证 DispatchGroup 的 leave 能在所有路径上被触发到。
-    private func requestAndImport(tag: String, rdbName: String, completion: @escaping () -> Void) {
-        let request = NSBundleResourceRequest(tags: [tag])
-        request.loadingPriority = NSBundleResourceRequestLoadingPriorityUrgent
-
-        // 持有引用，防止提前释放
-        lock.lock()
-        activeRequests[tag] = request
-        lock.unlock()
-
-        // beginAccessingResources 的 completion 在 OS 内部未知队列上回调。
-        // importRdb 内部会 dispatch_async 到 d_dbQueue，任意队列调用均安全；
-        // completion 最终由 d_dbQueue 回调到主线程，group.leave() 在主线程执行。
-        request.beginAccessingResources { [weak self] error in
-            guard let self else {
-                completion()
-                return
-            }
-
+        RAGameRDBManager.shared().exportCombinedDatabase(toPath: dest,
+                                                         fromRdbPaths: rdbPaths) { total, error in
             if let error {
-                NSLog("[ODR] ❌ %@ 资源请求失败: %@", tag, error.localizedDescription)
-                self.releaseRequest(tag: tag)
-                completion()
-                return
-            }
-
-            // 在 Bundle 中定位 .rdb 文件（只读元数据，ODR 回调队列上可以做）
-            guard let rdbURL = Bundle.main.url(forResource: rdbName, withExtension: "rdb") else {
-                NSLog("[ODR] ❌ Bundle 中找不到 %@.rdb（tag=%@）", rdbName, tag)
-                request.endAccessingResources()
-                self.releaseRequest(tag: tag)
-                completion()
-                return
-            }
-
-            RAGameRDBManager.shared().importRdb(atPath: rdbURL.path) { importedCount, importError in
-                if let importError {
-                    NSLog("[ODR] ❌ %@ 导入失败: %@", rdbName, importError.localizedDescription)
-                } else {
-                    NSLog("[ODR] ✅ %@ 导入完成，写入游戏 %d 条", rdbName, importedCount)
-                }
-
-                // 数据已落盘 SQLite，释放 ODR 资源
-                request.endAccessingResources()
-                self.releaseRequest(tag: tag)
-                completion()
+                completion(nil, error)
+            } else {
+                NSLog("[ODR][DEBUG] ✅ 导出完成，共 %ld 条游戏 → %@", total, dest)
+                completion(dest, nil)
             }
         }
-    }
-
-    // MARK: - Helpers
-
-    private func releaseRequest(tag: String) {
-        lock.lock()
-        activeRequests.removeValue(forKey: tag)
-        lock.unlock()
     }
 }
+#endif

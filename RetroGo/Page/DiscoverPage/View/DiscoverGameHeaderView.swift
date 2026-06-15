@@ -143,6 +143,8 @@ final class DiscoverGameHeaderView: UIView {
         l.font          = .systemFont(ofSize: 13)
         l.textColor     = .secondaryLabel
         l.textAlignment = .center
+        l.numberOfLines = 2
+        l.lineBreakMode = .byTruncatingTail
         return l
     }()
 
@@ -234,11 +236,15 @@ final class DiscoverGameHeaderView: UIView {
 
     // MARK: - Configure
 
-    func configure(game: RAGameEntry, platformName: String) {
-        nameLabel.text     = game.name
-        platformLabel.text = platformName
+    /// - Parameter placeholderSeed: stable string driving the placeholder colour and
+    ///   initial letter. Pass the group name so the colour stays consistent with the
+    ///   list cell and does not change when switching between variants of the same group.
+    ///   When nil, falls back to `game.name`.
+    func configure(game: RAGameEntry, platformName: String, placeholderSeed: String? = nil) {
+        updateText(game: game, platformName: platformName)
 
-        let color = DiscoverGameCell.placeholderColor(for: game.name)
+        let seed  = placeholderSeed ?? game.name
+        let color = DiscoverGameCell.placeholderColor(for: seed)
 
         // Gradient: opaque theme colour → fully transparent (reveals systemGroupedBackground)
         backdropGradient.colors = [
@@ -246,7 +252,7 @@ final class DiscoverGameHeaderView: UIView {
             color.withAlphaComponent(0.0).cgColor,
         ]
         placeholderView.backgroundColor = color
-        placeholderLabel.text = game.name.first.map { String($0).uppercased() } ?? "#"
+        placeholderLabel.text = seed.first.map { String($0).uppercased() } ?? "#"
 
         // Reset state for each new game.
         backdropView.alpha        = 1       // restored in case a previous cover faded it
@@ -254,6 +260,15 @@ final class DiscoverGameHeaderView: UIView {
         coverImageView.image      = nil
         coverImageView.isHidden   = true
         coverShadowView.isHidden  = true
+    }
+
+    func updateText(game: RAGameEntry, platformName: String) {
+        nameLabel.text = game.localizedDisplayNameWithVariantSuffix
+        if let englishName = game.authoritativeEnglishNameForDisplay {
+            platformLabel.text = "\(platformName)\n\(englishName)"
+        } else {
+            platformLabel.text = platformName
+        }
     }
 
     override func layoutSubviews() {

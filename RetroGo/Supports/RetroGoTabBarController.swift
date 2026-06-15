@@ -196,4 +196,3 @@ extension RetroGoTabBarController: UITabBarControllerDelegate {
         Vibration.selection.vibrate()
     }
 }
-

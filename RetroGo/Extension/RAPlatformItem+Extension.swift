@@ -27,7 +27,7 @@ import RACoordinator
 
 extension RAPlatformItem {
     /// Explicit mapping from the RDB file basename to a UI icon key. Keys
-    /// must match the file names under `Resources/OnDemandRDBs/` (without
+    /// must match the file names under `Resources/Data/rdb/` (without
     /// the `.rdb` extension); no fuzzy matching on display name.
     var platformIcon: IconRender.PlatformIconKey? {
         switch rdbName {

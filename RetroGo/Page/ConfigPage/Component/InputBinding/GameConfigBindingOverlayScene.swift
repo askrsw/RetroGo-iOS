@@ -168,6 +168,7 @@ private extension GameConfigBindingOverlayScene {
         case .dpad:
             let dpad = GameOverlayDirectionPad(element: element, allowsDiagonalInput: false, theme: overlayTheme) { [weak self] code, down in
                 guard down else { return }
+                Vibration.selection.vibrate()
                 self?.activateBinding(elementId: element.id, joypadCode: code)
             }
             self.dpad = dpad
@@ -175,6 +176,7 @@ private extension GameConfigBindingOverlayScene {
         case .button:
             let button = GameOverlayActionButton(element: element, isTurboSupported: false, autoKeepTurbo: false, theme: overlayTheme) { [weak self] code, down in
                 guard down else { return }
+                Vibration.selection.vibrate()
                 if element.isCombo {
                     self?.activateBinding(elementId: element.id)
                 } else {
@@ -186,6 +188,7 @@ private extension GameConfigBindingOverlayScene {
         case .n64CButton:
             let button = GameOverlayN64CButton(element: element, theme: overlayTheme) { [weak self] code, down in
                 guard down else { return }
+                Vibration.selection.vibrate()
                 self?.activateBinding(elementId: element.id, joypadCode: code)
             }
             self.n64CButton = button
@@ -195,6 +198,7 @@ private extension GameConfigBindingOverlayScene {
                 return nil
             }
             let button = GameOverLayFastButton(element: element, theme: overlayTheme) { [weak self] _ in
+                Vibration.selection.vibrate()
                 self?.activateBinding(elementId: element.id)
             }
             self.fastButton = button

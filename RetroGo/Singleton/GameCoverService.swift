@@ -129,7 +129,13 @@ final class GameCoverService {
     /// Returns the cover image synchronously if it is already in the **memory** cache,
     /// nil otherwise. Zero latency — safe to call on the main thread before showing any UI.
     func memoryCachedImage(for game: RAGameEntry, platform: RAPlatformItem) -> UIImage? {
-        let imgKey = Self.imageCacheKey(gameName: game.name, rdbName: platform.rdbName)
+        memoryCachedImage(gameName: game.name, rdbName: platform.rdbName)
+    }
+
+    /// Explicit-key variant. Lets callers look up by an arbitrary name (e.g. a group
+    /// name shared by all variants) instead of a specific game's name.
+    func memoryCachedImage(gameName: String, rdbName: String) -> UIImage? {
+        let imgKey = Self.imageCacheKey(gameName: gameName, rdbName: rdbName)
         return imageCache.retrieveImageInMemoryCache(forKey: imgKey, options: nil)
     }
 
@@ -185,8 +191,11 @@ final class GameCoverService {
 
     // MARK: - Cache management
 
-    func clearCache(completion: (@Sendable () -> Void)? = nil) {
-        imageCache.clearCache(completion: completion)
+    func clearCache(completion: (@MainActor @Sendable () -> Void)? = nil) {
+        imageCache.clearCache {
+            guard let completion else { return }
+            Task { @MainActor in completion() }
+        }
         fileListMemoryCache.removeAll()
         matchCache.removeAll()
         matchCachePersistTask?.cancel()
@@ -203,6 +212,13 @@ final class GameCoverService {
             try? FileManager.default.removeItem(at: fileToRemove)
             try? FileManager.default.createDirectory(at: dirToRemove,
                                                       withIntermediateDirectories: true)
+        }
+    }
+
+    func diskCacheSize(completion: @escaping (Int64) -> Void) {
+        imageCache.calculateDiskStorageSize { result in
+            let bytes = (try? result.get()).map { Int64($0) } ?? 0
+            Task { @MainActor in completion(bytes) }
         }
     }
 

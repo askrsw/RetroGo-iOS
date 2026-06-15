@@ -29,6 +29,12 @@ import ObjcHelper
 extension UIColor {
     static let mainColor = UIColor.accent
 
+    /// Brand color for the cheats feature — a warm amber-gold (金手指 = "golden
+    /// finger"). Used for the cheat icon's filled background (toolbar layout
+    /// editor + the cheat page titles). Distinct from the rest of the toolbar
+    /// palette (blue/teal/cyan/gray/orange/red).
+    static let cheatIconColor = UIColor(red: 0.78, green: 0.54, blue: 0.05, alpha: 1.0)
+
     static var isDarkMode: Bool {
         UIScreen.main.traitCollection.userInterfaceStyle == .dark
     }

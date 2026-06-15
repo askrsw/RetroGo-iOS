@@ -27,6 +27,7 @@ import UIKit
 import ObjcHelper
 
 enum AppStoreProFeature {
+    case cheats
     case fastForward
     case manualSaveSlot
     case controllerMapping
@@ -34,6 +35,8 @@ enum AppStoreProFeature {
 
     var lockedMessage: String {
         switch self {
+        case .cheats:
+            return Bundle.localizedString(forKey: "progate_cheats_locked")
         case .fastForward:
             return Bundle.localizedString(forKey: "progate_fast_forward_locked")
         case .manualSaveSlot:
@@ -175,7 +178,8 @@ private extension AppStoreProFeatureGate {
             message: message
         )
 
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_unlock_pro"), style: .default) { [weak self, weak presenter] _ in
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_unlock_pro"), style: .default) { [weak self, weak presenter, weak alert] _ in
+            alert?.releaseGamePauseIfNeeded()
             Task { @MainActor [weak self, weak presenter] in
                 self?.visibleLockedAlert = nil
                 await Task.yield()
@@ -183,7 +187,8 @@ private extension AppStoreProFeatureGate {
             }
         })
 
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_not_now"), style: .cancel) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_not_now"), style: .cancel) { [weak self, weak alert] _ in
+            alert?.releaseGamePauseIfNeeded()
             self?.visibleLockedAlert = nil
         })
 

@@ -171,7 +171,8 @@ final class DiscoverGameCell: UITableViewCell {
         coverImageView.image    = nil
         coverImageView.isHidden = true
 
-        nameLabel.text = game.name
+        let displayName = game.localizedDisplayName
+        nameLabel.text = displayName
 
         // Build detail line: "1996  ·  Nintendo" — skip zero/nil parts
         var parts: [String] = []
@@ -181,7 +182,7 @@ final class DiscoverGameCell: UITableViewCell {
         detailLabel.text = parts.joined(separator: "  ·  ")
         detailLabel.isHidden = parts.isEmpty
 
-        let initial = game.name.first.map { String($0).uppercased() } ?? "#"
+        let initial = displayName.first.map { String($0).uppercased() } ?? "#"
         placeholderView.backgroundColor = Self.placeholderColor(for: game.name)
         initialLabel.text = initial
 

@@ -77,11 +77,34 @@ final class DiscoverGameDetailViewController: UIViewController {
 
     // MARK: - Data
 
-    let game:     RAGameEntry
+    /// Currently displayed entry. Starts as the group's representative variant and
+    /// is swapped in place when the user picks another variant from the 变体 menu.
+    private var game: RAGameEntry
     let platform: RAPlatformItem
 
-    /// Built once in `viewDidLoad`, never mutated again.
+    /// Group context, captured once from the entry the page was opened with.
+    /// Kept separate from `game` because after switching to a concrete variant
+    /// (variantCount == 0) we still need these to drive the 变体 menu.
+    private let groupName:    String?
+    private let variantCount: Int
+
+    /// Stable seed for the cover placeholder colour/initial — the group name, so the
+    /// colour matches the list cell and stays fixed while switching variants.
+    /// Also used as the cover cache key so all variants share one cover.
+    private let placeholderSeed: String
+
+    /// The group representative's gameId — the row the list page shows. Used when
+    /// posting the cover-loaded notification so the correct list cell updates.
+    private let representativeGameId: Int
+
+    /// Rebuilt whenever `game` changes.
     private var sections: [SectionData] = []
+
+    private var didStartInitialCoverLoad = false
+    private var headerNeedsSizing = true
+    private var lastHeaderFittingWidth: CGFloat = 0
+    private var coverRequestID = 0
+    private var coverIndicatorTask: Task<Void, Never>?
 
     // MARK: - Views
 
@@ -107,15 +130,21 @@ final class DiscoverGameDetailViewController: UIViewController {
             x: 0, y: 0,
             width: view.bounds.width,
             height: DiscoverGameHeaderView.totalHeight))
-        h.configure(game: game, platformName: platform.displayName)
+        h.configure(game: game, platformName: platform.displayName, placeholderSeed: placeholderSeed)
         return h
     }()
 
     // MARK: - Init
 
     init(game: RAGameEntry, platform: RAPlatformItem) {
-        self.game     = game
-        self.platform = platform
+        self.game            = game
+        self.platform        = platform
+        self.groupName       = game.groupName
+        self.variantCount    = game.variantCount
+        // Landing entry's name is the clean group name (for group representatives),
+        // which is exactly the seed the list cell used.
+        self.placeholderSeed      = game.groupName ?? game.name
+        self.representativeGameId  = game.gameId
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -128,17 +157,94 @@ final class DiscoverGameDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor   = .systemGroupedBackground
-        navigationItem.title   = game.name
+        updateNavigationTitle()
 
         navigationItem.largeTitleDisplayMode = .never
 
+        setupVariantButton()
         buildSections()
 
         _ = tableView
 
         tableView.tableHeaderView = headerView
 
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(languageChanged),
+            name: .languageChanged,
+            object: nil)
+    }
+
+    deinit {
+        coverIndicatorTask?.cancel()
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard !didStartInitialCoverLoad else { return }
+        didStartInitialCoverLoad = true
+        // Cover cache/network work can compete with the push transition on older
+        // devices. Start it after the first frame of the detail page is on screen.
         fetchCover()
+    }
+
+    // MARK: - Variant menu
+
+    /// Adds the top-right 变体 button only when this group has more than one variant.
+    /// The menu lazily loads the variant list when opened (UIDeferredMenuElement).
+    private func setupVariantButton() {
+        guard variantCount > 1, let group = groupName, !group.isEmpty else { return }
+
+        let deferred = UIDeferredMenuElement.uncached { [weak self] completion in
+            guard let self else { completion([]); return }
+            RAGameRDBManager.shared().fetchVariants(
+                forPlatformId: self.platform.platformId,
+                groupName:     group
+            ) { variants, _ in
+                // completion is delivered on the main thread by RAGameRDBManager.
+                let actions: [UIMenuElement] = variants.map { variant in
+                    UIAction(
+                        title: variant.localizedDisplayNameWithVariantSuffix,
+                        state: variant.gameId == self.game.gameId ? .on : .off
+                    ) { [weak self] _ in
+                        self?.switchToVariant(variant)
+                    }
+                }
+                completion(actions)
+            }
+        }
+
+        let menu = UIMenu(title: group, children: [deferred])
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: Bundle.localizedString(forKey: "detail_variants"),
+            image: nil,
+            primaryAction: nil,
+            menu: menu)
+    }
+
+    /// Swap the displayed entry in place and re-render header, sections and cover.
+    private func switchToVariant(_ variant: RAGameEntry) {
+        guard variant.gameId != game.gameId else { return }
+        Vibration.selection.vibrate()
+
+        game = variant
+        updateNavigationTitle()
+        headerView.configure(game: variant, platformName: platform.displayName, placeholderSeed: placeholderSeed)
+        buildSections()
+        tableView.reloadData()
+        markHeaderNeedsSizing()
+        fetchCover()
+    }
+
+    @objc
+    private func languageChanged() {
+        updateNavigationTitle()
+        setupVariantButton()
+        headerView.updateText(game: game, platformName: platform.displayName)
+        buildSections()
+        tableView.reloadData()
+        markHeaderNeedsSizing()
     }
 
     override func viewDidLayoutSubviews() {
@@ -154,6 +260,7 @@ final class DiscoverGameDetailViewController: UIViewController {
     private func sizeHeaderViewToFit() {
         let targetWidth = tableView.bounds.width
         guard targetWidth > 0 else { return }
+        guard headerNeedsSizing || abs(lastHeaderFittingWidth - targetWidth) > 1 else { return }
 
         let fittingSize = CGSize(width: targetWidth, height: UIView.layoutFittingCompressedSize.height)
         let height      = headerView.systemLayoutSizeFitting(
@@ -161,6 +268,9 @@ final class DiscoverGameDetailViewController: UIViewController {
             withHorizontalFittingPriority: .required,
             verticalFittingPriority:       .fittingSizeLevel
         ).height
+
+        headerNeedsSizing = false
+        lastHeaderFittingWidth = targetWidth
 
         guard abs(headerView.frame.height - height) > 1 else { return }
 
@@ -170,15 +280,30 @@ final class DiscoverGameDetailViewController: UIViewController {
         tableView.tableHeaderView = headerView   // triggers internal re-layout
     }
 
+    private func markHeaderNeedsSizing() {
+        headerNeedsSizing = true
+        sizeHeaderViewToFit()
+    }
+
     // MARK: - Cover art
 
     private func fetchCover() {
-        guard !GameCoverService.shared.isDefinitelyUnavailable(for: game, platform: platform) else {
+        coverRequestID += 1
+        let requestID = coverRequestID
+        coverIndicatorTask?.cancel()
+        coverIndicatorTask = nil
+
+        // All variants of a group share one cover — always key by the group name so
+        // switching variants never triggers a second download (it hits the same cache).
+        let coverName = placeholderSeed
+        let coverRdb  = platform.rdbName
+
+        guard !GameCoverService.shared.isDefinitelyUnavailable(gameName: coverName, rdbName: coverRdb) else {
             return
         }
 
         // ── Memory cache hit: zero latency, show cover immediately ─────────────
-        if let cached = GameCoverService.shared.memoryCachedImage(for: game, platform: platform) {
+        if let cached = GameCoverService.shared.memoryCachedImage(gameName: coverName, rdbName: coverRdb) {
             headerView.setCoverImage(cached)
             sizeHeaderViewToFit()
             return
@@ -189,30 +314,37 @@ final class DiscoverGameDetailViewController: UIViewController {
         // in < 100 ms and won't see the spinner at all; slow network loads will.
         let indicatorTask = Task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: 200_000_000)
-            guard !Task.isCancelled, let self else { return }
+            guard !Task.isCancelled, let self, self.coverRequestID == requestID else { return }
             self.headerView.showLoadingIndicator()
         }
+        coverIndicatorTask = indicatorTask
 
         GameCoverService.shared.loadCover(
-            for:      game,
-            platform: platform,
+            gameName: coverName,
+            rdbName:  coverRdb,
             into:     headerView.coverImageView
         ) { [weak self] image in
             // completion is @Sendable; hop to @MainActor before touching UIKit.
             Task { @MainActor [weak self] in
                 guard let self else { indicatorTask.cancel(); return }
+                guard self.coverRequestID == requestID else {
+                    indicatorTask.cancel()
+                    return
+                }
                 indicatorTask.cancel()
+                self.coverIndicatorTask = nil
 
                 if let image {
                     self.headerView.setCoverImage(image)
                     self.sizeHeaderViewToFit()
-                    // Notify the list page so the corresponding cell can show
-                    // the cover without doing any additional network work.
+                    // Notify the list page so the corresponding cell can show the
+                    // cover without any extra network work. Always use the group's
+                    // representative gameId — that's the row the list shows.
                     NotificationCenter.default.post(
                         name: .discoverCoverDidLoad,
                         object: nil,
                         userInfo: [
-                            DiscoverCoverNotificationKey.gameId: self.game.gameId,
+                            DiscoverCoverNotificationKey.gameId: self.representativeGameId,
                             DiscoverCoverNotificationKey.image:  image
                         ]
                     )
@@ -270,6 +402,11 @@ final class DiscoverGameDetailViewController: UIViewController {
 
         // ── 基本信息 ──────────────────────────────────────────────────────────
         var basic: [InfoRow] = []
+
+        if let englishName = game.authoritativeEnglishNameForDisplay {
+            basic.append(InfoRow(title: Bundle.localizedString(forKey: "detail_english_name"),
+                                 value: englishName))
+        }
 
         if let dev = game.developer, !dev.isEmpty {
             basic.append(InfoRow(title: Bundle.localizedString(forKey: "detail_developer"),
@@ -379,6 +516,10 @@ final class DiscoverGameDetailViewController: UIViewController {
         guard section < sections.count else { return false }
         let key = Bundle.localizedString(forKey: "detail_section_description")
         return sections[section].header == key
+    }
+
+    private func updateNavigationTitle() {
+        navigationItem.title = game.localizedDisplayNameWithVariantSuffix
     }
 }
 

@@ -46,6 +46,10 @@ final class GamePageViewController: RAGameViewController {
     let romUrl: URL?
     let startTime: Date
     let configSession: GameConfigSession
+    /// The single cheat session for this game run (parallels `configSession`).
+    /// nil when launched without a `RetroRomFileItem` (the document-browser path),
+    /// since cheats are keyed by the rom item — cheats are unavailable then.
+    let cheatSession: GameCheatSession?
 
     private(set) var startDate: Date?
 
@@ -57,6 +61,7 @@ final class GamePageViewController: RAGameViewController {
         self.romUrl    = romUrl
         self.startTime = Date()
         self.configSession = GameConfigSession(scope: .core, core: core, game: nil)
+        self.cheatSession = nil
         super.init(core: core)
         Self.instance = self
 
@@ -71,10 +76,16 @@ final class GamePageViewController: RAGameViewController {
     }
 
     init(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
+        let configSession = GameConfigSession(scope: .game, core: core, game: romItem)
         self.romItem   = romItem
         self.romUrl    = URL(fileURLWithPath: romItem.entryPath!)
         self.startTime = Date()
-        self.configSession = GameConfigSession(scope: .game, core: core, game: romItem)
+        self.configSession = configSession
+        self.cheatSession = GameCheatSession(
+            game: romItem,
+            core: core,
+            autoEnableCheatsOnLaunch: configSession.getAutoEnableCheats()
+        )
         super.init(core: core)
         Self.instance = self
 
@@ -141,7 +152,7 @@ final class GamePageViewController: RAGameViewController {
             myLoadingView?.uninstall()
             myLoadingView = nil
 
-            myToolbarView.configLoadSaveStateButons()
+            myToolbarView.refreshActionAvailability()
 
             startDate = Date()
 
@@ -151,6 +162,11 @@ final class GamePageViewController: RAGameViewController {
                 let autoPath = "\(stateFolder)/\(name).state"
                 RetroArchX.shared().loadState(from: autoPath)
             }
+
+            // Rebuild the engine cheat snapshot after the core starts. This must
+            // load system-template states too; otherwise the toolbar badge and
+            // enabled template cheats only become correct after opening the cheat page.
+            cheatSession?.reloadTemplateItems {}
 
             if core.coreId == "dosbox-pure" {
                 self.useRetroArchOverlay = true
@@ -261,6 +277,10 @@ extension GamePageViewController {
     }
 }
 
+private enum GameLaunchBackgroundPreparation {
+    static let queue = DispatchQueue(label: "com.retrogo.game-launch.preparation", qos: .utility)
+}
+
 extension RetroArchX {
     static func playGame(romUrl: URL?, core: EmuCoreInfoItem) {
         guard let currentViewController = UIViewController.currentActive() else {
@@ -275,8 +295,21 @@ extension RetroArchX {
         guard let currentViewController = UIViewController.currentActive() else {
             return
         }
+
         let controller = GamePageViewController(romItem: romItem, core: core)
         controller.modalPresentationStyle = .fullScreen
         currentViewController.present(controller, animated: true)
+
+        // CRC32 + cheat-template binding are launch-adjacent conveniences, not
+        // launch requirements. Keep them on a serial utility queue so playing a
+        // game stays instant even for large legacy ROMs.
+        GameLaunchBackgroundPreparation.queue.async {
+            do {
+                try romItem.ensureCRC32()
+                try GameCheatTemplateAutoBinder.shared.prepareBindingIfNeeded(game: romItem, core: core)
+            } catch {
+                print("Failed to prepare launch metadata for ROM: \(romItem.itemName), error: \(error)")
+            }
+        }
     }
 }

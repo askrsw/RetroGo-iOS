@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<p-contents>
+    <p-section id="cheat_intro" toppadding="16" bottompadding="12">
+        <p-paragraph>
+            <b>金手指</b>能在游玩时改变游戏——无限生命、更换武器、穿墙等等。RetroGo 通过当前运行的核心来应用金手指，所以一条码是否生效，<b>完全取决于这个核心</b>：同一条码在一个核心里有效，换一个核心可能毫无反应。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_type" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">类型</p-title>
+        <p-paragraph>
+            每条金手指只能是三种类型中的<b>一种</b>。先选类型，下面的字段会随之切换。
+        </p-paragraph>
+        <p-list style="bullet">
+            <p-item><b>数值</b> —— <i>地址:值</i> 形式的码，例如 <b>05C6:02</b>，作为字符串交给核心。</p-item>
+            <p-item><b>秘籍</b> —— 加密的字母码，例如 <b>SXNNUXSE</b>（Game Genie / Pro Action Replay / GameShark），同样交给核心。</p-item>
+            <p-item><b>内存</b> —— 结构化的 <i>地址 + 值</i>，带写入方式和长度，由 RetroArch 自己写内存来应用。</p-item>
+        </p-list>
+        <p-paragraph fontsize="14">
+            数值和秘籍都走核心（只是你输入的格式不同）；内存则是 RetroArch 自己的内存写入器。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_name" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">名称</p-title>
+        <p-paragraph>
+            给自己看的标签（例如 <i>无限生命</i>），不影响功能。留空时会用码本身作为名称。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_numeric" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">数值（地址:值）</p-title>
+        <p-paragraph>
+            形如 <b>地址:值</b> 的十六进制码。例如 <b>05C6:02</b> 表示&#8220;把 <b>0x02</b> 写入内存地址 <b>0x05C6</b>&#8221;，由核心解析并应用。这是网上最常见的格式（比如 NES）。
+        </p-paragraph>
+        <p-paragraph>
+            多段子码可以用 <b>+</b> 连成一条金手指，例如 <b>7F80CA63+7F80CC63</b>，核心会自己拆开。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_secret" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">秘籍（Game Genie / PAR / GameShark）</p-title>
+        <p-paragraph>
+            这是一类加密的字母数字码，例如 <b>SXNNUXSE+SZEXLEVK</b>。它们<b>不</b>在 ROM 里——是由玩家逆向算出来的，核心负责解码。
+        </p-paragraph>
+        <p-paragraph>
+            <b>原理。</b>Game Genie 最初是一个插在卡带和主机之间的硬件。它监视 CPU 读取游戏程序的过程，并在中途<b>替换</b>掉读到的值。一条码编码的是&#8220;当读到某个 ROM 地址时，返回这个值&#8221;——还可以附带一个<i>比较值</i>，只有当该地址当前正好等于比较值时才替换。
+        </p-paragraph>
+        <p-paragraph>
+            <b>编码方式。</b>NES 的 Game Genie 使用一套 16 个字母的表——<b>A E P O Z X L U G K I S T V Y N</b>——每个字母代表 4 个 bit（一个十六进制位）。<b>6 个字母</b>的码打包了一个 15 位的 ROM 地址加一个 8 位的替换值；<b>8 个字母</b>的码再多一个 8 位的<i>比较值</i>，只有当该地址已经是这个值时才替换（避免误改到别处）。这些 bit 被故意打乱分散在各字母里，所以码看起来像乱码。
+        </p-paragraph>
+        <p-paragraph>
+            <b>加号 +</b> 把两条或多条码并成一条金手指，每条各打补丁到一处（两处都改了才完整生效）。
+        </p-paragraph>
+        <p-paragraph fontsize="14">
+            与数值/内存的区别：那两者每帧改的是<b>内存（RAM）</b>；而 Game Genie 改的是游戏的<b>程序本身（ROM）</b>——比如直接把&#8220;生命减一&#8221;那条指令换掉。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_memory" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">内存（结构化）</p-title>
+        <p-paragraph>
+            由 RetroArch 自己每帧写模拟内存。当你需要更精细的控制（写入方式、长度、条件），或更想填字段而不是粘贴一串码时，用它。
+        </p-paragraph>
+        <p-list style="bullet">
+            <p-item><b>地址</b> —— 要修改的内存地址，十六进制（如 <b>0x05C6</b>）。</p-item>
+            <p-item><b>值</b> —— 要写入的值，十六进制（如 <b>0x02</b>）。</p-item>
+            <p-item><b>写入方式</b> —— 值如何被写入（见下）。</p-item>
+            <p-item><b>内存长度</b> —— 值占多少位（见下）。</p-item>
+        </p-list>
+    </p-section>
+
+    <p-section id="cheat_write_mode" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">写入方式</p-title>
+        <p-list style="bullet">
+            <p-item><b>设为值</b> —— 每帧都写入该值，即把它&#8220;冻住&#8221;。&#8220;无限xx&#8221;类金手指通常用这个。</p-item>
+            <p-item><b>增加 / 减少</b> —— 每帧在原值上加/减该值。</p-item>
+            <p-item><b>等于 / 不等于 / 小于 / 大于</b>（高级）—— 一种<i>条件</i>：只有当该地址满足条件时，才执行列表中的<b>下一条</b>金手指。用于多条链式金手指。</p-item>
+        </p-list>
+    </p-section>
+
+    <p-section id="cheat_mem_size" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">内存长度</p-title>
+        <p-paragraph>
+            值占多宽：<b>1 字节</b>（8 位）、<b>2 字节</b>（16 位）、<b>4 字节</b>（32 位）。高级菜单里还有子字节长度（<b>1 / 2 / 4 位</b>）。NES 的金手指大多用 1 字节。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_advanced" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">高级（内存）</p-title>
+        <p-list style="bullet">
+            <p-item><b>大端字节序</b> —— 多字节值的字节顺序。NES 是小端，一般保持关闭，除非某平台需要。</p-item>
+            <p-item><b>地址掩码</b> —— 字节内的位掩码，仅在子字节（位）长度时使用。</p-item>
+            <p-item><b>重复次数 / 值增量 / 地址增量</b> —— 把金手指连续应用到多个地址：重复<i>重复次数</i>遍，每遍给值加上<i>值增量</i>、给地址加上<i>地址增量</i>（适合一次性填满整排道具之类）。</p-item>
+        </p-list>
+    </p-section>
+
+    <p-section id="cheat_link" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">数值 &#8596; 内存</p-title>
+        <p-paragraph>
+            数值和内存是同一个 <i>地址 + 值</i> 的两种写法，所以在这两种类型之间切换会自动带过去数据。<b>秘籍</b>码无法被反解成地址，因此永远不联动——请把 Game Genie / PAR 这类码放在<b>秘籍</b>类型里。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_note" toppadding="8" bottompadding="20">
+        <p-title level="3" underline="false">小提示</p-title>
+        <p-paragraph>
+            开启金手指可能会关闭成就的硬核模式。再强调一次：一条码能否生效取决于核心——如果某条码没有反应，多半是当前核心不支持它。
+        </p-paragraph>
+    </p-section>
+</p-contents>

@@ -12,6 +12,8 @@
 
 "cancel" = "Cancel";
 "ok" = "OK";
+"yes" = "Yes";
+"no" = "No";
 "skip" = "Skip";
 "info" = "Info";
 "error" = "Error";
@@ -289,6 +291,8 @@
 "configpage_video_driver_desc" = "Vulkan is recommended for best stability and compatibility. Metal and GL are experimental and may have performance or compatibility issues.";
 "configpage_video_driver_forbiden_desc" = "Core %@ does not support custom video drivers.";
 "configpage_audio_driver" = "Audio Driver";
+"configpage_auto_enable_cheats" = "Auto-Enable Cheats";
+"configpage_auto_enable_cheats_desc" = "When enabled, RetroGo restores cheats that were left enabled the next time this game starts. If a cheat makes this game crash or behave incorrectly, turn this off for this game; cheats will stay off on launch, but you can still enable them manually from the Cheats page.";
 "configpage_game_fast_multiplier" = "Fast Multiplier";
 "configpage_game_mute_when_fast"  = "Mute on Fast-Forward";
 "configpage_game_mute_when_fast_desc" = "When the separate game thread is disabled, high-speed fast-forward may cause noticeable audio noise. Enable this option if that happens.";
@@ -322,6 +326,7 @@
 "iap_yearly_trial_desc" = "%@ · then billed yearly";
 "iap_loading" = "Loading...";
 "iap_probenefits" = "Pro Benefits";
+"iap_probenefit_cheats" = "Enable cheat codes and built-in cheat templates.";
 "iap_probenefit1" = "Unlimited fast-forward controls.";
 "iap_probenefit2" = "Unlimited manual save slots per game.";
 "iap_probenefit3" = "Advanced controller button mapping.";
@@ -379,6 +384,7 @@
 "progate_alert_message_format" = "%@\nUnlock RetroGo Pro to continue.";
 "progate_unlock_pro" = "Unlock Pro";
 "progate_not_now" = "Not Now";
+"progate_cheats_locked" = "Enabling cheats requires Pro.";
 "progate_fast_forward_locked" = "Fast-forward speeds above 2x require Pro.";
 "progate_manual_save_slot_locked" = "Unlimited manual save slots are a Pro feature.";
 "progate_controller_mapping_locked" = "Advanced controller button mapping is a Pro feature.";
@@ -389,7 +395,7 @@
 "discover_main_title" = "Discover";
 "settings_main_title" = "Settings";
 "discover_building_database" = "Building Database…";
-"discover_search_placeholder" = "Search games…";
+"discover_search_placeholder" = "Search %d games…";
 
 // MARK: - Game Detail Page
 
@@ -397,8 +403,10 @@
 "detail_section_description" = "Description";
 "detail_section_more"        = "More Info";
 "detail_section_rom"         = "ROM Info";
+"detail_variants"            = "Variants";
 
 "detail_developer"    = "Developer";
+"detail_english_name" = "English Name";
 "detail_publisher"    = "Publisher";
 "detail_release"      = "Released";
 "detail_genre"        = "Genre";
@@ -412,3 +420,127 @@
 // MARK: - Game Cover
 
 "cover_load_failed"   = "No cover art found";
+
+// MARK: - Cheat Codes
+
+"cheat_title"                   = "Cheats";
+"cheat_template_section"        = "System Templates";
+"cheat_template_section_auto"   = "System Templates (Auto-bound)";
+"cheat_template_section_count_format" = "%@ · %d";
+"cheat_template_footer"         = "System templates may not match this ROM perfectly. If a cheat crashes or behaves incorrectly, search and use another template.";
+"cheat_user_section"            = "User Added";
+"cheat_empty_tip"               = "No cheats yet\nTap + to add one";
+"cheat_core_unsupported"        = "This core does not support cheats";
+"cheat_delete"                  = "Delete";
+
+"cheat_create_title"            = "Create Cheat";
+"cheat_edit_title"              = "Edit Cheat";
+"cheat_field_name"              = "Name";
+"cheat_field_name_placeholder"  = "Enter a cheat name";
+"cheat_field_code"              = "Code";
+"cheat_field_code_placeholder"  = "Enter the cheat code";
+"cheat_invalid_empty_code"      = "Please enter a cheat code";
+"cheat_save_failed"             = "Failed to save cheat";
+
+"cheat_tutorial_title"          = "About Cheat Codes";
+"cheat_tutorial_body"           = "Codes are parsed by the running core and the format depends on the platform: NES, for example, accepts Game Genie codes (e.g. SXIOPO) or raw \"address:value\" (e.g. 0032:02); join multiple sub-codes with + (e.g. AAAA-AAAA+BBBB-BBBB). Whether a code works depends on the core's support.";
+
+// MARK: - Cheat Codes (1.6.0 structured)
+
+"cheat_mode_code"               = "Code";
+"cheat_mode_address"            = "Address";
+"cheat_field_address"           = "Address";
+"cheat_field_value"             = "Value";
+"cheat_field_address_placeholder" = "0x address";
+"cheat_field_value_placeholder"   = "0x value";
+"cheat_field_write_type"        = "Write Mode";
+"cheat_field_mem_size"          = "Memory Size";
+"cheat_field_advanced"          = "Advanced";
+"cheat_field_big_endian"        = "Big Endian";
+"cheat_field_address_mask"      = "Address Mask";
+"cheat_field_repeat_count"      = "Repeat Count";
+"cheat_field_repeat_value"      = "Value Step";
+"cheat_field_repeat_address"    = "Address Step";
+"cheat_write_set"               = "Set to Value";
+"cheat_write_increase"          = "Increase";
+"cheat_write_decrease"          = "Decrease";
+"cheat_write_if_eq"             = "If Equal, run next";
+"cheat_write_if_neq"            = "If Not Equal, run next";
+"cheat_write_if_lt"             = "If Less Than, run next";
+"cheat_write_if_gt"             = "If Greater Than, run next";
+"cheat_size_1bit"               = "1 bit";
+"cheat_size_2bit"               = "2 bit";
+"cheat_size_4bit"               = "4 bit";
+"cheat_size_1byte"              = "1 byte";
+"cheat_size_2byte"              = "2 byte";
+"cheat_size_4byte"              = "4 byte";
+"cheat_invalid_address"         = "Please enter a valid hex address";
+"cheat_retro_subtitle_format"   = "Addr %@  Val %@";
+
+// MARK: - Cheat Codes (type kinds)
+
+"cheat_field_type"              = "Type";
+"cheat_kind_numeric"            = "Numeric";
+"cheat_kind_secret"             = "Secret";
+"cheat_kind_memory"             = "Memory";
+"cheat_numeric_placeholder"     = "e.g. 05C6:02";
+"cheat_secret_placeholder"      = "e.g. SXNNUXSE+SZEXLEVK";
+
+"cheat_help_title"              = "Cheat Help";
+
+// MARK: - Cheat Catalog
+
+"cheat_catalog_title"              = "Cheat Templates";
+"cheat_catalog_search_placeholder" = "Search game names";
+"cheat_catalog_match_section"      = "Matched Game";
+"cheat_catalog_template_section"   = "Cheat Templates";
+"cheat_catalog_match_footer"       = "Search by Chinese or English game name. System matches may not fit every ROM.";
+"cheat_catalog_matched_crc_format" = "Matched by CRC32 %@";
+"cheat_catalog_current_template"   = "Current Template";
+"cheat_catalog_current_template_format" = "%@ · %@";
+"cheat_catalog_binding_auto"       = "Auto-bound";
+"cheat_catalog_binding_manual"     = "Manual";
+"cheat_catalog_count_format"       = "%d cheats";
+"cheat_catalog_empty"              = "No cheat templates for this platform";
+"cheat_catalog_search_empty"       = "No matching games";
+"cheat_catalog_game_empty"         = "No cheat templates for this game";
+"cheat_catalog_detail_title"       = "Template Details";
+"cheat_catalog_field_type"         = "Type";
+"cheat_catalog_field_english"      = "English Description";
+"cheat_catalog_field_source"       = "Source";
+"cheat_catalog_source_builtin"     = "Built-in Template Library";
+"cheat_catalog_error_title"        = "Load Failed";
+"cheat_catalog_unavailable_title"  = "Platform Unsupported";
+"cheat_catalog_unavailable_message" = "The current core does not map to a cheat template platform.";
+"cheat_catalog_use_template"       = "Use This Template";
+"cheat_catalog_replace_title"      = "Replace Template?";
+"cheat_catalog_replace_message"    = "This will replace the current system template for this ROM and reset template cheat switches.";
+"cheat_catalog_replace_action"     = "Replace";
+"cheat_catalog_bind_done"          = "Template applied";
+"cheat_catalog_bind_failed"        = "Failed to apply template";
+
+/* ODR resource management */
+"appsetting_odr_resources"      = "Offline Resources";
+"odr_page_title"                = "Offline Resources";
+"odr_page_footer"               = "Keep the app in the foreground while downloading. The game database and Chinese names are required; the cheat library is optional and can be re-downloaded anytime after deletion.";
+"odr_gamerdb_title"             = "Game Database";
+"odr_gamerdb_desc"              = "Game metadata, cover matching and the Discover page.";
+"odr_gameloc_title"             = "Chinese Game Names";
+"odr_gameloc_desc"              = "Adds Chinese names and Chinese search for games.";
+"odr_cheat_title"               = "Cheat Library";
+"odr_cheat_desc"                = "RetroArch's offline cheat code database, matched per game.";
+"odr_status_ready"              = "Ready";
+"odr_status_not_downloaded"     = "Not Downloaded";
+"odr_status_downloading"        = "Downloading…";
+"odr_downloading_fmt"           = "Downloading %d%%";
+"odr_download_done"             = "Download Complete";
+"odr_download_failed"           = "Download Failed";
+"odr_action_delete"             = "Delete";
+"odr_delete_confirm_title"      = "Delete this resource?";
+"odr_delete_confirm_msg_fmt"    = "“%@” will be removed to free up space. You can download it again anytime.";
+"odr_cache_cover_title"         = "Game Cover Cache";
+"odr_cache_cover_desc"          = "Downloaded cover images cached by the Discover page.";
+"odr_cache_calculating"         = "Calculating…";
+"odr_cache_footer"              = "Cover cache is temporary and can be regenerated. Clearing it does not delete games or databases.";
+"odr_cache_delete_confirm_title" = "Clear cover cache?";
+"odr_cache_delete_confirm_msg"  = "Downloaded cover images will be removed to free up space. They will be downloaded again when needed.";
