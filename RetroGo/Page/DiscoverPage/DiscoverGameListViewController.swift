@@ -143,6 +143,12 @@ final class DiscoverGameListViewController: UIViewController {
             self?.handleCoverDidLoad(notification)
         }
 
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(languageChanged),
+            name: .languageChanged,
+            object: nil)
+
         loadFirstPage()
     }
 
@@ -150,6 +156,7 @@ final class DiscoverGameListViewController: UIViewController {
         if let token = coverObserverToken {
             NotificationCenter.default.removeObserver(token)
         }
+        NotificationCenter.default.removeObserver(self)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -174,7 +181,11 @@ final class DiscoverGameListViewController: UIViewController {
         let sc = UISearchController(searchResultsController: nil)
         sc.searchResultsUpdater = self
         sc.obscuresBackgroundDuringPresentation = false
-        sc.searchBar.placeholder = Bundle.localizedString(forKey: "discover_search_placeholder")
+        // Show the group count (de-duplicated), consistent with the list and the
+        // platform page — not the raw variant total.
+        sc.searchBar.placeholder = String(
+            format: Bundle.localizedString(forKey: "discover_search_placeholder"),
+            platform.groupCount)
         sc.delegate = self
         navigationItem.searchController = sc
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -199,18 +210,19 @@ final class DiscoverGameListViewController: UIViewController {
         isLoadingPage = true
         let offset    = browseOffset
 
-        RAGameRDBManager.shared().fetchGames(
+        // 列表展示去重后的「分组」，而非每个变体，避免 MAME 等平台数万条同名变体刷屏。
+        RAGameRDBManager.shared().fetchGroups(
             forPlatformId:  platform.platformId,
             offset:         offset,
             limit:          pageSize,
-            knownTotalCount: platform.gameCount   // skip redundant COUNT(*) query
+            knownTotalCount: platform.groupCount   // skip redundant COUNT(*) query
         ) { [weak self] games, totalCount, error in
             guard let self else { return }
             self.isLoadingPage    = false
             self.refreshControl.endRefreshing()
 
             if let error {
-                NSLog("[DiscoverGameList] fetchGames error: %@", error.localizedDescription)
+                NSLog("[DiscoverGameList] fetchGroups error: %@", error.localizedDescription)
                 return
             }
 
@@ -268,6 +280,14 @@ final class DiscoverGameListViewController: UIViewController {
             return
         }
         loadFirstPage()
+    }
+
+    @objc
+    private func languageChanged() {
+        navigationItem.searchController?.searchBar.placeholder = String(
+            format: Bundle.localizedString(forKey: "discover_search_placeholder"),
+            platform.groupCount)
+        tableView.reloadData()
     }
 
     // MARK: - Cover notification

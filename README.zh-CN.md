@@ -81,6 +81,14 @@ RetroGo 已正式上架 App Store：https://apps.apple.com/app/id6758611562
 4.  **构建并运行**
     连接您的 iPhone/iPad，按下 `Cmd + R` 即可开始构建。
 
+### 游戏数据库资源 (`gamerdb.sqlite`)
+
+**发现 (Discover)** 页使用的预制游戏数据库（`RetroGo/Resources/OnDemandRes/gamerdb.sqlite`，
+约 60 MB）体积较大，**未纳入 git 管理**。缺少该文件不影响 App 其余部分的构建与运行，仅发现页需要它。
+
+如需该文件，请发邮件至 **askrsw@163.com** 索取，并将其放置到
+`RetroGo/Resources/OnDemandRes/gamerdb.sqlite`。
+
 ## 🎮 使用说明
 
 ### 导入游戏 (ROMs)

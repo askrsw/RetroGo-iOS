@@ -281,6 +281,19 @@ extension GameConfigSession {
         }
 
         do {
+            let title = Bundle.localizedString(forKey: "configpage_auto_enable_cheats")
+            let entry = GameConfigEntry(type: .bool, ui: .switch, title: title)
+            entry.getBoolValue = { [weak self] in
+                self?.getAutoEnableCheats() ?? true
+            }
+            entry.setBoolValue = { [weak self] value in
+                self?.setAutoEnableCheats(value: value)
+            }
+            entry.desc = Bundle.localizedString(forKey: "configpage_auto_enable_cheats_desc")
+            entries.append(entry)
+        }
+
+        do {
             let title = Bundle.localizedString(forKey: "configpage_video_driver")
             let entry = GameConfigEntry(type: .string, ui: .list, title: title)
             entry.getListArray = { [weak self] in

@@ -81,6 +81,15 @@ To ensure a seamless build process for version 1.0:
 4.  **Run**
     Connect your device and press `Cmd + R`.
 
+### Game Database Resource (`gamerdb.sqlite`)
+
+The prebuilt game database used by the **Discover** page (`RetroGo/Resources/OnDemandRes/gamerdb.sqlite`,
+~60 MB) is a large binary and is **not tracked in git**. The rest of the app builds and runs without it;
+only the Discover page needs it.
+
+If you need this file, email **askrsw@163.com** and we will send it to you. Place it at
+`RetroGo/Resources/OnDemandRes/gamerdb.sqlite`.
+
 ## 🎮 Usage & ROMs
 
 1.  Connect your device to a computer.

@@ -12,6 +12,8 @@
 
 "cancel" = "取消";
 "ok" = "确定";
+"yes" = "是";
+"no" = "否";
 "skip" = "跳过";
 "info" = "信息";
 "error" = "错误";
@@ -291,6 +293,8 @@
 "configpage_video_driver_desc" = "Vulkan 兼容性与稳定性最佳（推荐）；Metal、GL 为实验性选项，可能有性能或兼容性问题。";
 "configpage_video_driver_forbiden_desc" = "核心 %@ 不支持自定义视频驱动";
 "configpage_audio_driver" = "音频驱动";
+"configpage_auto_enable_cheats" = "自动启用金手指";
+"configpage_auto_enable_cheats_desc" = "开启后，进入游戏时会自动恢复上次已开启的金手指。若某个游戏因金手指导致崩溃或异常，请在该游戏设置中关闭此项；之后进入游戏时金手指会保持关闭，你仍可在金手指页面手动开启。";
 "configpage_game_fast_multiplier" = "游戏快进倍数";
 "configpage_game_mute_when_fast"  = "快进时静音";
 "configpage_game_mute_when_fast_desc" = "未开启独立游戏线程时，高倍速快进可能产生明显杂音。如遇到此问题，可开启快进静音。";
@@ -324,6 +328,7 @@
 "iap_yearly_trial_desc" = "%@ · 之后按年计费";
 "iap_loading" = "加载中...";
 "iap_probenefits" = "Pro 权益";
+"iap_probenefit_cheats" = "启用金手指与系统金手指模板。";
 "iap_probenefit1" = "无限制快进控制。";
 "iap_probenefit2" = "每个游戏支持无限手动存档位。";
 "iap_probenefit3" = "高级物理手柄按键映射。";
@@ -381,6 +386,7 @@
 "progate_alert_message_format" = "%@\n解锁 RetroGo Pro 后可继续使用。";
 "progate_unlock_pro" = "解锁 Pro";
 "progate_not_now" = "暂不";
+"progate_cheats_locked" = "启用金手指需要 Pro。";
 "progate_fast_forward_locked" = "3x、4x、6x 快进倍率需要 Pro。";
 "progate_manual_save_slot_locked" = "无限手动存档位是 Pro 功能。";
 "progate_controller_mapping_locked" = "高级物理手柄按键映射是 Pro 功能。";
@@ -391,7 +397,7 @@
 "discover_main_title" = "发现";
 "settings_main_title" = "设置";
 "discover_building_database" = "数据库构建中";
-"discover_search_placeholder" = "搜索游戏…";
+"discover_search_placeholder" = "搜索 %d 个游戏…";
 
 // MARK: - Game Detail Page
 
@@ -399,8 +405,10 @@
 "detail_section_description" = "游戏简介";
 "detail_section_more"        = "更多信息";
 "detail_section_rom"         = "ROM 信息";
+"detail_variants"            = "变体";
 
 "detail_developer"    = "开发商";
+"detail_english_name" = "英文名";
 "detail_publisher"    = "发行商";
 "detail_release"      = "发行日期";
 "detail_genre"        = "类型";
@@ -414,3 +422,127 @@
 // MARK: - Game Cover
 
 "cover_load_failed"   = "暂无匹配的游戏封面";
+
+// MARK: - Cheat Codes
+
+"cheat_title"                   = "金手指";
+"cheat_template_section"        = "系统模板";
+"cheat_template_section_auto"   = "系统模板（自动绑定）";
+"cheat_template_section_count_format" = "%@ · %d";
+"cheat_template_footer"         = "系统模板不保证与当前 ROM 百分百匹配。如果金手指导致异常或无效，可以搜索并使用其他模板。";
+"cheat_user_section"            = "用户添加";
+"cheat_empty_tip"               = "还没有金手指\n点击右上角 + 添加";
+"cheat_core_unsupported"        = "当前核心不支持金手指";
+"cheat_delete"                  = "删除";
+
+"cheat_create_title"            = "创建金手指";
+"cheat_edit_title"              = "编辑金手指";
+"cheat_field_name"              = "名称";
+"cheat_field_name_placeholder"  = "请输入金手指名称";
+"cheat_field_code"              = "作弊码";
+"cheat_field_code_placeholder"  = "请输入作弊码";
+"cheat_invalid_empty_code"      = "请输入作弊码";
+"cheat_save_failed"             = "保存金手指失败";
+
+"cheat_tutorial_title"          = "关于作弊码";
+"cheat_tutorial_body"           = "作弊码由当前模拟核心解析，格式取决于平台：例如 NES 可用 Game Genie 码（如 SXIOPO）或“地址:值”（如 0032:02）；多段码用 + 连接（如 AAAA-AAAA+BBBB-BBBB）。是否生效取决于核心是否支持该码。";
+
+// MARK: - Cheat Codes (1.6.0 structured)
+
+"cheat_mode_code"               = "代码";
+"cheat_mode_address"            = "地址";
+"cheat_field_address"           = "地址";
+"cheat_field_value"             = "值";
+"cheat_field_address_placeholder" = "0x 地址";
+"cheat_field_value_placeholder"   = "0x 值";
+"cheat_field_write_type"        = "写入方式";
+"cheat_field_mem_size"          = "内存长度";
+"cheat_field_advanced"          = "高级";
+"cheat_field_big_endian"        = "大端字节序";
+"cheat_field_address_mask"      = "地址掩码";
+"cheat_field_repeat_count"      = "重复次数";
+"cheat_field_repeat_value"      = "值增量";
+"cheat_field_repeat_address"    = "地址增量";
+"cheat_write_set"               = "设为值";
+"cheat_write_increase"          = "增加";
+"cheat_write_decrease"          = "减少";
+"cheat_write_if_eq"             = "条件：等于时执行下一条";
+"cheat_write_if_neq"            = "条件：不等于时执行下一条";
+"cheat_write_if_lt"             = "条件：小于时执行下一条";
+"cheat_write_if_gt"             = "条件：大于时执行下一条";
+"cheat_size_1bit"               = "1 位";
+"cheat_size_2bit"               = "2 位";
+"cheat_size_4bit"               = "4 位";
+"cheat_size_1byte"              = "1 字节";
+"cheat_size_2byte"              = "2 字节";
+"cheat_size_4byte"              = "4 字节";
+"cheat_invalid_address"         = "请输入有效的十六进制地址";
+"cheat_retro_subtitle_format"   = "地址 %@  值 %@";
+
+// MARK: - Cheat Codes (type kinds)
+
+"cheat_field_type"              = "类型";
+"cheat_kind_numeric"            = "数值";
+"cheat_kind_secret"             = "秘籍";
+"cheat_kind_memory"             = "内存";
+"cheat_numeric_placeholder"     = "如 05C6:02";
+"cheat_secret_placeholder"      = "如 SXNNUXSE+SZEXLEVK";
+
+"cheat_help_title"              = "金手指帮助";
+
+// MARK: - Cheat Catalog
+
+"cheat_catalog_title"              = "金手指模板";
+"cheat_catalog_search_placeholder" = "搜索游戏名";
+"cheat_catalog_match_section"      = "匹配游戏";
+"cheat_catalog_template_section"   = "金手指模板";
+"cheat_catalog_match_footer"       = "可使用中文名或英文名搜索其他金手指模板。系统匹配不保证完全适配当前 ROM。";
+"cheat_catalog_matched_crc_format" = "通过 CRC32 %@ 匹配";
+"cheat_catalog_current_template"   = "当前模板";
+"cheat_catalog_current_template_format" = "%@ · %@";
+"cheat_catalog_binding_auto"       = "自动绑定";
+"cheat_catalog_binding_manual"     = "手动绑定";
+"cheat_catalog_count_format"       = "%d 个金手指";
+"cheat_catalog_empty"              = "当前平台暂无金手指模板";
+"cheat_catalog_search_empty"       = "没有找到匹配的游戏";
+"cheat_catalog_game_empty"         = "该游戏暂无金手指模板";
+"cheat_catalog_detail_title"       = "模板详情";
+"cheat_catalog_field_type"         = "类型";
+"cheat_catalog_field_english"      = "英文描述";
+"cheat_catalog_field_source"       = "来源";
+"cheat_catalog_source_builtin"     = "系统模板库";
+"cheat_catalog_error_title"        = "读取失败";
+"cheat_catalog_unavailable_title"  = "当前平台暂不支持";
+"cheat_catalog_unavailable_message" = "当前核心没有对应的金手指模板平台。";
+"cheat_catalog_use_template"       = "使用此模板";
+"cheat_catalog_replace_title"      = "替换模板？";
+"cheat_catalog_replace_message"    = "这会替换当前 ROM 已绑定的系统模板，并重置模板金手指的开关状态。";
+"cheat_catalog_replace_action"     = "替换";
+"cheat_catalog_bind_done"          = "已使用此模板";
+"cheat_catalog_bind_failed"        = "使用模板失败";
+
+/* ODR 离线资源管理 */
+"appsetting_odr_resources"      = "离线资源";
+"odr_page_title"                = "离线资源";
+"odr_page_footer"               = "下载过程中请保持 App 在前台。游戏数据库与中文名称为必需项，金手指码库为可选，删除后可随时重新下载。";
+"odr_gamerdb_title"             = "游戏数据库";
+"odr_gamerdb_desc"              = "游戏信息、封面匹配与发现页所需。";
+"odr_gameloc_title"             = "中文游戏名称";
+"odr_gameloc_desc"              = "为游戏提供中文名称与中文搜索。";
+"odr_cheat_title"               = "金手指码库";
+"odr_cheat_desc"                = "RetroArch 官方金手指离线码库，按游戏匹配可用金手指。";
+"odr_status_ready"              = "已就绪";
+"odr_status_not_downloaded"     = "未下载";
+"odr_status_downloading"        = "下载中…";
+"odr_downloading_fmt"           = "下载中 %d%%";
+"odr_download_done"             = "下载完成";
+"odr_download_failed"           = "下载失败";
+"odr_action_delete"             = "删除";
+"odr_delete_confirm_title"      = "删除该资源？";
+"odr_delete_confirm_msg_fmt"    = "将删除「%@」以释放空间，之后可随时重新下载。";
+"odr_cache_cover_title"         = "游戏封面缓存";
+"odr_cache_cover_desc"          = "发现页下载并缓存的游戏封面图片。";
+"odr_cache_calculating"         = "正在统计…";
+"odr_cache_footer"              = "封面缓存属于临时数据，可重新生成；清理不会删除游戏或数据库。";
+"odr_cache_delete_confirm_title" = "清理封面缓存？";
+"odr_cache_delete_confirm_msg"  = "将删除已下载的游戏封面图片以释放空间，需要时会重新下载。";

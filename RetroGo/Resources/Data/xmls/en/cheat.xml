@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<p-contents>
+    <p-section id="cheat_intro" toppadding="16" bottompadding="12">
+        <p-paragraph>
+            A <b>cheat</b> changes a game while you play — infinite lives, a different weapon, walk through walls, and so on. RetroGo applies cheats through the running core, so whether a code works <b>depends entirely on that core</b>: the same code may work in one core and do nothing in another.
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_type" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">Type</p-title>
+        <p-paragraph>
+            Every cheat is exactly <b>one</b> of three types. Pick the type first; the fields below it change to match.
+        </p-paragraph>
+        <p-list style="bullet">
+            <p-item><b>Numeric</b> — an <i>address:value</i> code such as <b>05C6:02</b>. Handed to the core as a string.</p-item>
+            <p-item><b>Secret</b> — an encrypted letter code such as <b>SXNNUXSE</b> (Game Genie / Pro Action Replay / GameShark). Also handed to the core.</p-item>
+            <p-item><b>Memory</b> — a structured <i>address + value</i> with write mode and size. Applied by RetroArch writing memory itself.</p-item>
+        </p-list>
+        <p-paragraph fontsize="14">
+            Numeric and Secret both run through the core (they only differ in the format you type). Memory is RetroArch's own memory writer.
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_name" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">Name</p-title>
+        <p-paragraph>
+            A label for your own reference (for example <i>Infinite Lives</i>). It does not affect behavior. If you leave it blank, the code is used as the name.
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_numeric" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">Numeric (address:value)</p-title>
+        <p-paragraph>
+            A code in the form <b>ADDRESS:VALUE</b> in hexadecimal. For example <b>05C6:02</b> means &#8220;write <b>0x02</b> to memory address <b>0x05C6</b>&#8221;. The core parses and applies it. This is the most common format you find online for systems like the NES.
+        </p-paragraph>
+        <p-paragraph>
+            Several sub-codes can be joined with <b>+</b> into one cheat, e.g. <b>7F80CA63+7F80CC63</b>. The core splits them.
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_secret" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">Secret (Game Genie / PAR / GameShark)</p-title>
+        <p-paragraph>
+            These are encrypted letter-and-number codes, e.g. <b>SXNNUXSE+SZEXLEVK</b>. They are <b>not</b> stored in the ROM — cheat hunters derived them, and the core decodes them.
+        </p-paragraph>
+        <p-paragraph>
+            <b>How it works.</b> Game Genie was originally a hardware device that sat between the cartridge and the console. It watches the CPU read the game&#8217;s program and <b>substitutes</b> values on the fly. A code encodes &#8220;at this ROM address, return this value&#8221; — optionally only when the address currently holds a given <i>compare</i> value.
+        </p-paragraph>
+        <p-paragraph>
+            <b>The encoding.</b> The NES Game Genie uses a 16-letter alphabet — <b>A E P O Z X L U G K I S T V Y N</b> — where each letter stands for 4 bits (one hex digit). A <b>6-letter</b> code packs a 15-bit ROM address plus an 8-bit replacement value. An <b>8-letter</b> code adds an 8-bit <i>compare</i> value, so the swap happens only when that address already holds the compare value (this avoids hitting the wrong location). The bits are deliberately scrambled across the letters, which is why the codes look random.
+        </p-paragraph>
+        <p-paragraph>
+            <b>The + sign</b> joins two or more codes into one cheat; each one patches a separate location (both are needed for the full effect).
+        </p-paragraph>
+        <p-paragraph fontsize="14">
+            Difference from Numeric / Memory: those write <b>RAM</b> every frame; a Game Genie code patches the game&#8217;s <b>program (ROM)</b> — for example replacing the very instruction that subtracts a life.
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_memory" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">Memory (structured)</p-title>
+        <p-paragraph>
+            RetroArch writes the emulated memory itself, every frame. Use it when you want finer control (write mode, size, conditions) or prefer filling in fields instead of pasting a code.
+        </p-paragraph>
+        <p-list style="bullet">
+            <p-item><b>Address</b> — the memory address to affect, in hex (e.g. <b>0x05C6</b>).</p-item>
+            <p-item><b>Value</b> — the value to write, in hex (e.g. <b>0x02</b>).</p-item>
+            <p-item><b>Write Mode</b> — how the value is applied (see below).</p-item>
+            <p-item><b>Memory Size</b> — how many bits the value occupies (see below).</p-item>
+        </p-list>
+    </p-section>
+
+    <p-section id="cheat_write_mode" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">Write Mode</p-title>
+        <p-list style="bullet">
+            <p-item><b>Set to Value</b> — write the value every frame, i.e. freeze it. The usual choice for &#8220;infinite&#8221; cheats.</p-item>
+            <p-item><b>Increase / Decrease</b> — add or subtract the value each frame.</p-item>
+            <p-item><b>If Equal / Not Equal / Less Than / Greater Than</b> (advanced) — a <i>condition</i>: run the <b>next</b> cheat in the list only when the address meets it. Used for chained, multi-line cheats.</p-item>
+        </p-list>
+    </p-section>
+
+    <p-section id="cheat_mem_size" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">Memory Size</p-title>
+        <p-paragraph>
+            How wide the value is: <b>1 byte</b> (8-bit), <b>2 byte</b> (16-bit), or <b>4 byte</b> (32-bit). The advanced menu adds sub-byte sizes (<b>1 / 2 / 4 bit</b>). Most NES cheats use 1 byte.
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_advanced" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">Advanced (Memory)</p-title>
+        <p-list style="bullet">
+            <p-item><b>Big Endian</b> — byte order for multi-byte values. The NES is little-endian; leave this off unless a platform needs it.</p-item>
+            <p-item><b>Address Mask</b> — a bit mask within the byte, used only with the sub-byte (bit) sizes.</p-item>
+            <p-item><b>Repeat Count / Value Step / Address Step</b> — apply the cheat to several consecutive locations: it repeats <i>Repeat Count</i> times, adding <i>Value Step</i> to the value and <i>Address Step</i> to the address each time (handy for things like filling every inventory slot).</p-item>
+        </p-list>
+    </p-section>
+
+    <p-section id="cheat_link" toppadding="8" bottompadding="12">
+        <p-title level="3" underline="false">Numeric &#8596; Memory</p-title>
+        <p-paragraph>
+            Numeric and Memory are the same <i>address + value</i> in two forms, so switching between those two types carries the data across automatically. <b>Secret</b> codes cannot be decoded back into an address, so they never link — keep Game Genie / PAR codes in the <b>Secret</b> type.
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="cheat_note" toppadding="8" bottompadding="20">
+        <p-title level="3" underline="false">Good to know</p-title>
+        <p-paragraph>
+            Enabling cheats may disable achievement hardcore mode. And again: whether any specific code works is up to the core — if a code does nothing, it is most likely not supported by the core you are running.
+        </p-paragraph>
+    </p-section>
+</p-contents>

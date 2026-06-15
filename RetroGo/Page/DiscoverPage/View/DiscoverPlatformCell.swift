@@ -118,7 +118,9 @@ final class DiscoverPlatformCell: UITableViewCell {
             : platform.manufacturer
         manufacturerLabel.text = mfr
 
-        let count = platform.gameCount
+        // Show the de-duplicated group count (matches what the list actually pages),
+        // not the raw variant total.
+        let count = platform.groupCount
         countLabel.text = count > 0
             ? String(format: "%d", count)
             : nil

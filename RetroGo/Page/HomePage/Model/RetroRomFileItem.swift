@@ -78,31 +78,39 @@ final class RetroRomFileSubItem {
     let rawName: String
     let fileRole: RetroRomFileSubRole
     let sha256: String
+    private(set) var crc32: String?
     let fileSize: Int
     let sortIndex: Int
 
-    init(key: String, rawName: String, fileRole: RetroRomFileSubRole, sha256: String, fileSize: Int, sortIndex: Int) {
+    init(key: String, rawName: String, fileRole: RetroRomFileSubRole, sha256: String, crc32: String?, fileSize: Int, sortIndex: Int) {
         self.key = key
         self.rawName = rawName
         self.fileRole = fileRole
         self.sha256 = sha256
         self.fileSize = fileSize
         self.sortIndex = sortIndex
+        self.crc32 = crc32
+    }
+
+    fileprivate func updateCRC32(_ value: String) {
+        crc32 = value
     }
 }
 
 final class RetroRomFileItem: RetroRomBaseItem {
     let fileSize: Int
     let sha256: String?
+    private(set) var crc32: String?
     private(set) var lastPlayAt: Date?
     private(set) var playTime: Int
     private(set) var tagIdArray: [Int]
     private(set) var fileGroupType: RetroRomFileGroupType
     private(set) var subItems: [RetroRomFileSubItem]
 
-    init(key: String, rawName: String, showName: String? = nil, parent: String, createAt: Date, updateAt: Date, preferCore: String? = nil, preferIcon: String? = nil, fileSize: Int, sha256: String?, lastPlayAt: Date? = nil,  playTime: Int = 0, tagIdArray: [Int] = [], fileGroupType: RetroRomFileGroupType = .single, subItems: [RetroRomFileSubItem] = []) {
+    init(key: String, rawName: String, showName: String? = nil, parent: String, createAt: Date, updateAt: Date, preferCore: String? = nil, preferIcon: String? = nil, fileSize: Int, sha256: String?, crc32: String?, lastPlayAt: Date? = nil,  playTime: Int = 0, tagIdArray: [Int] = [], fileGroupType: RetroRomFileGroupType = .single, subItems: [RetroRomFileSubItem] = []) {
         self.fileSize   = fileSize
         self.sha256     = sha256
+        self.crc32      = crc32
         self.lastPlayAt = lastPlayAt
         self.playTime   = playTime
         self.tagIdArray = tagIdArray
@@ -203,6 +211,12 @@ final class RetroRomFileItem: RetroRomBaseItem {
         let message = Bundle.localizedString(forKey: "homepage_delete_file") + filePath
         indicatorView.activeMessage(message, title: title)
 
+        if !GameCheatSession.deleteAll(romKey: key) {
+            let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_failed"), filePath)
+            indicatorView.errorMessage(message, title: Bundle.localizedString(forKey: "error"), canDismiss: true)
+            return false
+        }
+
         if !RetroRomFileManager.shared.deleteGameStateItem(key) {
             let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_failed"), filePath)
             indicatorView.errorMessage(message, title: Bundle.localizedString(forKey: "error"), canDismiss: true)
@@ -279,6 +293,83 @@ final class RetroRomFileItem: RetroRomBaseItem {
             playTime += seconds
             pulseText = !pulseText
         }
+    }
+
+    /// Backfills CRC32 for libraries created before v7. New imports already have
+    /// the value, so the common path is a cheap in-memory nil check.
+    @discardableResult
+    func ensureCRC32() throws -> String? {
+        if let crc32, !crc32.isEmpty {
+            return crc32
+        }
+
+        if fileGroupType == .single {
+            guard let entryPath else { return nil }
+            let value = try (URL(fileURLWithPath: entryPath) as NSURL).computeCRC32String()
+            guard !value.isEmpty else {
+                return nil
+            }
+            if RetroRomPersistence.shared.updateGameCRC32(key: key, crc32: value),
+               RetroRomPersistence.shared.updateGameFileCRC32(key: key, rawName: rawName, crc32: value) {
+                crc32 = value
+                updateCachedSubItemCRC32(rawName: rawName, crc32: value)
+                return value
+            }
+            return nil
+        }
+
+        var loadedSubItems = subItems
+        if loadedSubItems.isEmpty {
+            loadedSubItems = RetroRomPersistence.shared.getGameFileSubItems(key: key) ?? []
+        }
+
+        guard let fullPath else { return nil }
+        var didChangeSubItems = false
+        for subItem in loadedSubItems where subItem.crc32?.isEmpty != false {
+            let path = fullPath + subItem.rawName
+            let value = try (URL(fileURLWithPath: path) as NSURL).computeCRC32String()
+            guard !value.isEmpty else {
+                continue
+            }
+            if RetroRomPersistence.shared.updateGameFileCRC32(key: key, rawName: subItem.rawName, crc32: value) {
+                subItem.updateCRC32(value)
+                didChangeSubItems = true
+            }
+        }
+
+        if subItems.isEmpty || didChangeSubItems {
+            subItems = loadedSubItems
+        }
+
+        guard let value = aggregatedCRC32(from: loadedSubItems) else {
+            return nil
+        }
+        if RetroRomPersistence.shared.updateGameCRC32(key: key, crc32: value) {
+            crc32 = value
+            return value
+        }
+        return nil
+    }
+
+    private func updateCachedSubItemCRC32(rawName: String, crc32: String) {
+        subItems.first(where: { $0.rawName == rawName })?.updateCRC32(crc32)
+    }
+
+    private func aggregatedCRC32(from subItems: [RetroRomFileSubItem]) -> String? {
+        let sortedItems = subItems.sorted { lhs, rhs in
+            lhs.rawName.localizedCaseInsensitiveCompare(rhs.rawName) == .orderedAscending
+        }
+        guard !sortedItems.isEmpty else { return nil }
+
+        let parts = sortedItems.compactMap { item -> String? in
+            guard let crc32 = item.crc32, !crc32.isEmpty else { return nil }
+            return "\(item.rawName)|\(crc32)"
+        }
+        guard parts.count == sortedItems.count else { return nil }
+        guard let data = parts.joined(separator: "\n").data(using: .utf8) else {
+            return nil
+        }
+        return (data as NSData).crc32Hash()
     }
 
     @discardableResult

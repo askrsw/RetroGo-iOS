@@ -25,6 +25,7 @@
 
 #import "NSData+Extension.h"
 #import <CommonCrypto/CommonCrypto.h>
+#import <zlib.h>
 
 @implementation NSData (Extension)
 
@@ -47,6 +48,12 @@
     }
 
     return [hashString copy];
+}
+
+- (NSString *)crc32Hash {
+    uLong crc = crc32(0L, Z_NULL, 0);
+    crc = crc32(crc, self.bytes, (uInt)self.length);
+    return [NSString stringWithFormat:@"%08X", (uint32_t)crc];
 }
 
 @end

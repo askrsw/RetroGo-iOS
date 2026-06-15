@@ -26,6 +26,37 @@
 import RACoordinator
 
 extension EmuCoreInfoItem {
+    /// `systemID` comes from each core's core.info and is a compact libretro
+    /// system key. cheat.sqlite uses gamerdb platform ids, so catalog browsing
+    /// needs this explicit bridge. Some cores intentionally cover multiple
+    /// databases (for example GB/GBC, or NES/FDS), so the result is plural.
+    var cheatCatalogPlatformIds: [NSNumber] {
+        switch systemID {
+        case "dos":
+            return [1]
+        case "nes":
+            return [9, 2]
+        case "game_boy":
+            return [3, 5]
+        case "game_boy_advance":
+            return [3, 5, 4]
+        case "super_nes":
+            return [13, 3, 5]
+        case "nintendo_64":
+            return [7]
+        case "nds":
+            return [8]
+        case "playstation":
+            return [10]
+        case "playstation_portable":
+            return [11]
+        case "sega_saturn":
+            return [12]
+        default:
+            return []
+        }
+    }
+
     var coreIcon: IconRender.PlatformIconKey? {
         switch coreId {
         case "dosbox-pure": return .dos

@@ -37,7 +37,7 @@ final class GameConfigViewController: UIViewController {
     let session: GameConfigSession
     let configData: [(section: GameConfigSection, entries: [GameConfigEntry])]
 
-    private var didPauseGameLoop = false
+    private var gamePauseLease: GamePauseCoordinator.Lease?
     private var startedDummyCoreForConfig = false
     private var installedTopologyHandler = false
     private var openedWhileGameRunning = false
@@ -49,12 +49,9 @@ final class GameConfigViewController: UIViewController {
         self.configData = session.makeConfigData()
         super.init(nibName: nil, bundle: nil)
 
-        let ra = RetroArchX.shared()
         // 只在真实游戏运行时 pause；dummy 场景绝不 pause
+        let ra = RetroArchX.shared()
         openedWhileGameRunning = (ra.currentCoreItem != nil) && !ra.dummyCoreRunning
-        if openedWhileGameRunning {
-            didPauseGameLoop = ra.pause()
-        }
     }
     
     required init?(coder: NSCoder) {
@@ -74,15 +71,16 @@ final class GameConfigViewController: UIViewController {
             startedDummyCoreForConfig = false
         }
 
-        // 只恢复我们自己 pause 的真实游戏 loop，避免触碰 dummy 状态
-        if openedWhileGameRunning && didPauseGameLoop {
-            _ = ra.resume()
-            didPauseGameLoop = false
-        }
+        gamePauseLease?.release()
+        gamePauseLease = nil
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if openedWhileGameRunning {
+            gamePauseLease = acquireGamePause(reason: "game-config")
+            attachGamePauseLeaseToPresentation(gamePauseLease)
+        }
 
         view.backgroundColor = .systemBackground
         navigationItem.title = getMainTitle()
@@ -102,11 +100,25 @@ final class GameConfigViewController: UIViewController {
         _ = dataSource
         applySnapshot(animated: false)
     }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if isClosingOrBeingDismissedFromGamePauseContext() {
+            gamePauseLease?.release()
+            gamePauseLease = nil
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        attachGamePauseLeaseToPresentation(gamePauseLease)
+    }
 }
 
 extension GameConfigViewController {
     @objc
     func closeAction() {
+        Vibration.selection.vibrate()
         dismiss(animated: true)
     }
 
@@ -122,10 +134,9 @@ extension GameConfigViewController {
         let icon: UIImage?
         switch session.scope {
         case .global: icon = UIImage(systemName: "globe")
-        // Use the gamecontroller SF Symbol (template, transparent) like `.global`'s
-        // globe — the old `Icon_file` asset is a JPG, so it carried an opaque black
-        // box into the title view instead of a clean glyph.
-        case .game: icon = UIImage(systemName: "gamecontroller")
+        // A filled "adjust settings" badge (like the cheat title icon), distinct
+        // from the app-wide Settings gear so per-game settings read differently.
+        case .game: icon = IconRender.shared.settingsIcon(symbol: "slider.horizontal.3", background: .mainColor, size: CGSize(width: 22, height: 22))
         case .core:
             if let key = session.core?.coreIcon {
                 icon = IconRender.shared.platformIcon(key: key, size: CGSize(width: 20, height: 20))
@@ -315,6 +326,8 @@ extension GameConfigViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+
+        Vibration.selection.vibrate()
 
         guard let entry = dataSource.itemIdentifier(for: indexPath) else { return }
         switch entry.ui {

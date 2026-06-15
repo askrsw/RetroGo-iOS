@@ -46,9 +46,10 @@ final class GamePageToolbarView: UIView {
     /// Cached rendered width per action button, for the iPad width-fit math.
     private var measuredButtonWidths: [GameToolbarAction: CGFloat] = [:]
 
-    /// Pauses the game while the More menu is open; resumed (via deinit) when it
-    /// dismisses. RAII so it survives any dismissal path.
-    private var menuPauseToken: RetroArchGamePauseToken?
+    /// Pauses the game while the More menu is open; released after the menu
+    /// dismissal animation finishes so gameplay does not resume underneath a
+    /// still-closing overlay.
+    private var menuPauseLease: GamePauseCoordinator.Lease?
 
     private var isGamePaused = false
     private var isGameMuted = false
@@ -58,6 +59,10 @@ final class GamePageToolbarView: UIView {
     private weak var lockBackingView: UIView?
     /// Whether the running core supports savestates; gates save/load.
     private var savestateSupported = false
+    /// Whether the running core supports cheats; gates the cheat entry.
+    private var cheatSupported = false
+    /// Green dot on the cheat bar button when at least one cheat is enabled.
+    private weak var cheatBadgeView: UIView?
 
     /// When hidden, the bar collapses to just the close + more buttons (more
     /// shows a `chevron.down.circle` and reveals every action in its menu).
@@ -84,6 +89,12 @@ final class GamePageToolbarView: UIView {
             name: .gameToolbarLayoutChanged,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(cheatStateDidChange),
+            name: .gameCheatStateChanged,
+            object: nil
+        )
     }
 
     required init?(coder: NSCoder) {
@@ -94,9 +105,26 @@ final class GamePageToolbarView: UIView {
         NotificationCenter.default.removeObserver(self)
     }
 
-    func configLoadSaveStateButons() {
+    /// Refreshes per-action availability from the running core's capabilities,
+    /// then rebuilds the toolbar so both the bar buttons and the More menu reflect
+    /// it. save/load need savestate support; the cheat entry needs cheat support.
+    func refreshActionAvailability() {
         savestateSupported = RetroArchX.shared().isCurrentCoreSupportsSavestate()
+        // Cheats need both engine support AND a cheat session (the rom-item-keyed
+        // store); the document-browser launch path has no session.
+        cheatSupported = (holder?.cheatSession != nil) && RetroArchX.shared().cheatSupported
         rebuildToolbar()
+    }
+
+    /// Whether `action` is currently enabled given the running core's
+    /// capabilities. Drives both the bar button `isEnabled` and the menu item's
+    /// `.disabled` attribute, so the two stay in sync.
+    private func isActionEnabled(_ action: GameToolbarAction) -> Bool {
+        switch action {
+        case .saveState, .loadState: return savestateSupported
+        case .cheat:                 return cheatSupported
+        default:                     return true
+        }
     }
 
     @objc
@@ -135,15 +163,13 @@ extension GamePageToolbarView {
         // for as long as the menu is open (resumed when it dismisses).
         moreButton.onMenuWillShow = { [weak self] in
             Vibration.selection.vibrate()
-            self?.menuPauseToken = RetroArchGamePauseToken()
+            self?.menuPauseLease = GamePauseCoordinator.shared.acquire(reason: "toolbar-more-menu")
         }
         moreButton.onMenuWillHide = { [weak self] _ in
-            // Release (resume) synchronously as the menu begins dismissing.
-            // Deferring into `animator.addCompletion` is unsafe: a menu action
-            // that immediately presents a modal (save/load state) can interrupt
-            // the dismissal so the completion never fires, leaking a pause
-            // ref-count and freezing the emulator (pause/resume is counted).
-            self?.menuPauseToken = nil
+            DispatchQueue.main.async { [weak self] in
+                self?.menuPauseLease?.release()
+                self?.menuPauseLease = nil
+            }
         }
         moreButton.sizeToFit()
         addSubview(moreButton)
@@ -295,11 +321,47 @@ extension GamePageToolbarView {
             applyLockLandscapeStyle(to: button)
         }
         button.addAction(UIAction { [weak self] _ in self?.perform(action) }, for: .touchUpInside)
-        if action == .saveState || action == .loadState {
-            button.isEnabled = savestateSupported
+        button.isEnabled = isActionEnabled(action)
+        if action == .cheat {
+            addCheatBadge(to: button)
         }
         button.sizeToFit()
         return button
+    }
+}
+
+// MARK: - Cheat active badge
+
+extension GamePageToolbarView {
+    /// Whether any cheat is currently enabled for this game.
+    private func cheatHasActive() -> Bool {
+        holder?.cheatSession?.hasActiveCheat ?? false
+    }
+
+    /// Adds a small green dot at the top-trailing corner of the cheat bar button,
+    /// shown only while a cheat is active. Recreated whenever the bar rebuilds.
+    private func addCheatBadge(to button: UIButton) {
+        let dot = UIView()
+        dot.backgroundColor = .systemGreen
+        dot.layer.cornerRadius = Self.cheatBadgeSize / 2
+        dot.layer.borderColor = UIColor.black.withAlphaComponent(0.35).cgColor
+        dot.layer.borderWidth = 0.5
+        dot.isUserInteractionEnabled = false
+        dot.isHidden = !cheatHasActive()
+        button.addSubview(dot)
+        dot.snp.makeConstraints { make in
+            make.width.height.equalTo(Self.cheatBadgeSize)
+            make.top.equalToSuperview().offset(1)
+            make.trailing.equalToSuperview().offset(-1)
+        }
+        cheatBadgeView = dot
+    }
+
+    private static let cheatBadgeSize: CGFloat = 8
+
+    @objc
+    private func cheatStateDidChange() {
+        cheatBadgeView?.isHidden = !cheatHasActive()
     }
 }
 
@@ -349,7 +411,7 @@ extension GamePageToolbarView {
         ) { [weak self] _ in
             self?.perform(action)
         }
-        if (action == .saveState || action == .loadState) && !savestateSupported {
+        if !isActionEnabled(action) {
             menuItem.attributes = .disabled
         }
         return menuItem
@@ -485,6 +547,7 @@ extension GamePageToolbarView {
         case .lockLandscape: lockLandscapeAction()
         case .setting:       settingAction()
         case .restart:       restartAction()
+        case .cheat:         cheatAction()
         }
     }
 
@@ -519,23 +582,23 @@ extension GamePageToolbarView {
 
         let title = Bundle.localizedString(forKey: "gamepage_save_state")
         let message = Bundle.localizedString(forKey: "gamepage_input_state_name")
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let alert = UIAlertController.gamePausedAlert(title: title, message: message)
         alert.addTextField { textField in
             let nowString = DateFormatter.yyyyMMddHHmmss().string(from: Date())
             textField.placeholder = Bundle.localizedString(forKey: "gamepage_name_state")
             textField.text = nowString
         }
-        let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [weak self] _ in
-            RetroArchX.shared().resume()
+        let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [weak self, weak alert] _ in
+            alert?.releaseGamePauseIfNeeded()
             self?.isGamePaused = false
             self?.updatePauseResumeAppearance()
         }
         alert.addAction(cancelAction)
-        let okAction = UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default) { [weak self] _ in
+        let okAction = UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default) { [weak self, weak alert] _ in
             guard let self = self else { return }
             let now = Date()
             let rawName = DateFormatter.yyyyMMddHHmmss().string(from: now)
-            let showName = alert.textFields?.first?.text ?? ""
+            let showName = alert?.textFields?.first?.text ?? ""
             let ret = RetroRomFileManager.shared.saveState(rawName: rawName, showName: showName, sha256: holder?.romItem?.sha256, romKey: holder?.romItem?.key, autoSave: false)
             if ret {
                 let str = String(format: Bundle.localizedString(forKey: "gamepage_state_saved"), showName)
@@ -546,13 +609,12 @@ extension GamePageToolbarView {
                 let msg = EmuInGameMessage(message: str, title: nil, type: .error, duration: 3.5, priority: 0)
                 holder?.inGameInfoView.showMessage(msg)
             }
-            RetroArchX.shared().resume()
+            alert?.releaseGamePauseIfNeeded()
             self.isGamePaused = false
             self.updatePauseResumeAppearance()
         }
         alert.addAction(okAction)
 
-        RetroArchX.shared().pause()
         isGamePaused = true
         updatePauseResumeAppearance()
         alert.view.tintColor = .label
@@ -679,6 +741,16 @@ extension GamePageToolbarView {
         holder?.present(naviController, animated: true)
     }
 
+    private func cheatAction() {
+        Vibration.selection.vibrate()
+
+        guard let session = holder?.cheatSession else { return }
+
+        let controller = GameCheatListViewController(session: session, showClose: true)
+        let naviController = UINavigationController(rootViewController: controller)
+        holder?.present(naviController, animated: true)
+    }
+
     private func editLayoutAction() {
         Vibration.selection.vibrate()
 
@@ -690,6 +762,10 @@ extension GamePageToolbarView {
     @objc
     private func closeAction() {
         Vibration.selection.vibrate()
+
+        // Drop the engine's cheat list so it never leaks into the next game. The
+        // Swift/SQLite library is untouched; cheats are re-pushed on next launch.
+        RetroArchX.shared().clearCheats()
 
         if AppSettings.shared.autoSaveLoadState {
             let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: holder?.romItem)

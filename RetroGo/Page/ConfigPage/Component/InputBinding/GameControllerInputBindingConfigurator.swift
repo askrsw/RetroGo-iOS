@@ -99,6 +99,7 @@ final class GameControllerInputBindingConfigurator: UIViewController {
 extension GameControllerInputBindingConfigurator {
     @objc
     private func resetButtonConfig(_ sender: UIBarButtonItem) {
+        Vibration.selection.vibrate()
         guard !isReadOnly else { return }
         overlayView.resetToDefault()
         updateResetButtonEnabled()

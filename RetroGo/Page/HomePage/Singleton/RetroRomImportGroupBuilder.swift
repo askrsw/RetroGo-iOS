@@ -55,6 +55,16 @@ final class RetroRomImportGroupBuilder {
             }
             return try (url as NSURL).computeSHA256String()
         }
+
+        func crc32() throws -> String {
+            let shouldStopAccessing = url.startAccessingSecurityScopedResource()
+            defer {
+                if shouldStopAccessing {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+            return try (url as NSURL).computeCRC32String()
+        }
     }
 
     enum GroupMatchMode {
@@ -142,6 +152,7 @@ final class RetroRomImportGroupBuilder {
                 throw BuildError.missingEntryFile(path: group.entryPath)
             }
             let gameSHA256 = try contentSHA256(for: group, entrySubItem: entrySubItem, subItems: subItems)
+            let gameCRC32  = try contentCRC32(for: group, entrySubItem: entrySubItem, subItems: subItems)
             let item = RetroRomFileItem(
                 key: key,
                 rawName: group.entryPath,
@@ -150,6 +161,7 @@ final class RetroRomImportGroupBuilder {
                 updateAt: updateAt,
                 fileSize: totalFileSize,
                 sha256: gameSHA256,
+                crc32: gameCRC32,
                 fileGroupType: group.type,
                 subItems: subItems
             )
@@ -263,6 +275,7 @@ extension RetroRomImportGroupBuilder {
                 rawName: path,
                 fileRole: role,
                 sha256: try file.sha256(),
+                crc32: try file.crc32(),
                 fileSize: file.fileSize,
                 sortIndex: index
             )
@@ -606,6 +619,30 @@ extension RetroRomImportGroupBuilder {
             throw CocoaError(.fileWriteInapplicableStringEncoding)
         }
         return (data as NSData).sha256Hash()
+    }
+
+    func contentCRC32(for group: Group, entrySubItem: RetroRomFileSubItem, subItems: [RetroRomFileSubItem]) throws -> String? {
+        if group.type == .single {
+            return entrySubItem.crc32
+        }
+
+        let sortedItems = subItems.sorted { lhs, rhs in
+            lhs.rawName.localizedCaseInsensitiveCompare(rhs.rawName) == .orderedAscending
+        }
+
+        guard sortedItems.allSatisfy({ $0.crc32?.isEmpty == false }) else {
+            return nil
+        }
+
+        let payload = sortedItems
+            .map { "\($0.rawName)|\($0.crc32!)" }
+            .joined(separator: "\n")
+
+        guard let data = payload.data(using: .utf8) else {
+            throw CocoaError(.fileWriteInapplicableStringEncoding)
+        }
+
+        return (data as NSData).crc32Hash()
     }
 
     func isPotentialMultiFileComponent(_ path: String) -> Bool {

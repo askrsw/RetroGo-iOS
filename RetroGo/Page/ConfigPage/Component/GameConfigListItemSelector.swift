@@ -118,6 +118,8 @@ extension GameConfigListItemSelector: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
 
+        Vibration.selection.vibrate()
+
         if let oldSelectedIndex {
             if let cell = tableView.cellForRow(at: oldSelectedIndex) {
                 cell.accessoryType = .none

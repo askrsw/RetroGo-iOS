@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AB0A1DD52FB71C7800503077 /* RetroArchGamePauseToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0A1DD42FB71C7800503077 /* RetroArchGamePauseToken.swift */; };
+		AB0A1DD52FB71C7800503077 /* GamePauseCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */; };
+		AB0AF4BD2FD9B74400257A18 /* ODRResourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */; };
+		AB0AF4BF2FD9BA1700257A18 /* cheat.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = AB0AF4BE2FD9BA1700257A18 /* cheat.sqlite */; settings = {ASSET_TAGS = ("cheat-db", ); }; };
+		AB0AF4C12FD9BA2000257A18 /* gameloc.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = AB0AF4C02FD9BA2000257A18 /* gameloc.sqlite */; settings = {ASSET_TAGS = ("gameloc-db", ); }; };
 		AB11A55F2F9941BF00C32E39 /* emu.dosbox-pure.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC12F5E5504007E1669 /* emu.dosbox-pure.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB11A5612F9941BF00C32E39 /* emu.gambatte.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC32F5E5504007E1669 /* emu.gambatte.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB11A5622F9941BF00C32E39 /* emu.gearboy.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC42F5E5504007E1669 /* emu.gearboy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -60,19 +63,6 @@
 		AB6378A22F7E6394001E1152 /* GameOverlayN64CButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */; };
 		AB69E2FE2F4EB4D800C532EE /* RetroRomEmptyTipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB69E2FD2F4EB4D800C532EE /* RetroRomEmptyTipView.swift */; };
 		AB6F0E772F86682100282818 /* XMLTextRenderKit in Frameworks */ = {isa = PBXBuildFile; productRef = AB6F0E762F86682100282818 /* XMLTextRenderKit */; };
-		AB70DD802FBCDEB600277B74 /* Sega - Saturn.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD7D2FBCDEB600277B74 /* Sega - Saturn.rdb */; settings = {ASSET_TAGS = ("rdb-Saturn", ); }; };
-		AB70DD812FBCDEB600277B74 /* Nintendo - Nintendo DS.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD7A2FBCDEB600277B74 /* Nintendo - Nintendo DS.rdb */; settings = {ASSET_TAGS = ("rdb-NDS", ); }; };
-		AB70DD822FBCDEB600277B74 /* Nintendo - Nintendo Entertainment System.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD7B2FBCDEB600277B74 /* Nintendo - Nintendo Entertainment System.rdb */; settings = {ASSET_TAGS = ("rdb-NES", ); }; };
-		AB70DD832FBCDEB600277B74 /* DOS.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD732FBCDEB600277B74 /* DOS.rdb */; settings = {ASSET_TAGS = ("rdb-DOS", ); }; };
-		AB70DD842FBCDEB600277B74 /* Nintendo - Super Nintendo Entertainment System.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD7C2FBCDEB600277B74 /* Nintendo - Super Nintendo Entertainment System.rdb */; settings = {ASSET_TAGS = ("rdb-SNES", ); }; };
-		AB70DD852FBCDEB600277B74 /* Nintendo - Game Boy.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD762FBCDEB600277B74 /* Nintendo - Game Boy.rdb */; settings = {ASSET_TAGS = ("rdb-GB", ); }; };
-		AB70DD862FBCDEB600277B74 /* Sony - PlayStation Portable.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD7F2FBCDEB600277B74 /* Sony - PlayStation Portable.rdb */; settings = {ASSET_TAGS = ("rdb-PSP", ); }; };
-		AB70DD872FBCDEB600277B74 /* Nintendo - Game Boy Advance.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD772FBCDEB600277B74 /* Nintendo - Game Boy Advance.rdb */; settings = {ASSET_TAGS = ("rdb-GBA", ); }; };
-		AB70DD882FBCDEB600277B74 /* Nintendo - Family Computer Disk System.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD752FBCDEB600277B74 /* Nintendo - Family Computer Disk System.rdb */; settings = {ASSET_TAGS = ("rdb-FDS", ); }; };
-		AB70DD892FBCDEB600277B74 /* Nintendo - Nintendo 64.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD792FBCDEB600277B74 /* Nintendo - Nintendo 64.rdb */; settings = {ASSET_TAGS = ("rdb-N64", ); }; };
-		AB70DD8A2FBCDEB600277B74 /* Sony - PlayStation.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD7E2FBCDEB600277B74 /* Sony - PlayStation.rdb */; settings = {ASSET_TAGS = ("rdb-PS", ); }; };
-		AB70DD8B2FBCDEB600277B74 /* Nintendo - Game Boy Color.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD782FBCDEB600277B74 /* Nintendo - Game Boy Color.rdb */; settings = {ASSET_TAGS = ("rdb-GBC", ); }; };
-		AB70DD8C2FBCDEB600277B74 /* MAME.rdb in Resources */ = {isa = PBXBuildFile; fileRef = AB70DD742FBCDEB600277B74 /* MAME.rdb */; settings = {ASSET_TAGS = ("rdb-MAME", ); }; };
 		AB70DD8E2FBCE9C300277B74 /* OnDemandResourceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB70DD8D2FBCE9C300277B74 /* OnDemandResourceLoader.swift */; };
 		AB70DD922FBCF69200277B74 /* DiscoverPlatformViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB70DD912FBCF69200277B74 /* DiscoverPlatformViewController.swift */; };
 		AB70DD932FBCF69200277B74 /* DiscoverPlatformCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB70DD902FBCF69200277B74 /* DiscoverPlatformCell.swift */; };
@@ -91,7 +81,6 @@
 		AB7CA0662F3B057100EFACA9 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = AB7CA0652F3B057100EFACA9 /* Data */; };
 		AB7CA06A2F3B05F000EFACA9 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AB7CA0682F3B05F000EFACA9 /* InfoPlist.strings */; };
 		AB7CA06F2F3B067400EFACA9 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AB7CA06D2F3B067400EFACA9 /* Localizable.strings */; };
-		AB7EDE9A2FC7423C004BAEC9 /* emu.fceumm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB80162C2F9333860031643C /* GameConfigSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB80162B2F9333860031643C /* GameConfigSection.swift */; };
 		AB80162F2F9384A80031643C /* GameConfigTitleViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB80162E2F9384980031643C /* GameConfigTitleViewCell.swift */; };
 		AB8016312F93DAF80031643C /* GameConfigFooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8016302F93DAED0031643C /* GameConfigFooterView.swift */; };
@@ -99,6 +88,12 @@
 		AB8016352F9403020031643C /* GameConfigBaseViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8016342F9403020031643C /* GameConfigBaseViewCell.swift */; };
 		AB84001A2F911B4800E7FD49 /* GameOverLayFastButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8400192F911B4800E7FD49 /* GameOverLayFastButton.swift */; };
 		AB88D8FF2F962D0A00A04FEE /* GameConfigSegmentViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB88D8FE2F962D0A00A04FEE /* GameConfigSegmentViewCell.swift */; };
+		AB8905D82FD34CFB00CA9DEC /* GameCheatItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8905D72FD34CFA00CA9DEC /* GameCheatItem.swift */; };
+		AB8905DC2FD34D1700CA9DEC /* GameCheatSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8905DB2FD34D1100CA9DEC /* GameCheatSession.swift */; };
+		AB8905DE2FD34D2700CA9DEC /* GameCheatListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8905DD2FD34D2600CA9DEC /* GameCheatListViewController.swift */; };
+		AB8905E02FD34D3200CA9DEC /* GameCheatCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8905DF2FD34D2D00CA9DEC /* GameCheatCollectionViewCell.swift */; };
+		AB8905E22FD34D3A00CA9DEC /* GameCheatEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8905E12FD34D3800CA9DEC /* GameCheatEditViewController.swift */; };
+		AB8905E42FD34E4C00CA9DEC /* RetroRomPersistence+v6.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8905E32FD34E4C00CA9DEC /* RetroRomPersistence+v6.swift */; };
 		AB8B7EC02F4D4A7F00A56A64 /* RetroRomLocationSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8B7EBF2F4D4A7F00A56A64 /* RetroRomLocationSelector.swift */; };
 		AB8FDDD72FC31D9A008607E0 /* RetroRomFolderHostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8FDDD62FC31D9A008607E0 /* RetroRomFolderHostViewController.swift */; };
 		AB8FDDDB2FC369CB008607E0 /* RetroRomFolderSubview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8FDDDA2FC369CB008607E0 /* RetroRomFolderSubview.swift */; };
@@ -118,6 +113,10 @@
 		AB9E788D2FC4E71A00266281 /* RetroRomFolderTreeSubview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9E788C2FC4E71A00266281 /* RetroRomFolderTreeSubview.swift */; };
 		ABA1E5E72FA4557E00A0F5E1 /* GameConfigControllerSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABA1E5E62FA4557E00A0F5E1 /* GameConfigControllerSelector.swift */; };
 		ABA8F9682FBDB3CF0002B89D /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = ABA8F9672FBDB3CF0002B89D /* Kingfisher */; };
+		ABAF58792FDB127400E8E870 /* GameCheatCatalogBrowserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAF58782FDB127400E8E870 /* GameCheatCatalogBrowserViewController.swift */; };
+		ABAF587B2FDB128500E8E870 /* GameCheatCatalogGameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAF587A2FDB128500E8E870 /* GameCheatCatalogGameViewController.swift */; };
+		ABAF587D2FDB129200E8E870 /* GameCheatCatalogDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAF587C2FDB129200E8E870 /* GameCheatCatalogDetailViewController.swift */; };
+		ABAF58812FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAF58802FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift */; };
 		ABB2F0772FB09F95006A40C0 /* AppStorePurchaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB2F0762FB09F95006A40C0 /* AppStorePurchaseViewController.swift */; };
 		ABB34DCA2F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = ABB34DC92F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy */; };
 		ABB6F6E42FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB6F6E32FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift */; };
@@ -127,9 +126,12 @@
 		ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */; };
 		ABBC8B182F5E5690007E1669 /* MoltenVK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABBDE0212F860010004A6469 /* WhatsNewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */; };
+		ABBFDEAE2FDF2FF700689948 /* emu.fceumm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABC0BDCE2FAF831A004A6A40 /* AppStorePurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC0BDCD2FAF831A004A6A40 /* AppStorePurchaseManager.swift */; };
+		ABC1EF152FD89D0000D73BDD /* gamerdb.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = ABC1EF142FD89D0000D73BDD /* gamerdb.sqlite */; settings = {ASSET_TAGS = ("game-db", ); }; };
 		ABCAFE010000000000000002 /* GameToolbarAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCAFE010000000000000001 /* GameToolbarAction.swift */; };
 		ABCAFE010000000000000004 /* GameToolbarLayoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCAFE010000000000000003 /* GameToolbarLayoutViewController.swift */; };
+		ABCDEF022FD9000000000001 /* RAGameEntry+DisplayName.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF012FD9000000000001 /* RAGameEntry+DisplayName.swift */; };
 		ABD42B842F3A66E7008B1771 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD42B792F3A66E7008B1771 /* AppDelegate.swift */; };
 		ABD42B852F3A66E7008B1771 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD42B7B2F3A66E7008B1771 /* SceneDelegate.swift */; };
 		ABD42B882F3A66E7008B1771 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ABD42B7E2F3A66E7008B1771 /* Assets.xcassets */; };
@@ -178,7 +180,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				AB7EDE9A2FC7423C004BAEC9 /* emu.fceumm.framework in CopyFiles */,
+				ABBFDEAE2FDF2FF700689948 /* emu.fceumm.framework in CopyFiles */,
 				AB11A55F2F9941BF00C32E39 /* emu.dosbox-pure.framework in CopyFiles */,
 				AB11A5612F9941BF00C32E39 /* emu.gambatte.framework in CopyFiles */,
 				AB11A5622F9941BF00C32E39 /* emu.gearboy.framework in CopyFiles */,
@@ -209,7 +211,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AB0A1DD42FB71C7800503077 /* RetroArchGamePauseToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroArchGamePauseToken.swift; sourceTree = "<group>"; };
+		AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePauseCoordinator.swift; sourceTree = "<group>"; };
+		AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ODRResourceViewController.swift; sourceTree = "<group>"; };
+		AB0AF4BE2FD9BA1700257A18 /* cheat.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = cheat.sqlite; sourceTree = "<group>"; };
+		AB0AF4C02FD9BA2000257A18 /* gameloc.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = gameloc.sqlite; sourceTree = "<group>"; };
 		AB12C2332F503262000B07BF /* RetroRomCoreListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomCoreListViewController.swift; sourceTree = "<group>"; };
 		AB12C2352F503FB5000B07BF /* RetroRomCoreItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomCoreItemTableViewCell.swift; sourceTree = "<group>"; };
 		AB38A12D2FB519D4009E3915 /* AppStoreProFeatureGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreProFeatureGate.swift; sourceTree = "<group>"; };
@@ -247,19 +252,6 @@
 		AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayNDSLayoutButton.swift; sourceTree = "<group>"; };
 		AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayN64CButton.swift; sourceTree = "<group>"; };
 		AB69E2FD2F4EB4D800C532EE /* RetroRomEmptyTipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomEmptyTipView.swift; sourceTree = "<group>"; };
-		AB70DD732FBCDEB600277B74 /* DOS.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = DOS.rdb; sourceTree = "<group>"; };
-		AB70DD742FBCDEB600277B74 /* MAME.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = MAME.rdb; sourceTree = "<group>"; };
-		AB70DD752FBCDEB600277B74 /* Nintendo - Family Computer Disk System.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nintendo - Family Computer Disk System.rdb"; sourceTree = "<group>"; };
-		AB70DD762FBCDEB600277B74 /* Nintendo - Game Boy.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nintendo - Game Boy.rdb"; sourceTree = "<group>"; };
-		AB70DD772FBCDEB600277B74 /* Nintendo - Game Boy Advance.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nintendo - Game Boy Advance.rdb"; sourceTree = "<group>"; };
-		AB70DD782FBCDEB600277B74 /* Nintendo - Game Boy Color.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nintendo - Game Boy Color.rdb"; sourceTree = "<group>"; };
-		AB70DD792FBCDEB600277B74 /* Nintendo - Nintendo 64.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nintendo - Nintendo 64.rdb"; sourceTree = "<group>"; };
-		AB70DD7A2FBCDEB600277B74 /* Nintendo - Nintendo DS.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nintendo - Nintendo DS.rdb"; sourceTree = "<group>"; };
-		AB70DD7B2FBCDEB600277B74 /* Nintendo - Nintendo Entertainment System.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nintendo - Nintendo Entertainment System.rdb"; sourceTree = "<group>"; };
-		AB70DD7C2FBCDEB600277B74 /* Nintendo - Super Nintendo Entertainment System.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nintendo - Super Nintendo Entertainment System.rdb"; sourceTree = "<group>"; };
-		AB70DD7D2FBCDEB600277B74 /* Sega - Saturn.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Sega - Saturn.rdb"; sourceTree = "<group>"; };
-		AB70DD7E2FBCDEB600277B74 /* Sony - PlayStation.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Sony - PlayStation.rdb"; sourceTree = "<group>"; };
-		AB70DD7F2FBCDEB600277B74 /* Sony - PlayStation Portable.rdb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Sony - PlayStation Portable.rdb"; sourceTree = "<group>"; };
 		AB70DD8D2FBCE9C300277B74 /* OnDemandResourceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDemandResourceLoader.swift; sourceTree = "<group>"; };
 		AB70DD902FBCF69200277B74 /* DiscoverPlatformCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverPlatformCell.swift; sourceTree = "<group>"; };
 		AB70DD912FBCF69200277B74 /* DiscoverPlatformViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverPlatformViewController.swift; sourceTree = "<group>"; };
@@ -286,6 +278,12 @@
 		AB8016342F9403020031643C /* GameConfigBaseViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameConfigBaseViewCell.swift; sourceTree = "<group>"; };
 		AB8400192F911B4800E7FD49 /* GameOverLayFastButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverLayFastButton.swift; sourceTree = "<group>"; };
 		AB88D8FE2F962D0A00A04FEE /* GameConfigSegmentViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameConfigSegmentViewCell.swift; sourceTree = "<group>"; };
+		AB8905D72FD34CFA00CA9DEC /* GameCheatItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatItem.swift; sourceTree = "<group>"; };
+		AB8905DB2FD34D1100CA9DEC /* GameCheatSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatSession.swift; sourceTree = "<group>"; };
+		AB8905DD2FD34D2600CA9DEC /* GameCheatListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatListViewController.swift; sourceTree = "<group>"; };
+		AB8905DF2FD34D2D00CA9DEC /* GameCheatCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatCollectionViewCell.swift; sourceTree = "<group>"; };
+		AB8905E12FD34D3800CA9DEC /* GameCheatEditViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatEditViewController.swift; sourceTree = "<group>"; };
+		AB8905E32FD34E4C00CA9DEC /* RetroRomPersistence+v6.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RetroRomPersistence+v6.swift"; sourceTree = "<group>"; };
 		AB8B7EBF2F4D4A7F00A56A64 /* RetroRomLocationSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomLocationSelector.swift; sourceTree = "<group>"; };
 		AB8FDDD62FC31D9A008607E0 /* RetroRomFolderHostViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderHostViewController.swift; sourceTree = "<group>"; };
 		AB8FDDDA2FC369CB008607E0 /* RetroRomFolderSubview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderSubview.swift; sourceTree = "<group>"; };
@@ -305,6 +303,10 @@
 		AB9E78882FC4BD9A00266281 /* RetroRomFolderTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderTitleView.swift; sourceTree = "<group>"; };
 		AB9E788C2FC4E71A00266281 /* RetroRomFolderTreeSubview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderTreeSubview.swift; sourceTree = "<group>"; };
 		ABA1E5E62FA4557E00A0F5E1 /* GameConfigControllerSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameConfigControllerSelector.swift; sourceTree = "<group>"; };
+		ABAF58782FDB127400E8E870 /* GameCheatCatalogBrowserViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatCatalogBrowserViewController.swift; sourceTree = "<group>"; };
+		ABAF587A2FDB128500E8E870 /* GameCheatCatalogGameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatCatalogGameViewController.swift; sourceTree = "<group>"; };
+		ABAF587C2FDB129200E8E870 /* GameCheatCatalogDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatCatalogDetailViewController.swift; sourceTree = "<group>"; };
+		ABAF58802FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatTemplateAutoBinder.swift; sourceTree = "<group>"; };
 		ABB2F0762FB09F95006A40C0 /* AppStorePurchaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorePurchaseViewController.swift; sourceTree = "<group>"; };
 		ABB34DC92F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ABB6F6E32FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmuCoreInfoItem+Extension.swift"; sourceTree = "<group>"; };
@@ -327,8 +329,10 @@
 		ABBC8ACE2F5E5504007E1669 /* emu.yabause.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.yabause.framework; sourceTree = "<group>"; };
 		ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhatsNewViewController.swift; sourceTree = "<group>"; };
 		ABC0BDCD2FAF831A004A6A40 /* AppStorePurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorePurchaseManager.swift; sourceTree = "<group>"; };
+		ABC1EF142FD89D0000D73BDD /* gamerdb.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = gamerdb.sqlite; sourceTree = "<group>"; };
 		ABCAFE010000000000000001 /* GameToolbarAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameToolbarAction.swift; sourceTree = "<group>"; };
 		ABCAFE010000000000000003 /* GameToolbarLayoutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameToolbarLayoutViewController.swift; sourceTree = "<group>"; };
+		ABCDEF012FD9000000000001 /* RAGameEntry+DisplayName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RAGameEntry+DisplayName.swift"; sourceTree = "<group>"; };
 		ABD42B502F3A5EFC008B1771 /* RetroGo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RetroGo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ABD42B792F3A66E7008B1771 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		ABD42B7A2F3A66E7008B1771 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -416,6 +420,7 @@
 			isa = PBXGroup;
 			children = (
 				ABB6F6E52FC0257D00A13412 /* RAPlatformItem+Extension.swift */,
+				ABCDEF012FD9000000000001 /* RAGameEntry+DisplayName.swift */,
 				AB55BC702F3B8A6600569A84 /* UIColor+Extension.swift */,
 				ABD88AB42F94A40E00C37012 /* CGPath+Extension.swift */,
 				ABB6F6E32FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift */,
@@ -453,6 +458,7 @@
 		AB55BC7A2F3B8BB100569A84 /* GamePage */ = {
 			isa = PBXGroup;
 			children = (
+				AB8905D42FD34CE500CA9DEC /* GameCheat */,
 				AB77608B2FCF61280026D6F6 /* GameToolbar */,
 				AB9CDD6F2F70422B002E6A55 /* GameOverlay */,
 				ABDAD2AA2F3BBBDD004100A9 /* View */,
@@ -486,26 +492,6 @@
 				ABDAD2512F3BA9D7004100A9 /* RetroRomGameStateItem.swift */,
 			);
 			path = Model;
-			sourceTree = "<group>";
-		};
-		AB70DD712FBCC43900277B74 /* OnDemandRDBs */ = {
-			isa = PBXGroup;
-			children = (
-				AB70DD732FBCDEB600277B74 /* DOS.rdb */,
-				AB70DD742FBCDEB600277B74 /* MAME.rdb */,
-				AB70DD752FBCDEB600277B74 /* Nintendo - Family Computer Disk System.rdb */,
-				AB70DD762FBCDEB600277B74 /* Nintendo - Game Boy.rdb */,
-				AB70DD772FBCDEB600277B74 /* Nintendo - Game Boy Advance.rdb */,
-				AB70DD782FBCDEB600277B74 /* Nintendo - Game Boy Color.rdb */,
-				AB70DD792FBCDEB600277B74 /* Nintendo - Nintendo 64.rdb */,
-				AB70DD7A2FBCDEB600277B74 /* Nintendo - Nintendo DS.rdb */,
-				AB70DD7B2FBCDEB600277B74 /* Nintendo - Nintendo Entertainment System.rdb */,
-				AB70DD7C2FBCDEB600277B74 /* Nintendo - Super Nintendo Entertainment System.rdb */,
-				AB70DD7D2FBCDEB600277B74 /* Sega - Saturn.rdb */,
-				AB70DD7E2FBCDEB600277B74 /* Sony - PlayStation.rdb */,
-				AB70DD7F2FBCDEB600277B74 /* Sony - PlayStation Portable.rdb */,
-			);
-			path = OnDemandRDBs;
 			sourceTree = "<group>";
 		};
 		AB70DD8F2FBCF47400277B74 /* DiscoverPage */ = {
@@ -544,6 +530,7 @@
 				AB7C3A722F8042EC004C872A /* RetroRomPersistence+v1.swift */,
 				AB7C3A742F8043DA004C872A /* RetroRomPersistence+v2.swift */,
 				AB462F112F9286A7006ABEDD /* RetroRomPersistence+v3.swift */,
+				AB8905E32FD34E4C00CA9DEC /* RetroRomPersistence+v6.swift */,
 			);
 			path = Store;
 			sourceTree = "<group>";
@@ -603,7 +590,7 @@
 				AB55BC692F3B80D700569A84 /* Vibration.swift */,
 				AB55BC6B2F3B84D500569A84 /* IconRender.swift */,
 				AB92D8742F97A452001BE44F /* DebugDataLink.swift */,
-				AB0A1DD42FB71C7800503077 /* RetroArchGamePauseToken.swift */,
+				AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -627,6 +614,38 @@
 				ABBC8ACE2F5E5504007E1669 /* emu.yabause.framework */,
 			);
 			path = Cores;
+			sourceTree = "<group>";
+		};
+		AB8905D42FD34CE500CA9DEC /* GameCheat */ = {
+			isa = PBXGroup;
+			children = (
+				AB8905D62FD34CF200CA9DEC /* View */,
+				AB8905D52FD34CEC00CA9DEC /* Model */,
+			);
+			path = GameCheat;
+			sourceTree = "<group>";
+		};
+		AB8905D52FD34CEC00CA9DEC /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				AB8905D72FD34CFA00CA9DEC /* GameCheatItem.swift */,
+				AB8905DB2FD34D1100CA9DEC /* GameCheatSession.swift */,
+				ABAF58802FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		AB8905D62FD34CF200CA9DEC /* View */ = {
+			isa = PBXGroup;
+			children = (
+				AB8905DD2FD34D2600CA9DEC /* GameCheatListViewController.swift */,
+				AB8905DF2FD34D2D00CA9DEC /* GameCheatCollectionViewCell.swift */,
+				AB8905E12FD34D3800CA9DEC /* GameCheatEditViewController.swift */,
+				ABAF58782FDB127400E8E870 /* GameCheatCatalogBrowserViewController.swift */,
+				ABAF587A2FDB128500E8E870 /* GameCheatCatalogGameViewController.swift */,
+				ABAF587C2FDB129200E8E870 /* GameCheatCatalogDetailViewController.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 		AB8FDDD92FC36980008607E0 /* SubView */ = {
@@ -684,6 +703,16 @@
 			path = GameOverlay;
 			sourceTree = "<group>";
 		};
+		ABC1EF132FD89CD800D73BDD /* OnDemandRes */ = {
+			isa = PBXGroup;
+			children = (
+				AB0AF4BE2FD9BA1700257A18 /* cheat.sqlite */,
+				AB0AF4C02FD9BA2000257A18 /* gameloc.sqlite */,
+				ABC1EF142FD89D0000D73BDD /* gamerdb.sqlite */,
+			);
+			path = OnDemandRes;
+			sourceTree = "<group>";
+		};
 		ABD42B472F3A5EFC008B1771 = {
 			isa = PBXGroup;
 			children = (
@@ -732,7 +761,7 @@
 			isa = PBXGroup;
 			children = (
 				ABD42B7E2F3A66E7008B1771 /* Assets.xcassets */,
-				AB70DD712FBCC43900277B74 /* OnDemandRDBs */,
+				ABC1EF132FD89CD800D73BDD /* OnDemandRes */,
 				AB88FDE52F5DEB7100F16548 /* Cores */,
 				AB7CA0672F3B05B600EFACA9 /* Strings */,
 				ABD42B8C2F3A6717008B1771 /* Storyboards */,
@@ -809,6 +838,7 @@
 				ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */,
 				ABB2F0762FB09F95006A40C0 /* AppStorePurchaseViewController.swift */,
 				ABB6F6E72FC0C58D00A13412 /* AppWelcomeViewController.swift */,
+				AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */,
 			);
 			path = AppHubPage;
 			sourceTree = "<group>";
@@ -881,6 +911,9 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				KnownAssetTags = (
+					"cheat-db",
+					"game-db",
+					"gameloc-db",
 					"rdb-DOS",
 					"rdb-FDS",
 					"rdb-GB",
@@ -935,26 +968,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ABC1EF152FD89D0000D73BDD /* gamerdb.sqlite in Resources */,
 				AB7CA06F2F3B067400EFACA9 /* Localizable.strings in Resources */,
+				AB0AF4C12FD9BA2000257A18 /* gameloc.sqlite in Resources */,
 				ABB34DCA2F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy in Resources */,
 				AB7CA0662F3B057100EFACA9 /* Data in Resources */,
 				AB7CA06A2F3B05F000EFACA9 /* InfoPlist.strings in Resources */,
 				ABD42B882F3A66E7008B1771 /* Assets.xcassets in Resources */,
 				ABD42B892F3A66E7008B1771 /* LaunchScreen.storyboard in Resources */,
+				AB0AF4BF2FD9BA1700257A18 /* cheat.sqlite in Resources */,
 				AB997ED02F4AEC00009F47AC /* Localizable.stringsdict in Resources */,
-				AB70DD802FBCDEB600277B74 /* Sega - Saturn.rdb in Resources */,
-				AB70DD812FBCDEB600277B74 /* Nintendo - Nintendo DS.rdb in Resources */,
-				AB70DD822FBCDEB600277B74 /* Nintendo - Nintendo Entertainment System.rdb in Resources */,
-				AB70DD832FBCDEB600277B74 /* DOS.rdb in Resources */,
-				AB70DD842FBCDEB600277B74 /* Nintendo - Super Nintendo Entertainment System.rdb in Resources */,
-				AB70DD852FBCDEB600277B74 /* Nintendo - Game Boy.rdb in Resources */,
-				AB70DD862FBCDEB600277B74 /* Sony - PlayStation Portable.rdb in Resources */,
-				AB70DD872FBCDEB600277B74 /* Nintendo - Game Boy Advance.rdb in Resources */,
-				AB70DD882FBCDEB600277B74 /* Nintendo - Family Computer Disk System.rdb in Resources */,
-				AB70DD892FBCDEB600277B74 /* Nintendo - Nintendo 64.rdb in Resources */,
-				AB70DD8A2FBCDEB600277B74 /* Sony - PlayStation.rdb in Resources */,
-				AB70DD8B2FBCDEB600277B74 /* Nintendo - Game Boy Color.rdb in Resources */,
-				AB70DD8C2FBCDEB600277B74 /* MAME.rdb in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -978,10 +1001,12 @@
 				ABF60F852FC5F911006C5B5A /* RetroRomFolderSectionedDataSource.swift in Sources */,
 				AB55BC782F3B8B4300569A84 /* AppSettings.swift in Sources */,
 				AB70DD922FBCF69200277B74 /* DiscoverPlatformViewController.swift in Sources */,
+				AB8905D82FD34CFB00CA9DEC /* GameCheatItem.swift in Sources */,
 				AB70DD932FBCF69200277B74 /* DiscoverPlatformCell.swift in Sources */,
 				ABDAD28A2F3BB5CA004100A9 /* RetroRomMameFirmwareTipViewCell.swift in Sources */,
 				ABDAD28C2F3BB5E5004100A9 /* RetroRomCoreInfoViewController.swift in Sources */,
 				AB88D8FF2F962D0A00A04FEE /* GameConfigSegmentViewCell.swift in Sources */,
+				AB8905E42FD34E4C00CA9DEC /* RetroRomPersistence+v6.swift in Sources */,
 				AB74794D2F9BC1D000C48B6D /* GameConfigLabelViewCell.swift in Sources */,
 				AB12C2362F503FB5000B07BF /* RetroRomCoreItemTableViewCell.swift in Sources */,
 				ABD42B842F3A66E7008B1771 /* AppDelegate.swift in Sources */,
@@ -990,6 +1015,7 @@
 				ABDAD2B12F3BBC3A004100A9 /* GameStateListViewController.swift in Sources */,
 				AB84001A2F911B4800E7FD49 /* GameOverLayFastButton.swift in Sources */,
 				AB55BC712F3B8A6900569A84 /* UIColor+Extension.swift in Sources */,
+				ABCDEF022FD9000000000001 /* RAGameEntry+DisplayName.swift in Sources */,
 				ABDAD2A32F3BBABC004100A9 /* AppSettingViewController.swift in Sources */,
 				ABDAD27A2F3BB45E004100A9 /* RetroRomListViewCell.swift in Sources */,
 				AB38A12E2FB519D4009E3915 /* AppStoreProFeatureGate.swift in Sources */,
@@ -997,6 +1023,7 @@
 				AB5D01822F813F8000C7081D /* RetroRomImportGroupBuilder.swift in Sources */,
 				AB55BC802F3B8D5500569A84 /* RetroRomBaseItem.swift in Sources */,
 				AB9E78892FC4BD9A00266281 /* RetroRomFolderTitleView.swift in Sources */,
+				AB0AF4BD2FD9B74400257A18 /* ODRResourceViewController.swift in Sources */,
 				ABDAD2AF2F3BBC1B004100A9 /* GameStateTableViewCell.swift in Sources */,
 				ABF60F8A2FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift in Sources */,
 				ABDAD2A52F3BBAE7004100A9 /* SystemDocumentBrowser.swift in Sources */,
@@ -1008,6 +1035,7 @@
 				AB9E788D2FC4E71A00266281 /* RetroRomFolderTreeSubview.swift in Sources */,
 				AB3D703E2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift in Sources */,
 				AB92D8752F97A452001BE44F /* DebugDataLink.swift in Sources */,
+				ABAF58792FDB127400E8E870 /* GameCheatCatalogBrowserViewController.swift in Sources */,
 				ABD88AB32F94A27C00C37012 /* GameConfigDescView.swift in Sources */,
 				ABDAD2712F3BB11C004100A9 /* RetroRomFileTagSelector.swift in Sources */,
 				ABDAD25E2F3BAB67004100A9 /* RetroRomCoreManager.swift in Sources */,
@@ -1019,8 +1047,10 @@
 				ABDAD2522F3BA9D7004100A9 /* RetroRomGameStateItem.swift in Sources */,
 				AB7C3A702F80049C004C872A /* RetroRomPersistence.swift in Sources */,
 				AB495F802F9B6D0F0092BCDB /* GameConfigEntry.swift in Sources */,
+				AB8905E22FD34D3A00CA9DEC /* GameCheatEditViewController.swift in Sources */,
 				ABDAD2AD2F3BBBF8004100A9 /* GamePageInGameInfoView.swift in Sources */,
 				AB8016352F9403020031643C /* GameConfigBaseViewCell.swift in Sources */,
+				AB8905E02FD34D3200CA9DEC /* GameCheatCollectionViewCell.swift in Sources */,
 				AB80162C2F9333860031643C /* GameConfigSection.swift in Sources */,
 				AB8FDDDB2FC369CB008607E0 /* RetroRomFolderSubview.swift in Sources */,
 				AB8016312F93DAF80031643C /* GameConfigFooterView.swift in Sources */,
@@ -1028,6 +1058,8 @@
 				ABC0BDCE2FAF831A004A6A40 /* AppStorePurchaseManager.swift in Sources */,
 				AB79E7492F659FA5007C480E /* GamePageToolbarView.swift in Sources */,
 				AB7C3A752F8043DA004C872A /* RetroRomPersistence+v2.swift in Sources */,
+				AB8905DC2FD34D1700CA9DEC /* GameCheatSession.swift in Sources */,
+				ABAF58812FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift in Sources */,
 				ABDAD2502F3BA9BA004100A9 /* RetroRomFileTag.swift in Sources */,
 				AB495F832F9B94750092BCDB /* GameConfigListItemSelector.swift in Sources */,
 				ABF60F832FC59F08006C5B5A /* RetroRomSectionHeaderView.swift in Sources */,
@@ -1043,6 +1075,7 @@
 				ABF5D57A2FA0CAC8002EB2D1 /* GameConfigHeaderView.swift in Sources */,
 				AB69E2FE2F4EB4D800C532EE /* RetroRomEmptyTipView.swift in Sources */,
 				AB55BC8A2F3BA0B500569A84 /* RetroRomFolderItem.swift in Sources */,
+				ABAF587B2FDB128500E8E870 /* GameCheatCatalogGameViewController.swift in Sources */,
 				AB3D70422F7D57610008A6AA /* GameOverlayButtonShape.swift in Sources */,
 				ABD42B852F3A66E7008B1771 /* SceneDelegate.swift in Sources */,
 				AB8FDDE02FC38C9E008607E0 /* RetroRomFolderPageState.swift in Sources */,
@@ -1061,7 +1094,9 @@
 				ABDAD25C2F3BAA9B004100A9 /* RetroRomFileManager.swift in Sources */,
 				AB462F142F92AAF2006ABEDD /* GameConfigViewController.swift in Sources */,
 				AB70DD8E2FBCE9C300277B74 /* OnDemandResourceLoader.swift in Sources */,
+				ABAF587D2FDB129200E8E870 /* GameCheatCatalogDetailViewController.swift in Sources */,
 				AB7A8B062FC1790500000A68 /* RetroGoTabBarController.swift in Sources */,
+				AB8905DE2FD34D2700CA9DEC /* GameCheatListViewController.swift in Sources */,
 				ABA1E5E72FA4557E00A0F5E1 /* GameConfigControllerSelector.swift in Sources */,
 				ABB6F6E42FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift in Sources */,
 				ABF60F812FC56ED0006C5B5A /* RetroRomFolderSectionedSubview.swift in Sources */,
@@ -1076,7 +1111,7 @@
 				ABBDE0212F860010004A6469 /* WhatsNewViewController.swift in Sources */,
 				AB4DCCDB2FA26AD8004691BD /* GameConfigBindingBubbleNode.swift in Sources */,
 				AB4DCCDC2FA26AD8004691BD /* GameConfigBindingSettingPresenting.swift in Sources */,
-				AB0A1DD52FB71C7800503077 /* RetroArchGamePauseToken.swift in Sources */,
+				AB0A1DD52FB71C7800503077 /* GamePauseCoordinator.swift in Sources */,
 				ABB6F6EA2FC0D73600A13412 /* RetroRomFileBrowserConfigMenu.swift in Sources */,
 				AB4DCCDE2FA2F0A0004691BD /* GameOverlayTheme.swift in Sources */,
 				AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */,
@@ -1136,7 +1171,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1167,7 +1202,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5.0;
+				MARKETING_VERSION = 1.6.0;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1193,7 +1228,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1224,7 +1259,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.5.0;
+				MARKETING_VERSION = 1.6.0;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

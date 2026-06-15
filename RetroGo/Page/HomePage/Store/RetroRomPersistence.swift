@@ -34,7 +34,7 @@ final class RetroRomPersistence {
     }
 
     var currentVersion: Int {
-        5
+        6
     }
 
     // MARK: - Rom File and Rom Folder Stuff
@@ -123,6 +123,7 @@ final class RetroRomPersistence {
                     preferIcon: row[Self.preferIcon],
                     fileSize: row[Self.fileSize],
                     sha256: row[Self.sha256],
+                    crc32: row[Self.crc32],
                     lastPlayAt: row[Self.lastPlayAt],
                     playTime: row[Self.playTime],
                     tagIdArray: parseTagIds(row[Self.tagIdsText]),
@@ -172,6 +173,7 @@ final class RetroRomPersistence {
                         preferIcon: row[Self.preferIcon],
                         fileSize: row[Self.fileSize],
                         sha256: row[Self.sha256],
+                        crc32: row[Self.crc32],
                         lastPlayAt: row[Self.lastPlayAt],
                         playTime: row[Self.playTime],
                         tagIdArray: parseTagIds(row[Self.tagIdsText]),
@@ -301,6 +303,7 @@ final class RetroRomPersistence {
                     preferIcon: row[Self.preferIcon],
                     fileSize: row[Self.fileSize],
                     sha256: row[Self.sha256],
+                    crc32: row[Self.crc32],
                     lastPlayAt: row[Self.lastPlayAt],
                     playTime: row[Self.playTime],
                     tagIdArray: parseTagIds(row[Self.tagIdsText]),
@@ -309,6 +312,36 @@ final class RetroRomPersistence {
                 return item
             }
             return nil
+        } catch {
+        #if DEBUG
+            let errMsg = "\(error)"
+            fatalError(errMsg)
+        #else
+            return nil
+        #endif
+        }
+    }
+
+    func getGameFileSubItems(key: String) -> [RetroRomFileSubItem]? {
+        do {
+            let db = Self.sqlite
+            let alice = Self.romGameFileTable
+                .where(Self.key == key)
+                .order(Self.sortIndex.asc)
+            var items: [RetroRomFileSubItem] = []
+            for row in try db.prepare(alice) {
+                let item = RetroRomFileSubItem(
+                    key: row[Self.key],
+                    rawName: row[Self.rawName],
+                    fileRole: row[Self.fileRole],
+                    sha256: row[Self.sha256] ?? "",
+                    crc32: row[Self.crc32],
+                    fileSize: row[Self.fileSize],
+                    sortIndex: row[Self.sortIndex]
+                )
+                items.append(item)
+            }
+            return items
         } catch {
         #if DEBUG
             let errMsg = "\(error)"
@@ -567,6 +600,38 @@ final class RetroRomPersistence {
                 Self.preferCore <- core
             )
             try db.run(update)
+            return true
+        } catch {
+        #if DEBUG
+            let errMsg = "\(error)"
+            fatalError(errMsg)
+        #else
+            return false
+        #endif
+        }
+    }
+
+    func updateGameCRC32(key: String, crc32: String) -> Bool {
+        do {
+            let db = Self.sqlite
+            let alice = Self.romGameTable.filter(Self.key == key)
+            try db.run(alice.update(Self.crc32 <- crc32))
+            return true
+        } catch {
+        #if DEBUG
+            let errMsg = "\(error)"
+            fatalError(errMsg)
+        #else
+            return false
+        #endif
+        }
+    }
+
+    func updateGameFileCRC32(key: String, rawName: String, crc32: String) -> Bool {
+        do {
+            let db = Self.sqlite
+            let alice = Self.romGameFileTable.filter(Self.key == key && Self.rawName == rawName)
+            try db.run(alice.update(Self.crc32 <- crc32))
             return true
         } catch {
         #if DEBUG
@@ -1034,6 +1099,7 @@ extension RetroRomPersistence {
     static let updateAt   = SQLite.Expression<Date>("update_at")
     static let fileSize   = SQLite.Expression<Int>("file_size")
     static let sha256     = SQLite.Expression<String?>("sha256")
+    static let crc32      = SQLite.Expression<String?>("crc32")
     static let lastPlayAt = SQLite.Expression<Date?>("last_play_at")
     static let playTime   = SQLite.Expression<Int>("play_time")
     static let coreId     = SQLite.Expression<String>("core_id")
@@ -1093,25 +1159,32 @@ extension RetroRomPersistence {
 
             switch version {
                 case 0:
-                    try databaseV5(db: db)
+                    try databaseV6(db: db)
                     return true
                 case 1:
                     try migrationV1ToV2(db: db)
                     try migrationV2ToV3(db: db)
                     try migrationV3ToV4(db: db)
                     try migrationV4ToV5(db: db)
+                    try migrationV5ToV6(db: db)
                     return true
                 case 2:
                     try migrationV2ToV3(db: db)
                     try migrationV3ToV4(db: db)
                     try migrationV4ToV5(db: db)
+                    try migrationV5ToV6(db: db)
                     return true
                 case 3:
                     try migrationV3ToV4(db: db)
                     try migrationV4ToV5(db: db)
+                    try migrationV5ToV6(db: db)
                     return true
                 case 4:
                     try migrationV4ToV5(db: db)
+                    try migrationV5ToV6(db: db)
+                    return true
+                case 5:
+                    try migrationV5ToV6(db: db)
                     return true
                 default:
                     return true
@@ -1149,6 +1222,7 @@ extension RetroRomFileSubItem {
             RetroRomPersistence.rawName <- rawName,
             RetroRomPersistence.fileRole <- fileRole,
             RetroRomPersistence.sha256 <- sha256,
+            RetroRomPersistence.crc32 <- crc32,
             RetroRomPersistence.fileSize <- fileSize,
             RetroRomPersistence.sortIndex <- sortIndex
         )
@@ -1165,6 +1239,7 @@ extension RetroRomFileItem {
             RetroRomPersistence.createAt   <- createAt,
             RetroRomPersistence.updateAt   <- updateAt,
             RetroRomPersistence.sha256     <- sha256,
+            RetroRomPersistence.crc32      <- crc32,
             RetroRomPersistence.lastPlayAt <- lastPlayAt,
             RetroRomPersistence.playTime   <- playTime,
             RetroRomPersistence.preferCore <- preferCore,

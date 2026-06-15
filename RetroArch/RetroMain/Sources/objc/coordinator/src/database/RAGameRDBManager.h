@@ -46,8 +46,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// 厂商名，取 rdbName 中第一个 " - " 之前的部分，如 "Nintendo"
 @property (nonatomic, copy, readonly)   NSString  *manufacturer;
 
-/// 该平台已导入的游戏数量
+/// 该平台已导入的游戏(变体)总数
 @property (nonatomic, assign, readonly) NSInteger  gameCount;
+
+/// 该平台去重分组后的数量(列表分页用)
+@property (nonatomic, assign, readonly) NSInteger  groupCount;
 
 @end
 
@@ -64,8 +67,27 @@ NS_ASSUME_NONNULL_BEGIN
 /// 所属平台 id（关联 RAPlatformItem.platformId）
 @property (nonatomic, assign, readonly)         NSInteger  platformId;
 
-/// 游戏标准名称，来自 rdb，No-Intro / Redump 规范，如 "Super Mario World (USA)"
+/// 游戏标准名称，来自 rdb，No-Intro / Redump 规范，如 "Super Mario World (USA)"。
+/// 注意：分组查询(fetchGroups / 搜索)返回的代表条目，此字段为干净的分组名(如 "Super Mario World")。
 @property (nonatomic, copy, readonly)           NSString  *name;
+
+/// 当前中文本地化名（若已 attach gameloc.sqlite 且有命中）。英文权威名仍在 name。
+@property (nonatomic, copy, nullable, readonly) NSString  *localizedName;
+
+/// gameloc source 枚举：1=en-cjk, 2=wikidata, 3=deepseek-chat, 4=deepseek-chat-pass2, 5=deepseek-loose。
+@property (nonatomic, assign, readonly)         NSInteger  localizationSource;
+
+/// YES 表示 source=5(deepseek-loose)，UI 应显示"仅供参考"标记。
+@property (nonatomic, assign, readonly, getter=isLocalizationReference) BOOL localizationReference;
+
+/// 分组键(游戏名第一个括号前的前缀)。仅分组查询结果赋值，逐条查询时为 nil。
+@property (nonatomic, copy, nullable, readonly) NSString  *groupName;
+
+/// 该组变体数。仅分组查询结果赋值，逐条查询时为 0。
+@property (nonatomic, assign, readonly)         NSInteger  variantCount;
+
+/// 该游戏在 cheat.sqlite 中的作弊条数。普通游戏库查询为 0，仅作弊库目录查询赋值。
+@property (nonatomic, assign, readonly)         NSInteger  cheatCount;
 
 /// 开发商，rdb 中多个开发商用 "|" 分隔
 @property (nonatomic, copy, nullable, readonly) NSString  *developer;
@@ -143,51 +165,51 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * 当前代码期望的 SQLite schema 版本号。
- * SQLite 文件中存储的 user_version 与此值不一致时，才会执行建表/建索引操作。
- * 当前值为 1；后续 schema 变更时递增此值并在 p_openAndSetup 中添加迁移逻辑。
+ * 仅用于：①离线导出预制库时写入文件头 user_version；②运行时打开预制库时
+ * 核对版本是否一致（仅日志告警，不做迁移）。当前值为 1。
  */
 @property (nonatomic, assign, readonly) NSInteger currentDBVersion;
 
 /**
- * 初始化 SQLite 连接，并在版本不匹配时创建所需的表结构和索引。
- * 版本一致时直接跳过 DDL，启动速度极快。
+ * 以【只读】方式打开预制游戏数据库。
  *
- * @param dbPath SQLite 文件的完整路径，由 Swift 侧传入，通常位于 Documents 目录。
- *               若文件不存在会自动创建。
+ * 约定：App Store 包内的 sqlite 一律是离线预制好的成品（见 exportCombinedDatabaseToPath…），
+ * 运行时只查不写——因此不会创建文件、不建表、不迁移、不启用 WAL。
+ *
+ * @param dbPath 预制 sqlite 的完整路径（由 Swift 侧拷贝就位后传入）。
+ *               文件不存在时打开失败，后续查询安全地返回空结果。
  */
 - (void)initialize:(NSString *)dbPath completion:(nullable void (^)(void))completion;
 
 // MARK: 平台查询
 
 /**
- * 返回所有已导入的平台列表，按 displayName 字母顺序排列。
+ * 返回所有平台列表，按 displayName 字母顺序排列。
  * 同步执行，可在主线程调用（数据量小，速度极快）。
  */
 - (NSArray<RAPlatformItem *> *)allPlatforms;
 
-/**
- * 检查某个 rdb 是否已经导入过（幂等导入的前置检查）。
- *
- * @param rdbName rdb 文件名，不含路径和 .rdb 后缀，
- *                如 "Nintendo - Game Boy Advance"
- */
-- (BOOL)isPlatformImported:(NSString *)rdbName;
-
-// MARK: 导入
+#if DEBUG
+// MARK: 离线导出（DEBUG）
 
 /**
- * 将指定 .rdb 文件的所有游戏条目导入 SQLite。
+ * DEBUG 专用：从一组 .rdb 文件离线构建成品合并数据库，落地为单个 .db 文件。
  *
- * - 幂等：若该平台已存在，直接以 importedCount=0 回调，不会重复导入。
- * - 在后台串行队列执行（大型 rdb 可能需要 1~3 秒）。
- * - completion 在主线程回调。
+ * - 产物与设备端逐个 import 的结果完全一致：同 schema、同 user_version、
+ *   含已建好的 FTS5 索引，因此 findGameByCRC32 / FTS 搜索 / 分页查询照常工作。
+ * - 末尾执行 wal_checkpoint(TRUNCATE) + journal_mode=DELETE + VACUUM，
+ *   合并成单个文件并瘦身，可直接打包进 App 作为预制库。
+ * - 使用独立 sqlite 句柄，不影响运行库。
  *
- * @param rdbPath   .rdb 文件的完整路径
- * @param completion importedCount：实际写入的游戏条数；error：失败原因
+ * @param destPath   产物 .db 的完整路径（已存在会被覆盖，连同 -wal/-shm 边车）
+ * @param rdbPaths   源 .rdb 文件完整路径数组
+ * @param completion totalGames：写入的游戏总条数；error：失败原因（主线程回调）
  */
-- (void)importRdbAtPath:(NSString *)rdbPath
-             completion:(void (^)(NSInteger importedCount,
-                                  NSError  * _Nullable error))completion;
+- (void)exportCombinedDatabaseToPath:(NSString *)destPath
+                        fromRdbPaths:(NSArray<NSString *> *)rdbPaths
+                          completion:(void (^)(NSInteger totalGames,
+                                               NSError * _Nullable error))completion;
+#endif
 
 // MARK: 分页查询
 
@@ -210,6 +232,40 @@ NS_ASSUME_NONNULL_BEGIN
                                           NSInteger               totalCount,
                                           NSError  * _Nullable    error))completion;
 
+// MARK: 分组分页查询
+
+/**
+ * 按平台分页获取「去重分组」列表（每个不同的 group_name 一行）。
+ *
+ * 每条返回的 RAGameEntry 是该组的代表变体，但 name 为干净的分组名，
+ * 并带有 groupName / variantCount，可直接用于列表展示与封面匹配。
+ *
+ * @param platformId      目标平台 id
+ * @param offset/limit    分页参数
+ * @param knownTotalCount 已知分组总数（如 RAPlatformItem.groupCount）可跳过 COUNT(*)，传 0 表示未知
+ * @param completion      groups：当页分组；totalCount：分组总数；error：失败原因
+ */
+- (void)fetchGroupsForPlatformId:(NSInteger)platformId
+                          offset:(NSInteger)offset
+                           limit:(NSInteger)limit
+                 knownTotalCount:(NSInteger)knownTotalCount
+                      completion:(void (^)(NSArray<RAGameEntry *> *groups,
+                                           NSInteger               totalCount,
+                                           NSError  * _Nullable    error))completion;
+
+/**
+ * 获取某个分组下的全部变体（真实名称，含地区/版本），按名称升序。
+ * 用于让用户在一组内选择具体的某个变体。
+ *
+ * @param platformId 平台 id
+ * @param groupName  分组键（来自 RAGameEntry.groupName）
+ * @param completion variants：该组全部变体；error：失败原因
+ */
+- (void)fetchVariantsForPlatformId:(NSInteger)platformId
+                         groupName:(NSString *)groupName
+                        completion:(void (^)(NSArray<RAGameEntry *> *variants,
+                                             NSError  * _Nullable    error))completion;
+
 // MARK: 模糊搜索
 
 /**
@@ -219,7 +275,9 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param keyword    搜索关键词，支持多词（空格分隔）
  * @param platformId 限定搜索范围的平台 id；传 -1 表示跨所有平台搜索
- * @param completion games：匹配结果（最多 100 条，按相关度排序）；error：失败原因
+ * 结果会折叠成「分组」返回（每个命中分组一条代表变体），与列表保持一致。
+ *
+ * @param completion games：匹配的分组代表（最多 100 条，按最佳相关度排序）；error：失败原因
  */
 - (void)searchGamesWithKeyword:(NSString *)keyword
                     platformId:(NSInteger)platformId
@@ -235,9 +293,9 @@ NS_ASSUME_NONNULL_BEGIN
  * 同步方法，调用方需确保不在主线程直接调用。
  *
  * @param crc32 8 位小写 hex 字符串，如 "a3f2c1b0"
- * @return 匹配到的游戏条目；若无匹配返回 nil
+ * @return 匹配到的游戏条目；若无匹配返回 nil。返回值包含英文 name 与英文 groupName。
  */
-- (nullable RAGameEntry *)findGameByCRC32:(NSString *)crc32;
+- (nullable RAGameEntry *)findGameByCRC32:(NSString *)crc32 NS_SWIFT_NAME(findGame(byCRC32:));
 
 @end
 

@@ -118,6 +118,8 @@ extension GameStateTableViewCell {
 
     @objc
     private func deleteAction(_ sender: UIButton) {
+        Vibration.selection.vibrate()
+
         guard let item = item else {
             return
         }

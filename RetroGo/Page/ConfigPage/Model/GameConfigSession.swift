@@ -174,6 +174,19 @@ extension GameConfigSession {
         return setOptionalValue(column: Self.audioDriver, value: value)
     }
 
+    /// Whether a new game session restores cheats that were enabled last time.
+    /// Read/write is scoped to this `GameConfigSession`: the same entry appears
+    /// on Global/Core/Game setting pages, so the switch must reflect only the
+    /// row being edited rather than the resolved cascade.
+    func getAutoEnableCheats() -> Bool {
+        getOptionalValue(column: Self.autoEnableCheats) ?? true
+    }
+
+    @discardableResult
+    func setAutoEnableCheats(value: Bool) -> Bool {
+        setOptionalValue(column: Self.autoEnableCheats, value: value)
+    }
+
     func getMuteOnFastForward() -> Bool {
         config.muteOnFastForward
     }
@@ -612,12 +625,16 @@ extension GameConfigSession {
     static let overlayTurboTapLatch = SQLite.Expression<Bool?>("overlay_turbo_tap_latch")
     static let overlayTurboSpeed = SQLite.Expression<Int?>("overlay_turbo_speed")
 
+    // v6
+    static let autoEnableCheats = SQLite.Expression<Bool?>("auto_enable_cheats")
+
     /*
      * key, configScope, updateAt
      * v3: threadEnabled, fastForwardMultiplier
      * v4: videoDriver, audioDriver, muteOnFastForward,
      *     overlayTouchPlayer, inputBindingProfile
      * v5: toolbarLayout, overlayTurboTapLatch, overlayTurboSpeed
+     * v6: autoEnableCheats
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

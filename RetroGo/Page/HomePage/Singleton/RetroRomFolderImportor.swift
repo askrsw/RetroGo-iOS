@@ -392,6 +392,7 @@ extension RetroRomFolderImportor {
                 rawName: relativeName,
                 fileRole: groupBuilder.subRole(for: memberPath, entryPath: group.entryPath, groupType: group.type),
                 sha256: try file.sha256(),
+                crc32: try file.crc32(),
                 fileSize: file.fileSize,
                 sortIndex: index
             )
@@ -403,6 +404,7 @@ extension RetroRomFolderImportor {
             throw NSError(domain: "RetroRomError", code: 3, userInfo: [NSLocalizedDescriptionKey: group.entryPath])
         }
         let sha256 = try groupBuilder.contentSHA256(for: group, entrySubItem: entrySubItem, subItems: subItems)
+        let crc32  = try groupBuilder.contentCRC32(for: group, entrySubItem: entrySubItem, subItems: subItems)
         let item = RetroRomFileItem(
             key: key,
             rawName: itemRawName,
@@ -412,6 +414,7 @@ extension RetroRomFolderImportor {
             updateAt: Date(),
             fileSize: totalFileSize,
             sha256: sha256,
+            crc32: crc32,
             fileGroupType: group.type,
             subItems: subItems
         )
@@ -709,9 +712,10 @@ extension RetroRomFolderImportor {
             let rawName = pathAndName.name
             let parent  = parentItem.key
             let sha256 = try (fileUrl as NSURL).computeSHA256String()
+            let crc32  = try (fileUrl as NSURL).computeCRC32String()
             let resources = try fileUrl.resourceValues(forKeys: [.fileSizeKey])
             let fileSize = resources.fileSize ?? 0
-            let item = RetroRomFileItem(key: key, rawName: rawName, parent: parent, createAt: Date(), updateAt: Date(), fileSize: fileSize, sha256: sha256)
+            let item = RetroRomFileItem(key: key, rawName: rawName, parent: parent, createAt: Date(), updateAt: Date(), fileSize: fileSize, sha256: sha256, crc32: crc32)
             fileItems[p] = item
             fileItemPaths.append(p)
             return true

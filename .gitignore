@@ -101,7 +101,17 @@ OUINotifications/
 
 Main.xcconfig
 
+# 仅在重新生成游戏数据库预制库时临时放入的二进制 .rdb 源文件。
+# 制作流程：把 libretro .rdb 拷进此目录 → Discover 页 Debug「导出DB」生成 gamerdb.sqlite
+# → 取出 sqlite 后删除整个目录。这些二进制源文件不纳入版本管理。
+RetroGo/Resources/Data/rdb/
+
+# 按需资源(ODR)目录：体积较大的二进制资源(如预制游戏数据库 gamerdb.sqlite)。
+# 不纳入版本管理，需要这些文件请联系维护者(见 README)。
+/RetroGo/Resources/OnDemandRes/
+
 /LocalDocs/
 /AppStoreScreenshots/
 /Backup/
+/Tools/
 /.claude/

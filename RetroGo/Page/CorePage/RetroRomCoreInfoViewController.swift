@@ -29,7 +29,7 @@ import ObjcHelper
 import RACoordinator
 
 final class RetroRomCoreInfoViewController: UIViewController {
-    private let gamePauseToken = RetroArchGamePauseToken()
+    private var gamePauseLease: GamePauseCoordinator.Lease?
 
     let coreInfoItem: EmuCoreInfoItem
     let showCloseButton: Bool
@@ -55,6 +55,8 @@ final class RetroRomCoreInfoViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        gamePauseLease = acquireGamePause(reason: "core-info")
+        attachGamePauseLeaseToPresentation(gamePauseLease)
         view.backgroundColor = .systemBackground
         navigationItem.title = coreInfoItem.coreName
         navigationItem.titleView = makeTitleView()
@@ -67,6 +69,19 @@ final class RetroRomCoreInfoViewController: UIViewController {
 
         _ = collectionView
         applySnapshot()
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if isClosingOrBeingDismissedFromGamePauseContext() {
+            gamePauseLease?.release()
+            gamePauseLease = nil
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        attachGamePauseLeaseToPresentation(gamePauseLease)
     }
 
     func updateFirmware(_ firmware: EmuCoreFirmware) {
@@ -290,6 +305,7 @@ extension RetroRomCoreInfoViewController {
 
     @objc
     private func closeAction() {
+        Vibration.selection.vibrate()
         dismiss(animated: true)
     }
 }

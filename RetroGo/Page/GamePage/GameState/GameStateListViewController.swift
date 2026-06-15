@@ -29,7 +29,7 @@ import ObjcHelper
 import RACoordinator
 
 final class GameStateListViewController: UIViewController {
-    private let gamePauseToken = RetroArchGamePauseToken()
+    private var gamePauseLease: GamePauseCoordinator.Lease?
 
     private let tableView = UITableView(frame: .zero, style: .plain)
 
@@ -57,13 +57,15 @@ final class GameStateListViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        gamePauseLease = acquireGamePause(reason: "game-state-list")
+        attachGamePauseLeaseToPresentation(gamePauseLease)
 
         view.backgroundColor = .systemBackground
         navigationItem.title = Bundle.localizedString(forKey: "gamestate_load_state")
 
         if showClose {
-            navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark.circle"), landscapeImagePhone: UIImage(systemName: "xmark.circle"), style: .plain, target: self, action: #selector(closeAction(_:)))
-            navigationItem.leftBarButtonItem?.tintColor = .mainColor
+            navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "xmark"), landscapeImagePhone: UIImage(systemName: "xmark.circle"), style: .plain, target: self, action: #selector(closeAction(_:)))
+            navigationItem.leftBarButtonItem?.tintColor = .label
         }
 
         tableView.dataSource = self
@@ -82,16 +84,22 @@ final class GameStateListViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        attachGamePauseLeaseToPresentation(gamePauseLease)
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
 
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+
+        if isClosingOrBeingDismissedFromGamePauseContext() {
+            gamePauseLease?.release()
+            gamePauseLease = nil
+        }
     }
 
     func deleteGameState(_ item: RetroRomGameStateItem) {
@@ -140,6 +148,7 @@ extension GameStateListViewController {
 
     @objc
     private func closeAction(_ sender: Any) {
+        Vibration.selection.vibrate()
         navigationController?.dismiss(animated: true)
     }
 
@@ -182,6 +191,8 @@ extension GameStateListViewController: UITableViewDataSource, UITableViewDelegat
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+
+        Vibration.selection.vibrate()
 
         activeTextField?.resignFirstResponder()
         activeTextField = nil

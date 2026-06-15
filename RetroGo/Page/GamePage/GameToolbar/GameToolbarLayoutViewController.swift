@@ -42,9 +42,9 @@ final class GameToolbarLayoutViewController: UIViewController {
     private var pinned: [GameToolbarAction]
     private var overflow: [GameToolbarAction]
 
-    /// Pauses the game while the layout editor is on screen; resumed on deinit
-    /// when it's dismissed.
-    private let gamePauseToken = RetroArchGamePauseToken()
+    /// Pauses the game while the layout editor is on screen; released from a
+    /// known dismissal lifecycle point instead of ARC deinit.
+    private var gamePauseLease: GamePauseCoordinator.Lease?
 
     init() {
         let actions = GameConfigSession.globalToolbarActions()
@@ -59,6 +59,8 @@ final class GameToolbarLayoutViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        gamePauseLease = acquireGamePause(reason: "toolbar-layout")
+        attachGamePauseLeaseToPresentation(gamePauseLease)
 
         view.backgroundColor = .systemBackground
         navigationItem.title = Bundle.localizedString(forKey: "gamepage_toolbar_layout_title")
@@ -78,6 +80,19 @@ final class GameToolbarLayoutViewController: UIViewController {
         _ = tableView
         tableView.setEditing(true, animated: false)
         updateRestoreButtonState()
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if isClosingOrBeingDismissedFromGamePauseContext() {
+            gamePauseLease?.release()
+            gamePauseLease = nil
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        attachGamePauseLeaseToPresentation(gamePauseLease)
     }
 
     /// Restore only makes sense once the user has customized the order — disable
@@ -159,6 +174,7 @@ extension GameToolbarLayoutViewController {
         case .lockLandscape: return .systemCyan
         case .setting:       return .systemGray
         case .restart:       return .systemOrange
+        case .cheat:         return .cheatIconColor
         }
     }
 }

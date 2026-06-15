@@ -25,8 +25,9 @@
 
 #import "NSURL+Extension.h"
 #import <CommonCrypto/CommonCrypto.h>
+#import <zlib.h>
 
-@implementation NSURL (SHA256)
+@implementation NSURL (Extension)
 
 - (nullable NSString *)computeSHA256String:(NSError **)error {
     // 确保是文件 URL
@@ -74,6 +75,40 @@
     }
 
     return [output copy];
+}
+
+- (nullable NSString *)computeCRC32String:(NSError **)error {
+    if (!self.isFileURL) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"NSURLCRC32ErrorDomain" code:1001 userInfo:@{NSLocalizedDescriptionKey: @"URL must be a file URL"}];
+        }
+        return nil;
+    }
+
+    NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingFromURL:self error:error];
+    if (!fileHandle) {
+        return nil;
+    }
+
+    uLong crc = crc32(0L, Z_NULL, 0);
+
+    const NSUInteger bufferSize = 1024 * 1024;
+    BOOL done = NO;
+
+    while (!done) {
+        @autoreleasepool {
+            NSData *data = [fileHandle readDataOfLength:bufferSize];
+            if (data.length == 0) {
+                done = YES;
+            } else {
+                crc = crc32(crc, data.bytes, (uInt)data.length);
+            }
+        }
+    }
+
+    [fileHandle closeFile];
+
+    return [NSString stringWithFormat:@"%08X", (uint32_t)crc];
 }
 
 @end

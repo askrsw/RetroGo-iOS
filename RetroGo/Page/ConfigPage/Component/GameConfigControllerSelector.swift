@@ -179,6 +179,8 @@ extension GameConfigControllerSelector: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
 
+        Vibration.selection.vibrate()
+
         if indexPath.section == 0 {
             let needsInsertConfigItem = oldSelectedIndex == nil
 
