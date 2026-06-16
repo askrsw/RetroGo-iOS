@@ -114,5 +114,21 @@
 			<string>%d Items</string>
 		</dict>
 	</dict>
+	<key>cheat_catalog_count_format</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@num_items@</string>
+		<key>num_items</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>1 cheat</string>
+			<key>other</key>
+			<string>%d cheats</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

@@ -429,7 +429,8 @@
 "cheat_template_section_count_format" = "%@ · %d";
 "cheat_template_footer"         = "System templates may not match this ROM perfectly. If a cheat crashes or behaves incorrectly, search and use another template.";
 "cheat_user_section"            = "User Added";
-"cheat_empty_tip"               = "No cheats yet\nTap + to add one";
+"cheat_empty_title"             = "No cheats yet";
+"cheat_empty_body"              = "Tap %@ to create your own, or %@ to search system templates";
 "cheat_core_unsupported"        = "This core does not support cheats";
 "cheat_delete"                  = "Delete";
 
@@ -493,6 +494,7 @@
 "cheat_catalog_title"              = "Cheat Templates";
 "cheat_catalog_search_placeholder" = "Search game names";
 "cheat_catalog_match_section"      = "Matched Game";
+"cheat_catalog_featured_section"   = "Popular Games";
 "cheat_catalog_template_section"   = "Cheat Templates";
 "cheat_catalog_match_footer"       = "Search by Chinese or English game name. System matches may not fit every ROM.";
 "cheat_catalog_matched_crc_format" = "Matched by CRC32 %@";
@@ -500,7 +502,11 @@
 "cheat_catalog_current_template_format" = "%@ · %@";
 "cheat_catalog_binding_auto"       = "Auto-bound";
 "cheat_catalog_binding_manual"     = "Manual";
-"cheat_catalog_count_format"       = "%d cheats";
+"cheat_catalog_unbind"             = "Unbind";
+"cheat_catalog_copy_to_user"       = "Create Editable Copy";
+"cheat_catalog_copy_failed"        = "Couldn't create a copy. Please try again.";
+"cheat_catalog_unbind_confirm_title" = "Unbind template?";
+"cheat_catalog_unbind_confirm_message" = "This stops showing the system template for this ROM and won't auto-rebind on next launch. You can still search for and bind another template anytime.";
 "cheat_catalog_empty"              = "No cheat templates for this platform";
 "cheat_catalog_search_empty"       = "No matching games";
 "cheat_catalog_game_empty"         = "No cheat templates for this game";

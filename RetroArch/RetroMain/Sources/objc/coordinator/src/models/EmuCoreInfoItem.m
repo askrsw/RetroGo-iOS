@@ -521,7 +521,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
 
 - (nullable NSDictionary *)loadExtraCoreInfo {
     NSString *jsonFileName = [NSString stringWithFormat:@"%@_extra", _coreId];
-    NSString *jsonFilePath = [[NSBundle mainBundle] pathForResource:jsonFileName ofType:@"json" inDirectory:@"Data/jsons"];
+    NSString *jsonFilePath = [[NSBundle mainBundle] pathForResource:jsonFileName ofType:@"json" inDirectory:@"Data/jsons/core"];
 
     NSData *jsonData = [NSData dataWithContentsOfFile:jsonFilePath];
 

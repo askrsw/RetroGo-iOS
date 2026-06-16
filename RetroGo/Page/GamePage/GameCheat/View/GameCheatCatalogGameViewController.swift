@@ -195,8 +195,9 @@ extension GameCheatCatalogGameViewController: UITableViewDataSource, UITableView
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        Vibration.selection.vibrate()
         navigationController?.pushViewController(
-            GameCheatCatalogDetailViewController(cheat: cheats[indexPath.row]),
+            GameCheatCatalogDetailViewController(cheat: cheats[indexPath.row], session: session),
             animated: true)
     }
 

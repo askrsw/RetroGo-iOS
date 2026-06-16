@@ -120,6 +120,7 @@
 		ABAF587B2FDB128500E8E870 /* GameCheatCatalogGameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAF587A2FDB128500E8E870 /* GameCheatCatalogGameViewController.swift */; };
 		ABAF587D2FDB129200E8E870 /* GameCheatCatalogDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAF587C2FDB129200E8E870 /* GameCheatCatalogDetailViewController.swift */; };
 		ABAF58812FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAF58802FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift */; };
+		ABCEA7A12FE10000DEADBEEF /* GameCheatFeaturedCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCEA7A02FE10000DEADBEEF /* GameCheatFeaturedCatalog.swift */; };
 		ABB2F0772FB09F95006A40C0 /* AppStorePurchaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB2F0762FB09F95006A40C0 /* AppStorePurchaseViewController.swift */; };
 		ABB34DCA2F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = ABB34DC92F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy */; };
 		ABB6F6E42FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB6F6E32FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift */; };
@@ -310,6 +311,7 @@
 		ABAF587A2FDB128500E8E870 /* GameCheatCatalogGameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatCatalogGameViewController.swift; sourceTree = "<group>"; };
 		ABAF587C2FDB129200E8E870 /* GameCheatCatalogDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatCatalogDetailViewController.swift; sourceTree = "<group>"; };
 		ABAF58802FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatTemplateAutoBinder.swift; sourceTree = "<group>"; };
+		ABCEA7A02FE10000DEADBEEF /* GameCheatFeaturedCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatFeaturedCatalog.swift; sourceTree = "<group>"; };
 		ABB2F0762FB09F95006A40C0 /* AppStorePurchaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorePurchaseViewController.swift; sourceTree = "<group>"; };
 		ABB34DC92F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ABB6F6E32FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmuCoreInfoItem+Extension.swift"; sourceTree = "<group>"; };
@@ -635,6 +637,7 @@
 				AB8905D72FD34CFA00CA9DEC /* GameCheatItem.swift */,
 				AB8905DB2FD34D1100CA9DEC /* GameCheatSession.swift */,
 				ABAF58802FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift */,
+				ABCEA7A02FE10000DEADBEEF /* GameCheatFeaturedCatalog.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -1009,6 +1012,7 @@
 				AB55BC782F3B8B4300569A84 /* AppSettings.swift in Sources */,
 				AB70DD922FBCF69200277B74 /* DiscoverPlatformViewController.swift in Sources */,
 				AB8905D82FD34CFB00CA9DEC /* GameCheatItem.swift in Sources */,
+				ABCEA7A12FE10000DEADBEEF /* GameCheatFeaturedCatalog.swift in Sources */,
 				AB70DD932FBCF69200277B74 /* DiscoverPlatformCell.swift in Sources */,
 				ABDAD28A2F3BB5CA004100A9 /* RetroRomMameFirmwareTipViewCell.swift in Sources */,
 				ABDAD28C2F3BB5E5004100A9 /* RetroRomCoreInfoViewController.swift in Sources */,

@@ -288,6 +288,27 @@ final class GameCheatSession {
         return true
     }
 
+    /// Explicitly unbinds the current system template. Recorded as a manual
+    /// no-match so the launch-time auto-binder won't re-attach the same (wrong)
+    /// template at this catalog version; a future cheat.sqlite version still gets
+    /// a fresh lookup. User-created cheats are untouched.
+    @discardableResult
+    func unbindTemplate() -> Bool {
+        let version = RACheatCatalogManager.shared().currentDBUserVersion
+        guard Self.upsertTemplateUnbind(
+            romKey: game.key,
+            coreId: core.coreId,
+            cheatDBVersion: version
+        ) else {
+            return false
+        }
+        _ = Self.deleteTemplateStates(romKey: game.key, coreId: core.coreId)
+        reloadTemplateBinding()
+        templateItems = []
+        pushToEngine()
+        return true
+    }
+
     // MARK: - Engine bridge
 
     /// Rebuilds the engine cheat list from the immutable system template rows
@@ -517,6 +538,35 @@ extension GameCheatSession {
                 self.catalogPlatformId <- catalogPlatformId,
                 self.catalogGroupName <- catalogGroupName,
                 self.catalogGameName <- catalogGameName,
+                cheatDBUserVersion <- cheatDBVersion,
+                createAt <- now,
+                updateAt <- now
+            ))
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    /// Persists a manual no-match (status 0, origin manual) for the current
+    /// catalog version. Mirrors the auto-binder's no-match row but flags it as
+    /// user-driven, which keeps the auto-binder from re-binding until the
+    /// cheat.sqlite version changes.
+    @discardableResult
+    static func upsertTemplateUnbind(romKey: String,
+                                     coreId: String,
+                                     cheatDBVersion: Int) -> Bool {
+        let now = Date()
+        do {
+            try RetroRomPersistence.sqlite.run(templateBindingTable.insert(or: .replace,
+                self.romKey <- romKey,
+                self.coreId <- coreId,
+                templateStatus <- 0,
+                templateBindingOrigin <- GameCheatTemplateBindingOrigin.manual.rawValue,
+                catalogGameId <- nil,
+                catalogPlatformId <- nil,
+                catalogGroupName <- nil,
+                catalogGameName <- nil,
                 cheatDBUserVersion <- cheatDBVersion,
                 createAt <- now,
                 updateAt <- now

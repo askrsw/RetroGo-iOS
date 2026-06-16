@@ -37,6 +37,7 @@ final class GameCheatCatalogBrowserViewController: UIViewController {
 
     private enum Section {
         case match
+        case featured
         case templates
     }
 
@@ -50,6 +51,7 @@ final class GameCheatCatalogBrowserViewController: UIViewController {
     private let pageSize = 50
 
     private var infoRows: [MatchInfoRow] = []
+    private var featuredGames: [RAGameEntry] = []
     private var games: [RAGameEntry] = []
     private var totalCount = 0
     private var keyword = ""
@@ -89,6 +91,7 @@ final class GameCheatCatalogBrowserViewController: UIViewController {
         configureEmptyLabel()
         bindSearch()
         reload(keyword: "")
+        loadFeatured()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -173,7 +176,8 @@ final class GameCheatCatalogBrowserViewController: UIViewController {
     }
 
     private func updateEmptyState() {
-        guard infoRows.isEmpty, games.isEmpty, !isLoading else {
+        let featuredVisible = keyword.isEmpty && !featuredGames.isEmpty
+        guard infoRows.isEmpty, games.isEmpty, !featuredVisible, !isLoading else {
             tableView.backgroundView = nil
             return
         }
@@ -193,7 +197,31 @@ final class GameCheatCatalogBrowserViewController: UIViewController {
     }
 
     private var sections: [Section] {
-        infoRows.isEmpty ? [.templates] : [.match, .templates]
+        var result: [Section] = []
+        if !infoRows.isEmpty { result.append(.match) }
+        // The featured highlight is a discovery aid for the full alphabetical
+        // list, so it only makes sense while not actively searching.
+        if keyword.isEmpty, !featuredGames.isEmpty { result.append(.featured) }
+        result.append(.templates)
+        return result
+    }
+
+    private func loadFeatured() {
+        let names = GameCheatFeaturedCatalog.featuredGameNames(forPlatformIds: platformIds)
+        guard !names.isEmpty else { return }
+        RACheatCatalogManager.shared().fetchFeaturedGames(
+            forPlatformIds: platformIds,
+            gameNames: names
+        ) { [weak self] games, error in
+            guard let self else { return }
+            if let error {
+                print("[CheatCatalog] failed to load featured games: \(error)")
+                return
+            }
+            self.featuredGames = games
+            self.tableView.reloadData()
+            self.updateEmptyState()
+        }
     }
 
     private func reloadMatchInfo() {
@@ -266,6 +294,8 @@ extension GameCheatCatalogBrowserViewController: UITableViewDataSource, UITableV
         switch sections[section] {
         case .match:
             return infoRows.count
+        case .featured:
+            return featuredGames.count
         case .templates:
             return games.count
         }
@@ -277,24 +307,39 @@ extension GameCheatCatalogBrowserViewController: UITableViewDataSource, UITableV
         switch sections[indexPath.section] {
         case .match:
             configureInfoCell(cell, row: infoRows[indexPath.row])
+        case .featured:
+            configureGameCell(cell, game: featuredGames[indexPath.row])
         case .templates:
-            let game = games[indexPath.row]
-            (cell as? GameCheatCatalogTextCell)?.configure(
-                text: game.localizedDisplayNameWithVariantSuffix,
-                secondaryText: secondaryText(for: game),
-                secondaryNumberOfLines: 2)
-            cell.selectionStyle = .default
-            cell.accessoryType = .disclosureIndicator
+            configureGameCell(cell, game: games[indexPath.row])
         }
         return cell
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard sections[indexPath.section] == .templates else { return }
-        let game = games[indexPath.row]
+        let game: RAGameEntry
+        switch sections[indexPath.section] {
+        case .featured:
+            Vibration.selection.vibrate()
+            game = featuredGames[indexPath.row]
+        case .templates:
+            Vibration.selection.vibrate()
+            game = games[indexPath.row]
+        case .match:
+            return
+        }
         let controller = GameCheatCatalogGameViewController(platformId: game.platformId, game: game, session: session)
         navigationController?.pushViewController(controller, animated: true)
+    }
+
+    private func configureGameCell(_ cell: UITableViewCell, game: RAGameEntry) {
+        (cell as? GameCheatCatalogTextCell)?.configure(
+            text: game.localizedDisplayNameWithVariantSuffix,
+            secondaryText: secondaryText(for: game),
+            secondaryNumberOfLines: 2)
+        cell.selectionStyle = .default
+        cell.accessoryView = nil
+        cell.accessoryType = .disclosureIndicator
     }
 
     func tableView(_ tableView: UITableView,
@@ -307,11 +352,15 @@ extension GameCheatCatalogBrowserViewController: UITableViewDataSource, UITableV
     }
 
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch sections[section] {
+        let current = sections[section]
+        switch current {
         case .match:
             return Bundle.localizedString(forKey: "cheat_catalog_match_section")
+        case .featured:
+            return Bundle.localizedString(forKey: "cheat_catalog_featured_section")
         case .templates:
-            return infoRows.isEmpty ? nil : Bundle.localizedString(forKey: "cheat_catalog_template_section")
+            // No header when the template list is the only/first section.
+            return sections.first == .templates ? nil : Bundle.localizedString(forKey: "cheat_catalog_template_section")
         }
     }
 
@@ -321,18 +370,18 @@ extension GameCheatCatalogBrowserViewController: UITableViewDataSource, UITableV
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        // When the match section is present, give the actual template list a
-        // little more breathing room so the helper footer and next title don't
-        // visually collapse into one dense block.
-        guard sections[section] == .templates, !infoRows.isEmpty else {
-            return UITableView.automaticDimension
+        // Only the match section carries a helper footer. Give whatever section
+        // follows it extra top spacing so the footer and the next header don't
+        // collapse into one dense block; sections with no footer above them keep
+        // the default tight spacing.
+        if section > 0, sections[section - 1] == .match {
+            return 52
         }
-        return 52
+        return UITableView.automaticDimension
     }
 
     private func secondaryText(for game: RAGameEntry) -> String {
-        let countFormat = Bundle.localizedString(forKey: "cheat_catalog_count_format")
-        let countText = String(format: countFormat, game.cheatCount)
+        let countText = Bundle.localizedString(forKey: "homepage_location_selector_item_count", count: game.cheatCount)
         if let english = game.authoritativeEnglishNameForDisplay, !english.isEmpty {
             return "\(english)\n\(countText)"
         }
@@ -342,6 +391,7 @@ extension GameCheatCatalogBrowserViewController: UITableViewDataSource, UITableV
     private func configureInfoCell(_ cell: UITableViewCell, row: MatchInfoRow) {
         cell.selectionStyle = .none
         cell.accessoryType = .none
+        cell.accessoryView = nil
         switch row {
         case .gamerdb(let entry, let crc32):
             (cell as? GameCheatCatalogTextCell)?.configure(
@@ -363,7 +413,50 @@ extension GameCheatCatalogBrowserViewController: UITableViewDataSource, UITableV
                 text: title,
                 secondaryText: status,
                 secondaryNumberOfLines: 2)
+            cell.accessoryView = makeUnbindButton()
         }
+    }
+
+    private func makeUnbindButton() -> UIButton {
+        let button = UIButton(type: .system)
+        let config = UIImage.SymbolConfiguration(textStyle: .title2)
+        button.setImage(UIImage(systemName: "xmark.circle", withConfiguration: config), for: .normal)
+        button.tintColor = .systemRed
+        // Icon-only, so keep the text label for assistive tech.
+        button.accessibilityLabel = Bundle.localizedString(forKey: "cheat_catalog_unbind")
+        button.addAction(UIAction { [weak self] action in
+            Vibration.selection.vibrate()
+            self?.confirmUnbind(from: action.sender as? UIView)
+        }, for: .touchUpInside)
+        button.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
+        return button
+    }
+
+    private func confirmUnbind(from sourceView: UIView?) {
+        guard let session, session.templateBinding?.isBound == true else { return }
+        let alert = UIAlertController(
+            title: Bundle.localizedString(forKey: "cheat_catalog_unbind_confirm_title"),
+            message: Bundle.localizedString(forKey: "cheat_catalog_unbind_confirm_message"),
+            preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(
+            title: Bundle.localizedString(forKey: "cheat_catalog_unbind"),
+            style: .destructive) { [weak self] _ in
+                Vibration.selection.vibrate()
+                self?.session?.unbindTemplate()
+                self?.reloadMatchInfo()
+            })
+        alert.addAction(UIAlertAction(
+            title: Bundle.localizedString(forKey: "cancel"),
+            style: .cancel))
+        // Anchor the action sheet's arrow on the tapped Unbind button (iPad /
+        // regular-width popover presentation).
+        if let popover = alert.popoverPresentationController {
+            let anchor = sourceView ?? tableView
+            popover.sourceView = anchor
+            popover.sourceRect = anchor.bounds
+            popover.permittedArrowDirections = .any
+        }
+        present(alert, animated: true)
     }
 
     private func matchedGameSecondaryText(entry: RAGameEntry, crc32: String) -> String {
@@ -396,6 +489,7 @@ final class GameCheatCatalogTextCell: UITableViewCell {
         titleLabel.text = nil
         secondaryLabel.attributedText = nil
         secondaryLabel.text = nil
+        accessoryView = nil
     }
 
     func configure(text: String,

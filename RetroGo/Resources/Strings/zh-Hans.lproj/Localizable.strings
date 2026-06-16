@@ -431,7 +431,8 @@
 "cheat_template_section_count_format" = "%@ · %d";
 "cheat_template_footer"         = "系统模板不保证与当前 ROM 百分百匹配。如果金手指导致异常或无效，可以搜索并使用其他模板。";
 "cheat_user_section"            = "用户添加";
-"cheat_empty_tip"               = "还没有金手指\n点击右上角 + 添加";
+"cheat_empty_title"             = "还没有金手指";
+"cheat_empty_body"              = "点击 %@ 自己新建，或点击 %@ 搜索系统金手指模板";
 "cheat_core_unsupported"        = "当前核心不支持金手指";
 "cheat_delete"                  = "删除";
 
@@ -495,6 +496,7 @@
 "cheat_catalog_title"              = "金手指模板";
 "cheat_catalog_search_placeholder" = "搜索游戏名";
 "cheat_catalog_match_section"      = "匹配游戏";
+"cheat_catalog_featured_section"   = "热门游戏";
 "cheat_catalog_template_section"   = "金手指模板";
 "cheat_catalog_match_footer"       = "可使用中文名或英文名搜索其他金手指模板。系统匹配不保证完全适配当前 ROM。";
 "cheat_catalog_matched_crc_format" = "通过 CRC32 %@ 匹配";
@@ -502,7 +504,11 @@
 "cheat_catalog_current_template_format" = "%@ · %@";
 "cheat_catalog_binding_auto"       = "自动绑定";
 "cheat_catalog_binding_manual"     = "手动绑定";
-"cheat_catalog_count_format"       = "%d 个金手指";
+"cheat_catalog_unbind"             = "解除绑定";
+"cheat_catalog_copy_to_user"       = "创建可编辑副本";
+"cheat_catalog_copy_failed"        = "创建副本失败，请重试。";
+"cheat_catalog_unbind_confirm_title" = "解除模板绑定？";
+"cheat_catalog_unbind_confirm_message" = "解除后将不再为当前 ROM 显示该系统模板，且下次进入游戏不会自动重新绑定。你仍可随时搜索并绑定其他模板。";
 "cheat_catalog_empty"              = "当前平台暂无金手指模板";
 "cheat_catalog_search_empty"       = "没有找到匹配的游戏";
 "cheat_catalog_game_empty"         = "该游戏暂无金手指模板";

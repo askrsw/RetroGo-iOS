@@ -252,6 +252,86 @@ static BOOL p_isSpecialTemplateName(NSString *name);
     });
 }
 
+- (void)fetchFeaturedGamesForPlatformIds:(NSArray<NSNumber *> *)platformIds
+                               gameNames:(NSArray<NSString *> *)gameNames
+                              completion:(void (^)(NSArray<RAGameEntry *> *games,
+                                                   NSError * _Nullable error))completion {
+    if (platformIds.count == 0 || gameNames.count == 0) {
+        completion(@[], nil);
+        return;
+    }
+    NSArray<NSNumber *> *ids = [platformIds copy];
+    NSArray<NSString *> *names = [gameNames copy];
+    dispatch_async(d_dbQueue, ^{
+        NSError *error = nil;
+        NSMutableString *pidPlaceholders = [NSMutableString string];
+        for (NSUInteger i = 0; i < ids.count; i++) {
+            if (i > 0) { [pidPlaceholders appendString:@","]; }
+            [pidPlaceholders appendString:@"?"];
+        }
+        NSMutableString *namePlaceholders = [NSMutableString string];
+        for (NSUInteger i = 0; i < names.count; i++) {
+            if (i > 0) { [namePlaceholders appendString:@","]; }
+            [namePlaceholders appendString:@"?"];
+        }
+
+        // game_name is unique within the featured set, so look results up by
+        // name and re-emit in the caller's order (SQL IN(...) loses order).
+        NSMutableDictionary<NSString *, RAGameEntry *> *byName =
+            [NSMutableDictionary dictionaryWithCapacity:names.count];
+        NSString *sqlPlain = [NSString stringWithFormat:
+            @"SELECT g.id, g.platform_id, g.platform, g.game_name, g.group_name, "
+            @"       NULL AS loc_name, 0 AS loc_source, COUNT(ch.id) AS cheat_count "
+            @"FROM game g "
+            @"JOIN cheat ch ON ch.game_id = g.id "
+            @"WHERE g.platform_id IN (%@) AND g.game_name IN (%@) "
+            @"GROUP BY g.id;", pidPlaceholders, namePlaceholders];
+        NSString *sqlLoc = [NSString stringWithFormat:
+            @"SELECT g.id, g.platform_id, g.platform, g.game_name, g.group_name, "
+            @"       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source, COUNT(ch.id) AS cheat_count "
+            @"FROM game g "
+            @"JOIN cheat ch ON ch.game_id = g.id "
+            @"LEFT JOIN loc.name_loc l ON l.platform_id = g.platform_id "
+            @"                         AND l.group_name = g.group_name "
+            @"                         AND l.lang = 'zh' AND l.is_primary = 1 "
+            @"WHERE g.platform_id IN (%@) AND g.game_name IN (%@) "
+            @"GROUP BY g.id;", pidPlaceholders, namePlaceholders];
+        sqlite3_stmt *stmt = NULL;
+        const char *sql = (d_hasLocalization ? sqlLoc : sqlPlain).UTF8String;
+        if (d_db && sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
+            int bind = 1;
+            for (NSNumber *pid in ids) {
+                sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)pid.integerValue);
+            }
+            for (NSString *name in names) {
+                sqlite3_bind_text(stmt, bind++, name.UTF8String, -1, SQLITE_TRANSIENT);
+            }
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                RAGameEntry *entry = [self p_gameFromStmt:stmt];
+                if (entry.name.length > 0) {
+                    byName[entry.name] = entry;
+                }
+            }
+        } else {
+            error = [self p_error:@"cheat featured games prepare failed"];
+        }
+        sqlite3_finalize(stmt);
+
+        NSMutableArray<RAGameEntry *> *games = [NSMutableArray arrayWithCapacity:names.count];
+        if (!error) {
+            for (NSString *name in names) {
+                RAGameEntry *entry = byName[name];
+                if (entry) { [games addObject:entry]; }
+            }
+        }
+
+        NSArray *copy = [games copy];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(copy, error);
+        });
+    });
+}
+
 - (void)fetchCheatsForPlatformId:(NSInteger)platformId
                        groupName:(NSString *)groupName
                       completion:(void (^)(NSArray<RACheatItem *> *cheats,

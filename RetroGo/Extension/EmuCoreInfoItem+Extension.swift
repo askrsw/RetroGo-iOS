@@ -39,7 +39,9 @@ extension EmuCoreInfoItem {
         case "game_boy":
             return [3, 5]
         case "game_boy_advance":
-            return [3, 5, 4]
+            // GBA is the primary platform; list it first so the featured
+            // catalog section and auto-binding prefer it over GB/GBC compat.
+            return [4, 3, 5]
         case "super_nes":
             return [13, 3, 5]
         case "nintendo_64":
