@@ -9,32 +9,11 @@
     "elements": [
         {
             "id": "left-dpad",
-            "type": "dpad",
+            "type": "directional",
             "geometry": {
                 "size": { "width": 130, "height": 130 },
                 "plain_portrait_layout": { "left": 25, "bottom": 230 },
                 "plain_landscape_layout": { "left": 22.5, "bottom": 80 }
-            }
-        },
-        {
-            "id": "left-stick",
-            "type": "stick",
-            "geometry": {
-                "size": { "width": 130, "height": 130 },
-                "plain_portrait_layout": { "left": 25, "bottom": 230 },
-                "plain_landscape_layout": { "left": 22.5, "bottom": 80 }
-            },
-            "meta": {
-                "is_hidden": true
-            }
-        },
-        {
-            "id": "digital-analog-switch",
-            "type": "digital-analog-switch",
-            "geometry": {
-                "size": { "width": 20, "height": 20 },
-                "plain_portrait_layout": { "left": 25, "bottom": 360 },
-                "plain_landscape_layout": { "left": 25, "bottom": 210 }
             }
         },
         {
@@ -208,4 +187,3 @@
         }
     ]
 }
-

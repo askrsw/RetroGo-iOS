@@ -46,7 +46,7 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
 
     private var dpad: GameOverlayDirectionPad?
     private var stick: GameOverlayThumbStick?
-    private var dpadStickSwitch: GameOverlayDpadStickSwitch?
+    private var directionalControl: GameOverlayDirectionalControl?
     private var overlayCollapseButton: GameOverlayCollapseButton?
     private var actionButtons: [GameOverlayActionButton] = []
     private var fastButton: GameOverLayFastButton?
@@ -65,8 +65,6 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     private var overlayCollapsed: Bool?
     private var collapseVisualStates: [ObjectIdentifier: CollapseVisualState] = [:]
     private var isAnimatingCollapse = false
-
-    private var dpadOrStick: GameOverlayDpadStickSwitch.`Type`?
 
     init(size: CGSize, config: GamePageOverlayConfig, supportsAnalog: Bool, theme: GameOverlayTheme = .default) {
         self.config = config
@@ -168,7 +166,7 @@ extension GamePageOverlayScene {
         }
 
         let shouldUpdatePosition = !(overlayCollapsed ?? false)
-        let nodes: [GameOverlayElementLayout] = [dpad, stick, dpadStickSwitch, ndsLayoutButton, n64CButton, fastButton].compactMap({ $0 }) + actionButtons
+        let nodes: [GameOverlayElementLayout] = [directionalControl, dpad, stick, ndsLayoutButton, n64CButton, fastButton].compactMap({ $0 }) + actionButtons
         layout(nodes: nodes, shouldUpdatePosition: shouldUpdatePosition, basePostion: basePostion)
     }
 
@@ -199,8 +197,8 @@ extension GamePageOverlayScene {
             return makeDPadNode(element: element)
         case .stick:
             return makeStickNode(element: element)
-        case .digitalAnalogSwitch:
-            return makeDigitalAnalogSwithNode(element: element)
+        case .directional:
+            return makeDirectionalNode(element: element)
         case .button:
             return makeButtonNode(element: element)
         case .fastButton:
@@ -218,13 +216,6 @@ extension GamePageOverlayScene {
         let node = GameOverlayDirectionPad(element: element, theme: theme) { code, down in
             RetroArchX.shared().send(code, down: down)
         }
-        node.isHidden = { [weak self] in
-            if let v = self?.dpadOrStick {
-                return v == .stick
-            } else {
-                return element.isHidden
-            }
-        }()
         self.dpad = node
         return node
     }
@@ -241,49 +232,24 @@ extension GamePageOverlayScene {
                 RetroArchX.shared().send(code, down: down)
             })
         }
-        node.isHidden = { [weak self] in
-            if let v = self?.dpadOrStick {
-                return v == .dpad
-            } else {
-                return element.isHidden
-            }
-        }()
         self.stick = node
         return node
     }
 
-    private func makeDigitalAnalogSwithNode(element: GamePageOverlayElement) -> SKNode {
-        let type: GameOverlayDpadStickSwitch.`Type`
-        if let dpadOrStick {
-            type = dpadOrStick
-            switch type {
-                case .dpad:
-                    dpad?.isHidden = false
-                    stick?.isHidden = true
-                case .stick:
-                    dpad?.isHidden = true
-                    stick?.isHidden = false
+    private func makeDirectionalNode(element: GamePageOverlayElement) -> SKNode {
+        let node = GameOverlayDirectionalControl(
+            element: element,
+            supportsAnalog: supportsAnalog,
+            theme: theme,
+            digitalHandler: { code, down in
+                RetroArchX.shared().send(code, down: down)
+            },
+            analogHandler: { x, y in
+                RetroArchX.shared().send(.leftX, value: x)
+                RetroArchX.shared().send(.leftY, value: y)
             }
-        } else if let dpad, dpad.isHidden == false {
-            type = .dpad
-        } else {
-            type = .stick
-        }
-
-        let node = GameOverlayDpadStickSwitch(element: element, theme: theme) { [weak self] v in
-            guard let self = self else { return }
-            switch v {
-                case .dpad:
-                    dpad?.isHidden = false
-                    stick?.isHidden = true
-                case .stick:
-                    dpad?.isHidden = true
-                    stick?.isHidden = false
-            }
-            dpadOrStick = v
-        }
-        node.applyType(type)
-        self.dpadStickSwitch = node
+        )
+        self.directionalControl = node
         return node
     }
 

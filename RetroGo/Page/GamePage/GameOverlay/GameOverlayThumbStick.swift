@@ -36,6 +36,16 @@ final class GameOverlayThumbStick: SKNode, GameOverlayElementLayout {
 
     private let originalStateAction = SKAction.move(to: .zero, duration: 0)
 
+    // Dynamic-stick drag state. The base follows the finger past the ring edge
+    // (anchored to its laid-out home) and springs back on release.
+    private static let springBackDuration: TimeInterval = 0.12
+    private static let maxBaseTravelRatio: CGFloat = 1.0
+
+    private var activeTouch: UITouch?
+    private var homePosition: CGPoint = .zero
+    private let baseZPosition: CGFloat = 0
+    private let positionActionKey = "stickBasePosition"
+
     private var touching: Bool = false {
         didSet {
             guard touching != oldValue else { return }
@@ -107,7 +117,11 @@ final class GameOverlayThumbStick: SKNode, GameOverlayElementLayout {
 
         let newPosition = CGPoint(x: r.midX, y: r.midY)
         if shouldUpdatePosition {
-            self.position = newPosition
+            // A live drag owns `position`; record the home it should spring back to.
+            homePosition = newPosition
+            if activeTouch == nil {
+                self.position = newPosition
+            }
         }
         return newPosition
     }
@@ -115,51 +129,92 @@ final class GameOverlayThumbStick: SKNode, GameOverlayElementLayout {
     // MARK: - Touch event process
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            touching = true
+        guard activeTouch == nil, let touch = touches.first else { return }
+        activeTouch = touch
 
-            let touchPoint = touch.location(in: self)
-            indicator.position = touchPoint
+        // Cancel any in-flight spring-back and resume from the true resting state,
+        // so a rapid re-press doesn't anchor mid-animation or creep the z-order.
+        // `homePosition` is maintained by layout; `baseZPosition` is the resting z.
+        removeAction(forKey: positionActionKey)
+        position = homePosition
+        zPosition = baseZPosition + 1
 
-            if digitalHandler != nil, analogHandler == nil {
-                updateDigitalIfNeeded(touchPoint)
-            }
-
-            if analogHandler != nil, digitalHandler == nil {
-                updateAnalogIfNeeded(touchPoint)
-            }
-        }
+        touching = true
+        process(touch)
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            touching = true
-
-            let touchPoint = touch.location(in: self)
-            indicator.position = touchPoint
-
-            if digitalHandler != nil, analogHandler == nil {
-                updateDigitalIfNeeded(touchPoint)
-            }
-
-            if analogHandler != nil, digitalHandler == nil {
-                updateAnalogIfNeeded(touchPoint)
-            }
-        }
+        guard let activeTouch, touches.contains(activeTouch) else { return }
+        touching = true
+        process(activeTouch)
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        touching = false
-        sendAnalogZeroIfNeeded()
+        guard let activeTouch, touches.contains(activeTouch) else { return }
+        endDrag()
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let activeTouch, touches.contains(activeTouch) else { return }
+        endDrag()
+    }
+
+    /// Releases any in-progress drag immediately (no spring animation). Used when
+    /// the stick is hidden out from under the finger, e.g. a form switch.
+    func cancelActiveTouch() {
+        guard activeTouch != nil else { return }
+        activeTouch = nil
+        removeAction(forKey: positionActionKey)
+        position = homePosition
+        zPosition = baseZPosition
         touching = false
         sendAnalogZeroIfNeeded()
     }
 }
 
 extension GameOverlayThumbStick {
+    private func process(_ touch: UITouch) {
+        guard let parent = parent else { return }
+        let finger = touch.location(in: parent)
+        let v = CGPoint(x: finger.x - homePosition.x, y: finger.y - homePosition.y)
+        let len = sqrt(v.x * v.x + v.y * v.y)
+
+        // Base trails the finger once it passes the ring edge, capped so it can't
+        // wander across the screen onto other controls.
+        var base = homePosition
+        if len > radius, len > 0 {
+            let over = min(len - radius, radius * Self.maxBaseTravelRatio)
+            base = CGPoint(x: homePosition.x + over * v.x / len, y: homePosition.y + over * v.y / len)
+        }
+        position = base
+
+        // Thumb sits under the finger in local space; its constraint clamps to radius.
+        indicator.position = CGPoint(x: finger.x - base.x, y: finger.y - base.y)
+
+        // Input value is measured from home: direction follows the finger and
+        // magnitude clamps at the ring, regardless of how far the base trailed.
+        if digitalHandler != nil, analogHandler == nil {
+            updateDigitalIfNeeded(v)
+        }
+        if analogHandler != nil, digitalHandler == nil {
+            updateAnalogIfNeeded(v)
+        }
+    }
+
+    private func endDrag() {
+        activeTouch = nil
+        touching = false
+        sendAnalogZeroIfNeeded()
+
+        let back = SKAction.move(to: homePosition, duration: Self.springBackDuration)
+        back.timingMode = .easeOut
+        let restoreZ = SKAction.run { [weak self] in
+            guard let self else { return }
+            self.zPosition = self.baseZPosition
+        }
+        run(.sequence([back, restoreZ]), withKey: positionActionKey)
+    }
+
     private func updateRadius(_ radius: CGFloat) {
         self.radius = radius
         self.smallRaidusSquare = radius * 0.2 * radius * 0.2

@@ -40,7 +40,6 @@ final class GameOverlayDirectionPad: SKNode, GameOverlayElementLayout {
     }
 
     private(set) var radius: CGFloat = 0
-    private var smallRaidusSquare: CGFloat = 0
 
     private let shape  = SKShapeNode()
     private let circle = SKShapeNode()
@@ -96,6 +95,7 @@ final class GameOverlayDirectionPad: SKNode, GameOverlayElementLayout {
     let allowsDiagonalInput: Bool
     let digitalHandler: GameOverlayButtonDigitalChanged?
     private let theme: GameOverlayTheme
+    private var activeTouch: UITouch?
 
     init(element: GamePageOverlayElement, allowsDiagonalInput: Bool = true, theme: GameOverlayTheme = .default, digitalHandler: GameOverlayButtonDigitalChanged?) {
         self.element = element
@@ -176,22 +176,25 @@ final class GameOverlayDirectionPad: SKNode, GameOverlayElementLayout {
     // MARK: - Touch event process
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            updateStatus(for: touch.location(in: self))
-        }
+        guard activeTouch == nil, let touch = touches.first else { return }
+        activeTouch = touch
+        updateStatus(for: touch.location(in: self))
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let touch = touches.first {
-            updateStatus(for: touch.location(in: self))
-        }
+        guard let activeTouch, touches.contains(activeTouch) else { return }
+        updateStatus(for: activeTouch.location(in: self))
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let activeTouch, touches.contains(activeTouch) else { return }
+        self.activeTouch = nil
         status = GameOverlayDirectionMask.none
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let activeTouch, touches.contains(activeTouch) else { return }
+        self.activeTouch = nil
         status = GameOverlayDirectionMask.none
     }
 }
@@ -232,26 +235,57 @@ extension GameOverlayDirectionPad {
             }
         }
 
-        updateCardinalStatus(for: touchPoint)
-    }
-
-    private func updateCardinalStatus(for touchPoint: CGPoint) {
         if upRect.contains(touchPoint) {
             status = GameOverlayDirectionMask.up
-        } else if rightRect.contains(touchPoint) {
+            return
+        }
+        if rightRect.contains(touchPoint) {
             status = GameOverlayDirectionMask.right
-        } else if downRect.contains(touchPoint) {
+            return
+        }
+        if downRect.contains(touchPoint) {
             status = GameOverlayDirectionMask.down
-        } else if leftRect.contains(touchPoint) {
+            return
+        }
+        if leftRect.contains(touchPoint) {
             status = GameOverlayDirectionMask.left
+            return
+        }
+
+        // No precise zone matched. If the finger has drifted beyond the pad, keep
+        // producing a direction from the angle so input doesn't drop; inside the
+        // pad (a gap or the dead center) stay neutral as before.
+        if touchPoint.x * touchPoint.x + touchPoint.y * touchPoint.y > radius * radius {
+            status = directionMask(forAngleAt: touchPoint)
         } else {
             status = GameOverlayDirectionMask.none
         }
     }
 
+    private func directionMask(forAngleAt p: CGPoint) -> UInt {
+        let angle = atan2(p.y, p.x)
+        let pi = CGFloat.pi
+        if allowsDiagonalInput {
+            // Eight 45° sectors centered on each cardinal / diagonal direction.
+            if angle >= -pi / 8 && angle < pi / 8 { return GameOverlayDirectionMask.right }
+            if angle >= pi / 8 && angle < 3 * pi / 8 { return GameOverlayDirectionMask.up | GameOverlayDirectionMask.right }
+            if angle >= 3 * pi / 8 && angle < 5 * pi / 8 { return GameOverlayDirectionMask.up }
+            if angle >= 5 * pi / 8 && angle < 7 * pi / 8 { return GameOverlayDirectionMask.up | GameOverlayDirectionMask.left }
+            if angle >= 7 * pi / 8 || angle < -7 * pi / 8 { return GameOverlayDirectionMask.left }
+            if angle >= -7 * pi / 8 && angle < -5 * pi / 8 { return GameOverlayDirectionMask.down | GameOverlayDirectionMask.left }
+            if angle >= -5 * pi / 8 && angle < -3 * pi / 8 { return GameOverlayDirectionMask.down }
+            return GameOverlayDirectionMask.down | GameOverlayDirectionMask.right
+        } else {
+            // Four 90° quadrants.
+            if angle >= -pi / 4 && angle < pi / 4 { return GameOverlayDirectionMask.right }
+            if angle >= pi / 4 && angle < 3 * pi / 4 { return GameOverlayDirectionMask.up }
+            if angle >= 3 * pi / 4 || angle < -3 * pi / 4 { return GameOverlayDirectionMask.left }
+            return GameOverlayDirectionMask.down
+        }
+    }
+
     private func updateRadius(_ radius: CGFloat) {
         self.radius = radius
-        self.smallRaidusSquare = radius * 0.2 * radius * 0.2
 
         let shapePath = makeShpae(radius)
         shape.path = shapePath.cgPath
@@ -286,28 +320,6 @@ extension GameOverlayDirectionPad {
         downRightRect = CGRect(x: delta, y: -delta - diagSize, width: diagSize, height: diagSize)
         downLeftRect = CGRect(x: -delta - diagSize, y: -delta - diagSize, width: diagSize, height: diagSize)
         upLeftRect = CGRect(x: -delta - diagSize, y: delta, width: diagSize, height: diagSize)
-    }
-
-    private func checkTouchType(_ pos: CGPoint) {
-        let sum = pos.x * pos.x + pos.y * pos.y
-        if sum < smallRaidusSquare {
-            status = GameOverlayDirectionMask.none
-            return
-        }
-
-        let angle = atan2(pos.y, pos.x)
-        let M_PI = CGFloat.pi
-        if -M_PI/4 <= angle && angle <= M_PI/4 {
-            status = GameOverlayDirectionMask.right
-        } else if M_PI/4 <= angle && angle <= 3*M_PI/4 {
-            status = GameOverlayDirectionMask.up
-        } else if angle >= 3*M_PI/4 || angle <= -3*M_PI/4 {
-            status = GameOverlayDirectionMask.left
-        } else if -3*M_PI/4 <= angle && angle <= -M_PI/4 {
-            status = GameOverlayDirectionMask.down
-        } else {
-            status = GameOverlayDirectionMask.none
-        }
     }
 
     private func makeTriangle(_ radius: CGFloat) -> UIBezierPath {

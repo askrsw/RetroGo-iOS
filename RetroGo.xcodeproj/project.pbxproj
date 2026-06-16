@@ -30,6 +30,7 @@
 		AB3D70382F7D49F70008A6AA /* GamePageOverlayScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D70372F7D49F70008A6AA /* GamePageOverlayScene.swift */; };
 		AB3D703C2F7D4FEA0008A6AA /* GameOverlayDirectionPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D703B2F7D4FEA0008A6AA /* GameOverlayDirectionPad.swift */; };
 		AB3D703E2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D703D2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift */; };
+		AB3D70412F7D503D0008A6AA /* GameOverlayDirectionalControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D70402F7D503D0008A6AA /* GameOverlayDirectionalControl.swift */; };
 		AB3D70402F7D53260008A6AA /* GameOverlayThumbStick.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D703F2F7D53260008A6AA /* GameOverlayThumbStick.swift */; };
 		AB3D70422F7D57610008A6AA /* GameOverlayButtonShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D70412F7D57610008A6AA /* GameOverlayButtonShape.swift */; };
 		AB3D70442F7D57760008A6AA /* GameOverlayActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D70432F7D57760008A6AA /* GameOverlayActionButton.swift */; };
@@ -61,6 +62,8 @@
 		AB5D01822F813F8000C7081D /* RetroRomImportGroupBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5D01812F813F8000C7081D /* RetroRomImportGroupBuilder.swift */; };
 		AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */; };
 		AB6378A22F7E6394001E1152 /* GameOverlayN64CButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */; };
+		AB63BBC42FE0F431002EABFA /* emu.fceumm in Frameworks */ = {isa = PBXBuildFile; productRef = AB63BBC32FE0F431002EABFA /* emu.fceumm */; };
+		AB63BBC52FE0F440002EABFA /* emu.fceumm in Embed Frameworks */ = {isa = PBXBuildFile; productRef = AB63BBC32FE0F431002EABFA /* emu.fceumm */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AB69E2FE2F4EB4D800C532EE /* RetroRomEmptyTipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB69E2FD2F4EB4D800C532EE /* RetroRomEmptyTipView.swift */; };
 		AB6F0E772F86682100282818 /* XMLTextRenderKit in Frameworks */ = {isa = PBXBuildFile; productRef = AB6F0E762F86682100282818 /* XMLTextRenderKit */; };
 		AB70DD8E2FBCE9C300277B74 /* OnDemandResourceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB70DD8D2FBCE9C300277B74 /* OnDemandResourceLoader.swift */; };
@@ -126,7 +129,6 @@
 		ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */; };
 		ABBC8B182F5E5690007E1669 /* MoltenVK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ABDAD2B22F3BC5A2004100A9 /* MoltenVK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABBDE0212F860010004A6469 /* WhatsNewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABBDE0202F860005004A6469 /* WhatsNewViewController.swift */; };
-		ABBFDEAE2FDF2FF700689948 /* emu.fceumm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABC0BDCE2FAF831A004A6A40 /* AppStorePurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC0BDCD2FAF831A004A6A40 /* AppStorePurchaseManager.swift */; };
 		ABC1EF152FD89D0000D73BDD /* gamerdb.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = ABC1EF142FD89D0000D73BDD /* gamerdb.sqlite */; settings = {ASSET_TAGS = ("game-db", ); }; };
 		ABCAFE010000000000000002 /* GameToolbarAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCAFE010000000000000001 /* GameToolbarAction.swift */; };
@@ -180,7 +182,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				ABBFDEAE2FDF2FF700689948 /* emu.fceumm.framework in CopyFiles */,
 				AB11A55F2F9941BF00C32E39 /* emu.dosbox-pure.framework in CopyFiles */,
 				AB11A5612F9941BF00C32E39 /* emu.gambatte.framework in CopyFiles */,
 				AB11A5622F9941BF00C32E39 /* emu.gearboy.framework in CopyFiles */,
@@ -203,6 +204,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				AB63BBC52FE0F440002EABFA /* emu.fceumm in Embed Frameworks */,
 				ABBC8B182F5E5690007E1669 /* MoltenVK.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -221,6 +223,7 @@
 		AB3D70372F7D49F70008A6AA /* GamePageOverlayScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageOverlayScene.swift; sourceTree = "<group>"; };
 		AB3D703B2F7D4FEA0008A6AA /* GameOverlayDirectionPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayDirectionPad.swift; sourceTree = "<group>"; };
 		AB3D703D2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayDpadStickSwitch.swift; sourceTree = "<group>"; };
+		AB3D70402F7D503D0008A6AA /* GameOverlayDirectionalControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayDirectionalControl.swift; sourceTree = "<group>"; };
 		AB3D703F2F7D53260008A6AA /* GameOverlayThumbStick.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayThumbStick.swift; sourceTree = "<group>"; };
 		AB3D70412F7D57610008A6AA /* GameOverlayButtonShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayButtonShape.swift; sourceTree = "<group>"; };
 		AB3D70432F7D57760008A6AA /* GameOverlayActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayActionButton.swift; sourceTree = "<group>"; };
@@ -386,6 +389,7 @@
 				ABDAD2682F3BABF5004100A9 /* SnapKit in Frameworks */,
 				AB7720652F3B1B31004F5B75 /* RACoordinator in Frameworks */,
 				ABDAD2782F3BB429004100A9 /* YYText in Frameworks */,
+				AB63BBC42FE0F431002EABFA /* emu.fceumm in Frameworks */,
 				AB6F0E772F86682100282818 /* XMLTextRenderKit in Frameworks */,
 				ABA8F9682FBDB3CF0002B89D /* Kingfisher in Frameworks */,
 				ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */,
@@ -694,6 +698,7 @@
 				AB3D703B2F7D4FEA0008A6AA /* GameOverlayDirectionPad.swift */,
 				AB3D703F2F7D53260008A6AA /* GameOverlayThumbStick.swift */,
 				AB3D703D2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift */,
+				AB3D70402F7D503D0008A6AA /* GameOverlayDirectionalControl.swift */,
 				AB3D70472F7D876A0008A6AA /* GameOverlayCollapseButton.swift */,
 				AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */,
 				AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */,
@@ -898,6 +903,7 @@
 				ABDAD2772F3BB429004100A9 /* YYText */,
 				AB6F0E762F86682100282818 /* XMLTextRenderKit */,
 				ABA8F9672FBDB3CF0002B89D /* Kingfisher */,
+				AB63BBC32FE0F431002EABFA /* emu.fceumm */,
 			);
 			productName = RetroGo;
 			productReference = ABD42B502F3A5EFC008B1771 /* RetroGo.app */;
@@ -952,6 +958,7 @@
 				ABDAD2662F3BABF5004100A9 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				AB6F0E752F86682100282818 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */,
 				AB94AACD2FBDB1990046B830 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				AB63BBC22FE0F431002EABFA /* XCLocalSwiftPackageReference "../../Working/RetroArchX/Packages/RetroCores/fceumm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ABD42B512F3A5EFC008B1771 /* Products */;
@@ -1034,6 +1041,7 @@
 				AB94AAC42FBD90190046B830 /* DiscoverGameCell.swift in Sources */,
 				AB9E788D2FC4E71A00266281 /* RetroRomFolderTreeSubview.swift in Sources */,
 				AB3D703E2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift in Sources */,
+				AB3D70412F7D503D0008A6AA /* GameOverlayDirectionalControl.swift in Sources */,
 				AB92D8752F97A452001BE44F /* DebugDataLink.swift in Sources */,
 				ABAF58792FDB127400E8E870 /* GameCheatCatalogBrowserViewController.swift in Sources */,
 				ABD88AB32F94A27C00C37012 /* GameConfigDescView.swift in Sources */,
@@ -1429,6 +1437,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		AB63BBC22FE0F431002EABFA /* XCLocalSwiftPackageReference "../../Working/RetroArchX/Packages/RetroCores/fceumm" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../Working/RetroArchX/Packages/RetroCores/fceumm;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1477,6 +1492,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */;
 			productName = Defaults;
+		};
+		AB63BBC32FE0F431002EABFA /* emu.fceumm */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = emu.fceumm;
 		};
 		AB6F0E762F86682100282818 /* XMLTextRenderKit */ = {
 			isa = XCSwiftPackageProductDependency;
