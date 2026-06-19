@@ -133,6 +133,7 @@
 		ABC0BDCE2FAF831A004A6A40 /* AppStorePurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABC0BDCD2FAF831A004A6A40 /* AppStorePurchaseManager.swift */; };
 		ABC1EF152FD89D0000D73BDD /* gamerdb.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = ABC1EF142FD89D0000D73BDD /* gamerdb.sqlite */; settings = {ASSET_TAGS = ("game-db", ); }; };
 		ABCAFE010000000000000002 /* GameToolbarAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCAFE010000000000000001 /* GameToolbarAction.swift */; };
+		ABCAFE010000000000000011 /* NetplayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCAFE010000000000000010 /* NetplayViewController.swift */; };
 		ABCAFE010000000000000004 /* GameToolbarLayoutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCAFE010000000000000003 /* GameToolbarLayoutViewController.swift */; };
 		ABCDEF022FD9000000000001 /* RAGameEntry+DisplayName.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABCDEF012FD9000000000001 /* RAGameEntry+DisplayName.swift */; };
 		ABD42B842F3A66E7008B1771 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD42B792F3A66E7008B1771 /* AppDelegate.swift */; };
@@ -336,6 +337,7 @@
 		ABC0BDCD2FAF831A004A6A40 /* AppStorePurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorePurchaseManager.swift; sourceTree = "<group>"; };
 		ABC1EF142FD89D0000D73BDD /* gamerdb.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = gamerdb.sqlite; sourceTree = "<group>"; };
 		ABCAFE010000000000000001 /* GameToolbarAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameToolbarAction.swift; sourceTree = "<group>"; };
+		ABCAFE010000000000000010 /* NetplayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetplayViewController.swift; sourceTree = "<group>"; };
 		ABCAFE010000000000000003 /* GameToolbarLayoutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameToolbarLayoutViewController.swift; sourceTree = "<group>"; };
 		ABCDEF012FD9000000000001 /* RAGameEntry+DisplayName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RAGameEntry+DisplayName.swift"; sourceTree = "<group>"; };
 		ABD42B502F3A5EFC008B1771 /* RetroGo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RetroGo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -467,11 +469,20 @@
 				AB8905D42FD34CE500CA9DEC /* GameCheat */,
 				AB77608B2FCF61280026D6F6 /* GameToolbar */,
 				AB9CDD6F2F70422B002E6A55 /* GameOverlay */,
+				ABCAFE010000000000000012 /* Netplay */,
 				ABDAD2AA2F3BBBDD004100A9 /* View */,
 				ABDAD2AB2F3BBBE8004100A9 /* GameState */,
 				AB55BC7B2F3B8BC200569A84 /* GamePageViewController.swift */,
 			);
 			path = GamePage;
+			sourceTree = "<group>";
+		};
+		ABCAFE010000000000000012 /* Netplay */ = {
+			isa = PBXGroup;
+			children = (
+				ABCAFE010000000000000010 /* NetplayViewController.swift */,
+			);
+			path = Netplay;
 			sourceTree = "<group>";
 		};
 		AB55BC7D2F3B8D2500569A84 /* HomePage */ = {
@@ -1129,6 +1140,7 @@
 				AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */,
 				AB55BC7C2F3B8BC400569A84 /* GamePageViewController.swift in Sources */,
 				ABCAFE010000000000000002 /* GameToolbarAction.swift in Sources */,
+				ABCAFE010000000000000011 /* NetplayViewController.swift in Sources */,
 				ABCAFE010000000000000004 /* GameToolbarLayoutViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

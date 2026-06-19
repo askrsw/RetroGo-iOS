@@ -12,7 +12,13 @@
 #include <utils/retro_paths.h>
 #include <utils/version.h>
 
-#define NETPLAY_MDNS_TYPE "_ra_netplay._tcp"
+/* RetroGo-specific Bonjour service type (NOT RetroArch's stock "_ra_netplay._tcp").
+ * This isolates RetroGo LAN discovery from other RetroArch-based apps on the same
+ * network so we never list/connect to a foreign host with an incompatible core or
+ * protocol. Must stay in sync with NSBonjourServices in Info.plist. */
+#define NETPLAY_MDNS_TYPE "_retrogo._tcp"
+
+void netplay_retrogo_ident(char *buf, size_t len);
 
 @interface NetplayBonjourMan : NSObject<NSNetServiceDelegate, NSNetServiceBrowserDelegate>
 
@@ -204,18 +210,11 @@ static NetplayBonjourMan *nbm_instance;
 
 - (NSData *)frontend
 {
-    char frontend_architecture_tmp[24];
-    const frontend_ctx_driver_t *frontend_drv;
-
-    frontend_drv = (const frontend_ctx_driver_t*)
-        frontend_driver_get_cpu_architecture_str(frontend_architecture_tmp,
-                                                 sizeof(frontend_architecture_tmp));
-    NSString *frontend;
-    if (frontend_drv)
-        frontend = [NSString stringWithFormat:@"%s %s", frontend_drv->ident, frontend_architecture_tmp];
-    else
-        frontend = @"N/A";
-    return [frontend dataUsingEncoding:NSUTF8StringEncoding];
+    // RetroGo advertises a "RetroGo/<app-version>/<cpu-arch>" identity here so the
+    // joining side can hard-require an identical build (see netplay_retrogo_ident).
+    char buf[128];
+    netplay_retrogo_ident(buf, sizeof(buf));
+    return [[NSString stringWithUTF8String:buf] dataUsingEncoding:NSUTF8StringEncoding];
 }
 
 - (NSData *)core
@@ -289,6 +288,27 @@ static NetplayBonjourMan *nbm_instance;
 }
 
 @end
+
+// Single source of truth for RetroGo's netplay identity: "RetroGo/<app-version>/<cpu-arch>".
+// Used both when advertising (Bonjour `frontend` field) and when the joining side
+// computes its own identity to compare — netplay requires an identical build (same
+// RetroGo version AND architecture, since cores/savestate layout can differ across
+// either). Defined non-static so the Swift bridge can call it for the local value.
+void netplay_retrogo_ident(char *buf, size_t len)
+{
+    if (!buf || len == 0)
+        return;
+
+    char arch[24];
+    const frontend_ctx_driver_t *drv = (const frontend_ctx_driver_t*)
+        frontend_driver_get_cpu_architecture_str(arch, sizeof(arch));
+    NSString *ver = [[NSBundle mainBundle]
+        objectForInfoDictionaryKey:@"CFBundleShortVersionString"] ?: @"?";
+    NSString *s = drv
+        ? [NSString stringWithFormat:@"RetroGo/%@/%s", ver, arch]
+        : [NSString stringWithFormat:@"RetroGo/%@", ver];
+    strlcpy(buf, s.UTF8String, len);
+}
 
 void netplay_mdns_publish(netplay_t *netplay)
 {

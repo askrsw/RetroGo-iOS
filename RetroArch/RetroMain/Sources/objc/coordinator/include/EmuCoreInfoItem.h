@@ -61,6 +61,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable, readonly) NSString *overlayName;
 @property(nonatomic, assign, readonly) BOOL supportsLogicThread;
 @property(nonatomic, assign, readonly) BOOL allowsDefaultTurboXYHijack;
+/* YES when the core's savestate support level is deterministic, which is the
+ * minimum requirement for netplay (and runahead). Derived from core_info. */
+@property(nonatomic, assign, readonly) BOOL supportsNetplay;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)noneCore;

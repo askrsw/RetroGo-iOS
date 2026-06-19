@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <errno.h>
+#include <string.h>
 
 #include <retro_timers.h>
 #include <time.h>
@@ -3363,6 +3365,9 @@ static int handle_connection(netplay_t *netplay, netplay_address_t *addr,
       return -1;
    }
 
+   /* RetroGo diagnostic: server accepted a TCP connection from a client. */
+   RARCH_LOG("[Netplay] server accepted connection fd=%d\n", new_fd);
+
 #define INET_TO_NETPLAY(in_addr, out_addr) \
    { \
       uint16_t *prefix = (uint16_t*)&(out_addr)->addr[10]; \
@@ -4280,6 +4285,12 @@ static void netplay_hangup(netplay_t *netplay,
 
    was_playing = connection->mode == NETPLAY_CONNECTION_PLAYING ||
       connection->mode == NETPLAY_CONNECTION_SLAVE;
+
+   /* RetroGo diagnostic: which handshake/play stage did the peer drop at?
+    * mode: 2=INIT 3=PRE_NICK 4=PRE_PASSWORD 5=PRE_INFO 6=PRE_SYNC
+    *       7=CONNECTED 8=SPECTATING 9=SLAVE 10=PLAYING */
+   RARCH_LOG("[Netplay] hangup: mode=%d is_server=%d was_playing=%d\n",
+      (int)connection->mode, netplay->is_server ? 1 : 0, was_playing ? 1 : 0);
 
    /* Report this disconnection */
    if (netplay->is_server)
@@ -6855,6 +6866,19 @@ static int init_tcp_connection(netplay_t *netplay, const struct addrinfo *addr,
       }
 #endif
 
+#ifdef SO_REUSEADDR
+      /* Allow rebinding the listen port immediately. Without this, a port left
+       * in TIME_WAIT (or otherwise not yet released) by a previous host session
+       * fails to bind with EADDRINUSE - the standard server socket convention. */
+      {
+         int reuse = 1;
+
+         if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR,
+               (const char*)&reuse, sizeof(reuse)) < 0)
+            RARCH_WARN("[Netplay] Failed to set SO_REUSEADDR on host socket.\n");
+      }
+#endif
+
       if (socket_bind(fd, (void*)addr))
       {
          if (!listen(fd, 64) && socket_nonblock(fd))
@@ -6862,12 +6886,14 @@ static int init_tcp_connection(netplay_t *netplay, const struct addrinfo *addr,
       }
       else
       {
+         /* RetroGo diagnostic: capture errno before getnameinfo can clobber it. */
+         int bind_errno = errno;
          if (!getnameinfo_retro(addr->ai_addr, addr->ai_addrlen,
                NULL, 0, port, sizeof(port), NI_NUMERICSERV))
          {
             snprintf(msg, sizeof(msg),
-               "Failed to bind port %s.",
-               port);
+               "Failed to bind port %s (family=%d errno=%d %s).",
+               port, addr->ai_family, bind_errno, strerror(bind_errno));
             _msg = msg;
          }
          else

@@ -69,6 +69,14 @@ final class GameCheatListViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func cheatStateDidChange() {
+        applySnapshot(animatingDifferences: true)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         gamePauseLease = acquireGamePause(reason: "cheat-list")
@@ -95,6 +103,16 @@ final class GameCheatListViewController: UIViewController {
         configureCollectionView()
         configureDataSource()
         applySnapshot(animatingDifferences: false)
+
+        // Entering/leaving a netplay session forces every cheat off / restores it
+        // in the session snapshot. Refresh the switches if that happens while the
+        // list is on screen (e.g. a peer leaves and the session ends).
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(cheatStateDidChange),
+            name: .gameCheatStateChanged,
+            object: nil
+        )
 
     #if DEBUG
         debugPrintROMCRC32AndRDBMatch()
@@ -352,6 +370,14 @@ extension GameCheatListViewController {
     @MainActor
     private func allowToggleCheat(isOn: Bool) -> Bool {
         guard isOn else { return true }
+        // Cheats can't be enabled during a netplay session (would desync peers).
+        // Bounce the switch back via applySnapshot and explain why. Checked before
+        // the Pro gate so the message is netplay-specific, not a paywall.
+        if RANetplayCoordinator.shared.isNetplayEnabled {
+            applySnapshot(animatingDifferences: true)
+            showNetplayCheatBlocked()
+            return false
+        }
         let allowed = AppStoreProFeatureGate.shared.requirePro(
             feature: .cheats,
             presentation: .alert,
@@ -362,6 +388,15 @@ extension GameCheatListViewController {
             applySnapshot(animatingDifferences: true)
         }
         return allowed
+    }
+
+    private func showNetplayCheatBlocked() {
+        let alert = UIAlertController(
+            title: Bundle.localizedString(forKey: "cheat_title"),
+            message: Bundle.localizedString(forKey: "netplay_cheat_blocked"),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
+        present(alert, animated: true)
     }
 
     private func debugPrintROMCRC32AndRDBMatch() {

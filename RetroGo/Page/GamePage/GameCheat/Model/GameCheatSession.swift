@@ -63,6 +63,16 @@ final class GameCheatSession {
     private(set) var templateBinding: GameCheatTemplateBinding?
     private(set) var templateItems: [RACheatItem]
 
+    /// Netplay is lockstep-deterministic and cannot sync cheats, so every cheat
+    /// must read as OFF for the duration of a session. We mirror that into the
+    /// in-memory snapshot (NOT the romcheat / template SQLite, which stay the
+    /// source of truth) so the UI — toolbar green dot and the list switches —
+    /// truthfully shows cheats as off instead of a stale "on" that does nothing.
+    /// On session end we restore exactly what was enabled before it began.
+    private var netplaySuspended = false
+    private var suspendedUserIDs: Set<String> = []
+    private var suspendedTemplateIDs: Set<Int> = []
+
     /// Runtime paths may run outside the purchase UI flow, so use the cached
     /// entitlement snapshot here. The UI gate still presents the paywall.
     private static var canEnableCheats: Bool {
@@ -85,6 +95,23 @@ final class GameCheatSession {
         self.items = items
         self.templateBinding = Self.loadTemplateBinding(romKey: game.key, coreId: core.coreId)
         self.templateItems = []
+
+        // A netplay session may already be running when this session is built
+        // (e.g. re-entering the game page); reflect it immediately, then keep in
+        // sync with start/end.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(netplayStateDidChange),
+            name: .netplayStateChanged,
+            object: nil
+        )
+        if RANetplayCoordinator.shared.isNetplayEnabled {
+            netplaySuspended = true
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     /// Whether the running core can take emulator-handled cheats at all.
@@ -123,6 +150,10 @@ final class GameCheatSession {
 
     @discardableResult
     func setEnabled(_ enabled: Bool, for item: GameCheatItem) -> Bool {
+        // Cheats can't be enabled during a netplay session (would desync peers).
+        // This is a non-destructive refusal — unlike the Pro-expiry path, it never
+        // wipes the user's saved enabled flags.
+        if enabled, RANetplayCoordinator.shared.isNetplayEnabled { return false }
         guard !enabled || Self.canEnableCheats else { return false }
         guard var found = items.first(where: { $0.id == item.id }) else { return false }
         found.enabled = enabled
@@ -131,6 +162,7 @@ final class GameCheatSession {
 
     @discardableResult
     func setTemplateEnabled(_ enabled: Bool, for item: RACheatItem) -> Bool {
+        if enabled, RANetplayCoordinator.shared.isNetplayEnabled { return false }
         guard !enabled || Self.canEnableCheats else { return false }
         guard let idx = templateItems.firstIndex(where: { $0.catalogId == item.catalogId }) else { return false }
         templateItems[idx].enabled = enabled
@@ -309,12 +341,75 @@ final class GameCheatSession {
         return true
     }
 
+    // MARK: - Netplay cheat suppression
+
+    /// Mirrors the live netplay state into the in-memory cheat snapshot. Posted
+    /// on session start/end (and peer changes) by `RANetplayCoordinator`.
+    @objc private func netplayStateDidChange() {
+        if RANetplayCoordinator.shared.isNetplayEnabled {
+            suspendCheatsForNetplay()
+        } else {
+            restoreCheatsAfterNetplay()
+        }
+    }
+
+    /// Records which cheats were enabled and forces them off in memory so the UI
+    /// reads them as off. SQLite is never touched, so the user's saved choices
+    /// survive the session and can be restored verbatim afterwards.
+    private func suspendCheatsForNetplay() {
+        guard !netplaySuspended else { return }
+        netplaySuspended = true
+        // `pushToEngine` → `normalizeNetplaySuppression` captures the currently
+        // enabled cheats into the suspended sets and clears their in-memory flags.
+        pushToEngine()
+    }
+
+    /// Re-applies the enabled state captured at session start. Reads only the
+    /// in-memory snapshot we saved; romcheat / `rom_cheat_template_state` are the
+    /// durable source and were never modified, so they already agree.
+    private func restoreCheatsAfterNetplay() {
+        guard netplaySuspended else { return }
+        netplaySuspended = false
+        let userIDs = suspendedUserIDs
+        let templateIDs = suspendedTemplateIDs
+        suspendedUserIDs = []
+        suspendedTemplateIDs = []
+        // Pro can lapse during a session; never resurrect enabled cheats without
+        // it. The list's own Pro-expiry path wipes the persisted flags later.
+        if Self.canEnableCheats {
+            for index in items.indices where userIDs.contains(items[index].id) {
+                items[index].enabled = true
+            }
+            for cheat in templateItems where templateIDs.contains(cheat.catalogId) {
+                cheat.enabled = true
+            }
+        }
+        pushToEngine()
+    }
+
+    /// While a netplay session is active, no cheat may read as enabled. This runs
+    /// at the single engine boundary so any path that turns one on (template
+    /// reload from SQLite, add) is folded into the suspended sets and cleared,
+    /// keeping the in-memory snapshot — and the UI — honestly off.
+    private func normalizeNetplaySuppression() {
+        guard netplaySuspended else { return }
+        for index in items.indices where items[index].enabled {
+            suspendedUserIDs.insert(items[index].id)
+            items[index].enabled = false
+        }
+        for cheat in templateItems where cheat.enabled {
+            suspendedTemplateIDs.insert(cheat.catalogId)
+            cheat.enabled = false
+        }
+    }
+
     // MARK: - Engine bridge
 
     /// Rebuilds the engine cheat list from the immutable system template rows
     /// followed by the user-created rows. System rows are not editable/reorderable,
     /// but their enabled flags are persisted separately.
     private func pushToEngine() {
+        normalizeNetplaySuppression()
         let bridged = templateItems + items.map(Self.makeRACheatItem(from:))
         RetroArchX.shared().setCheats(bridged, apply: true)
         // Every mutation funnels through here, so this is the one place to signal

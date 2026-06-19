@@ -175,6 +175,7 @@ extension GameToolbarLayoutViewController {
         case .setting:       return .systemGray
         case .restart:       return .systemOrange
         case .cheat:         return .cheatIconColor
+        case .netplay:       return .systemGreen
         }
     }
 }
