@@ -246,30 +246,18 @@ extension GameConfigViewController {
 }
 
 extension GameConfigViewController: UITableViewDelegate {
-    private func makeFooterView(_ text: String) -> UITableViewHeaderFooterView {
-        let footer = {
-            let viewId = "GameConfigFooterView"
-            if let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: viewId) as? GameConfigFooterView {
-                return view
-            } else {
-                return GameConfigFooterView(reuseIdentifier: viewId)
-            }
-        }()
-        footer.text = text
-        return footer
+    private func makeFooterView(_ text: String) -> RGSectionFooterView {
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionFooterView.className) as? RGSectionFooterView
+            ?? RGSectionFooterView(reuseIdentifier: RGSectionFooterView.className)
+        view.text = text
+        return view
     }
 
-    private func makeHeaderView(_ text: String) -> UITableViewHeaderFooterView {
-        let header = {
-            let viewId = "GameConfigHeaderView"
-            if let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: viewId) as? GameConfigHeaderView {
-                return view
-            } else {
-                return GameConfigHeaderView(reuseIdentifier: viewId)
-            }
-        }()
-        header.text = text
-        return header
+    private func makeHeaderView(_ text: String) -> RGSectionHeaderView {
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
+            ?? RGSectionHeaderView(reuseIdentifier: RGSectionHeaderView.className)
+        view.text = text
+        return view
     }
 
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {

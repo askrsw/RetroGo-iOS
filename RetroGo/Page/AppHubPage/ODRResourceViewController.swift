@@ -27,6 +27,14 @@ import UIKit
 import SnapKit
 import ObjcHelper
 
+private enum ODRAccessoryKind {
+    case none
+    case ready
+    case download
+    case delete
+    case loading
+}
+
 /// Lists the app's On-Demand Resources (prebuilt game DB / cheat library /
 /// localization DB, and future filter packs) with their size, install state and
 /// a download / delete action. The big optional cheat library (~130 MB) is the
@@ -210,12 +218,132 @@ final class ODRResourceViewController: UIViewController {
     }
 }
 
-private enum ODRAccessoryKind {
-    case none
-    case ready
-    case download
-    case delete
-    case loading
+extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate {
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        Section.allCases.count
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard let section = Section(rawValue: section) else { return 0 }
+        switch section {
+        case .resources: return resources.count
+        case .cache:     return 1
+        }
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard Section(rawValue: indexPath.section) == .resources else {
+            return cacheCell(tableView, indexPath: indexPath)
+        }
+        let r = resources[indexPath.row]
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: ODRResourceCell.reuseID,
+            for: indexPath) as! ODRResourceCell
+        let iconSize = CGSize(width: 28, height: 28)
+        let status = sizeString(r.approxByteSize) + " · " + statusString(for: r)
+        cell.configure(
+            icon: IconRender.shared.settingsIcon(
+                symbol: iconSymbol(for: r.id),
+                background: iconColor(for: r.id),
+                size: iconSize),
+            title: Bundle.localizedString(forKey: r.titleKey),
+            desc: Bundle.localizedString(forKey: r.descKey),
+            status: status,
+            accessory: accessoryKind(for: r))
+        return cell
+    }
+
+    private func cacheCell(_ tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {
+        let hasCache = (coverCacheSize ?? 0) > 0
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: ODRResourceCell.reuseID,
+            for: indexPath) as! ODRResourceCell
+        cell.configure(
+            icon: IconRender.shared.settingsIcon(
+                symbol: "photo.fill",
+                background: .systemPurple,
+                size: CGSize(width: 28, height: 28)),
+            title: Bundle.localizedString(forKey: "odr_cache_cover_title"),
+            desc: Bundle.localizedString(forKey: "odr_cache_cover_desc"),
+            status: coverCacheStatusString(),
+            accessory: hasCache ? .delete : .none)
+        return cell
+    }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        guard Section(rawValue: indexPath.section) == .resources else {
+            guard (coverCacheSize ?? 0) > 0 else { return }
+            Vibration.selection.vibrate()
+            confirmClearCoverCache()
+            return
+        }
+        let r = resources[indexPath.row]
+        if case .notDownloaded = loader.state(for: r) {
+            Vibration.selection.vibrate()
+            download(r)
+        }
+    }
+
+    /// Swipe-to-delete only for optional, already-installed resources.
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
+    -> UISwipeActionsConfiguration? {
+        guard Section(rawValue: indexPath.section) == .resources else {
+            guard (coverCacheSize ?? 0) > 0 else { return nil }
+            let action = UIContextualAction(
+                style: .destructive,
+                title: Bundle.localizedString(forKey: "odr_action_delete")) { [weak self] _, _, done in
+                    self?.confirmClearCoverCache()
+                    done(true)
+                }
+            return UISwipeActionsConfiguration(actions: [action])
+        }
+        let r = resources[indexPath.row]
+        guard !r.isRequired, case .ready = loader.state(for: r) else { return nil }
+        let action = UIContextualAction(
+            style: .destructive,
+            title: Bundle.localizedString(forKey: "odr_action_delete")) { [weak self] _, _, done in
+                self?.confirmDelete(r)
+                done(true)
+            }
+        return UISwipeActionsConfiguration(actions: [action])
+    }
+
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        guard let section = Section(rawValue: section) else { return nil }
+        let key: String
+        switch section {
+        case .resources: key = "odr_page_footer"
+        case .cache:     key = "odr_cache_footer"
+        }
+        return makeFooterView(Bundle.localizedString(forKey: key))
+    }
+
+    private func makeFooterView(_ text: String) -> RGSectionFooterView {
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionFooterView.className) as? RGSectionFooterView
+            ?? RGSectionFooterView(reuseIdentifier: RGSectionFooterView.className)
+        view.text = text
+        return view
+    }
+
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        UITableView.automaticDimension
+    }
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        switch section {
+            case 1: return 30
+            default: return 0
+        }
+    }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        guard Section(rawValue: section) == .cache else { return nil }
+        let spacer = UIView()
+        spacer.backgroundColor = .clear
+        return spacer
+    }
 }
 
 private final class ODRResourceCell: UITableViewCell {
@@ -334,125 +462,5 @@ private final class ODRResourceCell: UITableViewCell {
         view.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
-    }
-}
-
-extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate {
-
-    func numberOfSections(in tableView: UITableView) -> Int {
-        Section.allCases.count
-    }
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let section = Section(rawValue: section) else { return 0 }
-        switch section {
-        case .resources: return resources.count
-        case .cache:     return 1
-        }
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard Section(rawValue: indexPath.section) == .resources else {
-            return cacheCell(tableView, indexPath: indexPath)
-        }
-        let r = resources[indexPath.row]
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: ODRResourceCell.reuseID,
-            for: indexPath) as! ODRResourceCell
-        let iconSize = CGSize(width: 28, height: 28)
-        let status = sizeString(r.approxByteSize) + " · " + statusString(for: r)
-        cell.configure(
-            icon: IconRender.shared.settingsIcon(
-                symbol: iconSymbol(for: r.id),
-                background: iconColor(for: r.id),
-                size: iconSize),
-            title: Bundle.localizedString(forKey: r.titleKey),
-            desc: Bundle.localizedString(forKey: r.descKey),
-            status: status,
-            accessory: accessoryKind(for: r))
-        return cell
-    }
-
-    private func cacheCell(_ tableView: UITableView, indexPath: IndexPath) -> UITableViewCell {
-        let hasCache = (coverCacheSize ?? 0) > 0
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: ODRResourceCell.reuseID,
-            for: indexPath) as! ODRResourceCell
-        cell.configure(
-            icon: IconRender.shared.settingsIcon(
-                symbol: "photo.fill",
-                background: .systemPurple,
-                size: CGSize(width: 28, height: 28)),
-            title: Bundle.localizedString(forKey: "odr_cache_cover_title"),
-            desc: Bundle.localizedString(forKey: "odr_cache_cover_desc"),
-            status: coverCacheStatusString(),
-            accessory: hasCache ? .delete : .none)
-        return cell
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        guard Section(rawValue: indexPath.section) == .resources else {
-            guard (coverCacheSize ?? 0) > 0 else { return }
-            Vibration.selection.vibrate()
-            confirmClearCoverCache()
-            return
-        }
-        let r = resources[indexPath.row]
-        if case .notDownloaded = loader.state(for: r) {
-            Vibration.selection.vibrate()
-            download(r)
-        }
-    }
-
-    /// Swipe-to-delete only for optional, already-installed resources.
-    func tableView(_ tableView: UITableView,
-                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
-    -> UISwipeActionsConfiguration? {
-        guard Section(rawValue: indexPath.section) == .resources else {
-            guard (coverCacheSize ?? 0) > 0 else { return nil }
-            let action = UIContextualAction(
-                style: .destructive,
-                title: Bundle.localizedString(forKey: "odr_action_delete")) { [weak self] _, _, done in
-                    self?.confirmClearCoverCache()
-                    done(true)
-                }
-            return UISwipeActionsConfiguration(actions: [action])
-        }
-        let r = resources[indexPath.row]
-        guard !r.isRequired, case .ready = loader.state(for: r) else { return nil }
-        let action = UIContextualAction(
-            style: .destructive,
-            title: Bundle.localizedString(forKey: "odr_action_delete")) { [weak self] _, _, done in
-                self?.confirmDelete(r)
-                done(true)
-            }
-        return UISwipeActionsConfiguration(actions: [action])
-    }
-
-    func tableView(_ tableView: UITableView,
-                   titleForFooterInSection section: Int) -> String? {
-        guard let section = Section(rawValue: section) else { return nil }
-        switch section {
-        case .resources: return Bundle.localizedString(forKey: "odr_page_footer")
-        case .cache:     return Bundle.localizedString(forKey: "odr_cache_footer")
-        }
-    }
-
-    func tableView(_ tableView: UITableView,
-                   heightForHeaderInSection section: Int) -> CGFloat {
-        guard let section = Section(rawValue: section) else { return 0.01 }
-        switch section {
-        case .resources: return 0.01
-        case .cache:     return 40
-        }
-    }
-
-    func tableView(_ tableView: UITableView,
-                   viewForHeaderInSection section: Int) -> UIView? {
-        guard Section(rawValue: section) == .cache else { return nil }
-        let spacer = UIView()
-        spacer.backgroundColor = .clear
-        return spacer
     }
 }

@@ -117,6 +117,8 @@ final class GameCheatCatalogBrowserViewController: UIViewController {
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 72
         tableView.register(GameCheatCatalogTextCell.self, forCellReuseIdentifier: "Game")
+        tableView.register(RGSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: RGSectionHeaderView.className)
+        tableView.register(RGSectionFooterView.self, forHeaderFooterViewReuseIdentifier: RGSectionFooterView.className)
         view.addSubview(tableView)
         tableView.snp.makeConstraints { $0.edges.equalToSuperview() }
     }
@@ -351,33 +353,58 @@ extension GameCheatCatalogBrowserViewController: UITableViewDataSource, UITableV
         }
     }
 
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_ tableView: UITableView,
+                   viewForHeaderInSection section: Int) -> UIView? {
         let current = sections[section]
+        let text: String?
         switch current {
         case .match:
-            return Bundle.localizedString(forKey: "cheat_catalog_match_section")
+            text = Bundle.localizedString(forKey: "cheat_catalog_match_section")
         case .featured:
-            return Bundle.localizedString(forKey: "cheat_catalog_featured_section")
+            text = Bundle.localizedString(forKey: "cheat_catalog_featured_section")
         case .templates:
             // No header when the template list is the only/first section.
-            return sections.first == .templates ? nil : Bundle.localizedString(forKey: "cheat_catalog_template_section")
+            text = sections.first == .templates ? nil : Bundle.localizedString(forKey: "cheat_catalog_template_section")
+        }
+        guard let text else { return nil }
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
+            ?? RGSectionHeaderView(reuseIdentifier: RGSectionHeaderView.className)
+        view.text = text
+        return view
+    }
+
+    func tableView(_ tableView: UITableView,
+                   viewForFooterInSection section: Int) -> UIView? {
+        switch sections[section] {
+        case .match:
+            let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionFooterView.className) as? RGSectionFooterView
+                ?? RGSectionFooterView(reuseIdentifier: RGSectionFooterView.className)
+            view.text = Bundle.localizedString(forKey: "cheat_catalog_match_footer")
+            return view
+        case .featured:
+            let spacer = UIView()
+            spacer.backgroundColor = .clear
+            return spacer
+        case .templates:
+            return nil
         }
     }
 
-    func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        guard sections[section] == .match else { return nil }
-        return Bundle.localizedString(forKey: "cheat_catalog_match_footer")
-    }
-
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        // Only the match section carries a helper footer. Give whatever section
-        // follows it extra top spacing so the footer and the next header don't
-        // collapse into one dense block; sections with no footer above them keep
-        // the default tight spacing.
+        // The section after .match carries a footer with helper text; add extra
+        // top spacing so footer and header don't collapse into one dense block.
         if section > 0, sections[section - 1] == .match {
             return 52
         }
         return UITableView.automaticDimension
+    }
+
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        switch sections[section] {
+        case .match:    return UITableView.automaticDimension
+        case .featured: return 20
+        case .templates: return .leastNormalMagnitude
+        }
     }
 
     private func secondaryText(for game: RAGameEntry) -> String {

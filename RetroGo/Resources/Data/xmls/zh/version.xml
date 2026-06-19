@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.7.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.7.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 6 月 19 日</i>。
+        </p-paragraph>
+        <p-list id="v1.7.0" style="number">
+            <p-item>新增<b>局域网联机</b>功能：在同一 Wi-Fi 下即可开房或加入房间，通过 Bonjour 自动发现，无需配置、无需账号。联机面板实时展示玩家列表，包含昵称、角色与延迟，随时掌握房间动态。</p-item>
+            <p-item>金手指模版库新增<b>热门游戏</b>专区，为各平台精选知名游戏，快速找到常用金手指，省去逐一搜索的麻烦。</p-item>
+            <p-item>新增<b>解绑系统模版</b>功能：可手动移除当前游戏绑定的系统金手指模版，避免自动匹配器在后续会话中重复绑定同一模版。</p-item>
+            <p-item>系统模版金手指现支持<b>一键复制为可编辑的用户金手指</b>，在不影响原始模版的前提下自由修改条目内容。</p-item>
+            <p-item>模拟摇杆新增<b>动态跟手</b>效果：底座在拖动过程中始终跟随拇指移动，即使手指滑出原始触控区域，方向输入仍可持续响应。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.6.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.6.0</p-title>
         <p-paragraph fontsize="13">

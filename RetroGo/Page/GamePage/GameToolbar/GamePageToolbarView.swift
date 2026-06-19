@@ -550,7 +550,7 @@ extension GamePageToolbarView {
 #endif
 
     private func netplayAction() {
-        let controller = NetplayViewController()
+        let controller = GameNetplayViewController()
         let nav = UINavigationController(rootViewController: controller)
         holder?.present(nav, animated: true)
     }

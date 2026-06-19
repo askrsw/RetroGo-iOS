@@ -29,91 +29,6 @@ import SnapKit
 import ObjcHelper
 import RACoordinator
 
-fileprivate final class HeaderView: UITableViewHeaderFooterView {
-    let label = {
-        let label = UILabel()
-        label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .label
-        label.font = UIFont.boldSystemFont(ofSize: UIFont.labelFontSize)
-        return label
-    }()
-
-    class var className: String {
-        String(describing: Self.self)
-    }
-
-    override init(reuseIdentifier: String?) {
-        super.init(reuseIdentifier: reuseIdentifier)
-
-        contentView.backgroundColor = .systemGroupedBackground
-        contentView.addSubview(label)
-        NSLayoutConstraint.activate([
-            label.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
-        ])
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        label.preferredMaxLayoutWidth = contentView.bounds.width
-    }
-}
-
-fileprivate final class FooterView: UITableViewHeaderFooterView {
-    let label = {
-        let label = UILabel()
-        label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .secondaryLabel
-        label.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize)
-        return label
-    }()
-
-    var text: String? {
-        didSet {
-            guard let text = text else {
-                return label.attributedText = nil
-            }
-
-            let paragraphStyle = NSMutableParagraphStyle()
-            paragraphStyle.lineSpacing = 5
-            let attributes: [NSAttributedString.Key: Any] = [
-                .paragraphStyle: paragraphStyle,
-                .font: label.font!,
-                .foregroundColor: label.textColor!
-            ]
-            label.attributedText = NSAttributedString(string: text, attributes: attributes)
-        }
-    }
-
-    class var className: String {
-        String(describing: Self.self)
-    }
-
-    override init(reuseIdentifier: String?) {
-        super.init(reuseIdentifier: reuseIdentifier)
-
-        contentView.backgroundColor = .systemGroupedBackground
-        contentView.addSubview(label)
-        NSLayoutConstraint.activate([
-            label.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -26),
-            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
-        ])
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
 
 final class RetroRomCoreSelectViewController: UIViewController {
     enum Action {
@@ -245,8 +160,8 @@ extension RetroRomCoreSelectViewController {
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         tableView.register(RetroRomCoreItemTableViewCell.self, forCellReuseIdentifier: RetroRomCoreItemTableViewCell.className)
-        tableView.register(HeaderView.self, forHeaderFooterViewReuseIdentifier: HeaderView.className)
-        tableView.register(FooterView.self, forHeaderFooterViewReuseIdentifier: FooterView.className)
+        tableView.register(RGSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: RGSectionHeaderView.className)
+        tableView.register(RGSectionFooterView.self, forHeaderFooterViewReuseIdentifier: RGSectionFooterView.className)
     }
 }
 
@@ -323,22 +238,22 @@ extension RetroRomCoreSelectViewController: UITableViewDelegate {
                 return nil
             }
 
-            guard let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: HeaderView.className) as? HeaderView else {
+            guard let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView else {
                 return nil
             }
 
             switch section {
                 case .matched:
-                    view.label.text = Bundle.localizedString(forKey: "homepage_matched_core")
+                    view.text = Bundle.localizedString(forKey: "homepage_matched_core")
                 case .other:
-                    view.label.text = Bundle.localizedString(forKey: "homepage_other_core")
+                    view.text = Bundle.localizedString(forKey: "homepage_other_core")
             }
             return view
         }
     }
 
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        guard let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: FooterView.className) as? FooterView else {
+        guard let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionFooterView.className) as? RGSectionFooterView else {
             return nil
         }
 

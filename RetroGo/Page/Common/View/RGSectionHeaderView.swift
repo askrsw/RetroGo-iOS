@@ -1,5 +1,5 @@
 //
-//  GameConfigHeaderView.swift
+//  RGSectionHeaderView.swift
 //  RetroGo
 //
 //  Created by haharsw on 2026/4/28.
@@ -26,13 +26,13 @@
 import UIKit
 import SnapKit
 
-final class GameConfigHeaderView: UITableViewHeaderFooterView {
-    private lazy var label = UILabel(frame: .zero)
+final class RGSectionHeaderView: UITableViewHeaderFooterView {
+    class var className: String { String(describing: Self.self) }
+
+    private let label = UILabel()
 
     var text: String? {
-        didSet {
-            label.text = text
-        }
+        didSet { label.text = text }
     }
 
     override init(reuseIdentifier: String?) {
@@ -49,14 +49,12 @@ final class GameConfigHeaderView: UITableViewHeaderFooterView {
 
         label.font = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .semibold)
         label.textColor = .label
-        label.numberOfLines = 1
-        label.lineBreakMode = .byWordWrapping
+        label.numberOfLines = 0
 
         contentView.addSubview(label)
         label.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(12)
-            make.leading.equalToSuperview().offset(10)
-            make.trailing.equalToSuperview().offset(-10)
+            make.leading.trailing.equalToSuperview()
             make.bottom.equalToSuperview().offset(-8).priority(.high)
         }
     }

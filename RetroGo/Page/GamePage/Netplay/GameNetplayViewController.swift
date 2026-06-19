@@ -1,5 +1,5 @@
 //
-//  NetplayViewController.swift
+//  GameNetplayViewController.swift
 //  RetroGo
 //
 //  Created by haharsw on 2026/6/17.
@@ -33,7 +33,7 @@ import RACoordinator
 ///   - in-session: see the player roster (name / role / ping), toggle play/watch,
 ///     and leave. Disconnecting (here or by a peer) returns to the idle state, so
 ///     re-scanning is also the manual-reconnect path.
-final class NetplayViewController: UIViewController {
+final class GameNetplayViewController: UIViewController {
 
     // RARCH_DEFAULT_PORT (55435) is occupied on iOS at process start and collides
     // with RARCH_DISCOVERY_PORT, so host on a free port. Clients use the host's
@@ -69,7 +69,13 @@ final class NetplayViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        title = L("gamepage_toolbar_netplay")
+        navigationItem.title = L("gamepage_toolbar_netplay")
+        let titleIcon = IconRender.shared.settingsIcon(
+            symbol: "network",
+            background: .systemGreen,
+            size: CGSize(width: 28, height: 28)
+        )
+        navigationItem.titleView = Self.makeIconTitleView(Bundle.localizedString(forKey: "gamepage_toolbar_netplay"), icon: titleIcon)
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .close, target: self, action: #selector(closeTapped))
 
@@ -398,7 +404,7 @@ final class NetplayViewController: UIViewController {
 
 // MARK: - List (discovered hosts when idle, player roster when in-session)
 
-extension NetplayViewController: UITableViewDataSource, UITableViewDelegate {
+extension GameNetplayViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         isSession ? players.count : hosts.count
