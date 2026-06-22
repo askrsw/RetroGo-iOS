@@ -320,6 +320,7 @@ extension GamePageOverlayConfig {
         case saturn = "saturn"
         case ps = "ps"
         case psp = "psp"
+        case genesis = "genesis"
     }
 
     static func loadOverlayConfig(_ name: String?) -> Self {

@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "platform_labels": {
     "2": "FDS (Famicom Disk System)",
     "3": "GB (Game Boy)",
@@ -10,7 +10,8 @@
     "9": "NES",
     "10": "PS1 (PlayStation)",
     "12": "Saturn",
-    "13": "SNES"
+    "13": "SNES",
+    "17": "MD (Mega Drive / Genesis)"
   },
   "platforms": {
     "2": [
@@ -176,6 +177,23 @@
       "Super Mario World 2 - Yoshi's Island (USA)",
       "F-Zero (USA)",
       "Star Fox (USA)"
+    ],
+    "17": [
+      "Sonic The Hedgehog 2 (World) (Rev A)",
+      "Sonic The Hedgehog (USA, Europe)",
+      "Sonic The Hedgehog 3 (USA)",
+      "Streets of Rage 2 (USA)",
+      "Bare Knuckle - Ikari no Tekken _ Streets of Rage (World)",
+      "Golden Axe (World)",
+      "Contra - Hard Corps (USA, Korea)",
+      "Castlevania - Bloodlines (USA)",
+      "Gunstar Heroes (USA)",
+      "Shinobi III - Return of the Ninja Master (USA)",
+      "Phantasy Star IV (USA)",
+      "Shining Force II (USA)",
+      "Comix Zone (USA)",
+      "Altered Beast (USA, Europe)",
+      "Thunder Force III (Japan, USA)"
     ]
   }
 }

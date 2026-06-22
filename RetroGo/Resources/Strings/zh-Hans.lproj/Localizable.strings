@@ -494,6 +494,7 @@
 
 // MARK: - Cheat Catalog
 
+"cheat_catalog_update_failed"      = "金手指数据库更新失败，暂时使用旧版本";
 "cheat_catalog_title"              = "金手指模板";
 "cheat_catalog_search_placeholder" = "搜索游戏名";
 "cheat_catalog_match_section"      = "匹配游戏";
@@ -539,6 +540,7 @@
 "odr_cheat_title"               = "金手指码库";
 "odr_cheat_desc"                = "RetroArch 官方金手指离线码库，按游戏匹配可用金手指。";
 "odr_status_ready"              = "已就绪";
+"odr_status_outdated"           = "有更新";
 "odr_status_not_downloaded"     = "未下载";
 "odr_status_downloading"        = "下载中…";
 "odr_downloading_fmt"           = "下载中 %d%%";

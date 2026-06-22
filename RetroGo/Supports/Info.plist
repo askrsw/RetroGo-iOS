@@ -385,6 +385,40 @@
 				<string>application/x-ppsspp-rom</string>
 			</dict>
 		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Sega - MS/GG/MD/CD/32X (PicoDrive)</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.haharsw.pudge.picodrive</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>bin</string>
+					<string>gen</string>
+					<string>smd</string>
+					<string>md</string>
+					<string>32x</string>
+					<string>cue</string>
+					<string>iso</string>
+					<string>chd</string>
+					<string>sms</string>
+					<string>gg</string>
+					<string>sg</string>
+					<string>sc</string>
+					<string>m3u</string>
+					<string>68k</string>
+					<string>sgd</string>
+					<string>pco</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/x-picodrive-rom</string>
+			</dict>
+		</dict>
 	</array>
 	<key>InAppPurchase</key>
 	<dict>

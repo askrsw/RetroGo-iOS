@@ -230,4 +230,4 @@ extension DiscoverPlatformViewController {
         }
     }
 }
-#endif
+#endif // DEBUG

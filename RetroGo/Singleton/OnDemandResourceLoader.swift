@@ -67,7 +67,8 @@ struct ODRResource: Hashable {
 /// Install / download state of an ODR resource.
 enum ODRResourceState {
     case ready                    // installed and up to date
-    case notDownloaded
+    case outdated                 // installed but bundledVersion is newer
+    case notDownloaded            // never downloaded
     case downloading(Double)      // fractionCompleted 0…1
 }
 
@@ -83,21 +84,21 @@ final class OnDemandResourceLoader: NSObject {
             id: "gamerdb", odrTag: "game-db",
             bundleResource: "gamerdb", bundleExtension: "sqlite",
             installedFileName: "gamerdb.db",
-            approxByteSize: 71_794_688, bundledVersion: 1,
+            approxByteSize: 71_794_688, bundledVersion: 3,
             isRequired: true,
             titleKey: "odr_gamerdb_title", descKey: "odr_gamerdb_desc"),
         ODRResource(
             id: "gameloc", odrTag: "gameloc-db",
             bundleResource: "gameloc", bundleExtension: "sqlite",
             installedFileName: "gameloc.sqlite",
-            approxByteSize: 9_457_664, bundledVersion: 1,
+            approxByteSize: 9_457_664, bundledVersion: 3,
             isRequired: true,   // required: small, and language is easily toggled
             titleKey: "odr_gameloc_title", descKey: "odr_gameloc_desc"),
         ODRResource(
             id: "cheat", odrTag: "cheat-db",
             bundleResource: "cheat", bundleExtension: "sqlite",
             installedFileName: "cheat.sqlite",
-            approxByteSize: 130_015_232, bundledVersion: 1,
+            approxByteSize: 130_015_232, bundledVersion: 3,
             isRequired: false,
             titleKey: "odr_cheat_title", descKey: "odr_cheat_desc"),
     ]
@@ -140,6 +141,9 @@ final class OnDemandResourceLoader: NSObject {
         if installed >= r.bundledVersion,
            FileManager.default.fileExists(atPath: targetPath(r)) {
             return .ready
+        }
+        if installed > 0, FileManager.default.fileExists(atPath: targetPath(r)) {
+            return .outdated
         }
         return .notDownloaded
     }
@@ -288,7 +292,7 @@ final class OnDemandResourceLoader: NSObject {
 
 extension OnDemandResourceLoader {
 
-    /// 用于离线导出的 13 个 .rdb 资源名（Bundle 资源名，不含扩展名）。
+    /// 用于离线导出的 .rdb 资源名（Bundle 资源名，不含扩展名）。
     static let debugRdbNames: [String] = [
         "DOS",
         "Nintendo - Family Computer Disk System",
@@ -301,6 +305,12 @@ extension OnDemandResourceLoader {
         "Nintendo - Nintendo Entertainment System",
         "Sony - PlayStation",
         "Sony - PlayStation Portable",
+        "Sega - 32X",
+        "Sega - Game Gear",
+        "Sega - Master System - Mark III",
+        "Sega - Mega Drive - Genesis",
+        "Sega - Mega-CD - Sega CD",
+        "Sega - PICO",
         "Sega - Saturn",
         "Nintendo - Super Nintendo Entertainment System",
     ]
