@@ -44,6 +44,10 @@ enum GameToolbarAction: String, CaseIterable {
     case saveState
     case loadState
     case setting
+    // Declared after the first `maxPinned` so it defaults into the More menu
+    // (netplay is a low-frequency feature). `.medium` priority keeps it in the
+    // overflow for already-customized users too.
+    case netplay
     case restart
     case snap
     case mute
@@ -57,7 +61,7 @@ enum GameToolbarAction: String, CaseIterable {
     var priority: ToolbarPriority {
         switch self {
         case .lockLandscape, .setting, .cheat: return .high
-        case .saveState, .loadState,  .restart: return .medium
+        case .saveState, .loadState,  .restart, .netplay: return .medium
         case .snap, .mute: return .low
         }
     }
@@ -75,6 +79,7 @@ enum GameToolbarAction: String, CaseIterable {
         case .setting:       return Bundle.localizedString(forKey: "gamepage_toolbar_settings")
         case .restart:   return Bundle.localizedString(forKey: "gamepage_toolbar_restart")
         case .cheat:     return Bundle.localizedString(forKey: "cheat_title")
+        case .netplay:   return Bundle.localizedString(forKey: "gamepage_toolbar_netplay")
         }
     }
 
@@ -90,6 +95,7 @@ enum GameToolbarAction: String, CaseIterable {
         case .setting:       return "gear.circle"
         case .restart:   return "arrow.clockwise.circle"
         case .cheat:     return "star.circle"
+        case .netplay:   return "network"
         }
     }
 }

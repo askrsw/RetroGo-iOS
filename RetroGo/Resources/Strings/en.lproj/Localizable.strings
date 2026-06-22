@@ -44,6 +44,7 @@
 "gamepage_toolbar_mute" = "Mute";
 "gamepage_toolbar_unmute" = "Unmute";
 "gamepage_toolbar_settings" = "Settings";
+"gamepage_toolbar_netplay" = "Netplay";
 "gamepage_toolbar_restart" = "Restart";
 "gamepage_toolbar_pause" = "Pause";
 "gamepage_toolbar_resume" = "Resume";
@@ -429,7 +430,8 @@
 "cheat_template_section_count_format" = "%@ · %d";
 "cheat_template_footer"         = "System templates may not match this ROM perfectly. If a cheat crashes or behaves incorrectly, search and use another template.";
 "cheat_user_section"            = "User Added";
-"cheat_empty_tip"               = "No cheats yet\nTap + to add one";
+"cheat_empty_title"             = "No cheats yet";
+"cheat_empty_body"              = "Tap %@ to create your own, or %@ to search system templates";
 "cheat_core_unsupported"        = "This core does not support cheats";
 "cheat_delete"                  = "Delete";
 
@@ -493,6 +495,7 @@
 "cheat_catalog_title"              = "Cheat Templates";
 "cheat_catalog_search_placeholder" = "Search game names";
 "cheat_catalog_match_section"      = "Matched Game";
+"cheat_catalog_featured_section"   = "Popular Games";
 "cheat_catalog_template_section"   = "Cheat Templates";
 "cheat_catalog_match_footer"       = "Search by Chinese or English game name. System matches may not fit every ROM.";
 "cheat_catalog_matched_crc_format" = "Matched by CRC32 %@";
@@ -500,7 +503,11 @@
 "cheat_catalog_current_template_format" = "%@ · %@";
 "cheat_catalog_binding_auto"       = "Auto-bound";
 "cheat_catalog_binding_manual"     = "Manual";
-"cheat_catalog_count_format"       = "%d cheats";
+"cheat_catalog_unbind"             = "Unbind";
+"cheat_catalog_copy_to_user"       = "Create Editable Copy";
+"cheat_catalog_copy_failed"        = "Couldn't create a copy. Please try again.";
+"cheat_catalog_unbind_confirm_title" = "Unbind template?";
+"cheat_catalog_unbind_confirm_message" = "This stops showing the system template for this ROM and won't auto-rebind on next launch. You can still search for and bind another template anytime.";
 "cheat_catalog_empty"              = "No cheat templates for this platform";
 "cheat_catalog_search_empty"       = "No matching games";
 "cheat_catalog_game_empty"         = "No cheat templates for this game";
@@ -544,3 +551,43 @@
 "odr_cache_footer"              = "Cover cache is temporary and can be regenerated. Clearing it does not delete games or databases.";
 "odr_cache_delete_confirm_title" = "Clear cover cache?";
 "odr_cache_delete_confirm_msg"  = "Downloaded cover images will be removed to free up space. They will be downloaded again when needed.";
+
+/* Netplay */
+"netplay_host"                       = "Host";
+"netplay_stop_hosting"               = "Stop Hosting";
+"netplay_disconnect"                 = "Disconnect";
+"netplay_scan"                       = "Scan LAN";
+"netplay_discovered_hosts"           = "Discovered Hosts";
+"netplay_status_idle"                = "Not connected";
+"netplay_status_scanning"            = "Scanning LAN…";
+"netplay_status_scan_found_fmt"      = "Found %d host(s). Tap one to join.";
+"netplay_status_scan_none"           = "No hosts found. Make sure another device is hosting in a game and Local Network access is allowed.";
+"netplay_status_hosting_fmt"         = "Hosting on port %d";
+"netplay_status_host_failed"         = "Host failed: the port may be in use. Relaunch the app and try again.";
+"netplay_status_join_no_game"        = "Can't join: a game must be running on this device.";
+"netplay_status_joining_fmt"         = "Joining %@…";
+"netplay_status_connected_fmt"       = "Connected to %@";
+"netplay_status_join_ended"          = "Disconnected. Make sure both run the same game.";
+"netplay_status_connecting_slow_fmt" = "Still connecting to %@…";
+"netplay_unknown_version"            = "Unknown version";
+"netplay_version_mismatch"           = "Version mismatch";
+"netplay_game_mismatch"              = "Different game";
+"netplay_game_mismatch_msg"          = "Both players must run the same game (ROM) to play together.";
+"netplay_version_mismatch_msg_fmt"   = "Both players need the same RetroGo version. Please update to the same version from the App Store.\n\nThis device: %@\nOther: %@";
+"netplay_peer_left"                  = "A player left the session";
+"netplay_session_ended"             = "Netplay disconnected";
+"netplay_cheat_blocked"             = "Cheats can't be enabled during netplay.";
+"netplay_load_host_only"            = "Only the host can load a state during netplay.";
+"netplay_nickname"                  = "Nickname";
+"netplay_nickname_placeholder"      = "Your nickname";
+"netplay_join_as_player"            = "Join as Player";
+"netplay_join_as_spectator"         = "Spectate";
+"netplay_room_full_title"           = "Room is full";
+"netplay_room_full_msg"             = "All player slots are taken — joined as a spectator.";
+"netplay_leave"                     = "Leave Room";
+"netplay_players"                   = "Players";
+"netplay_role_host"                 = "Host";
+"netplay_role_you"                  = "You";
+"netplay_role_spectating"           = "Spectating";
+"netplay_ping_fmt"                  = "%d ms";
+"netplay_in_session_client"         = "In a room";

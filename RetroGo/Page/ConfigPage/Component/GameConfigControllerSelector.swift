@@ -231,16 +231,10 @@ extension GameConfigControllerSelector: UITableViewDelegate {
         if tableView.backgroundView != nil {
             return UITableViewHeaderFooterView(frame: .zero)
         }
-        let header = {
-            let viewId = "GameConfigHeaderView"
-            if let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: viewId) as? GameConfigHeaderView {
-                return view
-            } else {
-                return GameConfigHeaderView(reuseIdentifier: viewId)
-            }
-        }()
-        header.text = text
-        return header
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
+            ?? RGSectionHeaderView(reuseIdentifier: RGSectionHeaderView.className)
+        view.text = text
+        return view
     }
 }
 

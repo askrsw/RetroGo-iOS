@@ -61,8 +61,16 @@ final class GamePageToolbarView: UIView {
     private var savestateSupported = false
     /// Whether the running core supports cheats; gates the cheat entry.
     private var cheatSupported = false
+    /// Whether the running core supports netplay (deterministic savestates).
+    private var netplaySupported = false
     /// Green dot on the cheat bar button when at least one cheat is enabled.
     private weak var cheatBadgeView: UIView?
+    /// Green dot on the netplay bar button when a session is active (only present
+    /// when netplay is pinned to the bar).
+    private weak var netplayBadgeView: UIView?
+    /// Green dot on the More (⋯) button when a session is active AND netplay lives
+    /// in the More overflow (its default placement).
+    private weak var moreNetplayBadgeView: UIView?
 
     /// When hidden, the bar collapses to just the close + more buttons (more
     /// shows a `chevron.down.circle` and reveals every action in its menu).
@@ -95,6 +103,12 @@ final class GamePageToolbarView: UIView {
             name: .gameCheatStateChanged,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(netplayStateDidChange),
+            name: .netplayStateChanged,
+            object: nil
+        )
     }
 
     required init?(coder: NSCoder) {
@@ -113,6 +127,7 @@ final class GamePageToolbarView: UIView {
         // Cheats need both engine support AND a cheat session (the rom-item-keyed
         // store); the document-browser launch path has no session.
         cheatSupported = (holder?.cheatSession != nil) && RetroArchX.shared().cheatSupported
+        netplaySupported = RetroArchX.shared().currentCoreItem?.supportsNetplay ?? false
         rebuildToolbar()
     }
 
@@ -123,6 +138,7 @@ final class GamePageToolbarView: UIView {
         switch action {
         case .saveState, .loadState: return savestateSupported
         case .cheat:                 return cheatSupported
+        case .netplay:               return netplaySupported
         default:                     return true
         }
     }
@@ -325,6 +341,9 @@ extension GamePageToolbarView {
         if action == .cheat {
             addCheatBadge(to: button)
         }
+        if action == .netplay {
+            addNetplayBadge(to: button)
+        }
         button.sizeToFit()
         return button
     }
@@ -365,6 +384,65 @@ extension GamePageToolbarView {
     }
 }
 
+// MARK: - Netplay active badge
+
+extension GamePageToolbarView {
+    /// Whether a netplay session is currently active (hosting or connected).
+    private func netplayHasActive() -> Bool {
+        RANetplayCoordinator.shared.isNetplayEnabled
+    }
+
+    /// A reusable styled green dot, matching the cheat badge.
+    private func makeBadgeDot() -> UIView {
+        let dot = UIView()
+        dot.backgroundColor = .systemGreen
+        dot.layer.cornerRadius = Self.cheatBadgeSize / 2
+        dot.layer.borderColor = UIColor.black.withAlphaComponent(0.35).cgColor
+        dot.layer.borderWidth = 0.5
+        dot.isUserInteractionEnabled = false
+        return dot
+    }
+
+    /// Green dot on the netplay bar button (only when netplay is pinned).
+    private func addNetplayBadge(to button: UIButton) {
+        let dot = makeBadgeDot()
+        dot.isHidden = !netplayHasActive()
+        button.addSubview(dot)
+        dot.snp.makeConstraints { make in
+            make.width.height.equalTo(Self.cheatBadgeSize)
+            make.top.equalToSuperview().offset(1)
+            make.trailing.equalToSuperview().offset(-1)
+        }
+        netplayBadgeView = dot
+    }
+
+    /// Lazily attaches the More-button dot, then updates its visibility: shown when
+    /// a session is active AND netplay sits in the More overflow (its default).
+    /// When netplay is pinned, the bar button carries the dot instead.
+    private func refreshMoreNetplayBadge() {
+        if moreNetplayBadgeView == nil {
+            let dot = makeBadgeDot()
+            moreButton.addSubview(dot)
+            dot.snp.makeConstraints { make in
+                make.width.height.equalTo(Self.cheatBadgeSize)
+                make.top.equalToSuperview().offset(1)
+                make.trailing.equalToSuperview().offset(-1)
+            }
+            moreNetplayBadgeView = dot
+        }
+        let inMore = currentSplit().menu.contains(.netplay)
+        moreNetplayBadgeView?.isHidden = !(netplayHasActive() && inMore)
+    }
+
+    @objc
+    private func netplayStateDidChange() {
+        netplayBadgeView?.isHidden = !netplayHasActive()
+        // Rebuilds the More menu so the in-menu network icon reflects active state,
+        // and refreshes the More-button dot.
+        rebuildMoreMenu(currentSplit().menu)
+    }
+}
+
 // MARK: - More menu
 
 extension GamePageToolbarView {
@@ -402,12 +480,13 @@ extension GamePageToolbarView {
         sections.append(UIMenu(title: "", options: .displayInline, children: [toggleAction]))
 
         moreButton.menu = UIMenu(title: "", children: sections)
+        refreshMoreNetplayBadge()
     }
 
     private func menuAction(for action: GameToolbarAction) -> UIAction {
         let menuItem = UIAction(
             title: title(for: action),
-            image: UIImage(systemName: imageName(for: action))
+            image: menuImage(for: action)
         ) { [weak self] _ in
             self?.perform(action)
         }
@@ -415,6 +494,16 @@ extension GamePageToolbarView {
             menuItem.attributes = .disabled
         }
         return menuItem
+    }
+
+    /// Menu-row icon. A UIMenu row can't host a floating dot subview, so an active
+    /// netplay session is shown by rendering the `network` icon green instead.
+    private func menuImage(for action: GameToolbarAction) -> UIImage? {
+        let image = UIImage(systemName: imageName(for: action))
+        if action == .netplay, netplayHasActive() {
+            return image?.withTintColor(.systemGreen, renderingMode: .alwaysOriginal)
+        }
+        return image
     }
 
     /// Resolved title accounting for dynamic actions (`mute`, `lockLandscape`).
@@ -459,6 +548,12 @@ extension GamePageToolbarView {
         }
     }
 #endif
+
+    private func netplayAction() {
+        let controller = GameNetplayViewController()
+        let nav = UINavigationController(rootViewController: controller)
+        holder?.present(nav, animated: true)
+    }
 }
 
 // MARK: - Hide / show
@@ -548,6 +643,7 @@ extension GamePageToolbarView {
         case .setting:       settingAction()
         case .restart:       restartAction()
         case .cheat:         cheatAction()
+        case .netplay:       netplayAction()
         }
     }
 
@@ -577,6 +673,19 @@ extension GamePageToolbarView {
 
         let manulSavedCount = RetroRomPersistence.shared.getSavedStatesCount(romKey: holder?.romItem?.key, coreId: currentCoreItem.coreId)
         if manulSavedCount > 0, !AppStoreProFeatureGate.shared.requirePro(feature: .manualSaveSlot, presentation: .alert) {
+            return
+        }
+
+        // During a netplay session the blocking naming alert would pause the local
+        // loop and stall the peer, so save instantly with an auto (timestamp) name.
+        // The capture itself (core_serialize) is read-only and does not desync peers.
+        if RANetplayCoordinator.shared.isNetplayEnabled {
+            let rawName = DateFormatter.yyyyMMddHHmmss().string(from: Date())
+            let ret = RetroRomFileManager.shared.saveState(rawName: rawName, showName: rawName, sha256: holder?.romItem?.sha256, romKey: holder?.romItem?.key, autoSave: false)
+            let key = ret ? "gamepage_state_saved" : "gamepage_state_save_failed"
+            let str = String(format: Bundle.localizedString(forKey: key), rawName)
+            let msg = EmuInGameMessage(message: str, title: nil, type: ret ? .info : .error, duration: 3.5, priority: 0)
+            holder?.inGameInfoView.showMessage(msg)
             return
         }
 
@@ -625,6 +734,17 @@ extension GamePageToolbarView {
         Vibration.selection.vibrate()
 
         guard RetroArchX.shared().isCurrentCoreSupportsSavestate() else {
+            return
+        }
+
+        // Netplay is host-authoritative for state loading: only the host may load
+        // and broadcast a state to everyone. A client loading directly desyncs the
+        // frame counters and drops the connection, so block it on the client side.
+        let netplay = RANetplayCoordinator.shared
+        if netplay.isNetplayEnabled, !netplay.isServer {
+            let text = Bundle.localizedString(forKey: "netplay_load_host_only")
+            let msg = EmuInGameMessage(message: text, title: nil, type: .warning, duration: 3.0, priority: 0)
+            holder?.inGameInfoView.showMessage(msg)
             return
         }
 

@@ -9,33 +9,13 @@
     "elements": [
         {
             "id": "left-dpad",
-            "type": "dpad",
-            "geometry": {
-                "size": { "width": 130, "height": 130 },
-                "plain_portrait_layout": { "left": 25, "bottom": 110 },
-                "plain_landscape_layout": { "left": 22.5, "bottom": 75 }
-            }
-        },
-        {
-            "id": "left-stick",
-            "type": "stick",
+            "type": "directional",
             "geometry": {
                 "size": { "width": 130, "height": 130 },
                 "plain_portrait_layout": { "left": 25, "bottom": 110 },
                 "plain_landscape_layout": { "left": 22.5, "bottom": 75 }
             },
-            "meta": {
-                "is_hidden": true
-            }
-        },
-        {
-            "id": "digital-analog-switch",
-            "type": "digital-analog-switch",
-            "geometry": {
-                "size": { "width": 20, "height": 20 },
-                "plain_portrait_layout": { "left": 25, "bottom": 95 },
-                "plain_landscape_layout": { "left": 25, "bottom": 60 }
-            }
+            "meta": { "switch_corner": "bottom-left" }
         },
         {
             "id": "a",
@@ -44,7 +24,7 @@
                 "shape": "circle",
                 "size": { "width": 50, "height": 50 },
                 "plain_portrait_layout": { "right": 25, "bottom": 115 },
-                "plain_landscape_layout": {"right": 25, "bottom": 80 },
+                "plain_landscape_layout": { "right": 25, "bottom": 80 },
                 "polar_portrait_layout": { "theta": -270, "radius": 80 },
                 "polar_landscape_layout": { "theta": -270, "radius": 80 }
             },

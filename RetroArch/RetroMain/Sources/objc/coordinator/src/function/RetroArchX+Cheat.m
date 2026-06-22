@@ -26,6 +26,7 @@
 // Resolves (same-directory first) to the internal src/function/RetroArchX+Cheat.h,
 // which pulls in the internal RetroArchX.h exposing `gameLogicRunner`.
 #import "RetroArchX+Cheat.h"
+#import "../netplay/RANetplayCoordinator.h"
 
 #include <string.h>
 #include <core/core.h>
@@ -152,6 +153,14 @@
             return;
         }
 
+        // Netplay determinism: cheats are not synced and would desync peers, so
+        // during a session no cheat is allowed active in the engine — force every
+        // entry off here, the single boundary every push funnels through. The
+        // Swift side also clears its in-memory enabled flags for the session (so
+        // the UI reads off) and restores them on exit; this stays as the last-line
+        // engine guard in case any push slips through with a stale enabled flag.
+        BOOL netplayActive = RANetplayCoordinator.shared.isNetplayEnabled;
+
         for (unsigned i = 0; i < n; i++) {
             RACheatItem *item    = items[i];
             struct item_cheat *c = &cheat_manager_state.cheats[i];
@@ -164,7 +173,7 @@
             c->desc = strdup(desc);
             c->code = strdup(code);
 
-            c->state                 = item.enabled;
+            c->state                 = netplayActive ? false : item.enabled;
             c->handler               = (unsigned)item.handler;
             c->cheat_type            = (unsigned)item.cheatType;
             c->memory_search_size    = (unsigned)item.memorySearchSize;

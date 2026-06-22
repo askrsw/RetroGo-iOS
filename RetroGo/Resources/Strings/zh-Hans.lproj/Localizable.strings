@@ -44,6 +44,7 @@
 "gamepage_toolbar_mute" = "静音";
 "gamepage_toolbar_unmute" = "取消静音";
 "gamepage_toolbar_settings" = "设置";
+"gamepage_toolbar_netplay" = "联机";
 "gamepage_toolbar_restart" = "重启";
 "gamepage_toolbar_pause" = "暂停";
 "gamepage_toolbar_resume" = "继续";
@@ -431,7 +432,8 @@
 "cheat_template_section_count_format" = "%@ · %d";
 "cheat_template_footer"         = "系统模板不保证与当前 ROM 百分百匹配。如果金手指导致异常或无效，可以搜索并使用其他模板。";
 "cheat_user_section"            = "用户添加";
-"cheat_empty_tip"               = "还没有金手指\n点击右上角 + 添加";
+"cheat_empty_title"             = "还没有金手指";
+"cheat_empty_body"              = "点击 %@ 自己新建，或点击 %@ 搜索系统金手指模板";
 "cheat_core_unsupported"        = "当前核心不支持金手指";
 "cheat_delete"                  = "删除";
 
@@ -495,6 +497,7 @@
 "cheat_catalog_title"              = "金手指模板";
 "cheat_catalog_search_placeholder" = "搜索游戏名";
 "cheat_catalog_match_section"      = "匹配游戏";
+"cheat_catalog_featured_section"   = "热门游戏";
 "cheat_catalog_template_section"   = "金手指模板";
 "cheat_catalog_match_footer"       = "可使用中文名或英文名搜索其他金手指模板。系统匹配不保证完全适配当前 ROM。";
 "cheat_catalog_matched_crc_format" = "通过 CRC32 %@ 匹配";
@@ -502,7 +505,11 @@
 "cheat_catalog_current_template_format" = "%@ · %@";
 "cheat_catalog_binding_auto"       = "自动绑定";
 "cheat_catalog_binding_manual"     = "手动绑定";
-"cheat_catalog_count_format"       = "%d 个金手指";
+"cheat_catalog_unbind"             = "解除绑定";
+"cheat_catalog_copy_to_user"       = "创建可编辑副本";
+"cheat_catalog_copy_failed"        = "创建副本失败，请重试。";
+"cheat_catalog_unbind_confirm_title" = "解除模板绑定？";
+"cheat_catalog_unbind_confirm_message" = "解除后将不再为当前 ROM 显示该系统模板，且下次进入游戏不会自动重新绑定。你仍可随时搜索并绑定其他模板。";
 "cheat_catalog_empty"              = "当前平台暂无金手指模板";
 "cheat_catalog_search_empty"       = "没有找到匹配的游戏";
 "cheat_catalog_game_empty"         = "该游戏暂无金手指模板";
@@ -546,3 +553,43 @@
 "odr_cache_footer"              = "封面缓存属于临时数据，可重新生成；清理不会删除游戏或数据库。";
 "odr_cache_delete_confirm_title" = "清理封面缓存？";
 "odr_cache_delete_confirm_msg"  = "将删除已下载的游戏封面图片以释放空间，需要时会重新下载。";
+
+/* Netplay 联机 */
+"netplay_host"                       = "开始房间";
+"netplay_stop_hosting"               = "停止房间";
+"netplay_disconnect"                 = "断开连接";
+"netplay_scan"                       = "扫描局域网";
+"netplay_discovered_hosts"           = "发现的房间";
+"netplay_status_idle"                = "未联机";
+"netplay_status_scanning"            = "正在扫描局域网…";
+"netplay_status_scan_found_fmt"      = "发现 %d 个房间，点击加入。";
+"netplay_status_scan_none"           = "未发现房间。请确认另一台设备已在游戏中开房，并允许本地网络访问。";
+"netplay_status_hosting_fmt"         = "正在开房（端口 %d）";
+"netplay_status_host_failed"         = "开房失败：端口可能被占用，请退出 App 后重试。";
+"netplay_status_join_no_game"        = "无法加入：本机需先运行游戏。";
+"netplay_status_joining_fmt"         = "正在加入 %@…";
+"netplay_status_connected_fmt"       = "已连接到 %@";
+"netplay_status_join_ended"          = "连接已断开。请确认双方运行同一游戏。";
+"netplay_status_connecting_slow_fmt" = "仍在连接 %@…";
+"netplay_unknown_version"            = "未知版本";
+"netplay_version_mismatch"           = "版本不一致";
+"netplay_game_mismatch"              = "游戏不一致";
+"netplay_game_mismatch_msg"          = "需双方运行相同的游戏（ROM）才能联机。";
+"netplay_version_mismatch_msg_fmt"   = "需双方使用相同的 RetroGo 版本才能联机，请到 App Store 更新到同一版本。\n\n本机：%@\n对方：%@";
+"netplay_peer_left"                  = "对方已离开联机";
+"netplay_session_ended"             = "联机已断开";
+"netplay_cheat_blocked"             = "联机中无法开启金手指";
+"netplay_load_host_only"            = "联机中仅房主可读档";
+"netplay_nickname"                  = "昵称";
+"netplay_nickname_placeholder"      = "你的昵称";
+"netplay_join_as_player"            = "加入游戏";
+"netplay_join_as_spectator"         = "观战";
+"netplay_room_full_title"           = "房间玩家已满";
+"netplay_room_full_msg"             = "玩家位已满，已以观战身份加入。";
+"netplay_leave"                     = "退出房间";
+"netplay_players"                   = "玩家";
+"netplay_role_host"                 = "房主";
+"netplay_role_you"                  = "你";
+"netplay_role_spectating"           = "观战中";
+"netplay_ping_fmt"                  = "%d ms";
+"netplay_in_session_client"         = "已加入房间";

@@ -101,13 +101,14 @@ OUINotifications/
 
 Main.xcconfig
 
-# 仅在重新生成游戏数据库预制库时临时放入的二进制 .rdb 源文件。
-# 制作流程：把 libretro .rdb 拷进此目录 → Discover 页 Debug「导出DB」生成 gamerdb.sqlite
-# → 取出 sqlite 后删除整个目录。这些二进制源文件不纳入版本管理。
+# Temporary binary .rdb source files used ONLY for regenerating the game database prefabs.
+# Workflow: Copy libretro .rdb into this directory → Trigger "Export DB" via Discover page Debug
+# → Generates gamerdb.sqlite → Move sqlite out, then delete this entire directory.
+# Do NOT include these binary source files in version control (.gitignore).
 RetroGo/Resources/Data/rdb/
 
-# 按需资源(ODR)目录：体积较大的二进制资源(如预制游戏数据库 gamerdb.sqlite)。
-# 不纳入版本管理，需要这些文件请联系维护者(见 README)。
+# ODR (On-Demand Resources) Directory: For large binary assets like the preset game database (gamerdb.sqlite).
+# Not tracked by Git. Please reach out to the project maintainer if you need these files (refer to README).
 /RetroGo/Resources/OnDemandRes/
 
 /LocalDocs/
@@ -115,3 +116,6 @@ RetroGo/Resources/Data/rdb/
 /Backup/
 /Tools/
 /.claude/
+
+AGENTS.md
+CLAUDE.md

@@ -165,7 +165,7 @@ private extension GameConfigBindingOverlayScene {
     func makeNode(for element: GamePageOverlayElement) -> SKNode? {
         let node: SKNode?
         switch element.type {
-        case .dpad:
+        case .dpad, .directional:
             let dpad = GameOverlayDirectionPad(element: element, allowsDiagonalInput: false, theme: overlayTheme) { [weak self] code, down in
                 guard down else { return }
                 Vibration.selection.vibrate()
@@ -392,7 +392,7 @@ private extension GameConfigBindingOverlayScene {
             return .text(labels.joined(separator: "+"))
         }
 
-        if element.isNative || element.type == .dpad || element.type == .n64CButton || element.type == .ndsLayoutButton {
+        if element.isNative || element.type == .dpad || element.type == .directional || element.type == .n64CButton || element.type == .ndsLayoutButton {
             let code = presenter.bindingJoypadCode(for: actionId)
             guard code != .none else { return nil }
             guard let displayName = bindingDisplayNames[code] else { return nil }
@@ -423,7 +423,7 @@ private extension GameConfigBindingOverlayScene {
 
         let element = node.element
         let code = presenter.bindingJoypadCode(for: actionId)
-        if element.isNative || element.type == .dpad || element.type == .n64CButton {
+        if element.isNative || element.type == .dpad || element.type == .directional || element.type == .n64CButton {
             guard code != .none else { return nil }
             return .joypad(code)
         }
@@ -523,7 +523,7 @@ private extension GameConfigBindingOverlayScene {
     }
 
     func isPhysicalSourceUsedByNativeOverlayBindings(_ sourceIdentifier: String) -> Bool {
-        for element in config.elements where element.isNative || element.type == .dpad {
+        for element in config.elements where element.isNative || element.type == .dpad || element.type == .directional {
             for bind in element.binds {
                 let code = bind.code
                 guard code != .none else { continue }

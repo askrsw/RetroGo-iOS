@@ -52,6 +52,9 @@ final class GameCheatListViewController: UIViewController {
     private let showClose: Bool
 
     private var collectionView: UICollectionView!
+    /// Set when returning from "create editable copy" so the freshly added user
+    /// cheat is scrolled into view once this list reappears.
+    private var pendingScrollUserId: String?
     private var dataSource: UICollectionViewDiffableDataSource<Section, RowID>!
     private let tipLabel = UILabel(frame: .zero)
     private var catalogDownloadInProgress = false
@@ -64,6 +67,14 @@ final class GameCheatListViewController: UIViewController {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func cheatStateDidChange() {
+        applySnapshot(animatingDifferences: true)
     }
 
     override func viewDidLoad() {
@@ -93,6 +104,16 @@ final class GameCheatListViewController: UIViewController {
         configureDataSource()
         applySnapshot(animatingDifferences: false)
 
+        // Entering/leaving a netplay session forces every cheat off / restores it
+        // in the session snapshot. Refresh the switches if that happens while the
+        // list is on screen (e.g. a peer leaves and the session ends).
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(cheatStateDidChange),
+            name: .gameCheatStateChanged,
+            object: nil
+        )
+
     #if DEBUG
         debugPrintROMCRC32AndRDBMatch()
     #endif
@@ -115,6 +136,20 @@ final class GameCheatListViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         attachGamePauseLeaseToPresentation(gamePauseLease)
+        scrollToPendingUserCheatIfNeeded()
+    }
+
+    /// Called by the template detail page after it copies a system cheat into the
+    /// user list, so this controller scrolls to the new (bottom) row on return.
+    func revealUserCheat(id: String) {
+        pendingScrollUserId = id
+    }
+
+    private func scrollToPendingUserCheatIfNeeded() {
+        guard let id = pendingScrollUserId,
+              let indexPath = dataSource.indexPath(for: .user(id)) else { return }
+        pendingScrollUserId = nil
+        collectionView.scrollToItem(at: indexPath, at: .centeredVertically, animated: true)
     }
 }
 
@@ -335,6 +370,14 @@ extension GameCheatListViewController {
     @MainActor
     private func allowToggleCheat(isOn: Bool) -> Bool {
         guard isOn else { return true }
+        // Cheats can't be enabled during a netplay session (would desync peers).
+        // Bounce the switch back via applySnapshot and explain why. Checked before
+        // the Pro gate so the message is netplay-specific, not a paywall.
+        if RANetplayCoordinator.shared.isNetplayEnabled {
+            applySnapshot(animatingDifferences: true)
+            showNetplayCheatBlocked()
+            return false
+        }
         let allowed = AppStoreProFeatureGate.shared.requirePro(
             feature: .cheats,
             presentation: .alert,
@@ -345,6 +388,15 @@ extension GameCheatListViewController {
             applySnapshot(animatingDifferences: true)
         }
         return allowed
+    }
+
+    private func showNetplayCheatBlocked() {
+        let alert = UIAlertController(
+            title: Bundle.localizedString(forKey: "cheat_title"),
+            message: Bundle.localizedString(forKey: "netplay_cheat_blocked"),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
+        present(alert, animated: true)
     }
 
     private func debugPrintROMCRC32AndRDBMatch() {
@@ -383,12 +435,11 @@ extension GameCheatListViewController {
             return
         }
 
-        let key = session.cheatSupported ? "cheat_empty_tip" : "cheat_core_unsupported"
-        tipLabel.text = Bundle.localizedString(forKey: key)
         tipLabel.textAlignment = .center
         tipLabel.numberOfLines = 0
-        tipLabel.textColor = .secondaryLabel
-        tipLabel.font = UIFont.boldSystemFont(ofSize: UIFont.labelFontSize)
+        tipLabel.attributedText = session.cheatSupported
+            ? Self.emptyStateAttributedText()
+            : Self.unsupportedAttributedText()
         if tipLabel.superview == nil {
             view.addSubview(tipLabel)
             tipLabel.snp.makeConstraints { make in
@@ -398,6 +449,76 @@ extension GameCheatListViewController {
             }
         }
         view.bringSubviewToFront(tipLabel)
+    }
+
+    /// Empty state: a bold title over a softer body line whose `%@` slots are
+    /// replaced with the live `plus` / `magnifyingglass` toolbar symbols so the
+    /// hint visually points at the two top-right buttons.
+    private static func emptyStateAttributedText() -> NSAttributedString {
+        let titleFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
+        let bodyFont = UIFont.systemFont(ofSize: 15, weight: .regular)
+
+        let titleParagraph = NSMutableParagraphStyle()
+        titleParagraph.alignment = .center
+        titleParagraph.paragraphSpacing = 10
+
+        let bodyParagraph = NSMutableParagraphStyle()
+        bodyParagraph.alignment = .center
+        bodyParagraph.lineSpacing = 6
+
+        let result = NSMutableAttributedString(
+            string: Bundle.localizedString(forKey: "cheat_empty_title") + "\n",
+            attributes: [
+                .font: titleFont,
+                .foregroundColor: UIColor.label,
+                .paragraphStyle: titleParagraph
+            ])
+
+        let bodyAttributes: [NSAttributedString.Key: Any] = [
+            .font: bodyFont,
+            .foregroundColor: UIColor.secondaryLabel,
+            .paragraphStyle: bodyParagraph
+        ]
+        let body = Bundle.localizedString(forKey: "cheat_empty_body")
+        let parts = body.components(separatedBy: "%@")
+        let symbols = ["plus", "magnifyingglass"]
+        for (index, part) in parts.enumerated() {
+            if !part.isEmpty {
+                result.append(NSAttributedString(string: part, attributes: bodyAttributes))
+            }
+            if index < parts.count - 1, index < symbols.count,
+               let symbol = symbolAttachment(symbols[index], font: bodyFont) {
+                result.append(symbol)
+            }
+        }
+        return result
+    }
+
+    private static func unsupportedAttributedText() -> NSAttributedString {
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        paragraph.lineSpacing = 6
+        return NSAttributedString(
+            string: Bundle.localizedString(forKey: "cheat_core_unsupported"),
+            attributes: [
+                .font: UIFont.systemFont(ofSize: 17, weight: .semibold),
+                .foregroundColor: UIColor.secondaryLabel,
+                .paragraphStyle: paragraph
+            ])
+    }
+
+    /// An inline, baseline-centered SF Symbol tinted to match the body text.
+    private static func symbolAttachment(_ name: String, font: UIFont) -> NSAttributedString? {
+        let config = UIImage.SymbolConfiguration(font: font)
+        guard let image = UIImage(systemName: name, withConfiguration: config)?
+            .withTintColor(.secondaryLabel, renderingMode: .alwaysOriginal) else {
+            return nil
+        }
+        let attachment = NSTextAttachment(image: image)
+        let centeredY = (font.capHeight - image.size.height) / 2.0
+        attachment.bounds = CGRect(x: 0, y: centeredY,
+                                   width: image.size.width, height: image.size.height)
+        return NSAttributedString(attachment: attachment)
     }
 
     @objc
@@ -496,15 +617,31 @@ extension GameCheatListViewController {
 extension GameCheatListViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
+        Vibration.selection.vibrate()
         guard let rowID = dataSource.itemIdentifier(for: indexPath) else { return }
         switch rowID {
         case .template(let catalogId):
             guard let item = templateItem(for: catalogId) else { return }
-            navigationController?.pushViewController(GameCheatCatalogDetailViewController(cheat: item), animated: true)
+            navigationController?.pushViewController(GameCheatCatalogDetailViewController(cheat: item, session: session), animated: true)
         case .user(let id):
             guard let item = item(for: id) else { return }
             let editor = GameCheatEditViewController(session: session, editing: item)
             navigationController?.pushViewController(editor, animated: true)
         }
+    }
+
+    /// User cheats reorder only within their own section. Clamp any drag that
+    /// strays into the read-only system-template section back to the top of the
+    /// user section, preserving the template/user semantic boundary.
+    func collectionView(_ collectionView: UICollectionView,
+                        targetIndexPathForMoveFromItemAt originalIndexPath: IndexPath,
+                        toProposedIndexPath proposedIndexPath: IndexPath) -> IndexPath {
+        guard let userSection = dataSource.snapshot().indexOfSection(.user) else {
+            return originalIndexPath
+        }
+        if proposedIndexPath.section != userSection {
+            return IndexPath(item: 0, section: userSection)
+        }
+        return proposedIndexPath
     }
 }

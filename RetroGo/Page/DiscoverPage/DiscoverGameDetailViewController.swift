@@ -118,6 +118,8 @@ final class DiscoverGameDetailViewController: UIViewController {
                     forCellReuseIdentifier: DiscoverInfoCell.reuseID)
         tv.register(DiscoverDescriptionCell.self,
                     forCellReuseIdentifier: DiscoverDescriptionCell.reuseID)
+        tv.register(RGSectionHeaderView.self,
+                    forHeaderFooterViewReuseIdentifier: RGSectionHeaderView.className)
         view.addSubview(tv)
         tv.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -536,11 +538,6 @@ extension DiscoverGameDetailViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView,
-                   titleForHeaderInSection section: Int) -> String? {
-        sections[section].header
-    }
-
-    func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let row = sections[indexPath.section].rows[indexPath.row]
 
@@ -563,6 +560,21 @@ extension DiscoverGameDetailViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 
 extension DiscoverGameDetailViewController: UITableViewDelegate {
+
+    func tableView(_ tableView: UITableView,
+                   viewForHeaderInSection section: Int) -> UIView? {
+        guard section < sections.count else { return nil }
+        let view = tableView.dequeueReusableHeaderFooterView(
+            withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
+            ?? RGSectionHeaderView(reuseIdentifier: RGSectionHeaderView.className)
+        view.text = sections[section].header
+        return view
+    }
+
+    func tableView(_ tableView: UITableView,
+                   heightForHeaderInSection section: Int) -> CGFloat {
+        UITableView.automaticDimension
+    }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)

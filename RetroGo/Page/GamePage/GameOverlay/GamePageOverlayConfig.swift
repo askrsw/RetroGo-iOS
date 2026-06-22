@@ -48,6 +48,16 @@ struct GamePageOverlayElement: Codable, Equatable {
         case meta
     }
 
+    init(id: String,
+         type: GamePageOverlayElementType,
+         geometry: GamePageOverlayGeometry,
+         meta: [String: JSONValue]? = nil) {
+        self.id = id
+        self.type = type
+        self.geometry = geometry
+        self.meta = meta
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
@@ -66,11 +76,15 @@ struct GamePageOverlayElement: Codable, Equatable {
 }
 
 enum GamePageOverlayElementType: String, Codable {
+    // Standalone direction controls, used when a layout shows them
+    // independently and at the same time (e.g. PSP's D-pad + analog stick).
     case dpad
     case stick
+    // Combined control that switches between a D-pad form and a stick form;
+    // only one form is visible at a time, toggled by an attached switch button.
+    case directional
     case button
     case fastButton = "fast-button"
-    case digitalAnalogSwitch = "digital-analog-switch"
     case overlayCollapse = "overlay-collapse"
     case n64CButton = "n64-c-button"
     case ndsLayoutButton = "nds-layout-button"
@@ -219,6 +233,24 @@ extension GamePageOverlayElement {
             return nil
         }
         return s
+    }
+
+    // Directional-only: which form is shown first. Defaults to the D-pad
+    // unless the element explicitly opts into the stick.
+    var directionalDefaultsToStick: Bool {
+        guard let v = meta?["default_control"], case .string(let s) = v else {
+            return false
+        }
+        return s == "stick"
+    }
+
+    // Directional-only: where the switch button sits relative to the control.
+    // Defaults to the top-left corner; only `bottom-left` need be declared.
+    var directionalSwitchAtBottomLeft: Bool {
+        guard let v = meta?["switch_corner"], case .string(let s) = v else {
+            return false
+        }
+        return s == "bottom-left"
     }
 
     // Whether this button exists on the original hardware controller.

@@ -150,6 +150,8 @@ extension GameToolbarLayoutViewController {
         tableView.tintColor = .mainColor
         tableView.allowsSelection = false
         tableView.estimatedRowHeight = 50
+        tableView.register(RGSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: RGSectionHeaderView.className)
+        tableView.register(RGSectionFooterView.self, forHeaderFooterViewReuseIdentifier: RGSectionFooterView.className)
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -175,6 +177,7 @@ extension GameToolbarLayoutViewController {
         case .setting:       return .systemGray
         case .restart:       return .systemOrange
         case .cheat:         return .cheatIconColor
+        case .netplay:       return .systemGreen
         }
     }
 }
@@ -187,19 +190,6 @@ extension GameToolbarLayoutViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         guard let section = SectionIndex(rawValue: section) else { return 0 }
         return actions(in: section).count
-    }
-
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch SectionIndex(rawValue: section) {
-        case .pinned:   return Bundle.localizedString(forKey: "gamepage_toolbar_layout_pinned")
-        case .overflow: return Bundle.localizedString(forKey: "gamepage_toolbar_layout_overflow")
-        case .none:     return nil
-        }
-    }
-
-    func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        guard SectionIndex(rawValue: section) == .overflow else { return nil }
-        return Bundle.localizedString(forKey: "gamepage_toolbar_layout_footer")
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -273,5 +263,46 @@ extension GameToolbarLayoutViewController: UITableViewDataSource {
 extension GameToolbarLayoutViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         50
+    }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let text: String
+        switch SectionIndex(rawValue: section) {
+        case .pinned:   text = Bundle.localizedString(forKey: "gamepage_toolbar_layout_pinned")
+        case .overflow: text = Bundle.localizedString(forKey: "gamepage_toolbar_layout_overflow")
+        case .none:     return nil
+        }
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
+            ?? RGSectionHeaderView(reuseIdentifier: RGSectionHeaderView.className)
+        view.text = text
+        return view
+    }
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        UITableView.automaticDimension
+    }
+
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        switch SectionIndex(rawValue: section) {
+        case .pinned:
+            let spacer = UIView()
+            spacer.backgroundColor = .clear
+            return spacer
+        case .overflow:
+            let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionFooterView.className) as? RGSectionFooterView
+                ?? RGSectionFooterView(reuseIdentifier: RGSectionFooterView.className)
+            view.text = Bundle.localizedString(forKey: "gamepage_toolbar_layout_footer")
+            return view
+        case .none:
+            return nil
+        }
+    }
+
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        switch SectionIndex(rawValue: section) {
+        case .pinned:    return 20
+        case .overflow:  return UITableView.automaticDimension
+        case .none:      return .leastNormalMagnitude
+        }
     }
 }

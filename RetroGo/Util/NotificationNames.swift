@@ -28,6 +28,7 @@ import Foundation
 extension NSNotification.Name {
     static let deleteGameState     = NSNotification.Name(rawValue: "notif_deleteGameState")
     static let showInGameMessage   = NSNotification.Name(rawValue: "notif_showInGameMessage")
+    static let netplayStateChanged = NSNotification.Name(rawValue: "notif_netplayStateChanged")
     static let languageChanged     = NSNotification.Name(rawValue: "notif_languageChanged")
     static let retroFolderImported = NSNotification.Name(rawValue: "notif_retroFolderImported")
     static let retroFileImported   = NSNotification.Name(rawValue: "notif_retroFileImported")

@@ -98,7 +98,14 @@ final class GamePauseCoordinator {
 
     private var shouldPauseGameLoop: Bool {
         let ra = RetroArchX.shared()
-        return ra.currentCoreItem != nil && !ra.dummyCoreRunning
+        guard ra.currentCoreItem != nil, !ra.dummyCoreRunning else { return false }
+        // Never pause emulation during a netplay session: netplay is lockstep and
+        // can't pause unilaterally — pausing one side stalls (and would eventually
+        // drop) the peer. So UI that normally pauses the game (state list, save
+        // dialog, cheat list, config, toolbar layout) keeps the game running while
+        // a session is active. The peer stays in sync; loads still broadcast.
+        if RANetplayCoordinator.shared.isNetplayEnabled { return false }
+        return true
     }
 }
 

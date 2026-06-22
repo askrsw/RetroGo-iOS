@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>RetroGo uses the local network to find nearby players and connect for LAN multiplayer (netplay).</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_retrogo._tcp</string>
+	</array>
 	<key>GCSupportedGameControllers</key>
 	<array>
 		<dict>

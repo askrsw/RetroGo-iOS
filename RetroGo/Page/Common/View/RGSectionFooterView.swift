@@ -1,5 +1,5 @@
 //
-//  GameConfigFooterView.swift
+//  RGSectionFooterView.swift
 //  RetroGo
 //
 //  Created by haharsw on 2026/4/18.
@@ -26,12 +26,24 @@
 import UIKit
 import SnapKit
 
-final class GameConfigFooterView: UITableViewHeaderFooterView {
-    private lazy var label = UILabel(frame: .zero)
+final class RGSectionFooterView: UITableViewHeaderFooterView {
+    class var className: String { String(describing: Self.self) }
+
+    private let label = UILabel()
 
     var text: String? {
         didSet {
-            label.text = text
+            guard let text else {
+                label.attributedText = nil
+                return
+            }
+            let style = NSMutableParagraphStyle()
+            style.lineSpacing = 4
+            label.attributedText = NSAttributedString(string: text, attributes: [
+                .paragraphStyle: style,
+                .font: label.font!,
+                .foregroundColor: label.textColor!
+            ])
         }
     }
 
@@ -50,14 +62,12 @@ final class GameConfigFooterView: UITableViewHeaderFooterView {
         label.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize)
         label.textColor = .secondaryLabel
         label.numberOfLines = 0
-        label.lineBreakMode = .byWordWrapping
 
         contentView.addSubview(label)
         label.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(6)
-            make.leading.equalToSuperview().offset(10)
-            make.trailing.equalToSuperview().offset(-10)
-            make.bottom.equalToSuperview().offset(-24)
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-24).priority(.high)
         }
     }
 }

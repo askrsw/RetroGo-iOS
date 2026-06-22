@@ -69,6 +69,9 @@ NS_ASSUME_NONNULL_BEGIN
         _experimental = coreInfo->is_experimental;
         _singlePurpose = coreInfo->single_purpose;
         _isHWRender = coreInfo->is_hw_render;
+        /* Netplay requires deterministic savestate support. Mirrors the
+         * threshold used by core_info_current_supports_netplay(). */
+        _supportsNetplay = coreInfo->savestate_support_level >= CORE_INFO_SAVESTATE_DETERMINISTIC;
         ASSIGN_ARRAY_FROM_COREINFO(_permissions, coreInfo, permissions);
         ASSIGN_ARRAY_FROM_COREINFO(_databases, coreInfo, databases);
         ASSIGN_ARRAY_FROM_COREINFO(_hwApis, coreInfo, required_hw_api);
@@ -521,7 +524,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
 
 - (nullable NSDictionary *)loadExtraCoreInfo {
     NSString *jsonFileName = [NSString stringWithFormat:@"%@_extra", _coreId];
-    NSString *jsonFilePath = [[NSBundle mainBundle] pathForResource:jsonFileName ofType:@"json" inDirectory:@"Data/jsons"];
+    NSString *jsonFilePath = [[NSBundle mainBundle] pathForResource:jsonFileName ofType:@"json" inDirectory:@"Data/jsons/core"];
 
     NSData *jsonData = [NSData dataWithContentsOfFile:jsonFilePath];
 

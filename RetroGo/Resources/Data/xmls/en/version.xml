@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.7.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.7.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>June 19, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.7.0" style="number">
+            <p-item>Added <b>LAN Multiplayer</b>: host or join a session over the same Wi-Fi network using automatic Bonjour discovery — no setup, no accounts. The room panel shows a live player roster with nicknames, roles, and ping, updated in real time.</p-item>
+            <p-item>Added a <b>Popular Games</b> section to the cheat template catalog, featuring a curated selection of well-known titles per platform for faster access to commonly used cheats.</p-item>
+            <p-item>Added <b>template unbind</b>: manually remove the current system cheat template so the auto-matcher will not re-attach the same template in future sessions.</p-item>
+            <p-item>System cheat templates can now be <b>copied as editable user cheats in one tap</b> — customize any built-in entry without modifying the original template.</p-item>
+            <p-item>The analog stick now features <b>dynamic thumb tracking</b>: the stick base follows your thumb as you drag, and continues responding even when your finger moves outside the original touch zone.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.6.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.6.0</p-title>
         <p-paragraph fontsize="13">

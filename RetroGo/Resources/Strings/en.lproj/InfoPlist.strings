@@ -9,6 +9,6 @@
 CFBundleDisplayName = "Retro Go";
 
 NSPhotoLibraryAddUsageDescription = "Save game screenshots to the photo library. If not allowed, you will not be able to save screenshots to the library.";
-NSLocalNetworkUsageDescription =  "The app requires network access to implement multiplayer gaming. Otherwise, multiplayer functionality is unavailable.";
+NSLocalNetworkUsageDescription =  "RetroGo uses the local network to find nearby players and connect for LAN multiplayer (netplay).";
 NSCameraUsageDescription = "Used for scanning QR codes or game covers.";
 NSLocationWhenInUseUsageDescription = "Used for local multiplayer discovery.";

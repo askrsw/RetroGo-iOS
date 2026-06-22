@@ -31,11 +31,13 @@ import RACoordinator
 final class GameCheatCatalogDetailViewController: UIViewController {
 
     private let cheat: RACheatItem
+    private weak var session: GameCheatSession?
     private let scrollView = UIScrollView()
     private let stackView = UIStackView()
 
-    init(cheat: RACheatItem) {
+    init(cheat: RACheatItem, session: GameCheatSession? = nil) {
         self.cheat = cheat
+        self.session = session
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -71,6 +73,92 @@ final class GameCheatCatalogDetailViewController: UIViewController {
         } else {
             addSection(rows: [(Bundle.localizedString(forKey: "cheat_field_code"), cheat.code)])
         }
+        // A system template is read-only; offer a one-tap editable copy into the
+        // user cheat list so values (e.g. an `address:value` weapon id) can be
+        // tweaked. Only available inside a running game session.
+        if session != nil {
+            addCopyButton()
+        }
+    }
+
+    private func addCopyButton() {
+        var config = UIButton.Configuration.filled()
+        config.title = Bundle.localizedString(forKey: "cheat_catalog_copy_to_user")
+        config.baseBackgroundColor = .cheatIconColor
+        config.baseForegroundColor = .white
+        config.cornerStyle = .large
+        config.buttonSize = .large
+        let button = UIButton(configuration: config)
+        button.addAction(UIAction { [weak self] _ in self?.createEditableCopy() }, for: .touchUpInside)
+        // Give the button a little breathing room from the section above it.
+        stackView.setCustomSpacing(28, after: stackView.arrangedSubviews.last ?? button)
+        stackView.addArrangedSubview(button)
+    }
+
+    private func createEditableCopy() {
+        guard let session else { return }
+        let draft = Self.makeUserDraft(
+            from: cheat,
+            romKey: session.game.key,
+            coreId: session.core.coreId)
+        guard let created = session.addCheat(draft) else {
+            let alert = UIAlertController(
+                title: Bundle.localizedString(forKey: "cheat_catalog_error_title"),
+                message: Bundle.localizedString(forKey: "cheat_catalog_copy_failed"),
+                preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
+            present(alert, animated: true)
+            return
+        }
+        // Pop back to the cheat list (in the stack on both the in-game and the
+        // catalog-browse paths) and scroll to the freshly added copy.
+        if let listVC = navigationController?.viewControllers
+            .first(where: { $0 is GameCheatListViewController }) as? GameCheatListViewController {
+            listVC.revealUserCheat(id: created.id)
+            navigationController?.popToViewController(listVC, animated: true)
+        } else {
+            navigationController?.popViewController(animated: true)
+        }
+    }
+
+    /// Maps a read-only catalog `RACheatItem` to an editable user `GameCheatItem`.
+    /// `kind` is derived the same way the editor classifies codes: RETRO → memory,
+    /// an `address:value` EMU code → numeric, otherwise an encrypted secret code.
+    private static func makeUserDraft(from cheat: RACheatItem,
+                                      romKey: String,
+                                      coreId: String) -> GameCheatItem {
+        let kind: GameCheatKind
+        if cheat.handler == .RETRO {
+            kind = .memory
+        } else if isNumericEMUCode(cheat.code) {
+            kind = .numeric
+        } else {
+            kind = .secret
+        }
+        let name = cheat.desc.isEmpty ? (cheat.descEnglish ?? "") : cheat.desc
+        return GameCheatItem(
+            romKey: romKey,
+            coreId: coreId,
+            kind: kind,
+            desc: name,
+            enabled: false,
+            sortIndex: 0,
+            code: cheat.code,
+            cheatType: GameCheatType(rawValue: Int(cheat.cheatType)) ?? .setToValue,
+            memorySize: GameCheatMemorySize(rawValue: Int(cheat.memorySearchSize)) ?? .byte1,
+            address: Int(cheat.address),
+            value: Int(cheat.value),
+            addressMask: Int(cheat.addressMask),
+            bigEndian: cheat.bigEndian,
+            repeatCount: Int(cheat.repeatCount),
+            repeatAddToValue: Int(cheat.repeatAddToValue),
+            repeatAddToAddress: Int(cheat.repeatAddToAddress))
+    }
+
+    private static func isNumericEMUCode(_ code: String) -> Bool {
+        guard !code.isEmpty, code.contains(":") else { return false }
+        let allowed = CharacterSet(charactersIn: "0123456789ABCDEFabcdef:+ ")
+        return code.unicodeScalars.allSatisfy { allowed.contains($0) }
     }
 
     private func addTitle() {
