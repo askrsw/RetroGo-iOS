@@ -52,6 +52,8 @@ extension EmuCoreInfoItem {
             return [10]
         case "playstation_portable":
             return [11]
+        case "mega_drive":
+            return [17, 14, 15, 16, 18]
         case "sega_saturn":
             return [12]
         default:
@@ -74,6 +76,7 @@ extension EmuCoreInfoItem {
         case "pcsx-rearmed": return .psx
         case "ppsspp": return .psp
         case "vbam": return .gba
+        case "picodrive": return .md
         case "yabause": return .saturn
         default:
             return nil

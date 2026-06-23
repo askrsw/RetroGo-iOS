@@ -41,6 +41,12 @@ extension RAPlatformItem {
         case "Nintendo - Nintendo DS":                           return .ds
         case "Nintendo - Nintendo Entertainment System":         return .nes
         case "Nintendo - Super Nintendo Entertainment System":   return .snes
+        case "Sega - 32X":                                       return .md
+        case "Sega - Game Gear":                                 return .sms
+        case "Sega - Master System - Mark III":                  return .sms
+        case "Sega - Mega Drive - Genesis":                      return .md
+        case "Sega - Mega-CD - Sega CD":                         return .md
+        case "Sega - PICO":                                      return .md
         case "Sega - Saturn":                                    return .saturn
         case "Sony - PlayStation":                               return .psx
         case "Sony - PlayStation Portable":                      return .psp

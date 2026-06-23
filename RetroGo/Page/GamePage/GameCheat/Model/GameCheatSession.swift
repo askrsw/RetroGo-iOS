@@ -459,7 +459,10 @@ final class GameCheatSession {
             completion(false)
             return
         }
-        guard case .ready = OnDemandResourceLoader.shared.state(for: cheat) else {
+        switch OnDemandResourceLoader.shared.state(for: cheat) {
+        case .ready, .outdated:
+            break
+        default:
             completion(false)
             return
         }

@@ -558,6 +558,10 @@ extension GameCheatListViewController {
             return
         case .downloading:
             return
+        case .outdated:
+            initializeCheatCatalog(completion)
+            downloadCheatCatalogUpdate(cheat)
+            return
         case .notDownloaded:
             break
         }
@@ -583,6 +587,24 @@ extension GameCheatListViewController {
                 let message = Bundle.localizedString(forKey: "odr_download_failed")
                     + (error.map { "\n\($0.localizedDescription)" } ?? "")
                 activity?.errorMessage(message, title: title, canDismiss: true)
+            }
+        })
+    }
+
+    private func downloadCheatCatalogUpdate(_ r: ODRResource) {
+        guard !catalogDownloadInProgress else { return }
+        catalogDownloadInProgress = true
+        let loader = OnDemandResourceLoader.shared
+        loader.startDownload(r, progress: { _ in }, completion: { [weak self] ok, _ in
+            guard let self else { return }
+            self.catalogDownloadInProgress = false
+            if ok {
+                self.initializeCheatCatalog {}
+            } else {
+                let msg = Bundle.localizedString(forKey: "cheat_catalog_update_failed")
+                let activity = RetroRomActivityView(mainTitle: "")
+                activity.install()
+                activity.errorMessage(msg, title: "", canDismiss: true)
             }
         })
     }

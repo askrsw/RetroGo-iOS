@@ -119,3 +119,5 @@ RetroGo/Resources/Data/rdb/
 
 AGENTS.md
 CLAUDE.md
+# Core frameworks are large binaries, not tracked in git.
+/RetroGo/Resources/Cores/

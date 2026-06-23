@@ -1,0 +1,17 @@
+{
+    "desc": {
+        "en": "A fast and portable emulator for many Sega game consoles, ported to libretro. This core is notable for being the only open source emulator to support the 32X add-on. It also has very stable savestates, making it a good choice for features that require them. However, this core has lower accuracy than Genesis Plus GX and BlastEm, so users seeking the highest accuracy on reasonably-powered devices should use those cores instead.",
+        "zh": "[PicoDrive] 是一款针对多款世嘉（Sega）游戏主机的快速且高便携性模拟器的 Libretro 移植版。该核心的一大亮点在于，它是目前唯一支持 32X 拓展外设的开源模拟器。同时，它拥有极其稳定的即时存档（Savestates）表现，是需要高频使用该功能场景下的理想选择。然而，该核心的模拟精度低于 Genesis Plus GX 和 BlastEm，因此在性能足够的设备上追求极致模拟精度的用户，建议优先选择其他核心。"
+    },
+    "licenses": [
+        {
+            "show_name": "MAME",
+            "file_name": "mame-license.txt"
+        }
+    ],
+    "src_url": "https://github.com/libretro/picodrive",
+    "supports_analog": false,
+    "overlay": "genesis",
+    "supports_logic_thread": true,
+    "allows_default_turbo_xy_hijack": false
+}

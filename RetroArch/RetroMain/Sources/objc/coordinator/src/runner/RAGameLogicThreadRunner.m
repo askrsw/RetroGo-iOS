@@ -31,12 +31,12 @@
 #import <audio/audio_driver.h>
 #import <input/input_driver.h>
 #import <utils/driver_utils.h>
-#include <gfx/video_driver.h>
+#import <gfx/video_driver.h>
 #import <mach/mach_time.h>
 #import <sched.h>
 #import <stdatomic.h>
 #import <math.h>
-#include <string.h>
+#import <string.h>
 
 typedef _Atomic double atomic_double;
 
@@ -194,7 +194,7 @@ typedef _Atomic double atomic_double;
         }
         [strongSelf performLogicBlockSync:^NSObject * _Nullable{
             return @(command_event(CMD_EVENT_AUDIO_START, NULL));
-        } useBlockingSemaphore:YES];
+        } useBlockingSemaphore:NO];
     });
 
     return YES;

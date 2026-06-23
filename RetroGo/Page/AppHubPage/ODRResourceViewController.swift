@@ -129,6 +129,7 @@ final class ODRResourceViewController: UIViewController {
     private func statusString(for r: ODRResource) -> String {
         switch loader.state(for: r) {
         case .ready:         return Bundle.localizedString(forKey: "odr_status_ready")
+        case .outdated:      return Bundle.localizedString(forKey: "odr_status_outdated")
         case .notDownloaded: return Bundle.localizedString(forKey: "odr_status_not_downloaded")
         case .downloading:   return Bundle.localizedString(forKey: "odr_status_downloading")
         }
@@ -138,7 +139,8 @@ final class ODRResourceViewController: UIViewController {
         switch loader.state(for: r) {
         case .ready:         return .ready
         case .downloading:   return .loading
-        case .notDownloaded: return .download
+        case .outdated,
+             .notDownloaded: return .download
         }
     }
 
@@ -280,9 +282,12 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
             return
         }
         let r = resources[indexPath.row]
-        if case .notDownloaded = loader.state(for: r) {
+        switch loader.state(for: r) {
+        case .notDownloaded, .outdated:
             Vibration.selection.vibrate()
             download(r)
+        default:
+            break
         }
     }
 

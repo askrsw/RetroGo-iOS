@@ -243,7 +243,7 @@ static NSString *p_locNorm(NSString *s);
 }
 
 - (NSInteger)currentDBVersion {
-    return 2;
+    return 3;
 }
 
 // MARK: 平台查询
@@ -803,6 +803,7 @@ static NSString *p_locNorm(NSString *s);
 /// DEBUG 离线导出时传入独立的临时句柄，从而不污染运行库。
 - (NSInteger)p_doImportRdbAtPath:(NSString *)rdbPath
                          rdbName:(NSString *)rdbName
+                        stableId:(NSInteger)stableId
                               db:(sqlite3 *)db
                            error:(NSError **)outError {
     // --- 解析 displayName / manufacturer ---
@@ -848,23 +849,30 @@ static NSString *p_locNorm(NSString *s);
     sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 
     // --- 插入 platform ---
+    // stableId > 0 时显式指定 id，保证 platform_id 跨版本稳定。
     NSInteger platformId = 0;
     {
-        const char *sql =
-            "INSERT INTO platform(rdb_name, display_name, manufacturer, game_count, imported_at) "
-            "VALUES(?, ?, ?, 0, ?);";
+        const char *sql = (stableId > 0)
+            ? "INSERT INTO platform(id, rdb_name, display_name, manufacturer, game_count, imported_at) "
+              "VALUES(?, ?, ?, ?, 0, ?);"
+            : "INSERT INTO platform(rdb_name, display_name, manufacturer, game_count, imported_at) "
+              "VALUES(?, ?, ?, 0, ?);";
         sqlite3_stmt *stmt = NULL;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, rdbName.UTF8String,     -1, SQLITE_TRANSIENT);
-            sqlite3_bind_text(stmt, 2, displayName.UTF8String, -1, SQLITE_TRANSIENT);
-            if (manufacturer) {
-                sqlite3_bind_text(stmt, 3, manufacturer.UTF8String, -1, SQLITE_TRANSIENT);
-            } else {
-                sqlite3_bind_null(stmt, 3);
+            int col = 1;
+            if (stableId > 0) {
+                sqlite3_bind_int64(stmt, col++, (sqlite3_int64)stableId);
             }
-            sqlite3_bind_int64(stmt, 4, (sqlite3_int64)[[NSDate date] timeIntervalSince1970]);
+            sqlite3_bind_text(stmt, col++, rdbName.UTF8String,     -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, col++, displayName.UTF8String, -1, SQLITE_TRANSIENT);
+            if (manufacturer) {
+                sqlite3_bind_text(stmt, col++, manufacturer.UTF8String, -1, SQLITE_TRANSIENT);
+            } else {
+                sqlite3_bind_null(stmt, col++);
+            }
+            sqlite3_bind_int64(stmt, col, (sqlite3_int64)[[NSDate date] timeIntervalSince1970]);
             sqlite3_step(stmt);
-            platformId = (NSInteger)sqlite3_last_insert_rowid(db);
+            platformId = (stableId > 0) ? stableId : (NSInteger)sqlite3_last_insert_rowid(db);
         }
         sqlite3_finalize(stmt);
     }
@@ -1089,16 +1097,43 @@ static NSString *p_locNorm(NSString *s);
                     (long)self.currentDBVersion];
     sqlite3_exec(db, uv.UTF8String, NULL, NULL, NULL);
 
+    // rdb_name → stable platform_id。已发布版本的 id 不可变，新平台从 max+1 递增。
+    // 添加新平台时只需在此追加，不要修改已有条目。
+    NSDictionary<NSString *, NSNumber *> *stablePlatformIds = @{
+        @"DOS":                                             @1,
+        @"Nintendo - Family Computer Disk System":          @2,
+        @"Nintendo - Game Boy":                             @3,
+        @"Nintendo - Game Boy Advance":                     @4,
+        @"Nintendo - Game Boy Color":                       @5,
+        @"MAME":                                            @6,
+        @"Nintendo - Nintendo 64":                          @7,
+        @"Nintendo - Nintendo DS":                          @8,
+        @"Nintendo - Nintendo Entertainment System":        @9,
+        @"Sony - PlayStation":                              @10,
+        @"Sony - PlayStation Portable":                     @11,
+        @"Sega - Saturn":                                   @12,
+        @"Nintendo - Super Nintendo Entertainment System":  @13,
+        @"Sega - 32X":                                      @14,
+        @"Sega - Game Gear":                                @15,
+        @"Sega - Master System - Mark III":                 @16,
+        @"Sega - Mega Drive - Genesis":                     @17,
+        @"Sega - Mega-CD - Sega CD":                        @18,
+        @"Sega - PICO":                                     @19,
+    };
+
     // 逐个导入 .rdb（复用与线上完全相同的导入核心）
     NSInteger total = 0;
     for (NSString *rdbPath in rdbPaths) {
         NSString *rdbName = [[rdbPath lastPathComponent] stringByDeletingPathExtension];
+        NSNumber *sid = stablePlatformIds[rdbName];
         NSError *impErr = nil;
-        NSInteger c = [self p_doImportRdbAtPath:rdbPath rdbName:rdbName db:db error:&impErr];
+        NSInteger c = [self p_doImportRdbAtPath:rdbPath rdbName:rdbName
+                                      stableId:sid ? sid.integerValue : 0
+                                            db:db error:&impErr];
         if (impErr) {
-            NSLog(@"[RAGameRDBManager] export 导入失败 %@: %@", rdbName, impErr.localizedDescription);
+            NSLog(@"[RAGameRDBManager] export import failed %@: %@", rdbName, impErr.localizedDescription);
         } else {
-            NSLog(@"[RAGameRDBManager] export 导入 %@ : %ld 条", rdbName, (long)c);
+            NSLog(@"[RAGameRDBManager] export import %@ (id=%@): %ld entries", rdbName, sid ?: @"auto", (long)c);
             total += c;
         }
     }

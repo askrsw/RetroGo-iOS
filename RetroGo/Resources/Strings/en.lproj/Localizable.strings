@@ -492,6 +492,7 @@
 
 // MARK: - Cheat Catalog
 
+"cheat_catalog_update_failed"      = "Failed to update cheat database, using previous version";
 "cheat_catalog_title"              = "Cheat Templates";
 "cheat_catalog_search_placeholder" = "Search game names";
 "cheat_catalog_match_section"      = "Matched Game";
@@ -537,6 +538,7 @@
 "odr_cheat_title"               = "Cheat Library";
 "odr_cheat_desc"                = "RetroArch's offline cheat code database, matched per game.";
 "odr_status_ready"              = "Ready";
+"odr_status_outdated"           = "Update Available";
 "odr_status_not_downloaded"     = "Not Downloaded";
 "odr_status_downloading"        = "Downloading…";
 "odr_downloading_fmt"           = "Downloading %d%%";
