@@ -109,7 +109,12 @@ RetroGo/Resources/Data/rdb/
 
 # ODR (On-Demand Resources) Directory: For large binary assets like the preset game database (gamerdb.sqlite).
 # Not tracked by Git. Please reach out to the project maintainer if you need these files (refer to README).
-/RetroGo/Resources/OnDemandRes/
+/RetroGo/Resources/OnDemandRes/*
+!/RetroGo/Resources/OnDemandRes/.gitkeep
+
+# Core frameworks are large binaries, not tracked in git.
+/RetroGo/Resources/Cores/*
+!/RetroGo/Resources/Cores/.gitkeep
 
 /LocalDocs/
 /AppStoreScreenshots/
@@ -119,5 +124,3 @@ RetroGo/Resources/Data/rdb/
 
 AGENTS.md
 CLAUDE.md
-# Core frameworks are large binaries, not tracked in git.
-/RetroGo/Resources/Cores/
