@@ -62,6 +62,14 @@
 "gamepage_toolbar_layout_footer" = "常驻按钮显示在顶部菜单栏，其余按钮收起在 More 按钮中。拖动可排序，或在两个分组之间移动。";
 
 "gamestate_load_state" = "读取存档";
+"gamestate_save_state" = "保存存档";
+"gamestate_new_save" = "新建存档";
+"gamestate_overwrite_confirm" = "覆盖「%@」？";
+"gamestate_overwrite_message" = "已有的存档将被替换，此操作无法撤销。";
+"gamestate_overwrite_hint" = "点击已有存档可覆盖该存档。";
+"gamestate_section_manual" = "手动存档";
+"gamestate_section_auto" = "自动存档";
+"gamestate_section_existing" = "已有存档";
 "gamestate_empty_tip" = "还没有存档 :)";
 "gamestate_state_loaded" = "存档 %@ 已加载。";
 "gamestate_state_load_failed" = "存档 %@ 加载失败。";

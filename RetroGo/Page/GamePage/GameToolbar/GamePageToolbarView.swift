@@ -671,11 +671,6 @@ extension GamePageToolbarView {
             return
         }
 
-        let manulSavedCount = RetroRomPersistence.shared.getSavedStatesCount(romKey: holder?.romItem?.key, coreId: currentCoreItem.coreId)
-        if manulSavedCount > 0, !AppStoreProFeatureGate.shared.requirePro(feature: .manualSaveSlot, presentation: .alert) {
-            return
-        }
-
         // During a netplay session the blocking naming alert would pause the local
         // loop and stall the peer, so save instantly with an auto (timestamp) name.
         // The capture itself (core_serialize) is read-only and does not desync peers.
@@ -689,45 +684,31 @@ extension GamePageToolbarView {
             return
         }
 
-        let title = Bundle.localizedString(forKey: "gamepage_save_state")
-        let message = Bundle.localizedString(forKey: "gamepage_input_state_name")
-        let alert = UIAlertController.gamePausedAlert(title: title, message: message)
-        alert.addTextField { textField in
-            let nowString = DateFormatter.yyyyMMddHHmmss().string(from: Date())
-            textField.placeholder = Bundle.localizedString(forKey: "gamepage_name_state")
-            textField.text = nowString
+        guard let romPath = RetroArchX.shared().getCurrentRomPath(),
+              let sha256 = FileManager.default.sha256ForFile(atPath: romPath) else {
+            return
         }
-        let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [weak self, weak alert] _ in
-            alert?.releaseGamePauseIfNeeded()
-            self?.isGamePaused = false
-            self?.updatePauseResumeAppearance()
-        }
-        alert.addAction(cancelAction)
-        let okAction = UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default) { [weak self, weak alert] _ in
-            guard let self = self else { return }
-            let now = Date()
-            let rawName = DateFormatter.yyyyMMddHHmmss().string(from: now)
-            let showName = alert?.textFields?.first?.text ?? ""
-            let ret = RetroRomFileManager.shared.saveState(rawName: rawName, showName: showName, sha256: holder?.romItem?.sha256, romKey: holder?.romItem?.key, autoSave: false)
-            if ret {
-                let str = String(format: Bundle.localizedString(forKey: "gamepage_state_saved"), showName)
-                let msg = EmuInGameMessage(message: str, title: nil, type: .info, duration: 3.5, priority: 0)
-                holder?.inGameInfoView.showMessage(msg)
-            } else {
-                let str = String(format: Bundle.localizedString(forKey: "gamepage_state_save_failed"), showName)
-                let msg = EmuInGameMessage(message: str, title: nil, type: .error, duration: 3.5, priority: 0)
-                holder?.inGameInfoView.showMessage(msg)
-            }
-            alert?.releaseGamePauseIfNeeded()
-            self.isGamePaused = false
-            self.updatePauseResumeAppearance()
-        }
-        alert.addAction(okAction)
 
-        isGamePaused = true
-        updatePauseResumeAppearance()
-        alert.view.tintColor = .label
-        holder?.present(alert, animated: true)
+        let allItems = RetroRomPersistence.shared.getGameStateItems(coreId: currentCoreItem.coreId, sha256: sha256) ?? []
+        let manualItems = allItems.filter { !$0.isAutoSaved }
+        let mode = GameStateListViewController.Mode.save { [weak self] rawName, showName, _ in
+            self?.performSaveState(rawName: rawName, showName: showName)
+        }
+        let controller = GameStateListViewController(gameStateItems: manualItems, showClose: true, mode: mode)
+        let naviController = UINavigationController(rootViewController: controller)
+        holder?.present(naviController, animated: true)
+    }
+
+    @discardableResult
+    private func performSaveState(rawName: String, showName: String) -> RetroRomGameStateItem? {
+        let ret = RetroRomFileManager.shared.saveState(rawName: rawName, showName: showName, sha256: holder?.romItem?.sha256, romKey: holder?.romItem?.key, autoSave: false)
+        let key = ret ? "gamepage_state_saved" : "gamepage_state_save_failed"
+        let str = String(format: Bundle.localizedString(forKey: key), showName)
+        let msg = EmuInGameMessage(message: str, title: nil, type: ret ? .info : .error, duration: 3.5, priority: 0)
+        holder?.inGameInfoView.showMessage(msg)
+
+        guard ret, let coreId = RetroArchX.shared().currentCoreItem?.coreId else { return nil }
+        return RetroRomGameStateItem(rawName: rawName, coreId: coreId, showName: showName, romKey: holder?.romItem?.key, sha256: holder?.romItem?.sha256, createAt: Date())
     }
 
     private func loadStateAction() {

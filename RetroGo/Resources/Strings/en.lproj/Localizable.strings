@@ -62,6 +62,14 @@
 "gamepage_toolbar_layout_footer" = "Pinned buttons show in the top bar. The rest are collected under the More button. Drag to reorder or move between sections.";
 
 "gamestate_load_state" = "Load State";
+"gamestate_save_state" = "Save State";
+"gamestate_new_save" = "New Save";
+"gamestate_overwrite_confirm" = "Overwrite \"%@\"?";
+"gamestate_overwrite_message" = "The existing save state will be replaced. This cannot be undone.";
+"gamestate_overwrite_hint" = "Tap an existing save to overwrite it.";
+"gamestate_section_manual" = "Manual Saves";
+"gamestate_section_auto" = "Auto Save";
+"gamestate_section_existing" = "Existing Saves";
 "gamestate_empty_tip" = "No game saves yet :)";
 "gamestate_state_loaded" = "State %@ loaded.";
 "gamestate_state_load_failed" = "Failed to load state %@.";
