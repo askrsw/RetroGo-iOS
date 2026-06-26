@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.7.1" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.7.1</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>June 25, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.7.1" style="number">
+            <p-item>Added the <b>PicoDrive</b> core, bringing support for <b>Sega Mega Drive / Genesis, 32X, Game Gear, Master System, and Mega-CD</b> games.</p-item>
+            <p-item>Expanded the <b>Discover</b> database with <b>Mega Drive</b> titles — browse and look up Mega Drive games right inside the app, with Chinese names that follow the app language.</p-item>
+            <p-item>Added a <b>Mega Drive cheat template database</b> with automatic matching: cheats for supported Mega Drive games can bind to your ROM by CRC32, with no manual setup.</p-item>
+            <p-item>Reworked the <b>save state</b> screen into a sectioned list where you can <b>overwrite an existing save</b> in one tap — not just create new ones — and your save now appears in the list before the screen closes, so you can see it took effect.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.7.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.7.0</p-title>
         <p-paragraph fontsize="13">
