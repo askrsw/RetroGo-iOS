@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.7.1" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.7.1</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 6 月 25 日</i>。
+        </p-paragraph>
+        <p-list id="v1.7.1" style="number">
+            <p-item>新增 <b>PicoDrive</b> 核心，带来对<b>世嘉 Mega Drive / Genesis、32X、Game Gear、Master System、Mega-CD</b> 等平台游戏的支持。</p-item>
+            <p-item><b>发现</b>页游戏数据库新增 <b>Mega Drive</b> 平台游戏，可直接在应用内浏览与查询 MD 游戏信息，游戏名称跟随 App 语言显示中文。</p-item>
+            <p-item>新增 <b>Mega Drive 金手指模版数据库</b>并支持自动匹配：受支持的 MD 游戏可通过 CRC32 自动绑定对应金手指模版，无需手动设置。</p-item>
+            <p-item>重做<b>即时存档</b>界面：保存时改为分区列表，除新建存档外，还可<b>一键覆盖已有存档</b>；存档完成后会先在列表中显示，再关闭页面，让你确认存档已生效。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.7.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.7.0</p-title>
         <p-paragraph fontsize="13">

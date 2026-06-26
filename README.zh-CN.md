@@ -51,9 +51,8 @@ RetroGo 已正式上架 App Store：https://apps.apple.com/app/id6758611562
 * **底层核心**：基于 RetroArch/Libretro 调度层
 
 ### 关于模拟核心 (Cores)
-为了确保 1.0 版本的构建便捷性，本项目采取了以下方案：
 1.  **来源**：核心二进制文件均源自 [RetroArch 官方 Buildbot](https://buildbot.libretro.com/)。
-2.  **封装**：我们通过工具将官方 dylibs 签名并封装为 iOS Framework 格式。这些制作好的 Framework 已内置于仓库中，无需额外运行脚本即可直接编译。
+2.  **不纳入 Git**：核心 Framework（`RetroGo/Resources/Cores/`）为大型二进制文件，**未纳入 git 管理**。获取方式见下方[缺失资源](#-缺失资源)。
 3.  **合规**：各核心独立遵循其原始许可证（GPLv2, GPLv3, MIT 等）。
 
 ## 🚀 构建指南
@@ -81,13 +80,18 @@ RetroGo 已正式上架 App Store：https://apps.apple.com/app/id6758611562
 4.  **构建并运行**
     连接您的 iPhone/iPad，按下 `Cmd + R` 即可开始构建。
 
-### 游戏数据库资源 (`gamerdb.sqlite`)
+### 📦 缺失资源
 
-**发现 (Discover)** 页使用的预制游戏数据库（`RetroGo/Resources/OnDemandRes/gamerdb.sqlite`，
-约 60 MB）体积较大，**未纳入 git 管理**。缺少该文件不影响 App 其余部分的构建与运行，仅发现页需要它。
+以下大型二进制文件**未纳入 git 管理**。缺少它们项目仍可构建，但部分功能不可用。
 
-如需该文件，请发邮件至 **askrsw@163.com** 索取，并将其放置到
-`RetroGo/Resources/OnDemandRes/gamerdb.sqlite`。
+| 文件 | 路径 | 用途 |
+|---|---|---|
+| 核心 Framework | `RetroGo/Resources/Cores/*.framework` | 模拟核心 — **运行游戏必需** |
+| 游戏数据库 | `RetroGo/Resources/OnDemandRes/gamerdb.sqlite` | 发现页游戏目录 |
+| 游戏名本地化 | `RetroGo/Resources/OnDemandRes/gameloc.sqlite` | 发现页中文游戏名 |
+| 金手指数据库 | `RetroGo/Resources/OnDemandRes/cheat.sqlite` | 系统金手指模板 |
+
+**如需获取这些文件**，请发送邮件至 **askrsw@163.com** 索取。
 
 ## 🎮 使用说明
 

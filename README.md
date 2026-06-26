@@ -51,9 +51,8 @@ Download it if you want to try the latest public release on your iPhone or iPad.
 * **Core Logic**: Based on RetroArch/Libretro environment.
 
 ### About Emulation Cores
-To ensure a seamless build process for version 1.0:
 1.  **Sourcing**: All core binaries are sourced from the official [RetroArch Buildbot](https://buildbot.libretro.com/).
-2.  **Packaging**: We sign and package official dylibs into iOS Frameworks. These are bundled directly within the repository to eliminate the need for complex pre-processing.
+2.  **Not in Git**: Core frameworks (`RetroGo/Resources/Cores/`) are large binaries and are **not tracked in git**. See [Missing Resources](#-missing-resources) below for how to obtain them.
 3.  **Compliance**: Each core remains subject to its original license (GPLv2, GPLv3, MIT, etc.).
 
 ## 🚀 Build Instructions
@@ -81,14 +80,19 @@ To ensure a seamless build process for version 1.0:
 4.  **Run**
     Connect your device and press `Cmd + R`.
 
-### Game Database Resource (`gamerdb.sqlite`)
+### 📦 Missing Resources
 
-The prebuilt game database used by the **Discover** page (`RetroGo/Resources/OnDemandRes/gamerdb.sqlite`,
-~60 MB) is a large binary and is **not tracked in git**. The rest of the app builds and runs without it;
-only the Discover page needs it.
+Several large binary files are **not tracked in git**. The project can still be built without them, but
+certain features will be unavailable.
 
-If you need this file, email **askrsw@163.com** and we will send it to you. Place it at
-`RetroGo/Resources/OnDemandRes/gamerdb.sqlite`.
+| File | Path | Purpose |
+|---|---|---|
+| Core Frameworks | `RetroGo/Resources/Cores/*.framework` | Emulation cores — **required to run any game** |
+| Game Database | `RetroGo/Resources/OnDemandRes/gamerdb.sqlite` | Discover page game catalog |
+| Game Name Localization | `RetroGo/Resources/OnDemandRes/gameloc.sqlite` | Chinese game names in Discover |
+| Cheat Database | `RetroGo/Resources/OnDemandRes/cheat.sqlite` | System cheat templates |
+
+**To obtain these files**, email **askrsw@163.com** and we will send them to you.
 
 ## 🎮 Usage & ROMs
 

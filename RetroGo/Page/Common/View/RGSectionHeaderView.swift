@@ -30,9 +30,21 @@ final class RGSectionHeaderView: UITableViewHeaderFooterView {
     class var className: String { String(describing: Self.self) }
 
     private let label = UILabel()
+    private var leadingConstraint: Constraint?
+    private var trailingConstraint: Constraint?
 
     var text: String? {
         didSet { label.text = text }
+    }
+
+    /// Horizontal inset for the title. Defaults to 0 so existing inset-grouped
+    /// callers (which already provide their own card margins) are unaffected.
+    /// Plain-style tables can set this to align the header with cell content.
+    var horizontalInset: CGFloat = 0 {
+        didSet {
+            leadingConstraint?.update(offset: horizontalInset)
+            trailingConstraint?.update(offset: -horizontalInset)
+        }
     }
 
     override init(reuseIdentifier: String?) {
@@ -54,7 +66,8 @@ final class RGSectionHeaderView: UITableViewHeaderFooterView {
         contentView.addSubview(label)
         label.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(12)
-            make.leading.trailing.equalToSuperview()
+            leadingConstraint = make.leading.equalToSuperview().constraint
+            trailingConstraint = make.trailing.equalToSuperview().constraint
             make.bottom.equalToSuperview().offset(-8).priority(.high)
         }
     }

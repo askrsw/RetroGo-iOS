@@ -65,6 +65,8 @@ final class GameStateTableViewCell: UITableViewCell {
 
         thumbnailView.contentMode = .scaleAspectFill
         contentView.addSubview(thumbnailView)
+        thumbnailView.clipsToBounds = true
+        thumbnailView.layer.cornerRadius = 4
         thumbnailView.snp.makeConstraints { make in
             make.leading.equalTo(20)
             make.top.equalTo(5)
