@@ -285,12 +285,12 @@ extension RetroRomFileImportor {
             let message = NSString.localizedStringWithFormat(format as NSString, details) as String
             let title = Bundle.localizedString(forKey: "homepage_import_incomplete_files_title")
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self] _ in
+            let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self = self] _ in
                 self.incompletePolicy = .cancel
                 self.procSemphore.signal()
             }
             alert.addAction(cancelAction)
-            let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self] _ in
+            let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self = self] _ in
                 self.incompletePolicy = .skip
                 self.procSemphore.signal()
             }
@@ -318,12 +318,12 @@ extension RetroRomFileImportor {
                     message = String(format: msgFormatter, item.itemName)
                 }
                 let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self] _ in
+                let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self = self] _ in
                     self.conflictPolicy = .cancel
                     self.procSemphore.signal()
                 }
                 alert.addAction(cancelAction)
-                let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self] _ in
+                let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self = self] _ in
                     self.conflictPolicy = .skip
                     self.procSemphore.signal()
                 }

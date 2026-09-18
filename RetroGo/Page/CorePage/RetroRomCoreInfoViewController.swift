@@ -388,7 +388,7 @@ extension RetroRomCoreInfoViewController: UIDocumentPickerDelegate {
             let message = String(format: Bundle.localizedString(forKey: "coreinfo_firmware_read_dir_failed"), error.localizedDescription)
             indicatorView.errorMessage(message, title: title, canDismiss: true)
         }) { updatedFirmwares in
-            DispatchQueue.main.async { [weak self] in
+            DispatchQueue.main.async { [weak self = self] in
                 guard let self = self else { return }
 
                 if !updatedFirmwares.isEmpty {

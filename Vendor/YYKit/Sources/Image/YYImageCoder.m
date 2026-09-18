@@ -14,7 +14,6 @@
 #import <ImageIO/ImageIO.h>
 #import <Accelerate/Accelerate.h>
 #import <QuartzCore/QuartzCore.h>
-#import <MobileCoreServices/MobileCoreServices.h>
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <objc/runtime.h>
 #import <pthread.h>
@@ -1135,15 +1134,16 @@ YYImageType YYImageDetectType(CFDataRef data) {
 }
 
 CFStringRef YYImageTypeToUTType(YYImageType type) {
+    // Stable UTI identifiers preserve iOS 13 support without deprecated constants.
     switch (type) {
-        case YYImageTypeJPEG: return kUTTypeJPEG;
-        case YYImageTypeJPEG2000: return kUTTypeJPEG2000;
-        case YYImageTypeTIFF: return kUTTypeTIFF;
-        case YYImageTypeBMP: return kUTTypeBMP;
-        case YYImageTypeICO: return kUTTypeICO;
-        case YYImageTypeICNS: return kUTTypeAppleICNS;
-        case YYImageTypeGIF: return kUTTypeGIF;
-        case YYImageTypePNG: return kUTTypePNG;
+        case YYImageTypeJPEG: return CFSTR("public.jpeg");
+        case YYImageTypeJPEG2000: return CFSTR("public.jpeg-2000");
+        case YYImageTypeTIFF: return CFSTR("public.tiff");
+        case YYImageTypeBMP: return CFSTR("com.microsoft.bmp");
+        case YYImageTypeICO: return CFSTR("com.microsoft.ico");
+        case YYImageTypeICNS: return CFSTR("com.apple.icns");
+        case YYImageTypeGIF: return CFSTR("com.compuserve.gif");
+        case YYImageTypePNG: return CFSTR("public.png");
         default: return NULL;
     }
 }
@@ -1152,14 +1152,14 @@ YYImageType YYImageTypeFromUTType(CFStringRef uti) {
     static NSDictionary *dic;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        dic = @{(id)kUTTypeJPEG : @(YYImageTypeJPEG),
-                (id)kUTTypeJPEG2000 : @(YYImageTypeJPEG2000),
-                (id)kUTTypeTIFF : @(YYImageTypeTIFF),
-                (id)kUTTypeBMP : @(YYImageTypeBMP),
-                (id)kUTTypeICO : @(YYImageTypeICO),
-                (id)kUTTypeAppleICNS : @(YYImageTypeICNS),
-                (id)kUTTypeGIF : @(YYImageTypeGIF),
-                (id)kUTTypePNG : @(YYImageTypePNG)};
+        dic = @{(__bridge NSString *)YYImageTypeToUTType(YYImageTypeJPEG) : @(YYImageTypeJPEG),
+                (__bridge NSString *)YYImageTypeToUTType(YYImageTypeJPEG2000) : @(YYImageTypeJPEG2000),
+                (__bridge NSString *)YYImageTypeToUTType(YYImageTypeTIFF) : @(YYImageTypeTIFF),
+                (__bridge NSString *)YYImageTypeToUTType(YYImageTypeBMP) : @(YYImageTypeBMP),
+                (__bridge NSString *)YYImageTypeToUTType(YYImageTypeICO) : @(YYImageTypeICO),
+                (__bridge NSString *)YYImageTypeToUTType(YYImageTypeICNS) : @(YYImageTypeICNS),
+                (__bridge NSString *)YYImageTypeToUTType(YYImageTypeGIF) : @(YYImageTypeGIF),
+                (__bridge NSString *)YYImageTypeToUTType(YYImageTypePNG) : @(YYImageTypePNG)};
     });
     if (!uti) return YYImageTypeUnknown;
     NSNumber *num = dic[(__bridge __strong id)(uti)];
