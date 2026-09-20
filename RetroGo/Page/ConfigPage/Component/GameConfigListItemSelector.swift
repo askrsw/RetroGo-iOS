@@ -91,6 +91,7 @@ extension GameConfigListItemSelector {
                 }
             }()
             cell.textLabel?.text = item.title
+            cell.textLabel?.numberOfLines = 0
             cell.accessoryType = indexPath == oldSelectedIndex ? .checkmark : .none
             return cell
         }

@@ -596,6 +596,56 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
     return systemShowPath;
 }
 
+- (nullable NSString *)systemDirectoryPath {
+    NSString *path = d_systemShowPath;
+    if (path.length == 0) {
+        return nil;
+    }
+    if ([path hasPrefix:@"~"]) {
+        NSString *docsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+        path = [path stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:docsPath];
+    }
+
+    NSFileManager *manager = NSFileManager.defaultManager;
+    if (![manager fileExistsAtPath:path]) {
+        NSError *error = nil;
+        if (![manager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:&error]) {
+            NSLog(@"[CoreInfo] Failed to create system directory %@: %@", path, error.localizedDescription);
+            return nil;
+        }
+    }
+
+    return path;
+}
+
+- (BOOL)importSystemFileAtURL:(NSURL *)url fileName:(NSString *)fileName {
+    NSString *directory = [self systemDirectoryPath];
+    if (directory == nil || fileName.length == 0) {
+        return NO;
+    }
+
+    NSString *destPath = [directory stringByAppendingPathComponent:fileName];
+    NSFileManager *manager = NSFileManager.defaultManager;
+    BOOL accessGranted = [url startAccessingSecurityScopedResource];
+
+    if ([manager fileExistsAtPath:destPath]) {
+        [manager removeItemAtPath:destPath error:nil];
+    }
+
+    NSError *error = nil;
+    BOOL success = [manager copyItemAtPath:url.path toPath:destPath error:&error];
+
+    if (accessGranted) {
+        [url stopAccessingSecurityScopedResource];
+    }
+
+    if (!success) {
+        NSLog(@"[CoreInfo] Failed to import %@ as %@: %@", url.lastPathComponent, fileName, error.localizedDescription);
+    }
+
+    return success;
+}
+
 - (nullable NSArray<EmuCoreFirmware *> *)loadMameFirmwares {
     NSString *path = d_systemShowPath;
     if ([path hasPrefix:@"~"]) {

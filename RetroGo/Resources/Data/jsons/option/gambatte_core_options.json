@@ -1,0 +1,2655 @@
+{
+  "coreId": "gambatte",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Palette, video and audio settings.",
+        "zh-Hans": "配色、画面与音频设置。"
+      },
+      "id": "general",
+      "options": [
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Colorize original Game Boy games. 'Auto' picks the most appropriate palette. 'GBC' and 'SGB' use the game's official palette on those systems. 'Internal' uses the palette selected below. 'Custom' loads a palette file added in the core's BIOS files.",
+            "zh-Hans": "给黑白 GB 游戏上色。「自动」挑选最合适的配色；「GBC」「SGB」使用游戏在 GBC 或超级 GB 上的官方配色；「内部」使用下面选择的配色；「自定义」读取在核心 BIOS 中添加的调色板文件。"
+          },
+          "key": "gambatte_gb_colorization",
+          "restartRequired": false,
+          "title": {
+            "en": "GB Colorization",
+            "zh-Hans": "GB 上色"
+          },
+          "type": "select",
+          "valueLabels": {
+            "GBC": {
+              "en": "GBC",
+              "zh-Hans": "GBC"
+            },
+            "SGB": {
+              "en": "SGB",
+              "zh-Hans": "SGB"
+            },
+            "auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "custom": {
+              "en": "Custom",
+              "zh-Hans": "自定义"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "internal": {
+              "en": "Internal",
+              "zh-Hans": "内部"
+            }
+          },
+          "values": [
+            "disabled",
+            "auto",
+            "GBC",
+            "SGB",
+            "internal",
+            "custom"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "GB - DMG",
+          "description": {
+            "en": "Palette used when 'GB Colorization' is set to 'Internal'. 'GB' palettes mimic original Game Boy hardware, 'GBC'/'SGB' are official console palettes, and TWB64/PixelShift are community packs.",
+            "zh-Hans": "「GB 上色」设为「内部」时使用的配色。GB 开头的配色模拟初代 GB 的屏幕，GBC 和 SGB 开头的是官方机型配色，TWB64 与 PixelShift 是社区制作的配色包。"
+          },
+          "key": "gambatte_gb_internal_palette",
+          "restartRequired": false,
+          "title": {
+            "en": "Internal Palette",
+            "zh-Hans": "内部调色板"
+          },
+          "type": "select",
+          "valueLabels": {
+            "GB - DMG": {
+              "en": "GB - DMG",
+              "zh-Hans": "GB - DMG"
+            },
+            "GB - Light": {
+              "en": "GB - Light",
+              "zh-Hans": "GB - Light"
+            },
+            "GB - Pocket": {
+              "en": "GB - Pocket",
+              "zh-Hans": "GB - Pocket"
+            },
+            "GBC - Blue": {
+              "en": "GBC - Blue",
+              "zh-Hans": "GBC - Blue"
+            },
+            "GBC - Brown": {
+              "en": "GBC - Brown",
+              "zh-Hans": "GBC - Brown"
+            },
+            "GBC - Dark Blue": {
+              "en": "GBC - Dark Blue",
+              "zh-Hans": "GBC - Dark Blue"
+            },
+            "GBC - Dark Brown": {
+              "en": "GBC - Dark Brown",
+              "zh-Hans": "GBC - Dark Brown"
+            },
+            "GBC - Dark Green": {
+              "en": "GBC - Dark Green",
+              "zh-Hans": "GBC - Dark Green"
+            },
+            "GBC - Grayscale": {
+              "en": "GBC - Grayscale",
+              "zh-Hans": "GBC - Grayscale"
+            },
+            "GBC - Green": {
+              "en": "GBC - Green",
+              "zh-Hans": "GBC - Green"
+            },
+            "GBC - Inverted": {
+              "en": "GBC - Inverted",
+              "zh-Hans": "GBC - Inverted"
+            },
+            "GBC - Orange": {
+              "en": "GBC - Orange",
+              "zh-Hans": "GBC - Orange"
+            },
+            "GBC - Pastel Mix": {
+              "en": "GBC - Pastel Mix",
+              "zh-Hans": "GBC - Pastel Mix"
+            },
+            "GBC - Red": {
+              "en": "GBC - Red",
+              "zh-Hans": "GBC - Red"
+            },
+            "GBC - Yellow": {
+              "en": "GBC - Yellow",
+              "zh-Hans": "GBC - Yellow"
+            },
+            "PixelShift - Pack 1": {
+              "en": "PixelShift - Pack 1",
+              "zh-Hans": "PixelShift - Pack 1"
+            },
+            "SGB - 1A": {
+              "en": "SGB - 1A",
+              "zh-Hans": "SGB - 1A"
+            },
+            "SGB - 1B": {
+              "en": "SGB - 1B",
+              "zh-Hans": "SGB - 1B"
+            },
+            "SGB - 1C": {
+              "en": "SGB - 1C",
+              "zh-Hans": "SGB - 1C"
+            },
+            "SGB - 1D": {
+              "en": "SGB - 1D",
+              "zh-Hans": "SGB - 1D"
+            },
+            "SGB - 1E": {
+              "en": "SGB - 1E",
+              "zh-Hans": "SGB - 1E"
+            },
+            "SGB - 1F": {
+              "en": "SGB - 1F",
+              "zh-Hans": "SGB - 1F"
+            },
+            "SGB - 1G": {
+              "en": "SGB - 1G",
+              "zh-Hans": "SGB - 1G"
+            },
+            "SGB - 1H": {
+              "en": "SGB - 1H",
+              "zh-Hans": "SGB - 1H"
+            },
+            "SGB - 2A": {
+              "en": "SGB - 2A",
+              "zh-Hans": "SGB - 2A"
+            },
+            "SGB - 2B": {
+              "en": "SGB - 2B",
+              "zh-Hans": "SGB - 2B"
+            },
+            "SGB - 2C": {
+              "en": "SGB - 2C",
+              "zh-Hans": "SGB - 2C"
+            },
+            "SGB - 2D": {
+              "en": "SGB - 2D",
+              "zh-Hans": "SGB - 2D"
+            },
+            "SGB - 2E": {
+              "en": "SGB - 2E",
+              "zh-Hans": "SGB - 2E"
+            },
+            "SGB - 2F": {
+              "en": "SGB - 2F",
+              "zh-Hans": "SGB - 2F"
+            },
+            "SGB - 2G": {
+              "en": "SGB - 2G",
+              "zh-Hans": "SGB - 2G"
+            },
+            "SGB - 2H": {
+              "en": "SGB - 2H",
+              "zh-Hans": "SGB - 2H"
+            },
+            "SGB - 3A": {
+              "en": "SGB - 3A",
+              "zh-Hans": "SGB - 3A"
+            },
+            "SGB - 3B": {
+              "en": "SGB - 3B",
+              "zh-Hans": "SGB - 3B"
+            },
+            "SGB - 3C": {
+              "en": "SGB - 3C",
+              "zh-Hans": "SGB - 3C"
+            },
+            "SGB - 3D": {
+              "en": "SGB - 3D",
+              "zh-Hans": "SGB - 3D"
+            },
+            "SGB - 3E": {
+              "en": "SGB - 3E",
+              "zh-Hans": "SGB - 3E"
+            },
+            "SGB - 3F": {
+              "en": "SGB - 3F",
+              "zh-Hans": "SGB - 3F"
+            },
+            "SGB - 3G": {
+              "en": "SGB - 3G",
+              "zh-Hans": "SGB - 3G"
+            },
+            "SGB - 3H": {
+              "en": "SGB - 3H",
+              "zh-Hans": "SGB - 3H"
+            },
+            "SGB - 4A": {
+              "en": "SGB - 4A",
+              "zh-Hans": "SGB - 4A"
+            },
+            "SGB - 4B": {
+              "en": "SGB - 4B",
+              "zh-Hans": "SGB - 4B"
+            },
+            "SGB - 4C": {
+              "en": "SGB - 4C",
+              "zh-Hans": "SGB - 4C"
+            },
+            "SGB - 4D": {
+              "en": "SGB - 4D",
+              "zh-Hans": "SGB - 4D"
+            },
+            "SGB - 4E": {
+              "en": "SGB - 4E",
+              "zh-Hans": "SGB - 4E"
+            },
+            "SGB - 4F": {
+              "en": "SGB - 4F",
+              "zh-Hans": "SGB - 4F"
+            },
+            "SGB - 4G": {
+              "en": "SGB - 4G",
+              "zh-Hans": "SGB - 4G"
+            },
+            "SGB - 4H": {
+              "en": "SGB - 4H",
+              "zh-Hans": "SGB - 4H"
+            },
+            "Special 1": {
+              "en": "Special 1",
+              "zh-Hans": "Special 1"
+            },
+            "Special 2": {
+              "en": "Special 2",
+              "zh-Hans": "Special 2"
+            },
+            "Special 3": {
+              "en": "Special 3",
+              "zh-Hans": "Special 3"
+            },
+            "Special 4 (TI-83 Legacy)": {
+              "en": "Special 4 (TI-83 Legacy)",
+              "zh-Hans": "Special 4 (TI-83 Legacy)"
+            },
+            "TWB64 - Pack 1": {
+              "en": "TWB64 - Pack 1",
+              "zh-Hans": "TWB64 - Pack 1"
+            },
+            "TWB64 - Pack 2": {
+              "en": "TWB64 - Pack 2",
+              "zh-Hans": "TWB64 - Pack 2"
+            },
+            "TWB64 - Pack 3": {
+              "en": "TWB64 - Pack 3",
+              "zh-Hans": "TWB64 - Pack 3"
+            }
+          },
+          "values": [
+            "GB - DMG",
+            "GB - Pocket",
+            "GB - Light",
+            "GBC - Blue",
+            "GBC - Brown",
+            "GBC - Dark Blue",
+            "GBC - Dark Brown",
+            "GBC - Dark Green",
+            "GBC - Grayscale",
+            "GBC - Green",
+            "GBC - Inverted",
+            "GBC - Orange",
+            "GBC - Pastel Mix",
+            "GBC - Red",
+            "GBC - Yellow",
+            "SGB - 1A",
+            "SGB - 1B",
+            "SGB - 1C",
+            "SGB - 1D",
+            "SGB - 1E",
+            "SGB - 1F",
+            "SGB - 1G",
+            "SGB - 1H",
+            "SGB - 2A",
+            "SGB - 2B",
+            "SGB - 2C",
+            "SGB - 2D",
+            "SGB - 2E",
+            "SGB - 2F",
+            "SGB - 2G",
+            "SGB - 2H",
+            "SGB - 3A",
+            "SGB - 3B",
+            "SGB - 3C",
+            "SGB - 3D",
+            "SGB - 3E",
+            "SGB - 3F",
+            "SGB - 3G",
+            "SGB - 3H",
+            "SGB - 4A",
+            "SGB - 4B",
+            "SGB - 4C",
+            "SGB - 4D",
+            "SGB - 4E",
+            "SGB - 4F",
+            "SGB - 4G",
+            "SGB - 4H",
+            "Special 1",
+            "Special 2",
+            "Special 3",
+            "Special 4 (TI-83 Legacy)",
+            "TWB64 - Pack 1",
+            "TWB64 - Pack 2",
+            "TWB64 - Pack 3",
+            "PixelShift - Pack 1"
+          ],
+          "visibleWhen": [
+            {
+              "gambatte_gb_colorization": [
+                "auto",
+                "internal"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "TWB64 001 - Aqours Blue",
+          "description": {
+            "en": "The palette used when 'Internal Palette' is set to 'TWB64 - Pack 1'.",
+            "zh-Hans": "「内部调色板」选择 TWB64 - Pack 1 时使用的具体配色。"
+          },
+          "key": "gambatte_gb_palette_twb64_1",
+          "restartRequired": false,
+          "title": {
+            "en": "TWB64 - Pack 1 Palette",
+            "zh-Hans": "TWB64 - Pack 1 配色"
+          },
+          "type": "select",
+          "valueLabels": {
+            "TWB64 001 - Aqours Blue": {
+              "en": "TWB64 001 - Aqours Blue",
+              "zh-Hans": "TWB64 001 - Aqours Blue"
+            },
+            "TWB64 002 - Anime Expo Ver.": {
+              "en": "TWB64 002 - Anime Expo Ver.",
+              "zh-Hans": "TWB64 002 - Anime Expo Ver."
+            },
+            "TWB64 003 - SpongeBob Yellow": {
+              "en": "TWB64 003 - SpongeBob Yellow",
+              "zh-Hans": "TWB64 003 - SpongeBob Yellow"
+            },
+            "TWB64 004 - Patrick Star Pink": {
+              "en": "TWB64 004 - Patrick Star Pink",
+              "zh-Hans": "TWB64 004 - Patrick Star Pink"
+            },
+            "TWB64 005 - Neon Red": {
+              "en": "TWB64 005 - Neon Red",
+              "zh-Hans": "TWB64 005 - Neon Red"
+            },
+            "TWB64 006 - Neon Blue": {
+              "en": "TWB64 006 - Neon Blue",
+              "zh-Hans": "TWB64 006 - Neon Blue"
+            },
+            "TWB64 007 - Neon Yellow": {
+              "en": "TWB64 007 - Neon Yellow",
+              "zh-Hans": "TWB64 007 - Neon Yellow"
+            },
+            "TWB64 008 - Neon Green": {
+              "en": "TWB64 008 - Neon Green",
+              "zh-Hans": "TWB64 008 - Neon Green"
+            },
+            "TWB64 009 - Neon Pink": {
+              "en": "TWB64 009 - Neon Pink",
+              "zh-Hans": "TWB64 009 - Neon Pink"
+            },
+            "TWB64 010 - Mario Red": {
+              "en": "TWB64 010 - Mario Red",
+              "zh-Hans": "TWB64 010 - Mario Red"
+            },
+            "TWB64 011 - Nick Orange": {
+              "en": "TWB64 011 - Nick Orange",
+              "zh-Hans": "TWB64 011 - Nick Orange"
+            },
+            "TWB64 012 - Virtual Vision": {
+              "en": "TWB64 012 - Virtual Vision",
+              "zh-Hans": "TWB64 012 - Virtual Vision"
+            },
+            "TWB64 013 - Golden Wild": {
+              "en": "TWB64 013 - Golden Wild",
+              "zh-Hans": "TWB64 013 - Golden Wild"
+            },
+            "TWB64 014 - DMG-099": {
+              "en": "TWB64 014 - DMG-099",
+              "zh-Hans": "TWB64 014 - DMG-099"
+            },
+            "TWB64 015 - Classic Blurple": {
+              "en": "TWB64 015 - Classic Blurple",
+              "zh-Hans": "TWB64 015 - Classic Blurple"
+            },
+            "TWB64 016 - 765 Production Ver.": {
+              "en": "TWB64 016 - 765 Production Ver.",
+              "zh-Hans": "TWB64 016 - 765 Production Ver."
+            },
+            "TWB64 017 - Superball Ivory": {
+              "en": "TWB64 017 - Superball Ivory",
+              "zh-Hans": "TWB64 017 - Superball Ivory"
+            },
+            "TWB64 018 - Crunchyroll Orange": {
+              "en": "TWB64 018 - Crunchyroll Orange",
+              "zh-Hans": "TWB64 018 - Crunchyroll Orange"
+            },
+            "TWB64 019 - Muse Pink": {
+              "en": "TWB64 019 - Muse Pink",
+              "zh-Hans": "TWB64 019 - Muse Pink"
+            },
+            "TWB64 020 - School Idol Blue": {
+              "en": "TWB64 020 - School Idol Blue",
+              "zh-Hans": "TWB64 020 - School Idol Blue"
+            },
+            "TWB64 021 - Gamate Ver.": {
+              "en": "TWB64 021 - Gamate Ver.",
+              "zh-Hans": "TWB64 021 - Gamate Ver."
+            },
+            "TWB64 022 - Greenscale Ver.": {
+              "en": "TWB64 022 - Greenscale Ver.",
+              "zh-Hans": "TWB64 022 - Greenscale Ver."
+            },
+            "TWB64 023 - Odyssey Gold": {
+              "en": "TWB64 023 - Odyssey Gold",
+              "zh-Hans": "TWB64 023 - Odyssey Gold"
+            },
+            "TWB64 024 - Super Saiyan God": {
+              "en": "TWB64 024 - Super Saiyan God",
+              "zh-Hans": "TWB64 024 - Super Saiyan God"
+            },
+            "TWB64 025 - Super Saiyan Blue": {
+              "en": "TWB64 025 - Super Saiyan Blue",
+              "zh-Hans": "TWB64 025 - Super Saiyan Blue"
+            },
+            "TWB64 026 - ANIMAX BLUE": {
+              "en": "TWB64 026 - ANIMAX BLUE",
+              "zh-Hans": "TWB64 026 - ANIMAX BLUE"
+            },
+            "TWB64 027 - BMO Ver.": {
+              "en": "TWB64 027 - BMO Ver.",
+              "zh-Hans": "TWB64 027 - BMO Ver."
+            },
+            "TWB64 028 - Game.com Ver.": {
+              "en": "TWB64 028 - Game.com Ver.",
+              "zh-Hans": "TWB64 028 - Game.com Ver."
+            },
+            "TWB64 029 - Sanrio Pink": {
+              "en": "TWB64 029 - Sanrio Pink",
+              "zh-Hans": "TWB64 029 - Sanrio Pink"
+            },
+            "TWB64 030 - Timmy Turner Pink": {
+              "en": "TWB64 030 - Timmy Turner Pink",
+              "zh-Hans": "TWB64 030 - Timmy Turner Pink"
+            },
+            "TWB64 031 - Fairly OddPalette": {
+              "en": "TWB64 031 - Fairly OddPalette",
+              "zh-Hans": "TWB64 031 - Fairly OddPalette"
+            },
+            "TWB64 032 - Danny Phantom Silver": {
+              "en": "TWB64 032 - Danny Phantom Silver",
+              "zh-Hans": "TWB64 032 - Danny Phantom Silver"
+            },
+            "TWB64 033 - Link's Awakening DX Ver.": {
+              "en": "TWB64 033 - Link's Awakening DX Ver.",
+              "zh-Hans": "TWB64 033 - Link's Awakening DX Ver."
+            },
+            "TWB64 034 - Travel Wood": {
+              "en": "TWB64 034 - Travel Wood",
+              "zh-Hans": "TWB64 034 - Travel Wood"
+            },
+            "TWB64 035 - Pokemon Ver.": {
+              "en": "TWB64 035 - Pokemon Ver.",
+              "zh-Hans": "TWB64 035 - Pokemon Ver."
+            },
+            "TWB64 036 - Game Grump Orange": {
+              "en": "TWB64 036 - Game Grump Orange",
+              "zh-Hans": "TWB64 036 - Game Grump Orange"
+            },
+            "TWB64 037 - Scooby-Doo Mystery Ver.": {
+              "en": "TWB64 037 - Scooby-Doo Mystery Ver.",
+              "zh-Hans": "TWB64 037 - Scooby-Doo Mystery Ver."
+            },
+            "TWB64 038 - Pokemon mini Ver.": {
+              "en": "TWB64 038 - Pokemon mini Ver.",
+              "zh-Hans": "TWB64 038 - Pokemon mini Ver."
+            },
+            "TWB64 039 - Supervision Ver.": {
+              "en": "TWB64 039 - Supervision Ver.",
+              "zh-Hans": "TWB64 039 - Supervision Ver."
+            },
+            "TWB64 040 - DMG Ver.": {
+              "en": "TWB64 040 - DMG Ver.",
+              "zh-Hans": "TWB64 040 - DMG Ver."
+            },
+            "TWB64 041 - Pocket Ver.": {
+              "en": "TWB64 041 - Pocket Ver.",
+              "zh-Hans": "TWB64 041 - Pocket Ver."
+            },
+            "TWB64 042 - Light Ver.": {
+              "en": "TWB64 042 - Light Ver.",
+              "zh-Hans": "TWB64 042 - Light Ver."
+            },
+            "TWB64 043 - All Might Hero Palette": {
+              "en": "TWB64 043 - All Might Hero Palette",
+              "zh-Hans": "TWB64 043 - All Might Hero Palette"
+            },
+            "TWB64 044 - U.A. High School Uniform": {
+              "en": "TWB64 044 - U.A. High School Uniform",
+              "zh-Hans": "TWB64 044 - U.A. High School Uniform"
+            },
+            "TWB64 045 - Pikachu Yellow": {
+              "en": "TWB64 045 - Pikachu Yellow",
+              "zh-Hans": "TWB64 045 - Pikachu Yellow"
+            },
+            "TWB64 046 - Eevee Brown": {
+              "en": "TWB64 046 - Eevee Brown",
+              "zh-Hans": "TWB64 046 - Eevee Brown"
+            },
+            "TWB64 047 - Microvision Ver.": {
+              "en": "TWB64 047 - Microvision Ver.",
+              "zh-Hans": "TWB64 047 - Microvision Ver."
+            },
+            "TWB64 048 - TI-83 Ver.": {
+              "en": "TWB64 048 - TI-83 Ver.",
+              "zh-Hans": "TWB64 048 - TI-83 Ver."
+            },
+            "TWB64 049 - Aegis Cherry": {
+              "en": "TWB64 049 - Aegis Cherry",
+              "zh-Hans": "TWB64 049 - Aegis Cherry"
+            },
+            "TWB64 050 - Labo Fawn": {
+              "en": "TWB64 050 - Labo Fawn",
+              "zh-Hans": "TWB64 050 - Labo Fawn"
+            },
+            "TWB64 051 - MILLION LIVE GOLD!": {
+              "en": "TWB64 051 - MILLION LIVE GOLD!",
+              "zh-Hans": "TWB64 051 - MILLION LIVE GOLD!"
+            },
+            "TWB64 052 - Squidward Sea Foam Green": {
+              "en": "TWB64 052 - Squidward Sea Foam Green",
+              "zh-Hans": "TWB64 052 - Squidward Sea Foam Green"
+            },
+            "TWB64 053 - VMU Ver.": {
+              "en": "TWB64 053 - VMU Ver.",
+              "zh-Hans": "TWB64 053 - VMU Ver."
+            },
+            "TWB64 054 - Game Master Ver.": {
+              "en": "TWB64 054 - Game Master Ver.",
+              "zh-Hans": "TWB64 054 - Game Master Ver."
+            },
+            "TWB64 055 - Android Green": {
+              "en": "TWB64 055 - Android Green",
+              "zh-Hans": "TWB64 055 - Android Green"
+            },
+            "TWB64 056 - Amazon Vision": {
+              "en": "TWB64 056 - Amazon Vision",
+              "zh-Hans": "TWB64 056 - Amazon Vision"
+            },
+            "TWB64 057 - Google Red": {
+              "en": "TWB64 057 - Google Red",
+              "zh-Hans": "TWB64 057 - Google Red"
+            },
+            "TWB64 058 - Google Blue": {
+              "en": "TWB64 058 - Google Blue",
+              "zh-Hans": "TWB64 058 - Google Blue"
+            },
+            "TWB64 059 - Google Yellow": {
+              "en": "TWB64 059 - Google Yellow",
+              "zh-Hans": "TWB64 059 - Google Yellow"
+            },
+            "TWB64 060 - Google Green": {
+              "en": "TWB64 060 - Google Green",
+              "zh-Hans": "TWB64 060 - Google Green"
+            },
+            "TWB64 061 - WonderSwan Ver.": {
+              "en": "TWB64 061 - WonderSwan Ver.",
+              "zh-Hans": "TWB64 061 - WonderSwan Ver."
+            },
+            "TWB64 062 - Neo Geo Pocket Ver.": {
+              "en": "TWB64 062 - Neo Geo Pocket Ver.",
+              "zh-Hans": "TWB64 062 - Neo Geo Pocket Ver."
+            },
+            "TWB64 063 - Dew Green": {
+              "en": "TWB64 063 - Dew Green",
+              "zh-Hans": "TWB64 063 - Dew Green"
+            },
+            "TWB64 064 - Coca-Cola Vision": {
+              "en": "TWB64 064 - Coca-Cola Vision",
+              "zh-Hans": "TWB64 064 - Coca-Cola Vision"
+            },
+            "TWB64 065 - GameKing Ver.": {
+              "en": "TWB64 065 - GameKing Ver.",
+              "zh-Hans": "TWB64 065 - GameKing Ver."
+            },
+            "TWB64 066 - Do The Dew Ver.": {
+              "en": "TWB64 066 - Do The Dew Ver.",
+              "zh-Hans": "TWB64 066 - Do The Dew Ver."
+            },
+            "TWB64 067 - Digivice Ver.": {
+              "en": "TWB64 067 - Digivice Ver.",
+              "zh-Hans": "TWB64 067 - Digivice Ver."
+            },
+            "TWB64 068 - Bikini Bottom Ver.": {
+              "en": "TWB64 068 - Bikini Bottom Ver.",
+              "zh-Hans": "TWB64 068 - Bikini Bottom Ver."
+            },
+            "TWB64 069 - Blossom Pink": {
+              "en": "TWB64 069 - Blossom Pink",
+              "zh-Hans": "TWB64 069 - Blossom Pink"
+            },
+            "TWB64 070 - Bubbles Blue": {
+              "en": "TWB64 070 - Bubbles Blue",
+              "zh-Hans": "TWB64 070 - Bubbles Blue"
+            },
+            "TWB64 071 - Buttercup Green": {
+              "en": "TWB64 071 - Buttercup Green",
+              "zh-Hans": "TWB64 071 - Buttercup Green"
+            },
+            "TWB64 072 - NASCAR Ver.": {
+              "en": "TWB64 072 - NASCAR Ver.",
+              "zh-Hans": "TWB64 072 - NASCAR Ver."
+            },
+            "TWB64 073 - Lemon-Lime Green": {
+              "en": "TWB64 073 - Lemon-Lime Green",
+              "zh-Hans": "TWB64 073 - Lemon-Lime Green"
+            },
+            "TWB64 074 - Mega Man V Ver.": {
+              "en": "TWB64 074 - Mega Man V Ver.",
+              "zh-Hans": "TWB64 074 - Mega Man V Ver."
+            },
+            "TWB64 075 - Tamagotchi Ver.": {
+              "en": "TWB64 075 - Tamagotchi Ver.",
+              "zh-Hans": "TWB64 075 - Tamagotchi Ver."
+            },
+            "TWB64 076 - Phantom Red": {
+              "en": "TWB64 076 - Phantom Red",
+              "zh-Hans": "TWB64 076 - Phantom Red"
+            },
+            "TWB64 077 - Halloween Ver.": {
+              "en": "TWB64 077 - Halloween Ver.",
+              "zh-Hans": "TWB64 077 - Halloween Ver."
+            },
+            "TWB64 078 - Christmas Ver.": {
+              "en": "TWB64 078 - Christmas Ver.",
+              "zh-Hans": "TWB64 078 - Christmas Ver."
+            },
+            "TWB64 079 - Cardcaptor Pink": {
+              "en": "TWB64 079 - Cardcaptor Pink",
+              "zh-Hans": "TWB64 079 - Cardcaptor Pink"
+            },
+            "TWB64 080 - Pretty Guardian Gold": {
+              "en": "TWB64 080 - Pretty Guardian Gold",
+              "zh-Hans": "TWB64 080 - Pretty Guardian Gold"
+            },
+            "TWB64 081 - Camouflage Ver.": {
+              "en": "TWB64 081 - Camouflage Ver.",
+              "zh-Hans": "TWB64 081 - Camouflage Ver."
+            },
+            "TWB64 082 - Legendary Super Saiyan": {
+              "en": "TWB64 082 - Legendary Super Saiyan",
+              "zh-Hans": "TWB64 082 - Legendary Super Saiyan"
+            },
+            "TWB64 083 - Super Saiyan Rose": {
+              "en": "TWB64 083 - Super Saiyan Rose",
+              "zh-Hans": "TWB64 083 - Super Saiyan Rose"
+            },
+            "TWB64 084 - Super Saiyan": {
+              "en": "TWB64 084 - Super Saiyan",
+              "zh-Hans": "TWB64 084 - Super Saiyan"
+            },
+            "TWB64 085 - Perfected Ultra Instinct": {
+              "en": "TWB64 085 - Perfected Ultra Instinct",
+              "zh-Hans": "TWB64 085 - Perfected Ultra Instinct"
+            },
+            "TWB64 086 - Saint Snow Red": {
+              "en": "TWB64 086 - Saint Snow Red",
+              "zh-Hans": "TWB64 086 - Saint Snow Red"
+            },
+            "TWB64 087 - Yellow Banana": {
+              "en": "TWB64 087 - Yellow Banana",
+              "zh-Hans": "TWB64 087 - Yellow Banana"
+            },
+            "TWB64 088 - Green Banana": {
+              "en": "TWB64 088 - Green Banana",
+              "zh-Hans": "TWB64 088 - Green Banana"
+            },
+            "TWB64 089 - Super Saiyan 3": {
+              "en": "TWB64 089 - Super Saiyan 3",
+              "zh-Hans": "TWB64 089 - Super Saiyan 3"
+            },
+            "TWB64 090 - Super Saiyan Blue Evolved": {
+              "en": "TWB64 090 - Super Saiyan Blue Evolved",
+              "zh-Hans": "TWB64 090 - Super Saiyan Blue Evolved"
+            },
+            "TWB64 091 - Pocket Tales Ver.": {
+              "en": "TWB64 091 - Pocket Tales Ver.",
+              "zh-Hans": "TWB64 091 - Pocket Tales Ver."
+            },
+            "TWB64 092 - Investigation Yellow": {
+              "en": "TWB64 092 - Investigation Yellow",
+              "zh-Hans": "TWB64 092 - Investigation Yellow"
+            },
+            "TWB64 093 - S.E.E.S. Blue": {
+              "en": "TWB64 093 - S.E.E.S. Blue",
+              "zh-Hans": "TWB64 093 - S.E.E.S. Blue"
+            },
+            "TWB64 094 - Ultra Instinct Sign": {
+              "en": "TWB64 094 - Ultra Instinct Sign",
+              "zh-Hans": "TWB64 094 - Ultra Instinct Sign"
+            },
+            "TWB64 095 - Hokage Orange": {
+              "en": "TWB64 095 - Hokage Orange",
+              "zh-Hans": "TWB64 095 - Hokage Orange"
+            },
+            "TWB64 096 - Straw Hat Red": {
+              "en": "TWB64 096 - Straw Hat Red",
+              "zh-Hans": "TWB64 096 - Straw Hat Red"
+            },
+            "TWB64 097 - Sword Art Cyan": {
+              "en": "TWB64 097 - Sword Art Cyan",
+              "zh-Hans": "TWB64 097 - Sword Art Cyan"
+            },
+            "TWB64 098 - Deku Alpha Emerald": {
+              "en": "TWB64 098 - Deku Alpha Emerald",
+              "zh-Hans": "TWB64 098 - Deku Alpha Emerald"
+            },
+            "TWB64 099 - Blue Stripes Ver.": {
+              "en": "TWB64 099 - Blue Stripes Ver.",
+              "zh-Hans": "TWB64 099 - Blue Stripes Ver."
+            },
+            "TWB64 100 - Precure Marble Raspberry": {
+              "en": "TWB64 100 - Precure Marble Raspberry",
+              "zh-Hans": "TWB64 100 - Precure Marble Raspberry"
+            }
+          },
+          "values": [
+            "TWB64 001 - Aqours Blue",
+            "TWB64 002 - Anime Expo Ver.",
+            "TWB64 003 - SpongeBob Yellow",
+            "TWB64 004 - Patrick Star Pink",
+            "TWB64 005 - Neon Red",
+            "TWB64 006 - Neon Blue",
+            "TWB64 007 - Neon Yellow",
+            "TWB64 008 - Neon Green",
+            "TWB64 009 - Neon Pink",
+            "TWB64 010 - Mario Red",
+            "TWB64 011 - Nick Orange",
+            "TWB64 012 - Virtual Vision",
+            "TWB64 013 - Golden Wild",
+            "TWB64 014 - DMG-099",
+            "TWB64 015 - Classic Blurple",
+            "TWB64 016 - 765 Production Ver.",
+            "TWB64 017 - Superball Ivory",
+            "TWB64 018 - Crunchyroll Orange",
+            "TWB64 019 - Muse Pink",
+            "TWB64 020 - School Idol Blue",
+            "TWB64 021 - Gamate Ver.",
+            "TWB64 022 - Greenscale Ver.",
+            "TWB64 023 - Odyssey Gold",
+            "TWB64 024 - Super Saiyan God",
+            "TWB64 025 - Super Saiyan Blue",
+            "TWB64 026 - ANIMAX BLUE",
+            "TWB64 027 - BMO Ver.",
+            "TWB64 028 - Game.com Ver.",
+            "TWB64 029 - Sanrio Pink",
+            "TWB64 030 - Timmy Turner Pink",
+            "TWB64 031 - Fairly OddPalette",
+            "TWB64 032 - Danny Phantom Silver",
+            "TWB64 033 - Link's Awakening DX Ver.",
+            "TWB64 034 - Travel Wood",
+            "TWB64 035 - Pokemon Ver.",
+            "TWB64 036 - Game Grump Orange",
+            "TWB64 037 - Scooby-Doo Mystery Ver.",
+            "TWB64 038 - Pokemon mini Ver.",
+            "TWB64 039 - Supervision Ver.",
+            "TWB64 040 - DMG Ver.",
+            "TWB64 041 - Pocket Ver.",
+            "TWB64 042 - Light Ver.",
+            "TWB64 043 - All Might Hero Palette",
+            "TWB64 044 - U.A. High School Uniform",
+            "TWB64 045 - Pikachu Yellow",
+            "TWB64 046 - Eevee Brown",
+            "TWB64 047 - Microvision Ver.",
+            "TWB64 048 - TI-83 Ver.",
+            "TWB64 049 - Aegis Cherry",
+            "TWB64 050 - Labo Fawn",
+            "TWB64 051 - MILLION LIVE GOLD!",
+            "TWB64 052 - Squidward Sea Foam Green",
+            "TWB64 053 - VMU Ver.",
+            "TWB64 054 - Game Master Ver.",
+            "TWB64 055 - Android Green",
+            "TWB64 056 - Amazon Vision",
+            "TWB64 057 - Google Red",
+            "TWB64 058 - Google Blue",
+            "TWB64 059 - Google Yellow",
+            "TWB64 060 - Google Green",
+            "TWB64 061 - WonderSwan Ver.",
+            "TWB64 062 - Neo Geo Pocket Ver.",
+            "TWB64 063 - Dew Green",
+            "TWB64 064 - Coca-Cola Vision",
+            "TWB64 065 - GameKing Ver.",
+            "TWB64 066 - Do The Dew Ver.",
+            "TWB64 067 - Digivice Ver.",
+            "TWB64 068 - Bikini Bottom Ver.",
+            "TWB64 069 - Blossom Pink",
+            "TWB64 070 - Bubbles Blue",
+            "TWB64 071 - Buttercup Green",
+            "TWB64 072 - NASCAR Ver.",
+            "TWB64 073 - Lemon-Lime Green",
+            "TWB64 074 - Mega Man V Ver.",
+            "TWB64 075 - Tamagotchi Ver.",
+            "TWB64 076 - Phantom Red",
+            "TWB64 077 - Halloween Ver.",
+            "TWB64 078 - Christmas Ver.",
+            "TWB64 079 - Cardcaptor Pink",
+            "TWB64 080 - Pretty Guardian Gold",
+            "TWB64 081 - Camouflage Ver.",
+            "TWB64 082 - Legendary Super Saiyan",
+            "TWB64 083 - Super Saiyan Rose",
+            "TWB64 084 - Super Saiyan",
+            "TWB64 085 - Perfected Ultra Instinct",
+            "TWB64 086 - Saint Snow Red",
+            "TWB64 087 - Yellow Banana",
+            "TWB64 088 - Green Banana",
+            "TWB64 089 - Super Saiyan 3",
+            "TWB64 090 - Super Saiyan Blue Evolved",
+            "TWB64 091 - Pocket Tales Ver.",
+            "TWB64 092 - Investigation Yellow",
+            "TWB64 093 - S.E.E.S. Blue",
+            "TWB64 094 - Ultra Instinct Sign",
+            "TWB64 095 - Hokage Orange",
+            "TWB64 096 - Straw Hat Red",
+            "TWB64 097 - Sword Art Cyan",
+            "TWB64 098 - Deku Alpha Emerald",
+            "TWB64 099 - Blue Stripes Ver.",
+            "TWB64 100 - Precure Marble Raspberry"
+          ],
+          "visibleWhen": [
+            {
+              "gambatte_gb_colorization": [
+                "auto",
+                "internal"
+              ],
+              "gambatte_gb_internal_palette": [
+                "TWB64 - Pack 1"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "TWB64 101 - 765PRO Pink",
+          "description": {
+            "en": "The palette used when 'Internal Palette' is set to 'TWB64 - Pack 2'.",
+            "zh-Hans": "「内部调色板」选择 TWB64 - Pack 2 时使用的具体配色。"
+          },
+          "key": "gambatte_gb_palette_twb64_2",
+          "restartRequired": false,
+          "title": {
+            "en": "TWB64 - Pack 2 Palette",
+            "zh-Hans": "TWB64 - Pack 2 配色"
+          },
+          "type": "select",
+          "valueLabels": {
+            "TWB64 101 - 765PRO Pink": {
+              "en": "TWB64 101 - 765PRO Pink",
+              "zh-Hans": "TWB64 101 - 765PRO Pink"
+            },
+            "TWB64 102 - CINDERELLA Blue": {
+              "en": "TWB64 102 - CINDERELLA Blue",
+              "zh-Hans": "TWB64 102 - CINDERELLA Blue"
+            },
+            "TWB64 103 - MILLION Yellow!": {
+              "en": "TWB64 103 - MILLION Yellow!",
+              "zh-Hans": "TWB64 103 - MILLION Yellow!"
+            },
+            "TWB64 104 - SideM Green": {
+              "en": "TWB64 104 - SideM Green",
+              "zh-Hans": "TWB64 104 - SideM Green"
+            },
+            "TWB64 105 - SHINY Sky Blue": {
+              "en": "TWB64 105 - SHINY Sky Blue",
+              "zh-Hans": "TWB64 105 - SHINY Sky Blue"
+            },
+            "TWB64 106 - Angry Volcano Ver.": {
+              "en": "TWB64 106 - Angry Volcano Ver.",
+              "zh-Hans": "TWB64 106 - Angry Volcano Ver."
+            },
+            "TWB64 107 - NBA Vision": {
+              "en": "TWB64 107 - NBA Vision",
+              "zh-Hans": "TWB64 107 - NBA Vision"
+            },
+            "TWB64 108 - NFL Vision": {
+              "en": "TWB64 108 - NFL Vision",
+              "zh-Hans": "TWB64 108 - NFL Vision"
+            },
+            "TWB64 109 - MLB Vision": {
+              "en": "TWB64 109 - MLB Vision",
+              "zh-Hans": "TWB64 109 - MLB Vision"
+            },
+            "TWB64 110 - Anime Digivice Ver.": {
+              "en": "TWB64 110 - Anime Digivice Ver.",
+              "zh-Hans": "TWB64 110 - Anime Digivice Ver."
+            },
+            "TWB64 111 - Aquatic Iro": {
+              "en": "TWB64 111 - Aquatic Iro",
+              "zh-Hans": "TWB64 111 - Aquatic Iro"
+            },
+            "TWB64 112 - Tea Midori": {
+              "en": "TWB64 112 - Tea Midori",
+              "zh-Hans": "TWB64 112 - Tea Midori"
+            },
+            "TWB64 113 - Sakura Pink": {
+              "en": "TWB64 113 - Sakura Pink",
+              "zh-Hans": "TWB64 113 - Sakura Pink"
+            },
+            "TWB64 114 - Wisteria Murasaki": {
+              "en": "TWB64 114 - Wisteria Murasaki",
+              "zh-Hans": "TWB64 114 - Wisteria Murasaki"
+            },
+            "TWB64 115 - Oni Aka": {
+              "en": "TWB64 115 - Oni Aka",
+              "zh-Hans": "TWB64 115 - Oni Aka"
+            },
+            "TWB64 116 - Golden Kiiro": {
+              "en": "TWB64 116 - Golden Kiiro",
+              "zh-Hans": "TWB64 116 - Golden Kiiro"
+            },
+            "TWB64 117 - Silver Shiro": {
+              "en": "TWB64 117 - Silver Shiro",
+              "zh-Hans": "TWB64 117 - Silver Shiro"
+            },
+            "TWB64 118 - Fruity Orange": {
+              "en": "TWB64 118 - Fruity Orange",
+              "zh-Hans": "TWB64 118 - Fruity Orange"
+            },
+            "TWB64 119 - AKB48 Pink": {
+              "en": "TWB64 119 - AKB48 Pink",
+              "zh-Hans": "TWB64 119 - AKB48 Pink"
+            },
+            "TWB64 120 - Miku Blue": {
+              "en": "TWB64 120 - Miku Blue",
+              "zh-Hans": "TWB64 120 - Miku Blue"
+            },
+            "TWB64 121 - Tri Digivice Ver.": {
+              "en": "TWB64 121 - Tri Digivice Ver.",
+              "zh-Hans": "TWB64 121 - Tri Digivice Ver."
+            },
+            "TWB64 122 - Survey Corps Uniform": {
+              "en": "TWB64 122 - Survey Corps Uniform",
+              "zh-Hans": "TWB64 122 - Survey Corps Uniform"
+            },
+            "TWB64 123 - Island Green": {
+              "en": "TWB64 123 - Island Green",
+              "zh-Hans": "TWB64 123 - Island Green"
+            },
+            "TWB64 124 - Nogizaka46 Purple": {
+              "en": "TWB64 124 - Nogizaka46 Purple",
+              "zh-Hans": "TWB64 124 - Nogizaka46 Purple"
+            },
+            "TWB64 125 - Ninja Turtle Green": {
+              "en": "TWB64 125 - Ninja Turtle Green",
+              "zh-Hans": "TWB64 125 - Ninja Turtle Green"
+            },
+            "TWB64 126 - Slime Blue": {
+              "en": "TWB64 126 - Slime Blue",
+              "zh-Hans": "TWB64 126 - Slime Blue"
+            },
+            "TWB64 127 - Lime Midori": {
+              "en": "TWB64 127 - Lime Midori",
+              "zh-Hans": "TWB64 127 - Lime Midori"
+            },
+            "TWB64 128 - Ghostly Aoi": {
+              "en": "TWB64 128 - Ghostly Aoi",
+              "zh-Hans": "TWB64 128 - Ghostly Aoi"
+            },
+            "TWB64 129 - Retro Bogeda": {
+              "en": "TWB64 129 - Retro Bogeda",
+              "zh-Hans": "TWB64 129 - Retro Bogeda"
+            },
+            "TWB64 130 - Royal Blue": {
+              "en": "TWB64 130 - Royal Blue",
+              "zh-Hans": "TWB64 130 - Royal Blue"
+            },
+            "TWB64 131 - Neon Purple": {
+              "en": "TWB64 131 - Neon Purple",
+              "zh-Hans": "TWB64 131 - Neon Purple"
+            },
+            "TWB64 132 - Neon Orange": {
+              "en": "TWB64 132 - Neon Orange",
+              "zh-Hans": "TWB64 132 - Neon Orange"
+            },
+            "TWB64 133 - Moonlight Vision": {
+              "en": "TWB64 133 - Moonlight Vision",
+              "zh-Hans": "TWB64 133 - Moonlight Vision"
+            },
+            "TWB64 134 - Rising Sun Red": {
+              "en": "TWB64 134 - Rising Sun Red",
+              "zh-Hans": "TWB64 134 - Rising Sun Red"
+            },
+            "TWB64 135 - Burger King Color Combo": {
+              "en": "TWB64 135 - Burger King Color Combo",
+              "zh-Hans": "TWB64 135 - Burger King Color Combo"
+            },
+            "TWB64 136 - Grand Zeno Coat": {
+              "en": "TWB64 136 - Grand Zeno Coat",
+              "zh-Hans": "TWB64 136 - Grand Zeno Coat"
+            },
+            "TWB64 137 - Pac-Man Yellow": {
+              "en": "TWB64 137 - Pac-Man Yellow",
+              "zh-Hans": "TWB64 137 - Pac-Man Yellow"
+            },
+            "TWB64 138 - Irish Green": {
+              "en": "TWB64 138 - Irish Green",
+              "zh-Hans": "TWB64 138 - Irish Green"
+            },
+            "TWB64 139 - Goku Gi": {
+              "en": "TWB64 139 - Goku Gi",
+              "zh-Hans": "TWB64 139 - Goku Gi"
+            },
+            "TWB64 140 - Dragon Ball Orange": {
+              "en": "TWB64 140 - Dragon Ball Orange",
+              "zh-Hans": "TWB64 140 - Dragon Ball Orange"
+            },
+            "TWB64 141 - Christmas Gold": {
+              "en": "TWB64 141 - Christmas Gold",
+              "zh-Hans": "TWB64 141 - Christmas Gold"
+            },
+            "TWB64 142 - Pepsi Vision": {
+              "en": "TWB64 142 - Pepsi Vision",
+              "zh-Hans": "TWB64 142 - Pepsi Vision"
+            },
+            "TWB64 143 - Bubblun Green": {
+              "en": "TWB64 143 - Bubblun Green",
+              "zh-Hans": "TWB64 143 - Bubblun Green"
+            },
+            "TWB64 144 - Bobblun Blue": {
+              "en": "TWB64 144 - Bobblun Blue",
+              "zh-Hans": "TWB64 144 - Bobblun Blue"
+            },
+            "TWB64 145 - Baja Blast Storm": {
+              "en": "TWB64 145 - Baja Blast Storm",
+              "zh-Hans": "TWB64 145 - Baja Blast Storm"
+            },
+            "TWB64 146 - Olympic Gold": {
+              "en": "TWB64 146 - Olympic Gold",
+              "zh-Hans": "TWB64 146 - Olympic Gold"
+            },
+            "TWB64 147 - LisAni Orange!": {
+              "en": "TWB64 147 - LisAni Orange!",
+              "zh-Hans": "TWB64 147 - LisAni Orange!"
+            },
+            "TWB64 148 - Liella Purple!": {
+              "en": "TWB64 148 - Liella Purple!",
+              "zh-Hans": "TWB64 148 - Liella Purple!"
+            },
+            "TWB64 149 - Olympic Silver": {
+              "en": "TWB64 149 - Olympic Silver",
+              "zh-Hans": "TWB64 149 - Olympic Silver"
+            },
+            "TWB64 150 - Olympic Bronze": {
+              "en": "TWB64 150 - Olympic Bronze",
+              "zh-Hans": "TWB64 150 - Olympic Bronze"
+            },
+            "TWB64 151 - ANA Flight Blue": {
+              "en": "TWB64 151 - ANA Flight Blue",
+              "zh-Hans": "TWB64 151 - ANA Flight Blue"
+            },
+            "TWB64 152 - Nijigasaki Orange": {
+              "en": "TWB64 152 - Nijigasaki Orange",
+              "zh-Hans": "TWB64 152 - Nijigasaki Orange"
+            },
+            "TWB64 153 - holoblue": {
+              "en": "TWB64 153 - holoblue",
+              "zh-Hans": "TWB64 153 - holoblue"
+            },
+            "TWB64 154 - WWE White and Red": {
+              "en": "TWB64 154 - WWE White and Red",
+              "zh-Hans": "TWB64 154 - WWE White and Red"
+            },
+            "TWB64 155 - Yoshi Egg Green": {
+              "en": "TWB64 155 - Yoshi Egg Green",
+              "zh-Hans": "TWB64 155 - Yoshi Egg Green"
+            },
+            "TWB64 156 - Pokedex Red": {
+              "en": "TWB64 156 - Pokedex Red",
+              "zh-Hans": "TWB64 156 - Pokedex Red"
+            },
+            "TWB64 157 - FamilyMart Vision": {
+              "en": "TWB64 157 - FamilyMart Vision",
+              "zh-Hans": "TWB64 157 - FamilyMart Vision"
+            },
+            "TWB64 158 - Xbox Green": {
+              "en": "TWB64 158 - Xbox Green",
+              "zh-Hans": "TWB64 158 - Xbox Green"
+            },
+            "TWB64 159 - Sonic Mega Blue": {
+              "en": "TWB64 159 - Sonic Mega Blue",
+              "zh-Hans": "TWB64 159 - Sonic Mega Blue"
+            },
+            "TWB64 160 - Sprite Green": {
+              "en": "TWB64 160 - Sprite Green",
+              "zh-Hans": "TWB64 160 - Sprite Green"
+            },
+            "TWB64 161 - Scarlett Green": {
+              "en": "TWB64 161 - Scarlett Green",
+              "zh-Hans": "TWB64 161 - Scarlett Green"
+            },
+            "TWB64 162 - Glitchy Blue": {
+              "en": "TWB64 162 - Glitchy Blue",
+              "zh-Hans": "TWB64 162 - Glitchy Blue"
+            },
+            "TWB64 163 - Classic LCD": {
+              "en": "TWB64 163 - Classic LCD",
+              "zh-Hans": "TWB64 163 - Classic LCD"
+            },
+            "TWB64 164 - 3DS Virtual Console Ver.": {
+              "en": "TWB64 164 - 3DS Virtual Console Ver.",
+              "zh-Hans": "TWB64 164 - 3DS Virtual Console Ver."
+            },
+            "TWB64 165 - PocketStation Ver.": {
+              "en": "TWB64 165 - PocketStation Ver.",
+              "zh-Hans": "TWB64 165 - PocketStation Ver."
+            },
+            "TWB64 166 - Timeless Gold and Red": {
+              "en": "TWB64 166 - Timeless Gold and Red",
+              "zh-Hans": "TWB64 166 - Timeless Gold and Red"
+            },
+            "TWB64 167 - Smurfy Blue": {
+              "en": "TWB64 167 - Smurfy Blue",
+              "zh-Hans": "TWB64 167 - Smurfy Blue"
+            },
+            "TWB64 168 - Swampy Ogre Green": {
+              "en": "TWB64 168 - Swampy Ogre Green",
+              "zh-Hans": "TWB64 168 - Swampy Ogre Green"
+            },
+            "TWB64 169 - Sailor Spinach Green": {
+              "en": "TWB64 169 - Sailor Spinach Green",
+              "zh-Hans": "TWB64 169 - Sailor Spinach Green"
+            },
+            "TWB64 170 - Shenron Green": {
+              "en": "TWB64 170 - Shenron Green",
+              "zh-Hans": "TWB64 170 - Shenron Green"
+            },
+            "TWB64 171 - Berserk Blood": {
+              "en": "TWB64 171 - Berserk Blood",
+              "zh-Hans": "TWB64 171 - Berserk Blood"
+            },
+            "TWB64 172 - Super Star Pink": {
+              "en": "TWB64 172 - Super Star Pink",
+              "zh-Hans": "TWB64 172 - Super Star Pink"
+            },
+            "TWB64 173 - Gamebuino Classic Ver.": {
+              "en": "TWB64 173 - Gamebuino Classic Ver.",
+              "zh-Hans": "TWB64 173 - Gamebuino Classic Ver."
+            },
+            "TWB64 174 - Barbie Pink": {
+              "en": "TWB64 174 - Barbie Pink",
+              "zh-Hans": "TWB64 174 - Barbie Pink"
+            },
+            "TWB64 175 - YOASOBI AMARANTH": {
+              "en": "TWB64 175 - YOASOBI AMARANTH",
+              "zh-Hans": "TWB64 175 - YOASOBI AMARANTH"
+            },
+            "TWB64 176 - Nokia 3310 Ver.": {
+              "en": "TWB64 176 - Nokia 3310 Ver.",
+              "zh-Hans": "TWB64 176 - Nokia 3310 Ver."
+            },
+            "TWB64 177 - Clover Green": {
+              "en": "TWB64 177 - Clover Green",
+              "zh-Hans": "TWB64 177 - Clover Green"
+            },
+            "TWB64 178 - Goku GT Gi": {
+              "en": "TWB64 178 - Goku GT Gi",
+              "zh-Hans": "TWB64 178 - Goku GT Gi"
+            },
+            "TWB64 179 - Famicom Disk Yellow": {
+              "en": "TWB64 179 - Famicom Disk Yellow",
+              "zh-Hans": "TWB64 179 - Famicom Disk Yellow"
+            },
+            "TWB64 180 - Team Rocket Uniform": {
+              "en": "TWB64 180 - Team Rocket Uniform",
+              "zh-Hans": "TWB64 180 - Team Rocket Uniform"
+            },
+            "TWB64 181 - SEIKO Timely Vision": {
+              "en": "TWB64 181 - SEIKO Timely Vision",
+              "zh-Hans": "TWB64 181 - SEIKO Timely Vision"
+            },
+            "TWB64 182 - PASTEL109": {
+              "en": "TWB64 182 - PASTEL109",
+              "zh-Hans": "TWB64 182 - PASTEL109"
+            },
+            "TWB64 183 - Doraemon Tricolor": {
+              "en": "TWB64 183 - Doraemon Tricolor",
+              "zh-Hans": "TWB64 183 - Doraemon Tricolor"
+            },
+            "TWB64 184 - Fury Blue": {
+              "en": "TWB64 184 - Fury Blue",
+              "zh-Hans": "TWB64 184 - Fury Blue"
+            },
+            "TWB64 185 - GOOD SMILE VISION": {
+              "en": "TWB64 185 - GOOD SMILE VISION",
+              "zh-Hans": "TWB64 185 - GOOD SMILE VISION"
+            },
+            "TWB64 186 - Puyo Puyo Green": {
+              "en": "TWB64 186 - Puyo Puyo Green",
+              "zh-Hans": "TWB64 186 - Puyo Puyo Green"
+            },
+            "TWB64 187 - Circle K Color Combo": {
+              "en": "TWB64 187 - Circle K Color Combo",
+              "zh-Hans": "TWB64 187 - Circle K Color Combo"
+            },
+            "TWB64 188 - Pizza Hut Red": {
+              "en": "TWB64 188 - Pizza Hut Red",
+              "zh-Hans": "TWB64 188 - Pizza Hut Red"
+            },
+            "TWB64 189 - Emerald Green": {
+              "en": "TWB64 189 - Emerald Green",
+              "zh-Hans": "TWB64 189 - Emerald Green"
+            },
+            "TWB64 190 - Grand Ivory": {
+              "en": "TWB64 190 - Grand Ivory",
+              "zh-Hans": "TWB64 190 - Grand Ivory"
+            },
+            "TWB64 191 - Demon's Gold": {
+              "en": "TWB64 191 - Demon's Gold",
+              "zh-Hans": "TWB64 191 - Demon's Gold"
+            },
+            "TWB64 192 - SEGA Tokyo Blue": {
+              "en": "TWB64 192 - SEGA Tokyo Blue",
+              "zh-Hans": "TWB64 192 - SEGA Tokyo Blue"
+            },
+            "TWB64 193 - Champion's Tunic": {
+              "en": "TWB64 193 - Champion's Tunic",
+              "zh-Hans": "TWB64 193 - Champion's Tunic"
+            },
+            "TWB64 194 - DK Barrel Brown": {
+              "en": "TWB64 194 - DK Barrel Brown",
+              "zh-Hans": "TWB64 194 - DK Barrel Brown"
+            },
+            "TWB64 195 - EVA-01": {
+              "en": "TWB64 195 - EVA-01",
+              "zh-Hans": "TWB64 195 - EVA-01"
+            },
+            "TWB64 196 - Wild West Vision": {
+              "en": "TWB64 196 - Wild West Vision",
+              "zh-Hans": "TWB64 196 - Wild West Vision"
+            },
+            "TWB64 197 - Optimus Prime Palette": {
+              "en": "TWB64 197 - Optimus Prime Palette",
+              "zh-Hans": "TWB64 197 - Optimus Prime Palette"
+            },
+            "TWB64 198 - niconico sea green": {
+              "en": "TWB64 198 - niconico sea green",
+              "zh-Hans": "TWB64 198 - niconico sea green"
+            },
+            "TWB64 199 - Duracell Copper": {
+              "en": "TWB64 199 - Duracell Copper",
+              "zh-Hans": "TWB64 199 - Duracell Copper"
+            },
+            "TWB64 200 - TOKYO SKYTREE CLOUDY BLUE": {
+              "en": "TWB64 200 - TOKYO SKYTREE CLOUDY BLUE",
+              "zh-Hans": "TWB64 200 - TOKYO SKYTREE CLOUDY BLUE"
+            }
+          },
+          "values": [
+            "TWB64 101 - 765PRO Pink",
+            "TWB64 102 - CINDERELLA Blue",
+            "TWB64 103 - MILLION Yellow!",
+            "TWB64 104 - SideM Green",
+            "TWB64 105 - SHINY Sky Blue",
+            "TWB64 106 - Angry Volcano Ver.",
+            "TWB64 107 - NBA Vision",
+            "TWB64 108 - NFL Vision",
+            "TWB64 109 - MLB Vision",
+            "TWB64 110 - Anime Digivice Ver.",
+            "TWB64 111 - Aquatic Iro",
+            "TWB64 112 - Tea Midori",
+            "TWB64 113 - Sakura Pink",
+            "TWB64 114 - Wisteria Murasaki",
+            "TWB64 115 - Oni Aka",
+            "TWB64 116 - Golden Kiiro",
+            "TWB64 117 - Silver Shiro",
+            "TWB64 118 - Fruity Orange",
+            "TWB64 119 - AKB48 Pink",
+            "TWB64 120 - Miku Blue",
+            "TWB64 121 - Tri Digivice Ver.",
+            "TWB64 122 - Survey Corps Uniform",
+            "TWB64 123 - Island Green",
+            "TWB64 124 - Nogizaka46 Purple",
+            "TWB64 125 - Ninja Turtle Green",
+            "TWB64 126 - Slime Blue",
+            "TWB64 127 - Lime Midori",
+            "TWB64 128 - Ghostly Aoi",
+            "TWB64 129 - Retro Bogeda",
+            "TWB64 130 - Royal Blue",
+            "TWB64 131 - Neon Purple",
+            "TWB64 132 - Neon Orange",
+            "TWB64 133 - Moonlight Vision",
+            "TWB64 134 - Rising Sun Red",
+            "TWB64 135 - Burger King Color Combo",
+            "TWB64 136 - Grand Zeno Coat",
+            "TWB64 137 - Pac-Man Yellow",
+            "TWB64 138 - Irish Green",
+            "TWB64 139 - Goku Gi",
+            "TWB64 140 - Dragon Ball Orange",
+            "TWB64 141 - Christmas Gold",
+            "TWB64 142 - Pepsi Vision",
+            "TWB64 143 - Bubblun Green",
+            "TWB64 144 - Bobblun Blue",
+            "TWB64 145 - Baja Blast Storm",
+            "TWB64 146 - Olympic Gold",
+            "TWB64 147 - LisAni Orange!",
+            "TWB64 148 - Liella Purple!",
+            "TWB64 149 - Olympic Silver",
+            "TWB64 150 - Olympic Bronze",
+            "TWB64 151 - ANA Flight Blue",
+            "TWB64 152 - Nijigasaki Orange",
+            "TWB64 153 - holoblue",
+            "TWB64 154 - WWE White and Red",
+            "TWB64 155 - Yoshi Egg Green",
+            "TWB64 156 - Pokedex Red",
+            "TWB64 157 - FamilyMart Vision",
+            "TWB64 158 - Xbox Green",
+            "TWB64 159 - Sonic Mega Blue",
+            "TWB64 160 - Sprite Green",
+            "TWB64 161 - Scarlett Green",
+            "TWB64 162 - Glitchy Blue",
+            "TWB64 163 - Classic LCD",
+            "TWB64 164 - 3DS Virtual Console Ver.",
+            "TWB64 165 - PocketStation Ver.",
+            "TWB64 166 - Timeless Gold and Red",
+            "TWB64 167 - Smurfy Blue",
+            "TWB64 168 - Swampy Ogre Green",
+            "TWB64 169 - Sailor Spinach Green",
+            "TWB64 170 - Shenron Green",
+            "TWB64 171 - Berserk Blood",
+            "TWB64 172 - Super Star Pink",
+            "TWB64 173 - Gamebuino Classic Ver.",
+            "TWB64 174 - Barbie Pink",
+            "TWB64 175 - YOASOBI AMARANTH",
+            "TWB64 176 - Nokia 3310 Ver.",
+            "TWB64 177 - Clover Green",
+            "TWB64 178 - Goku GT Gi",
+            "TWB64 179 - Famicom Disk Yellow",
+            "TWB64 180 - Team Rocket Uniform",
+            "TWB64 181 - SEIKO Timely Vision",
+            "TWB64 182 - PASTEL109",
+            "TWB64 183 - Doraemon Tricolor",
+            "TWB64 184 - Fury Blue",
+            "TWB64 185 - GOOD SMILE VISION",
+            "TWB64 186 - Puyo Puyo Green",
+            "TWB64 187 - Circle K Color Combo",
+            "TWB64 188 - Pizza Hut Red",
+            "TWB64 189 - Emerald Green",
+            "TWB64 190 - Grand Ivory",
+            "TWB64 191 - Demon's Gold",
+            "TWB64 192 - SEGA Tokyo Blue",
+            "TWB64 193 - Champion's Tunic",
+            "TWB64 194 - DK Barrel Brown",
+            "TWB64 195 - EVA-01",
+            "TWB64 196 - Wild West Vision",
+            "TWB64 197 - Optimus Prime Palette",
+            "TWB64 198 - niconico sea green",
+            "TWB64 199 - Duracell Copper",
+            "TWB64 200 - TOKYO SKYTREE CLOUDY BLUE"
+          ],
+          "visibleWhen": [
+            {
+              "gambatte_gb_colorization": [
+                "auto",
+                "internal"
+              ],
+              "gambatte_gb_internal_palette": [
+                "TWB64 - Pack 2"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "TWB64 201 - DMG-GOLD",
+          "description": {
+            "en": "The palette used when 'Internal Palette' is set to 'TWB64 - Pack 3'.",
+            "zh-Hans": "「内部调色板」选择 TWB64 - Pack 3 时使用的具体配色。"
+          },
+          "key": "gambatte_gb_palette_twb64_3",
+          "restartRequired": false,
+          "title": {
+            "en": "TWB64 - Pack 3 Palette",
+            "zh-Hans": "TWB64 - Pack 3 配色"
+          },
+          "type": "select",
+          "valueLabels": {
+            "TWB64 201 - DMG-GOLD": {
+              "en": "TWB64 201 - DMG-GOLD",
+              "zh-Hans": "TWB64 201 - DMG-GOLD"
+            },
+            "TWB64 202 - LCD Clock Green": {
+              "en": "TWB64 202 - LCD Clock Green",
+              "zh-Hans": "TWB64 202 - LCD Clock Green"
+            },
+            "TWB64 203 - Famicom Frenzy": {
+              "en": "TWB64 203 - Famicom Frenzy",
+              "zh-Hans": "TWB64 203 - Famicom Frenzy"
+            },
+            "TWB64 204 - DK Arcade Blue": {
+              "en": "TWB64 204 - DK Arcade Blue",
+              "zh-Hans": "TWB64 204 - DK Arcade Blue"
+            },
+            "TWB64 205 - Advanced Indigo": {
+              "en": "TWB64 205 - Advanced Indigo",
+              "zh-Hans": "TWB64 205 - Advanced Indigo"
+            },
+            "TWB64 206 - Ultra Black": {
+              "en": "TWB64 206 - Ultra Black",
+              "zh-Hans": "TWB64 206 - Ultra Black"
+            },
+            "TWB64 207 - Chaos Emerald Green": {
+              "en": "TWB64 207 - Chaos Emerald Green",
+              "zh-Hans": "TWB64 207 - Chaos Emerald Green"
+            },
+            "TWB64 208 - Blue Bomber Vision": {
+              "en": "TWB64 208 - Blue Bomber Vision",
+              "zh-Hans": "TWB64 208 - Blue Bomber Vision"
+            },
+            "TWB64 209 - Krispy Kreme Vision": {
+              "en": "TWB64 209 - Krispy Kreme Vision",
+              "zh-Hans": "TWB64 209 - Krispy Kreme Vision"
+            },
+            "TWB64 210 - Steam Gray": {
+              "en": "TWB64 210 - Steam Gray",
+              "zh-Hans": "TWB64 210 - Steam Gray"
+            },
+            "TWB64 211 - Dream Land GB Ver.": {
+              "en": "TWB64 211 - Dream Land GB Ver.",
+              "zh-Hans": "TWB64 211 - Dream Land GB Ver."
+            },
+            "TWB64 212 - Pokemon Pinball Ver.": {
+              "en": "TWB64 212 - Pokemon Pinball Ver.",
+              "zh-Hans": "TWB64 212 - Pokemon Pinball Ver."
+            },
+            "TWB64 213 - Poketch Ver.": {
+              "en": "TWB64 213 - Poketch Ver.",
+              "zh-Hans": "TWB64 213 - Poketch Ver."
+            },
+            "TWB64 214 - COLLECTION of SaGa Ver.": {
+              "en": "TWB64 214 - COLLECTION of SaGa Ver.",
+              "zh-Hans": "TWB64 214 - COLLECTION of SaGa Ver."
+            },
+            "TWB64 215 - Rocky-Valley Holiday": {
+              "en": "TWB64 215 - Rocky-Valley Holiday",
+              "zh-Hans": "TWB64 215 - Rocky-Valley Holiday"
+            },
+            "TWB64 216 - Giga Kiwi DMG": {
+              "en": "TWB64 216 - Giga Kiwi DMG",
+              "zh-Hans": "TWB64 216 - Giga Kiwi DMG"
+            },
+            "TWB64 217 - DMG Pea Green": {
+              "en": "TWB64 217 - DMG Pea Green",
+              "zh-Hans": "TWB64 217 - DMG Pea Green"
+            },
+            "TWB64 218 - Timing Hero Ver.": {
+              "en": "TWB64 218 - Timing Hero Ver.",
+              "zh-Hans": "TWB64 218 - Timing Hero Ver."
+            },
+            "TWB64 219 - Invincible Yellow and Blue": {
+              "en": "TWB64 219 - Invincible Yellow and Blue",
+              "zh-Hans": "TWB64 219 - Invincible Yellow and Blue"
+            },
+            "TWB64 220 - Grinchy Green": {
+              "en": "TWB64 220 - Grinchy Green",
+              "zh-Hans": "TWB64 220 - Grinchy Green"
+            },
+            "TWB64 221 - animate vision": {
+              "en": "TWB64 221 - animate vision",
+              "zh-Hans": "TWB64 221 - animate vision"
+            },
+            "TWB64 222 - School Idol Mix": {
+              "en": "TWB64 222 - School Idol Mix",
+              "zh-Hans": "TWB64 222 - School Idol Mix"
+            },
+            "TWB64 223 - Green Awakening": {
+              "en": "TWB64 223 - Green Awakening",
+              "zh-Hans": "TWB64 223 - Green Awakening"
+            },
+            "TWB64 224 - Goomba Brown": {
+              "en": "TWB64 224 - Goomba Brown",
+              "zh-Hans": "TWB64 224 - Goomba Brown"
+            },
+            "TWB64 225 - WarioWare MicroBlue": {
+              "en": "TWB64 225 - WarioWare MicroBlue",
+              "zh-Hans": "TWB64 225 - WarioWare MicroBlue"
+            },
+            "TWB64 226 - KonoSuba Sherbet": {
+              "en": "TWB64 226 - KonoSuba Sherbet",
+              "zh-Hans": "TWB64 226 - KonoSuba Sherbet"
+            },
+            "TWB64 227 - Spooky Purple": {
+              "en": "TWB64 227 - Spooky Purple",
+              "zh-Hans": "TWB64 227 - Spooky Purple"
+            },
+            "TWB64 228 - Treasure Gold": {
+              "en": "TWB64 228 - Treasure Gold",
+              "zh-Hans": "TWB64 228 - Treasure Gold"
+            },
+            "TWB64 229 - Cherry Blossom Pink": {
+              "en": "TWB64 229 - Cherry Blossom Pink",
+              "zh-Hans": "TWB64 229 - Cherry Blossom Pink"
+            },
+            "TWB64 230 - Golden Trophy": {
+              "en": "TWB64 230 - Golden Trophy",
+              "zh-Hans": "TWB64 230 - Golden Trophy"
+            },
+            "TWB64 231 - Glacial Winter Blue": {
+              "en": "TWB64 231 - Glacial Winter Blue",
+              "zh-Hans": "TWB64 231 - Glacial Winter Blue"
+            },
+            "TWB64 232 - Leprechaun Green": {
+              "en": "TWB64 232 - Leprechaun Green",
+              "zh-Hans": "TWB64 232 - Leprechaun Green"
+            },
+            "TWB64 233 - SAITAMA SUPER BLUE": {
+              "en": "TWB64 233 - SAITAMA SUPER BLUE",
+              "zh-Hans": "TWB64 233 - SAITAMA SUPER BLUE"
+            },
+            "TWB64 234 - SAITAMA SUPER GREEN": {
+              "en": "TWB64 234 - SAITAMA SUPER GREEN",
+              "zh-Hans": "TWB64 234 - SAITAMA SUPER GREEN"
+            },
+            "TWB64 235 - Duolingo Green": {
+              "en": "TWB64 235 - Duolingo Green",
+              "zh-Hans": "TWB64 235 - Duolingo Green"
+            },
+            "TWB64 236 - Super Mushroom Vision": {
+              "en": "TWB64 236 - Super Mushroom Vision",
+              "zh-Hans": "TWB64 236 - Super Mushroom Vision"
+            },
+            "TWB64 237 - Ancient Hisuian Brown": {
+              "en": "TWB64 237 - Ancient Hisuian Brown",
+              "zh-Hans": "TWB64 237 - Ancient Hisuian Brown"
+            },
+            "TWB64 238 - Sky Pop Ivory": {
+              "en": "TWB64 238 - Sky Pop Ivory",
+              "zh-Hans": "TWB64 238 - Sky Pop Ivory"
+            },
+            "TWB64 239 - LAWSON BLUE": {
+              "en": "TWB64 239 - LAWSON BLUE",
+              "zh-Hans": "TWB64 239 - LAWSON BLUE"
+            },
+            "TWB64 240 - Anime Expo Red": {
+              "en": "TWB64 240 - Anime Expo Red",
+              "zh-Hans": "TWB64 240 - Anime Expo Red"
+            },
+            "TWB64 241 - Brilliant Diamond Blue": {
+              "en": "TWB64 241 - Brilliant Diamond Blue",
+              "zh-Hans": "TWB64 241 - Brilliant Diamond Blue"
+            },
+            "TWB64 242 - Shining Pearl Pink": {
+              "en": "TWB64 242 - Shining Pearl Pink",
+              "zh-Hans": "TWB64 242 - Shining Pearl Pink"
+            },
+            "TWB64 243 - Funimation Melon": {
+              "en": "TWB64 243 - Funimation Melon",
+              "zh-Hans": "TWB64 243 - Funimation Melon"
+            },
+            "TWB64 244 - Teyvat Brown": {
+              "en": "TWB64 244 - Teyvat Brown",
+              "zh-Hans": "TWB64 244 - Teyvat Brown"
+            },
+            "TWB64 245 - Chozo Blue": {
+              "en": "TWB64 245 - Chozo Blue",
+              "zh-Hans": "TWB64 245 - Chozo Blue"
+            },
+            "TWB64 246 - Spotify Green": {
+              "en": "TWB64 246 - Spotify Green",
+              "zh-Hans": "TWB64 246 - Spotify Green"
+            },
+            "TWB64 247 - Dr Pepper Red": {
+              "en": "TWB64 247 - Dr Pepper Red",
+              "zh-Hans": "TWB64 247 - Dr Pepper Red"
+            },
+            "TWB64 248 - NHK Silver Gray": {
+              "en": "TWB64 248 - NHK Silver Gray",
+              "zh-Hans": "TWB64 248 - NHK Silver Gray"
+            },
+            "TWB64 249 - Dunkin' Vision": {
+              "en": "TWB64 249 - Dunkin' Vision",
+              "zh-Hans": "TWB64 249 - Dunkin' Vision"
+            },
+            "TWB64 250 - Deku Gamma Palette": {
+              "en": "TWB64 250 - Deku Gamma Palette",
+              "zh-Hans": "TWB64 250 - Deku Gamma Palette"
+            },
+            "TWB64 251 - Universal Studios Blue": {
+              "en": "TWB64 251 - Universal Studios Blue",
+              "zh-Hans": "TWB64 251 - Universal Studios Blue"
+            },
+            "TWB64 252 - Hogwarts Goldius": {
+              "en": "TWB64 252 - Hogwarts Goldius",
+              "zh-Hans": "TWB64 252 - Hogwarts Goldius"
+            },
+            "TWB64 253 - Kentucky Fried Red": {
+              "en": "TWB64 253 - Kentucky Fried Red",
+              "zh-Hans": "TWB64 253 - Kentucky Fried Red"
+            },
+            "TWB64 254 - Cheeto Orange": {
+              "en": "TWB64 254 - Cheeto Orange",
+              "zh-Hans": "TWB64 254 - Cheeto Orange"
+            },
+            "TWB64 255 - Namco Idol Pink": {
+              "en": "TWB64 255 - Namco Idol Pink",
+              "zh-Hans": "TWB64 255 - Namco Idol Pink"
+            },
+            "TWB64 256 - Domino's Pizza Vision": {
+              "en": "TWB64 256 - Domino's Pizza Vision",
+              "zh-Hans": "TWB64 256 - Domino's Pizza Vision"
+            },
+            "TWB64 257 - Pac-Man Vision": {
+              "en": "TWB64 257 - Pac-Man Vision",
+              "zh-Hans": "TWB64 257 - Pac-Man Vision"
+            },
+            "TWB64 258 - Bill's PC Screen": {
+              "en": "TWB64 258 - Bill's PC Screen",
+              "zh-Hans": "TWB64 258 - Bill's PC Screen"
+            },
+            "TWB64 259 - Sonic Mega Blue": {
+              "en": "TWB64 259 - Sonic Mega Blue",
+              "zh-Hans": "TWB64 259 - Sonic Mega Blue"
+            },
+            "TWB64 260 - Fool's Gold and Silver": {
+              "en": "TWB64 260 - Fool's Gold and Silver",
+              "zh-Hans": "TWB64 260 - Fool's Gold and Silver"
+            },
+            "TWB64 261 - UTA VISION": {
+              "en": "TWB64 261 - UTA VISION",
+              "zh-Hans": "TWB64 261 - UTA VISION"
+            },
+            "TWB64 262 - Metallic Paldea Brass": {
+              "en": "TWB64 262 - Metallic Paldea Brass",
+              "zh-Hans": "TWB64 262 - Metallic Paldea Brass"
+            },
+            "TWB64 263 - Classy Christmas": {
+              "en": "TWB64 263 - Classy Christmas",
+              "zh-Hans": "TWB64 263 - Classy Christmas"
+            },
+            "TWB64 264 - Winter Christmas": {
+              "en": "TWB64 264 - Winter Christmas",
+              "zh-Hans": "TWB64 264 - Winter Christmas"
+            },
+            "TWB64 265 - IDOL WORLD TRICOLOR!!!": {
+              "en": "TWB64 265 - IDOL WORLD TRICOLOR!!!",
+              "zh-Hans": "TWB64 265 - IDOL WORLD TRICOLOR!!!"
+            },
+            "TWB64 266 - Inkling Tricolor": {
+              "en": "TWB64 266 - Inkling Tricolor",
+              "zh-Hans": "TWB64 266 - Inkling Tricolor"
+            },
+            "TWB64 267 - 7-Eleven Color Combo": {
+              "en": "TWB64 267 - 7-Eleven Color Combo",
+              "zh-Hans": "TWB64 267 - 7-Eleven Color Combo"
+            },
+            "TWB64 268 - PAC-PALETTE": {
+              "en": "TWB64 268 - PAC-PALETTE",
+              "zh-Hans": "TWB64 268 - PAC-PALETTE"
+            },
+            "TWB64 269 - Vulnerable Blue": {
+              "en": "TWB64 269 - Vulnerable Blue",
+              "zh-Hans": "TWB64 269 - Vulnerable Blue"
+            },
+            "TWB64 270 - Nightvision Green": {
+              "en": "TWB64 270 - Nightvision Green",
+              "zh-Hans": "TWB64 270 - Nightvision Green"
+            },
+            "TWB64 271 - Bandai Namco Tricolor": {
+              "en": "TWB64 271 - Bandai Namco Tricolor",
+              "zh-Hans": "TWB64 271 - Bandai Namco Tricolor"
+            },
+            "TWB64 272 - Gold, Silver, and Bronze": {
+              "en": "TWB64 272 - Gold, Silver, and Bronze",
+              "zh-Hans": "TWB64 272 - Gold, Silver, and Bronze"
+            },
+            "TWB64 273 - Deku Vigilante Palette": {
+              "en": "TWB64 273 - Deku Vigilante Palette",
+              "zh-Hans": "TWB64 273 - Deku Vigilante Palette"
+            },
+            "TWB64 274 - Super Famicom Supreme": {
+              "en": "TWB64 274 - Super Famicom Supreme",
+              "zh-Hans": "TWB64 274 - Super Famicom Supreme"
+            },
+            "TWB64 275 - Absorbent and Yellow": {
+              "en": "TWB64 275 - Absorbent and Yellow",
+              "zh-Hans": "TWB64 275 - Absorbent and Yellow"
+            },
+            "TWB64 276 - 765PRO TRICOLOR": {
+              "en": "TWB64 276 - 765PRO TRICOLOR",
+              "zh-Hans": "TWB64 276 - 765PRO TRICOLOR"
+            },
+            "TWB64 277 - GameCube Glimmer": {
+              "en": "TWB64 277 - GameCube Glimmer",
+              "zh-Hans": "TWB64 277 - GameCube Glimmer"
+            },
+            "TWB64 278 - 1st Vision Pastel": {
+              "en": "TWB64 278 - 1st Vision Pastel",
+              "zh-Hans": "TWB64 278 - 1st Vision Pastel"
+            },
+            "TWB64 279 - Perfect Majin Emperor": {
+              "en": "TWB64 279 - Perfect Majin Emperor",
+              "zh-Hans": "TWB64 279 - Perfect Majin Emperor"
+            },
+            "TWB64 280 - J-Pop Idol Sherbet": {
+              "en": "TWB64 280 - J-Pop Idol Sherbet",
+              "zh-Hans": "TWB64 280 - J-Pop Idol Sherbet"
+            },
+            "TWB64 281 - Ryuuguu Sunset": {
+              "en": "TWB64 281 - Ryuuguu Sunset",
+              "zh-Hans": "TWB64 281 - Ryuuguu Sunset"
+            },
+            "TWB64 282 - Tropical Starfall": {
+              "en": "TWB64 282 - Tropical Starfall",
+              "zh-Hans": "TWB64 282 - Tropical Starfall"
+            },
+            "TWB64 283 - Colorful Horizons": {
+              "en": "TWB64 283 - Colorful Horizons",
+              "zh-Hans": "TWB64 283 - Colorful Horizons"
+            },
+            "TWB64 284 - BLACKPINK BLINK PINK": {
+              "en": "TWB64 284 - BLACKPINK BLINK PINK",
+              "zh-Hans": "TWB64 284 - BLACKPINK BLINK PINK"
+            },
+            "TWB64 285 - DMG-SWITCH": {
+              "en": "TWB64 285 - DMG-SWITCH",
+              "zh-Hans": "TWB64 285 - DMG-SWITCH"
+            },
+            "TWB64 286 - POCKET SWITCH": {
+              "en": "TWB64 286 - POCKET SWITCH",
+              "zh-Hans": "TWB64 286 - POCKET SWITCH"
+            },
+            "TWB64 287 - Sunny Passion Paradise": {
+              "en": "TWB64 287 - Sunny Passion Paradise",
+              "zh-Hans": "TWB64 287 - Sunny Passion Paradise"
+            },
+            "TWB64 288 - Saiyan Beast Silver": {
+              "en": "TWB64 288 - Saiyan Beast Silver",
+              "zh-Hans": "TWB64 288 - Saiyan Beast Silver"
+            },
+            "TWB64 289 - RADIANT SMILE RAMP": {
+              "en": "TWB64 289 - RADIANT SMILE RAMP",
+              "zh-Hans": "TWB64 289 - RADIANT SMILE RAMP"
+            },
+            "TWB64 290 - A-RISE BLUE": {
+              "en": "TWB64 290 - A-RISE BLUE",
+              "zh-Hans": "TWB64 290 - A-RISE BLUE"
+            },
+            "TWB64 291 - TROPICAL TWICE APRICOT": {
+              "en": "TWB64 291 - TROPICAL TWICE APRICOT",
+              "zh-Hans": "TWB64 291 - TROPICAL TWICE APRICOT"
+            },
+            "TWB64 292 - Odyssey Boy": {
+              "en": "TWB64 292 - Odyssey Boy",
+              "zh-Hans": "TWB64 292 - Odyssey Boy"
+            },
+            "TWB64 293 - Frog Coin Green": {
+              "en": "TWB64 293 - Frog Coin Green",
+              "zh-Hans": "TWB64 293 - Frog Coin Green"
+            },
+            "TWB64 294 - Garfield Vision": {
+              "en": "TWB64 294 - Garfield Vision",
+              "zh-Hans": "TWB64 294 - Garfield Vision"
+            },
+            "TWB64 295 - Bedrock Caveman Vision": {
+              "en": "TWB64 295 - Bedrock Caveman Vision",
+              "zh-Hans": "TWB64 295 - Bedrock Caveman Vision"
+            },
+            "TWB64 296 - BANGTAN ARMY PURPLE": {
+              "en": "TWB64 296 - BANGTAN ARMY PURPLE",
+              "zh-Hans": "TWB64 296 - BANGTAN ARMY PURPLE"
+            },
+            "TWB64 297 - LE SSERAFIM FEARLESS BLUE": {
+              "en": "TWB64 297 - LE SSERAFIM FEARLESS BLUE",
+              "zh-Hans": "TWB64 297 - LE SSERAFIM FEARLESS BLUE"
+            },
+            "TWB64 298 - Baja Blast Beach": {
+              "en": "TWB64 298 - Baja Blast Beach",
+              "zh-Hans": "TWB64 298 - Baja Blast Beach"
+            },
+            "TWB64 299 - 3DS Virtual Console Green": {
+              "en": "TWB64 299 - 3DS Virtual Console Green",
+              "zh-Hans": "TWB64 299 - 3DS Virtual Console Green"
+            },
+            "TWB64 300 - Wonder Purple": {
+              "en": "TWB64 300 - Wonder Purple",
+              "zh-Hans": "TWB64 300 - Wonder Purple"
+            }
+          },
+          "values": [
+            "TWB64 201 - DMG-GOLD",
+            "TWB64 202 - LCD Clock Green",
+            "TWB64 203 - Famicom Frenzy",
+            "TWB64 204 - DK Arcade Blue",
+            "TWB64 205 - Advanced Indigo",
+            "TWB64 206 - Ultra Black",
+            "TWB64 207 - Chaos Emerald Green",
+            "TWB64 208 - Blue Bomber Vision",
+            "TWB64 209 - Krispy Kreme Vision",
+            "TWB64 210 - Steam Gray",
+            "TWB64 211 - Dream Land GB Ver.",
+            "TWB64 212 - Pokemon Pinball Ver.",
+            "TWB64 213 - Poketch Ver.",
+            "TWB64 214 - COLLECTION of SaGa Ver.",
+            "TWB64 215 - Rocky-Valley Holiday",
+            "TWB64 216 - Giga Kiwi DMG",
+            "TWB64 217 - DMG Pea Green",
+            "TWB64 218 - Timing Hero Ver.",
+            "TWB64 219 - Invincible Yellow and Blue",
+            "TWB64 220 - Grinchy Green",
+            "TWB64 221 - animate vision",
+            "TWB64 222 - School Idol Mix",
+            "TWB64 223 - Green Awakening",
+            "TWB64 224 - Goomba Brown",
+            "TWB64 225 - WarioWare MicroBlue",
+            "TWB64 226 - KonoSuba Sherbet",
+            "TWB64 227 - Spooky Purple",
+            "TWB64 228 - Treasure Gold",
+            "TWB64 229 - Cherry Blossom Pink",
+            "TWB64 230 - Golden Trophy",
+            "TWB64 231 - Glacial Winter Blue",
+            "TWB64 232 - Leprechaun Green",
+            "TWB64 233 - SAITAMA SUPER BLUE",
+            "TWB64 234 - SAITAMA SUPER GREEN",
+            "TWB64 235 - Duolingo Green",
+            "TWB64 236 - Super Mushroom Vision",
+            "TWB64 237 - Ancient Hisuian Brown",
+            "TWB64 238 - Sky Pop Ivory",
+            "TWB64 239 - LAWSON BLUE",
+            "TWB64 240 - Anime Expo Red",
+            "TWB64 241 - Brilliant Diamond Blue",
+            "TWB64 242 - Shining Pearl Pink",
+            "TWB64 243 - Funimation Melon",
+            "TWB64 244 - Teyvat Brown",
+            "TWB64 245 - Chozo Blue",
+            "TWB64 246 - Spotify Green",
+            "TWB64 247 - Dr Pepper Red",
+            "TWB64 248 - NHK Silver Gray",
+            "TWB64 249 - Dunkin' Vision",
+            "TWB64 250 - Deku Gamma Palette",
+            "TWB64 251 - Universal Studios Blue",
+            "TWB64 252 - Hogwarts Goldius",
+            "TWB64 253 - Kentucky Fried Red",
+            "TWB64 254 - Cheeto Orange",
+            "TWB64 255 - Namco Idol Pink",
+            "TWB64 256 - Domino's Pizza Vision",
+            "TWB64 257 - Pac-Man Vision",
+            "TWB64 258 - Bill's PC Screen",
+            "TWB64 259 - Sonic Mega Blue",
+            "TWB64 260 - Fool's Gold and Silver",
+            "TWB64 261 - UTA VISION",
+            "TWB64 262 - Metallic Paldea Brass",
+            "TWB64 263 - Classy Christmas",
+            "TWB64 264 - Winter Christmas",
+            "TWB64 265 - IDOL WORLD TRICOLOR!!!",
+            "TWB64 266 - Inkling Tricolor",
+            "TWB64 267 - 7-Eleven Color Combo",
+            "TWB64 268 - PAC-PALETTE",
+            "TWB64 269 - Vulnerable Blue",
+            "TWB64 270 - Nightvision Green",
+            "TWB64 271 - Bandai Namco Tricolor",
+            "TWB64 272 - Gold, Silver, and Bronze",
+            "TWB64 273 - Deku Vigilante Palette",
+            "TWB64 274 - Super Famicom Supreme",
+            "TWB64 275 - Absorbent and Yellow",
+            "TWB64 276 - 765PRO TRICOLOR",
+            "TWB64 277 - GameCube Glimmer",
+            "TWB64 278 - 1st Vision Pastel",
+            "TWB64 279 - Perfect Majin Emperor",
+            "TWB64 280 - J-Pop Idol Sherbet",
+            "TWB64 281 - Ryuuguu Sunset",
+            "TWB64 282 - Tropical Starfall",
+            "TWB64 283 - Colorful Horizons",
+            "TWB64 284 - BLACKPINK BLINK PINK",
+            "TWB64 285 - DMG-SWITCH",
+            "TWB64 286 - POCKET SWITCH",
+            "TWB64 287 - Sunny Passion Paradise",
+            "TWB64 288 - Saiyan Beast Silver",
+            "TWB64 289 - RADIANT SMILE RAMP",
+            "TWB64 290 - A-RISE BLUE",
+            "TWB64 291 - TROPICAL TWICE APRICOT",
+            "TWB64 292 - Odyssey Boy",
+            "TWB64 293 - Frog Coin Green",
+            "TWB64 294 - Garfield Vision",
+            "TWB64 295 - Bedrock Caveman Vision",
+            "TWB64 296 - BANGTAN ARMY PURPLE",
+            "TWB64 297 - LE SSERAFIM FEARLESS BLUE",
+            "TWB64 298 - Baja Blast Beach",
+            "TWB64 299 - 3DS Virtual Console Green",
+            "TWB64 300 - Wonder Purple"
+          ],
+          "visibleWhen": [
+            {
+              "gambatte_gb_colorization": [
+                "auto",
+                "internal"
+              ],
+              "gambatte_gb_internal_palette": [
+                "TWB64 - Pack 3"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "PixelShift 01 - Arctic Green",
+          "description": {
+            "en": "The palette used when 'Internal Palette' is set to 'PixelShift - Pack 1'.",
+            "zh-Hans": "「内部调色板」选择 PixelShift - Pack 1 时使用的具体配色。"
+          },
+          "key": "gambatte_gb_palette_pixelshift_1",
+          "restartRequired": false,
+          "title": {
+            "en": "PixelShift - Pack 1 Palette",
+            "zh-Hans": "PixelShift - Pack 1 配色"
+          },
+          "type": "select",
+          "valueLabels": {
+            "PixelShift 01 - Arctic Green": {
+              "en": "PixelShift 01 - Arctic Green",
+              "zh-Hans": "PixelShift 01 - Arctic Green"
+            },
+            "PixelShift 02 - Arduboy": {
+              "en": "PixelShift 02 - Arduboy",
+              "zh-Hans": "PixelShift 02 - Arduboy"
+            },
+            "PixelShift 03 - BGB 0.3 Emulator": {
+              "en": "PixelShift 03 - BGB 0.3 Emulator",
+              "zh-Hans": "PixelShift 03 - BGB 0.3 Emulator"
+            },
+            "PixelShift 04 - Camouflage": {
+              "en": "PixelShift 04 - Camouflage",
+              "zh-Hans": "PixelShift 04 - Camouflage"
+            },
+            "PixelShift 05 - Chocolate Bar": {
+              "en": "PixelShift 05 - Chocolate Bar",
+              "zh-Hans": "PixelShift 05 - Chocolate Bar"
+            },
+            "PixelShift 06 - CMYK": {
+              "en": "PixelShift 06 - CMYK",
+              "zh-Hans": "PixelShift 06 - CMYK"
+            },
+            "PixelShift 07 - Cotton Candy": {
+              "en": "PixelShift 07 - Cotton Candy",
+              "zh-Hans": "PixelShift 07 - Cotton Candy"
+            },
+            "PixelShift 08 - Easy Greens": {
+              "en": "PixelShift 08 - Easy Greens",
+              "zh-Hans": "PixelShift 08 - Easy Greens"
+            },
+            "PixelShift 09 - Gamate": {
+              "en": "PixelShift 09 - Gamate",
+              "zh-Hans": "PixelShift 09 - Gamate"
+            },
+            "PixelShift 10 - Game Boy Light": {
+              "en": "PixelShift 10 - Game Boy Light",
+              "zh-Hans": "PixelShift 10 - Game Boy Light"
+            },
+            "PixelShift 11 - Game Boy Pocket": {
+              "en": "PixelShift 11 - Game Boy Pocket",
+              "zh-Hans": "PixelShift 11 - Game Boy Pocket"
+            },
+            "PixelShift 12 - Game Boy Pocket Alt": {
+              "en": "PixelShift 12 - Game Boy Pocket Alt",
+              "zh-Hans": "PixelShift 12 - Game Boy Pocket Alt"
+            },
+            "PixelShift 13 - Game Pocket Computer": {
+              "en": "PixelShift 13 - Game Pocket Computer",
+              "zh-Hans": "PixelShift 13 - Game Pocket Computer"
+            },
+            "PixelShift 14 - Game & Watch Ball": {
+              "en": "PixelShift 14 - Game & Watch Ball",
+              "zh-Hans": "PixelShift 14 - Game & Watch Ball"
+            },
+            "PixelShift 15 - GB Backlight Blue": {
+              "en": "PixelShift 15 - GB Backlight Blue",
+              "zh-Hans": "PixelShift 15 - GB Backlight Blue"
+            },
+            "PixelShift 16 - GB Backlight Faded": {
+              "en": "PixelShift 16 - GB Backlight Faded",
+              "zh-Hans": "PixelShift 16 - GB Backlight Faded"
+            },
+            "PixelShift 17 - GB Backlight Orange": {
+              "en": "PixelShift 17 - GB Backlight Orange",
+              "zh-Hans": "PixelShift 17 - GB Backlight Orange"
+            },
+            "PixelShift 18 - GB Backlight White ": {
+              "en": "PixelShift 18 - GB Backlight White ",
+              "zh-Hans": "PixelShift 18 - GB Backlight White "
+            },
+            "PixelShift 19 - GB Backlight Yellow Dark": {
+              "en": "PixelShift 19 - GB Backlight Yellow Dark",
+              "zh-Hans": "PixelShift 19 - GB Backlight Yellow Dark"
+            },
+            "PixelShift 20 - GB Bootleg": {
+              "en": "PixelShift 20 - GB Bootleg",
+              "zh-Hans": "PixelShift 20 - GB Bootleg"
+            },
+            "PixelShift 21 - GB Hunter": {
+              "en": "PixelShift 21 - GB Hunter",
+              "zh-Hans": "PixelShift 21 - GB Hunter"
+            },
+            "PixelShift 22 - GB Kiosk": {
+              "en": "PixelShift 22 - GB Kiosk",
+              "zh-Hans": "PixelShift 22 - GB Kiosk"
+            },
+            "PixelShift 23 - GB Kiosk 2": {
+              "en": "PixelShift 23 - GB Kiosk 2",
+              "zh-Hans": "PixelShift 23 - GB Kiosk 2"
+            },
+            "PixelShift 24 - GB New": {
+              "en": "PixelShift 24 - GB New",
+              "zh-Hans": "PixelShift 24 - GB New"
+            },
+            "PixelShift 25 - GB Nuked": {
+              "en": "PixelShift 25 - GB Nuked",
+              "zh-Hans": "PixelShift 25 - GB Nuked"
+            },
+            "PixelShift 26 - GB Old": {
+              "en": "PixelShift 26 - GB Old",
+              "zh-Hans": "PixelShift 26 - GB Old"
+            },
+            "PixelShift 27 - GBP Bivert": {
+              "en": "PixelShift 27 - GBP Bivert",
+              "zh-Hans": "PixelShift 27 - GBP Bivert"
+            },
+            "PixelShift 28 - GB Washed Yellow Backlight": {
+              "en": "PixelShift 28 - GB Washed Yellow Backlight",
+              "zh-Hans": "PixelShift 28 - GB Washed Yellow Backlight"
+            },
+            "PixelShift 29 - Ghost": {
+              "en": "PixelShift 29 - Ghost",
+              "zh-Hans": "PixelShift 29 - Ghost"
+            },
+            "PixelShift 30 - Glow In The Dark": {
+              "en": "PixelShift 30 - Glow In The Dark",
+              "zh-Hans": "PixelShift 30 - Glow In The Dark"
+            },
+            "PixelShift 31 - Gold Bar": {
+              "en": "PixelShift 31 - Gold Bar",
+              "zh-Hans": "PixelShift 31 - Gold Bar"
+            },
+            "PixelShift 32 - Grapefruit": {
+              "en": "PixelShift 32 - Grapefruit",
+              "zh-Hans": "PixelShift 32 - Grapefruit"
+            },
+            "PixelShift 33 - Gray Green Mix": {
+              "en": "PixelShift 33 - Gray Green Mix",
+              "zh-Hans": "PixelShift 33 - Gray Green Mix"
+            },
+            "PixelShift 34 - Missingno": {
+              "en": "PixelShift 34 - Missingno",
+              "zh-Hans": "PixelShift 34 - Missingno"
+            },
+            "PixelShift 35 - MS-Dos": {
+              "en": "PixelShift 35 - MS-Dos",
+              "zh-Hans": "PixelShift 35 - MS-Dos"
+            },
+            "PixelShift 36 - Newspaper": {
+              "en": "PixelShift 36 - Newspaper",
+              "zh-Hans": "PixelShift 36 - Newspaper"
+            },
+            "PixelShift 37 - Pip-Boy": {
+              "en": "PixelShift 37 - Pip-Boy",
+              "zh-Hans": "PixelShift 37 - Pip-Boy"
+            },
+            "PixelShift 38 - Pocket Girl": {
+              "en": "PixelShift 38 - Pocket Girl",
+              "zh-Hans": "PixelShift 38 - Pocket Girl"
+            },
+            "PixelShift 39 - Silhouette": {
+              "en": "PixelShift 39 - Silhouette",
+              "zh-Hans": "PixelShift 39 - Silhouette"
+            },
+            "PixelShift 40 - Sunburst": {
+              "en": "PixelShift 40 - Sunburst",
+              "zh-Hans": "PixelShift 40 - Sunburst"
+            },
+            "PixelShift 41 - Technicolor": {
+              "en": "PixelShift 41 - Technicolor",
+              "zh-Hans": "PixelShift 41 - Technicolor"
+            },
+            "PixelShift 42 - Tron": {
+              "en": "PixelShift 42 - Tron",
+              "zh-Hans": "PixelShift 42 - Tron"
+            },
+            "PixelShift 43 - Vaporwave": {
+              "en": "PixelShift 43 - Vaporwave",
+              "zh-Hans": "PixelShift 43 - Vaporwave"
+            },
+            "PixelShift 44 - Virtual Boy": {
+              "en": "PixelShift 44 - Virtual Boy",
+              "zh-Hans": "PixelShift 44 - Virtual Boy"
+            },
+            "PixelShift 45 - Wish": {
+              "en": "PixelShift 45 - Wish",
+              "zh-Hans": "PixelShift 45 - Wish"
+            }
+          },
+          "values": [
+            "PixelShift 01 - Arctic Green",
+            "PixelShift 02 - Arduboy",
+            "PixelShift 03 - BGB 0.3 Emulator",
+            "PixelShift 04 - Camouflage",
+            "PixelShift 05 - Chocolate Bar",
+            "PixelShift 06 - CMYK",
+            "PixelShift 07 - Cotton Candy",
+            "PixelShift 08 - Easy Greens",
+            "PixelShift 09 - Gamate",
+            "PixelShift 10 - Game Boy Light",
+            "PixelShift 11 - Game Boy Pocket",
+            "PixelShift 12 - Game Boy Pocket Alt",
+            "PixelShift 13 - Game Pocket Computer",
+            "PixelShift 14 - Game & Watch Ball",
+            "PixelShift 15 - GB Backlight Blue",
+            "PixelShift 16 - GB Backlight Faded",
+            "PixelShift 17 - GB Backlight Orange",
+            "PixelShift 18 - GB Backlight White ",
+            "PixelShift 19 - GB Backlight Yellow Dark",
+            "PixelShift 20 - GB Bootleg",
+            "PixelShift 21 - GB Hunter",
+            "PixelShift 22 - GB Kiosk",
+            "PixelShift 23 - GB Kiosk 2",
+            "PixelShift 24 - GB New",
+            "PixelShift 25 - GB Nuked",
+            "PixelShift 26 - GB Old",
+            "PixelShift 27 - GBP Bivert",
+            "PixelShift 28 - GB Washed Yellow Backlight",
+            "PixelShift 29 - Ghost",
+            "PixelShift 30 - Glow In The Dark",
+            "PixelShift 31 - Gold Bar",
+            "PixelShift 32 - Grapefruit",
+            "PixelShift 33 - Gray Green Mix",
+            "PixelShift 34 - Missingno",
+            "PixelShift 35 - MS-Dos",
+            "PixelShift 36 - Newspaper",
+            "PixelShift 37 - Pip-Boy",
+            "PixelShift 38 - Pocket Girl",
+            "PixelShift 39 - Silhouette",
+            "PixelShift 40 - Sunburst",
+            "PixelShift 41 - Technicolor",
+            "PixelShift 42 - Tron",
+            "PixelShift 43 - Vaporwave",
+            "PixelShift 44 - Virtual Boy",
+            "PixelShift 45 - Wish"
+          ],
+          "visibleWhen": [
+            {
+              "gambatte_gb_colorization": [
+                "auto",
+                "internal"
+              ],
+              "gambatte_gb_internal_palette": [
+                "PixelShift - Pack 1"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "GBC only",
+          "description": {
+            "en": "Adjusts output colors to match the display of real Game Boy Color hardware. 'GBC Only' ensures that correction will only be applied when playing Game Boy Color games, or when using a Game Boy Color palette to colorize a Game Boy game. 'Always' applies color correction to all content, and will produce unexpected/suboptimal results when using 'GB' or 'SGB' internal color palettes.",
+            "zh-Hans": "调整输出颜色，使其接近真实 GBC 屏幕的观感。「仅 GBC」只在 GBC 游戏或使用 GBC 配色时生效。"
+          },
+          "key": "gambatte_gbc_color_correction",
+          "restartRequired": false,
+          "title": {
+            "en": "Color Correction",
+            "zh-Hans": "色彩校正"
+          },
+          "type": "select",
+          "valueLabels": {
+            "GBC only": {
+              "en": "GBC Only",
+              "zh-Hans": "仅 GBC"
+            },
+            "always": {
+              "en": "Always",
+              "zh-Hans": "始终"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "GBC only",
+            "always",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "accurate",
+          "description": {
+            "en": "Specifies method used when performing color correction. 'Accurate' produces output almost indistinguishable from a real Game Boy Color LCD panel. 'Fast' merely darkens colors and reduces saturation, and may be used on low-end hardware if the 'Accurate' method is too slow.",
+            "zh-Hans": "「精确」几乎和真实 GBC 屏幕一致；「快速」只是压暗并降低饱和度，性能开销更小。"
+          },
+          "key": "gambatte_gbc_color_correction_mode",
+          "restartRequired": false,
+          "title": {
+            "en": "Color Correction Mode",
+            "zh-Hans": "色彩校正方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "accurate": {
+              "en": "Accurate",
+              "zh-Hans": "精确"
+            },
+            "fast": {
+              "en": "Fast",
+              "zh-Hans": "快速"
+            }
+          },
+          "values": [
+            "accurate",
+            "fast"
+          ],
+          "visibleWhen": [
+            {
+              "gambatte_gbc_color_correction": [
+                "GBC only",
+                "always"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "central",
+          "description": {
+            "en": "Simulates the physical response of the Game Boy Color LCD panel when illuminated from different angles. 'Central' represents standard color reproduction. 'Above Screen' increases brightness. 'Below Screen' reduces brightness. This setting only applies when 'Color Correction Mode' is set to 'Accurate'.",
+            "zh-Hans": "模拟 GBC 屏幕在不同角度补光下的观感。「居中」为标准效果，「屏幕上方」更亮，「屏幕下方」更暗。仅在校正方式为「精确」时生效。"
+          },
+          "key": "gambatte_gbc_frontlight_position",
+          "restartRequired": false,
+          "title": {
+            "en": "Color Correction - Frontlight Position",
+            "zh-Hans": "色彩校正 - 前光位置"
+          },
+          "type": "select",
+          "valueLabels": {
+            "above screen": {
+              "en": "Above Screen",
+              "zh-Hans": "屏幕上方"
+            },
+            "below screen": {
+              "en": "Below Screen",
+              "zh-Hans": "屏幕下方"
+            },
+            "central": {
+              "en": "Central",
+              "zh-Hans": "居中"
+            }
+          },
+          "values": [
+            "central",
+            "above screen",
+            "below screen"
+          ],
+          "visibleWhen": [
+            {
+              "gambatte_gbc_color_correction": [
+                "GBC only",
+                "always"
+              ],
+              "gambatte_gbc_color_correction_mode": [
+                "accurate"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "0",
+          "description": {
+            "en": "Enable luminosity-based brightness reduction. May be used to avoid glare/eye strain when playing games with white backgrounds, which are intended for display on a non-backlit Game Boy Color and can therefore appear uncomfortably bright when viewed on a modern backlit screen.",
+            "zh-Hans": "按亮度降低画面整体亮度。GB 游戏常用白色背景，在现代屏幕上会显得刺眼，可用这个选项缓解。"
+          },
+          "key": "gambatte_dark_filter_level",
+          "restartRequired": false,
+          "title": {
+            "en": "Dark Filter Level",
+            "zh-Hans": "压暗滤镜强度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            }
+          },
+          "values": [
+            "0",
+            "5",
+            "10",
+            "15",
+            "20",
+            "25",
+            "30",
+            "35",
+            "40",
+            "45",
+            "50"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Simulates LCD ghosting effects. 'Simple' performs a 50:50 mix of the current and previous frames. 'LCD Ghosting' mimics natural LCD response times by combining multiple buffered frames. 'Simple' blending is required when playing games that rely on LCD ghosting for transparency effects (Wave Race, Ballistic, Chikyuu Kaihou Gun ZAS...).",
+            "zh-Hans": "模拟 LCD 残影。「简单」把当前帧和上一帧各取一半混合；「LCD 残影」用多帧模拟真实屏幕的响应速度。部分游戏靠残影实现半透明效果，这时需要开启。"
+          },
+          "key": "gambatte_mix_frames",
+          "restartRequired": false,
+          "title": {
+            "en": "Interframe Blending",
+            "zh-Hans": "帧混合"
+          },
+          "type": "select",
+          "valueLabels": {
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "lcd_ghosting": {
+              "en": "LCD Ghosting (Accurate)",
+              "zh-Hans": "LCD 残影（精确）"
+            },
+            "lcd_ghosting_fast": {
+              "en": "LCD Ghosting (Fast)",
+              "zh-Hans": "LCD 残影（快速）"
+            },
+            "mix": {
+              "en": "Simple",
+              "zh-Hans": "简单"
+            }
+          },
+          "values": [
+            "disabled",
+            "mix",
+            "lcd_ghosting",
+            "lcd_ghosting_fast"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "sinc",
+          "description": {
+            "en": "Specify which algorithm to use when resampling generated audio (the Game Boy audio rate is limited only by its CPU write speed, such that 'native' frequencies are impractical on modern sound devices and must be downsampled). 'Sinc' produces the highest quality. 'Cosine' improves performance on low-end hardware.",
+            "zh-Hans": "把 GB 的原始音频重采样到现代设备可用的频率时使用的算法。Sinc 音质最好，Cosine 性能开销更低。"
+          },
+          "key": "gambatte_audio_resampler",
+          "restartRequired": true,
+          "title": {
+            "en": "Audio Resampler",
+            "zh-Hans": "音频重采样算法"
+          },
+          "type": "select",
+          "valueLabels": {
+            "cc": {
+              "en": "Cosine",
+              "zh-Hans": "Cosine"
+            },
+            "sinc": {
+              "en": "Sinc",
+              "zh-Hans": "Sinc"
+            }
+          },
+          "values": [
+            "sinc",
+            "cc"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "Specify which type of hardware to emulate. 'Auto' is recommended. Selecting 'GBA' unlocks extra features in certain 'GBA Enhanced' Game Boy Color games (Shantae, Wendy - Every Witch Way, Legend of Zelda: Oracle of Seasons/Ages...).",
+            "zh-Hans": "模拟哪种机型，推荐「自动」。选择 GBA 会解锁部分「GBA 增强」GBC 游戏的额外内容，例如《Shantae》《塞尔达传说：织梦岛》系列的时空之章/大地之章。"
+          },
+          "key": "gambatte_gb_hwmode",
+          "restartRequired": true,
+          "title": {
+            "en": "Emulated Hardware",
+            "zh-Hans": "模拟机型"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "GB": {
+              "en": "GB",
+              "zh-Hans": "GB"
+            },
+            "GBA": {
+              "en": "GBA",
+              "zh-Hans": "GBA"
+            },
+            "GBC": {
+              "en": "GBC",
+              "zh-Hans": "GBC"
+            }
+          },
+          "values": [
+            "Auto",
+            "GB",
+            "GBC",
+            "GBA"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enable support for official Game Boy and Game Boy Color bootloaders, with corresponding start-up logo animations.",
+            "zh-Hans": "使用 GB 和 GBC 的官方启动程序，开机时会显示任天堂的开机动画。需要在核心 BIOS 中添加对应文件。"
+          },
+          "key": "gambatte_gb_bootloader",
+          "restartRequired": true,
+          "title": {
+            "en": "Use Official Bootloader",
+            "zh-Hans": "使用官方启动程序"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enabling this will allow pressing/quickly alternating/holding both left and right (or up and down) directions at the same time. This may cause movement-based glitches.",
+            "zh-Hans": "允许同时按下「上+下」或「左+右」，可能导致部分游戏出现移动异常。"
+          },
+          "key": "gambatte_up_down_allowed",
+          "restartRequired": false,
+          "title": {
+            "en": "Allow Opposing Directions",
+            "zh-Hans": "允许相反方向同时按下"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "10",
+          "description": {
+            "en": "Enables haptic feedback effects for supported games (Pokemon Pinball, Perfect Dark...).",
+            "zh-Hans": "为支持震动的游戏（《宝可梦弹珠台》《完美黑暗》等）设置震动强度。"
+          },
+          "key": "gambatte_rumble_level",
+          "restartRequired": false,
+          "title": {
+            "en": "Rumble Strength",
+            "zh-Hans": "震动强度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        }
+      ],
+      "title": {
+        "en": "General",
+        "zh-Hans": "通用"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Gambatte",
+    "coreVersion": "v0.5.0",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

@@ -81,6 +81,23 @@ final class GameConfigSession {
     }
 
     func configRetroArch() {
+        // Re-read persisted options for every launch, never a stale UI snapshot.
+        config.coreOptionsCoreId = nil
+        config.coreOptions = nil
+        if let core, GameCoreOptionCatalog.resourceURL(coreId: core.coreId) != nil {
+            config.coreOptionsCoreId = core.coreId
+            config.coreOptions = [:]
+            do {
+                let options = try makeCoreOptionSession()
+                config.coreOptions = Dictionary(uniqueKeysWithValues: options.catalog.groups.flatMap(\.options).map {
+                    ($0.key, options.value(for: $0))
+                })
+            } catch {
+                // A corrupt or unreadable preference falls back to the actual
+                // core defaults, not old .opt files or a previous game's values.
+                NSLog("[CoreOptions] Failed to resolve launch options for %@: %@", core.coreId, String(describing: error))
+            }
+        }
         RetroArchX.shared().config(config)
 
         RAInputActionManager.shared().fastForwardMultiplierProvider = { [weak self] in
@@ -105,6 +122,9 @@ final class GameConfigSession {
         var array: [(section: GameConfigSection, entries: [GameConfigEntry])] = []
 
         let titleEntries = makeTitleConfigEntries()
+        if let core, scope != .global, GameCoreOptionCatalog.resourceURL(coreId: core.coreId) != nil {
+            titleEntries.last?.opensCoreOptions = true
+        }
         if titleEntries.count > 0 {
             array.append((section: .title, entries: titleEntries))
         }
@@ -606,6 +626,45 @@ private extension GameConfigSession {
 }
 
 extension GameConfigSession {
+    func makeCoreOptionSession() throws -> GameCoreOptionSession {
+        guard let core, scope != .global, let scopeKey = resolveKey() else {
+            throw GameCoreOptionCatalog.CatalogError.invalidCatalog
+        }
+        let catalog = try GameCoreOptionCatalog.load(coreId: core.coreId)
+        let db = RetroRomPersistence.sqlite
+        let currentQuery = query(scope: scope, key: scopeKey)
+        let current = try GameCoreOptionOverrides.decode(db.pluck(currentQuery)?[Self.coreOptions])
+        var inherited: [String: String] = [:]
+        if scope == .game {
+            let coreRow = try db.pluck(query(scope: .core, key: core.coreId))
+            inherited = try GameCoreOptionOverrides.decode(coreRow?[Self.coreOptions]).cores[core.coreId] ?? [:]
+        }
+        let session = GameCoreOptionSession(catalog: catalog, overrides: current.cores[core.coreId] ?? [:], inherited: inherited) { [self] values in
+            // Read-modify-write inside one transaction preserves other cores and columns.
+            try db.transaction {
+                let row = try db.pluck(currentQuery)
+                var stored = try GameCoreOptionOverrides.decode(row?[Self.coreOptions])
+                stored.cores[core.coreId] = values.isEmpty ? nil : values
+                let data: Data? = stored.cores.isEmpty ? nil : try JSONEncoder().encode(stored)
+                if row != nil {
+                    try db.run(currentQuery.update(Self.coreOptions <- data, Self.updateAt <- Date()))
+                } else if data != nil {
+                    try db.run(Self.romConfigTable.insert(Self.key <- scopeKey, Self.configScope <- scope.rawValue, Self.updateAt <- Date(), Self.coreOptions <- data))
+                }
+            }
+        }
+        // Only the running game's own session resolves to what the core is using;
+        // editing core scope while a game has its own overrides must not leak in.
+        let ra = RetroArchX.shared()
+        if GamePageViewController.instance?.configSession === self, !ra.dummyCoreRunning,
+           ra.currentCoreItem?.coreId == core.coreId {
+            session.liveApply = { key, value in
+                _ = RetroArchX.shared().updateRunningCoreOption(value, forKey: key)
+            }
+        }
+        return session
+    }
+
     // v3
     static let key              = RetroRomPersistence.key
     static let updateAt         = RetroRomPersistence.updateAt
@@ -628,6 +687,9 @@ extension GameConfigSession {
     // v6
     static let autoEnableCheats = SQLite.Expression<Bool?>("auto_enable_cheats")
 
+    // v7
+    static let coreOptions = SQLite.Expression<Data?>("core_options")
+
     /*
      * key, configScope, updateAt
      * v3: threadEnabled, fastForwardMultiplier
@@ -635,6 +697,7 @@ extension GameConfigSession {
      *     overlayTouchPlayer, inputBindingProfile
      * v5: toolbarLayout, overlayTurboTapLatch, overlayTurboSpeed
      * v6: autoEnableCheats
+     * v7: coreOptions
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

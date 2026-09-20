@@ -1,0 +1,544 @@
+{
+  "coreId": "mesen-s",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Video, audio, overclocking and console settings.",
+        "zh-Hans": "画面、音频、超频与主机设置。"
+      },
+      "id": "general",
+      "options": [
+        {
+          "categoryId": "general",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Apply an NTSC signal filter that mimics how the console looked over different cables.",
+            "zh-Hans": "为画面应用 NTSC 信号滤镜，模拟当年用不同线材连接电视的效果。"
+          },
+          "key": "mesen-s_ntsc_filter",
+          "restartRequired": false,
+          "title": {
+            "en": "NTSC Filter",
+            "zh-Hans": "NTSC 滤镜"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Composite (Blargg)": {
+              "en": "Composite (Blargg)",
+              "zh-Hans": "复合视频 (Blargg)"
+            },
+            "Disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "Monochrome (Blargg)": {
+              "en": "Monochrome (Blargg)",
+              "zh-Hans": "黑白 (Blargg)"
+            },
+            "RGB (Blargg)": {
+              "en": "RGB (Blargg)",
+              "zh-Hans": "RGB (Blargg)"
+            },
+            "S-Video (Blargg)": {
+              "en": "S-Video (Blargg)",
+              "zh-Hans": "S 端子 (Blargg)"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Composite (Blargg)",
+            "S-Video (Blargg)",
+            "RGB (Blargg)",
+            "Monochrome (Blargg)"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "The emulated console region. 'Auto' detects it from the game and falls back to NTSC. PAL runs at 50Hz.",
+            "zh-Hans": "模拟的主机制式。「自动」按游戏识别，识别不了时使用 NTSC。PAL 为 50Hz。"
+          },
+          "key": "mesen-s_region",
+          "restartRequired": true,
+          "title": {
+            "en": "Region",
+            "zh-Hans": "地区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "NTSC": {
+              "en": "NTSC",
+              "zh-Hans": "NTSC"
+            },
+            "PAL": {
+              "en": "PAL",
+              "zh-Hans": "PAL"
+            }
+          },
+          "values": [
+            "Auto",
+            "NTSC",
+            "PAL"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "Which Game Boy to emulate for GB games. 'Auto' picks it from the game; 'Super Game Boy' runs them through the SNES with borders and palettes.",
+            "zh-Hans": "运行 GB 游戏时模拟哪种机型。「自动」按游戏选择；选择「超级 GB」会通过 SNES 运行 GB 游戏，可使用彩色边框和配色。"
+          },
+          "key": "mesen-s_gbmodel",
+          "restartRequired": true,
+          "title": {
+            "en": "Game Boy Model",
+            "zh-Hans": "GB 机型"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "Game Boy": {
+              "en": "Game Boy",
+              "zh-Hans": "Game Boy"
+            },
+            "Game Boy Color": {
+              "en": "Game Boy Color",
+              "zh-Hans": "Game Boy Color"
+            },
+            "Super Game Boy": {
+              "en": "Super Game Boy",
+              "zh-Hans": "超级 GB"
+            }
+          },
+          "values": [
+            "Auto",
+            "Game Boy",
+            "Game Boy Color",
+            "Super Game Boy"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Use the second-generation Super Game Boy, which runs at true Game Boy speed (the first model is slightly faster). Requires the matching firmware in the core's BIOS files.",
+            "zh-Hans": "以超级 GB 模式运行时使用二代主机。二代的运行速度与真实 GB 一致，一代会略快。需要在核心 BIOS 中添加对应固件。"
+          },
+          "key": "mesen-s_sgb2",
+          "restartRequired": true,
+          "title": {
+            "en": "Use SGB2",
+            "zh-Hans": "使用 SGB2"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ],
+          "visibleWhen": [
+            {
+              "mesen-s_gbmodel": [
+                "Auto",
+                "Super Game Boy"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "None",
+          "description": {
+            "en": "Crop pixels from the top and bottom, which a CRT television would have hidden behind its bezel.",
+            "zh-Hans": "裁掉画面上下边缘的像素，这些区域在传统 CRT 电视上会被边框挡住。"
+          },
+          "key": "mesen-s_overscan_vertical",
+          "restartRequired": false,
+          "title": {
+            "en": "Vertical Overscan",
+            "zh-Hans": "垂直过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16px": {
+              "en": "16px",
+              "zh-Hans": "16px"
+            },
+            "8px": {
+              "en": "8px",
+              "zh-Hans": "8px"
+            },
+            "None": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "None",
+            "8px",
+            "16px"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "None",
+          "description": {
+            "en": "Crop pixels from the left and right edges.",
+            "zh-Hans": "裁掉画面左右边缘的像素。"
+          },
+          "key": "mesen-s_overscan_horizontal",
+          "restartRequired": false,
+          "title": {
+            "en": "Horizontal Overscan",
+            "zh-Hans": "水平过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16px": {
+              "en": "16px",
+              "zh-Hans": "16px"
+            },
+            "8px": {
+              "en": "8px",
+              "zh-Hans": "8px"
+            },
+            "None": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "None",
+            "8px",
+            "16px"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "'Auto' uses the NTSC or PAL ratio for the game's region. 'No Stretching' shows square pixels.",
+            "zh-Hans": "「自动」按游戏地区选择 NTSC 或 PAL 比例；「不拉伸」按原始像素显示。"
+          },
+          "key": "mesen-s_aspect_ratio",
+          "restartRequired": false,
+          "title": {
+            "en": "Aspect Ratio",
+            "zh-Hans": "画面比例"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16:9": {
+              "en": "16:9",
+              "zh-Hans": "16:9"
+            },
+            "4:3": {
+              "en": "4:3",
+              "zh-Hans": "4:3"
+            },
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "NTSC": {
+              "en": "NTSC",
+              "zh-Hans": "NTSC"
+            },
+            "No Stretching": {
+              "en": "No Stretching",
+              "zh-Hans": "不拉伸"
+            },
+            "PAL": {
+              "en": "PAL",
+              "zh-Hans": "PAL"
+            }
+          },
+          "values": [
+            "Auto",
+            "No Stretching",
+            "NTSC",
+            "PAL",
+            "4:3",
+            "16:9"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Blend adjacent pixels in the SNES hi-res modes. Some games rely on this for transparency effects.",
+            "zh-Hans": "SNES 的高分辨率模式下混合相邻像素，部分游戏靠这种方式实现半透明效果，例如《卡比梦之泉》的水面。"
+          },
+          "key": "mesen-s_blend_high_res",
+          "restartRequired": false,
+          "title": {
+            "en": "Blend Hi-Res Modes",
+            "zh-Hans": "混合高分辨率模式"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Use cubic interpolation when resampling audio. It sounds clearer than the console's own Gaussian interpolation, but less accurate.",
+            "zh-Hans": "音频重采样使用三次插值，高频更清晰。真机使用的是高斯插值，因此开启后声音会与真机略有不同。"
+          },
+          "key": "mesen-s_cubic_interpolation",
+          "restartRequired": false,
+          "title": {
+            "en": "Cubic Interpolation (Audio)",
+            "zh-Hans": "三次插值（音频）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "None",
+          "description": {
+            "en": "Add extra scanlines so games have more time to compute, which reduces slowdown. It can break some games.",
+            "zh-Hans": "增加额外的扫描线，让游戏有更多时间运算，可减少卡顿。部分游戏可能出错。"
+          },
+          "key": "mesen-s_overclock",
+          "restartRequired": false,
+          "title": {
+            "en": "Overclock",
+            "zh-Hans": "CPU 超频"
+          },
+          "type": "select",
+          "valueLabels": {
+            "High": {
+              "en": "High",
+              "zh-Hans": "高"
+            },
+            "Low": {
+              "en": "Low",
+              "zh-Hans": "低"
+            },
+            "Medium": {
+              "en": "Medium",
+              "zh-Hans": "中"
+            },
+            "None": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "Very High": {
+              "en": "Very High",
+              "zh-Hans": "极高"
+            }
+          },
+          "values": [
+            "None",
+            "Low",
+            "Medium",
+            "High",
+            "Very High"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Before NMI",
+          "description": {
+            "en": "Add the extra scanlines before or after the NMI signal. Prefer 'Before NMI' and try 'After NMI' if it does not work well.",
+            "zh-Hans": "在 NMI 信号之前或之后增加扫描线。优先使用「NMI 前」，效果不理想时再试「NMI 后」。"
+          },
+          "key": "mesen-s_overclock_type",
+          "restartRequired": false,
+          "title": {
+            "en": "Overclock Type",
+            "zh-Hans": "超频方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "After NMI": {
+              "en": "After NMI",
+              "zh-Hans": "NMI 后"
+            },
+            "Before NMI": {
+              "en": "Before NMI",
+              "zh-Hans": "NMI 前"
+            }
+          },
+          "values": [
+            "Before NMI",
+            "After NMI"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "100%",
+          "description": {
+            "en": "Overclock the Super FX chip, which makes games like Star Fox and Yoshi's Island run more smoothly.",
+            "zh-Hans": "提高 Super FX 芯片的频率，可让《星际火狐》《耀西岛》等使用该芯片的游戏更流畅。"
+          },
+          "key": "mesen-s_superfx_overclock",
+          "restartRequired": false,
+          "title": {
+            "en": "Super FX Clock Speed",
+            "zh-Hans": "Super FX 芯片频率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "100%": {
+              "en": "100% (as on hardware)",
+              "zh-Hans": "100%（真机）"
+            },
+            "1000%": {
+              "en": "1000%",
+              "zh-Hans": "1000%"
+            },
+            "200%": {
+              "en": "200%",
+              "zh-Hans": "200%"
+            },
+            "300%": {
+              "en": "300%",
+              "zh-Hans": "300%"
+            },
+            "400%": {
+              "en": "400%",
+              "zh-Hans": "400%"
+            },
+            "500%": {
+              "en": "500%",
+              "zh-Hans": "500%"
+            }
+          },
+          "values": [
+            "100%",
+            "200%",
+            "300%",
+            "400%",
+            "500%",
+            "1000%"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Random Values (Default)",
+          "description": {
+            "en": "RAM contents at power-on are undefined on real hardware. Some games use them for random number generation.",
+            "zh-Hans": "真实主机开机时 RAM 的内容不确定。部分游戏会用 RAM 初始值生成随机数等。"
+          },
+          "key": "mesen-s_ramstate",
+          "restartRequired": true,
+          "title": {
+            "en": "RAM Power-On State",
+            "zh-Hans": "开机 RAM 初始值"
+          },
+          "type": "select",
+          "valueLabels": {
+            "All 0s": {
+              "en": "All 0s",
+              "zh-Hans": "全 0"
+            },
+            "All 1s": {
+              "en": "All 1s",
+              "zh-Hans": "全 1"
+            },
+            "Random Values (Default)": {
+              "en": "Random Values (default)",
+              "zh-Hans": "随机（默认）"
+            }
+          },
+          "values": [
+            "Random Values (Default)",
+            "All 0s",
+            "All 1s"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Emulate cartridge coprocessors such as the DSP at a high level, so no firmware file is needed, at some cost in accuracy.",
+            "zh-Hans": "对 DSP 等卡带内协处理器使用高层模拟，无需提供对应固件文件，但准确度低于真实固件。"
+          },
+          "key": "mesen-s_hle_coprocessor",
+          "restartRequired": true,
+          "title": {
+            "en": "HLE Coprocessor Emulation",
+            "zh-Hans": "HLE 协处理器模拟"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "General",
+        "zh-Hans": "通用"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Mesen-S",
+    "coreVersion": "0.4.0",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

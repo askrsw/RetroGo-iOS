@@ -825,6 +825,10 @@ core_option_manager_t *core_option_manager_new_vars(
          if (!(opt->conf = config_file_new_alloc()))
             goto error;
 
+   /* RetroGo may create an in-memory manager without an .opt file. */
+   if (!opt->conf && !(opt->conf = config_file_new_alloc()))
+      goto error;
+
    strlcpy(opt->conf_path, conf_path, sizeof(opt->conf_path));
 
    /* Load source config file, if required */
@@ -1112,6 +1116,10 @@ core_option_manager_t *core_option_manager_new(
       if (!(opt->conf = config_file_new_from_path_to_string(conf_path)))
          if (!(opt->conf = config_file_new_alloc()))
             goto error;
+
+   /* RetroGo may create an in-memory manager without an .opt file. */
+   if (!opt->conf && !(opt->conf = config_file_new_alloc()))
+      goto error;
 
    strlcpy(opt->conf_path, conf_path, sizeof(opt->conf_path));
 

@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.8.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.8.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>September 20, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.8.0" style="number">
+            <p-item>Added <b>Core Options</b>: tune a core's own settings — aspect ratio, palettes, filters, overclocking, audio processing and more — right from the game settings. Every option is grouped by topic and fully localized, and can be set <b>per core or per game</b>.</p-item>
+            <p-item>Core Options cover all <b>15 cores</b> and are tailored for RetroGo: options that do not apply on iOS, such as netplay, light guns and mouse input, are left out so they cannot clash with the on-screen turbo buttons, and related options <b>appear or hide based on your current choices</b> — the N64 graphics plugin settings, for example, only show up for the plugin you selected.</p-item>
+            <p-item>Most core options <b>take effect immediately while you play</b>, so you can see the result without leaving the game. The few that need the core to reload are clearly marked as requiring a restart.</p-item>
+            <p-item>The NES cores (<b>FCEUmm, Nestopia and Mesen</b>) can now <b>import a custom palette</b>: choose "Custom", pick a .pal file, and RetroGo places it in that core's BIOS folder for you.</p-item>
+            <p-item>Improved the <b>iPad</b> experience: the tab bar stays at the bottom, matching iPhone, and layout issues when rotating the screen or resizing the window are fixed.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.7.1" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.7.1</p-title>
         <p-paragraph fontsize="13">

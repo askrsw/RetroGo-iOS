@@ -182,6 +182,7 @@
 #include <utils/configuration.h>
 #include <utils/list_special.h>
 #include <core/core_option_manager.h>
+#include <core/ra_core_options.h>
 #ifdef HAVE_CHEATS
 #include <emu/cheat_manager.h>
 #endif
@@ -920,6 +921,11 @@ static void runloop_deinit_core_options(
       const char *path_core_options,
       core_option_manager_t *core_options)
 {
+   if (core_options && string_is_empty(core_options->conf_path))
+   {
+      core_option_manager_free(core_options);
+      return;
+   }
    /* Check whether game-specific options file is being used */
    if (!string_is_empty(path_core_options))
    {
@@ -1129,6 +1135,12 @@ static core_option_manager_t *runloop_init_core_options(
       const char *path_core_options,
       const struct retro_core_options_v2 *options_v2)
 {
+   if (ra_core_options_enabled())
+   {
+      core_option_manager_t *manager = core_option_manager_new("", "", options_v2, categories_enabled);
+      ra_core_options_apply(manager);
+      return manager;
+   }
    char options_path[PATH_MAX_LENGTH];
    char src_options_path[PATH_MAX_LENGTH];
    /* Ensure these are NULL-terminated */
@@ -1154,6 +1166,12 @@ static core_option_manager_t *runloop_init_core_variables(
       const char *path_core_options,
       const struct retro_variable *vars)
 {
+   if (ra_core_options_enabled())
+   {
+      core_option_manager_t *manager = core_option_manager_new_vars("", "", vars);
+      ra_core_options_apply(manager);
+      return manager;
+   }
    char options_path[PATH_MAX_LENGTH];
    char src_options_path[PATH_MAX_LENGTH];
 
@@ -5116,52 +5134,6 @@ void core_options_flush(void)
          MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
 }
 
-/*
-void runloop_msg_queue_push(
-      const char *msg,
-      size_t len,
-      unsigned prio, unsigned duration,
-      bool flush,
-      char *title,
-      enum message_queue_icon icon,
-      enum message_queue_category category)
-{
-#ifdef HAVE_ACCESSIBILITY
-   settings_t *settings           = config_get_ptr();
-   bool accessibility_enable      = settings->bools.accessibility_enable;
-   unsigned accessibility_narrator_speech_speed = settings->uints.accessibility_narrator_speech_speed;
-   access_state_t *access_st      = access_state_get_ptr();
-#endif
-   runloop_state_t *runloop_st    = &runloop_state;
-
-   RUNLOOP_MSG_QUEUE_LOCK(runloop_st);
-#ifdef HAVE_ACCESSIBILITY
-   if (is_accessibility_enabled(
-            accessibility_enable,
-            access_st->enabled))
-      accessibility_speak_priority(
-            accessibility_enable,
-            accessibility_narrator_speech_speed,
-            (char*) msg, 0);
-#endif
-   {
-      if (flush)
-         msg_queue_clear(&runloop_st->msg_queue);
-
-      msg_queue_push(&runloop_st->msg_queue, msg,
-            prio, duration,
-            title, icon, category);
-
-      runloop_st->msg_queue_size = msg_queue_size(
-            &runloop_st->msg_queue);
-   }
-
-   ui_companion_driver_msg_queue_push(
-         msg, prio, duration, flush);
-
-   RUNLOOP_MSG_QUEUE_UNLOCK(runloop_st);
-} */
-
 #define HOTKEY_CHECK(cmd1, cmd2, cond, cond2) \
    { \
       static bool old_pressed                   = false; \
@@ -5893,27 +5865,6 @@ static enum runloop_state_enum runloop_check_state(
       old_button_state                  = new_button_state;
       old_hold_button_state             = new_hold_button_state;
    }
-
-#if 0
-   /* Display fast-forward notification, unless
-    * disabled via override */
-   if (  !runloop_st->fastmotion_override.current.fastforward
-       || runloop_st->fastmotion_override.current.notification)
-   {
-      /* > Use widgets, if enabled */
-      {
-         /* > If widgets are disabled, display fast-forward
-          *   status via OSD text for 1 frame every frame */
-         if (   (runloop_st->flags & RUNLOOP_FLAG_FASTMOTION)
-             && settings->bools.notification_show_fast_forward)
-         {
-            const char *_msg = msg_hash_to_str(MSG_FAST_FORWARD);
-            runloop_msg_queue_push(_msg, strlen(_msg), 1, 1, false, NULL,
-                  MESSAGE_QUEUE_ICON_DEFAULT, MESSAGE_QUEUE_CATEGORY_INFO);
-         }
-      }
-   }
-#endif // 0
 
 #ifdef HAVE_CHEEVOS
    if (!cheevos_hardcore_active)

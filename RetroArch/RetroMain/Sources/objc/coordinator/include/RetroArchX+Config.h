@@ -45,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface RAConfig : NSObject
+@property(nonatomic, copy, nullable) NSString *coreOptionsCoreId;
+@property(nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *coreOptions;
 @property(nonatomic, assign) BOOL logicThread;
 @property(nonatomic, copy)   NSString *videoDriver;
 @property(nonatomic, copy)   NSString *audioDriver;
@@ -60,6 +62,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface RetroArchX (Config)
 - (void)config:(RAConfig *)cfg;
+- (BOOL)prepareCoreOptionsForCoreId:(NSString *)coreId;
+- (void)clearCoreOptionConfiguration;
+// Applies a value to the running core from its next frame; also kept for re-registration.
+- (BOOL)updateRunningCoreOption:(NSString *)value forKey:(NSString *)key;
+// Snapshot of the core options registered by the running core, for offline JSON export.
+- (nullable NSDictionary<NSString *, id> *)debugCurrentCoreOptionsSnapshot;
 - (void)setFastForwardMultiplier:(double)multiplier;
 - (void)setMuteOnFastForward:(BOOL)value;
 

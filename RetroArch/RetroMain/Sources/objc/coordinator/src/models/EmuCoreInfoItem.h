@@ -72,6 +72,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)scanFirmwareFolder:(NSURL *)url match:(BOOL)match processing:(void (^)(NSString *fileName))processing errorHandler:(void (^)(NSError *error))errorHandler completion:(void (^)(NSArray<EmuCoreFirmware *> *))completion;
 - (nullable EmuCoreFirmware *)importFirmwareFile:(NSURL *)url;
 - (BOOL)deleteFirmware:(EmuCoreFirmware *)firmware;
+/// Absolute path of the core's BIOS/system folder, creating it if needed.
+- (nullable NSString *)systemDirectoryPath;
+/// Copies a file into the BIOS/system folder under the given name, replacing any existing one.
+- (BOOL)importSystemFileAtURL:(NSURL *)url fileName:(NSString *)fileName;
 
 - (nullable NSString *)checkIsMameCore:(NSString *)romPath;
 - (void)cleanupMameSession;

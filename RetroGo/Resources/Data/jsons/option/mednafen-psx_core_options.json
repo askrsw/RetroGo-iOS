@@ -1,0 +1,3645 @@
+{
+  "coreId": "mednafen-psx",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Frame rate reporting and disc access settings.",
+        "zh-Hans": "帧率上报与光盘读取设置。"
+      },
+      "id": "general",
+      "options": [
+        {
+          "categoryId": "general",
+          "defaultValue": "auto_toggle",
+          "description": {
+            "en": "Choose the FPS timing that the core will report to the frontend. Automatic Toggling will allow the core to switch between reporting progressive and interlaced rates, but may cause frontend video/audio driver re-inits.",
+            "zh-Hans": "核心向前端上报的帧率方式。「允许自动切换」会在逐行和隔行之间切换，可能导致音视频短暂重建。"
+          },
+          "key": "beetle_psx_core_timing_fps",
+          "restartRequired": true,
+          "title": {
+            "en": "Core-Reported FPS Timing",
+            "zh-Hans": "核心上报帧率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto_toggle": {
+              "en": "Allow Automatic Toggling",
+              "zh-Hans": "允许自动切换"
+            },
+            "force_interlaced": {
+              "en": "Force Interlaced Rate",
+              "zh-Hans": "固定隔行"
+            },
+            "force_progressive": {
+              "en": "Progressive Rate",
+              "zh-Hans": "固定逐行"
+            }
+          },
+          "values": [
+            "auto_toggle",
+            "force_progressive",
+            "force_interlaced"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "sync",
+          "description": {
+            "en": "Choose method used to read data from content disk images. 'Synchronous' mimics original hardware. 'Asynchronous' can reduce stuttering on devices with slow storage. 'Pre-Cache' loads the entire disk image into memory when launching content, which may improve in-game loading times at the cost of an initial delay at startup. 'Pre-Cache' may cause issues on systems with low RAM, and will fall back to 'Synchronous' for physical media.",
+            "zh-Hans": "读取光盘镜像的方式。「同步」还原真机；「异步」可缓解低速存储上的卡顿；「预加载」把整个镜像读入内存，最流畅但占用内存。"
+          },
+          "key": "beetle_psx_cd_access_method",
+          "restartRequired": true,
+          "title": {
+            "en": "CD Access Method",
+            "zh-Hans": "光盘读取方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "async": {
+              "en": "Asynchronous",
+              "zh-Hans": "异步"
+            },
+            "precache": {
+              "en": "Pre-Cache",
+              "zh-Hans": "预加载"
+            },
+            "sync": {
+              "en": "Synchronous",
+              "zh-Hans": "同步"
+            }
+          },
+          "values": [
+            "sync",
+            "async",
+            "precache"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "2x(native)",
+          "description": {
+            "en": "Choose disk access speed multiplier. Values higher than '2x (Native)' can greatly reduce in-game loading times, but may introduce timing errors. Some games may not function properly above a certain value.",
+            "zh-Hans": "光驱读取速度倍数。高于「2x（原生）」可大幅缩短读盘时间，但可能引发时序问题，部分游戏超过一定倍数就无法正常运行。"
+          },
+          "key": "beetle_psx_cd_fastload",
+          "restartRequired": false,
+          "title": {
+            "en": "CD Loading Speed",
+            "zh-Hans": "光驱读取倍速"
+          },
+          "type": "select",
+          "valueLabels": {
+            "10x": {
+              "en": "10x",
+              "zh-Hans": "10x"
+            },
+            "12x": {
+              "en": "12x",
+              "zh-Hans": "12x"
+            },
+            "14x": {
+              "en": "14x",
+              "zh-Hans": "14x"
+            },
+            "2x(native)": {
+              "en": "2x (Native)",
+              "zh-Hans": "2x（原生）"
+            },
+            "4x": {
+              "en": "4x",
+              "zh-Hans": "4 倍"
+            },
+            "6x": {
+              "en": "6x",
+              "zh-Hans": "6x"
+            },
+            "8x": {
+              "en": "8x",
+              "zh-Hans": "8 倍"
+            }
+          },
+          "values": [
+            "2x(native)",
+            "4x",
+            "6x",
+            "8x",
+            "10x",
+            "12x",
+            "14x"
+          ]
+        }
+      ],
+      "title": {
+        "en": "General",
+        "zh-Hans": "通用"
+      }
+    },
+    {
+      "description": {
+        "en": "Resolution, aspect ratio, cropping and deinterlacing settings.",
+        "zh-Hans": "分辨率、画面比例、裁切与去隔行设置。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "1x(native)",
+          "description": {
+            "en": "Choose internal resolution multiplier. Resolutions higher than '1x (Native)' improve fidelity of 3D models at the expense of increased performance requirements. 2D elements are generally unaffected by this setting.",
+            "zh-Hans": "以 PS 原生分辨率的若干倍渲染。倍数越高 3D 模型越精细，性能开销也越大。2D 画面通常不受影响。"
+          },
+          "key": "beetle_psx_internal_resolution",
+          "restartRequired": true,
+          "title": {
+            "en": "Internal GPU Resolution",
+            "zh-Hans": "内部渲染分辨率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16x": {
+              "en": "16x",
+              "zh-Hans": "16 倍"
+            },
+            "1x(native)": {
+              "en": "1x (Native)",
+              "zh-Hans": "1x（原生）"
+            },
+            "2x": {
+              "en": "2x",
+              "zh-Hans": "2 倍"
+            },
+            "4x": {
+              "en": "4x",
+              "zh-Hans": "4 倍"
+            },
+            "8x": {
+              "en": "8x",
+              "zh-Hans": "8 倍"
+            }
+          },
+          "values": [
+            "1x(native)",
+            "2x",
+            "4x",
+            "8x",
+            "16x"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "1x(native)",
+          "description": {
+            "en": "Choose dithering pattern configuration. '1x (Native)' emulates native low resolution dithering used by original hardware to smooth out color banding artifacts visible at native color depth. 'Internal Resolution' scales dithering granularity to the configured internal resolution for cleaner results. Recommended to be disabled when running at 32 bpp color depth. Note: On Vulkan, enabling this will force downsampling to native color depth, while disabling will automatically enable output at higher color depth.",
+            "zh-Hans": "PS 用抖动来掩盖色阶断层。「1x（原生）」还原真机的低分辨率抖动；「按内部分辨率」在提高分辨率后让抖动更细腻；关闭则画面更干净但可能出现色带。"
+          },
+          "key": "beetle_psx_dither_mode",
+          "restartRequired": false,
+          "title": {
+            "en": "Dithering Pattern",
+            "zh-Hans": "抖动方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1x(native)": {
+              "en": "1x (Native)",
+              "zh-Hans": "1x（原生）"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "internal resolution": {
+              "en": "Internal Resolution",
+              "zh-Hans": "按内部分辨率"
+            }
+          },
+          "values": [
+            "1x(native)",
+            "internal resolution",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "When enabled and supported by the libretro frontend, this provides a small performance increase by directing the frontend to repeat the previous frame if the core has nothing new to display.",
+            "zh-Hans": "核心没有新画面时重复上一帧，可略微提升性能。"
+          },
+          "key": "beetle_psx_frame_duping",
+          "restartRequired": false,
+          "title": {
+            "en": "Frame Duping (Speedup)",
+            "zh-Hans": "重复帧（提速）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Due to different standards, PAL games often appear slowed down compared to the American or Japanese NTSC releases. This option can be used to override PAL timings in order to attempt to run these games with the NTSC framerate. This option has no effect when running NTSC content.",
+            "zh-Hans": "PAL 版游戏通常比美版、日版慢。开启后用 NTSC 的时序运行 PAL 游戏，速度接近原版，但可能出现问题。"
+          },
+          "key": "beetle_psx_pal_video_timing_override",
+          "restartRequired": true,
+          "title": {
+            "en": "PAL Video Timing Override",
+            "zh-Hans": "覆盖 PAL 视频时序"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "corrected",
+          "description": {
+            "en": "Choose core provided aspect ratio. This setting is ignored when the Widescreen Mode Hack or Display Full VRAM options are enabled.",
+            "zh-Hans": "画面的显示比例。开启宽屏补丁或显示完整显存时该设置无效。"
+          },
+          "key": "beetle_psx_aspect_ratio",
+          "restartRequired": false,
+          "title": {
+            "en": "Aspect Ratio",
+            "zh-Hans": "画面比例"
+          },
+          "type": "select",
+          "valueLabels": {
+            "4:3": {
+              "en": "Force 4:3",
+              "zh-Hans": "强制 4:3"
+            },
+            "corrected": {
+              "en": "Corrected",
+              "zh-Hans": "已校正"
+            },
+            "ntsc": {
+              "en": "Force NTSC",
+              "zh-Hans": "强制 NTSC"
+            },
+            "uncorrected": {
+              "en": "Uncorrected",
+              "zh-Hans": "未校正"
+            }
+          },
+          "values": [
+            "corrected",
+            "uncorrected",
+            "4:3",
+            "ntsc"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "smart",
+          "description": {
+            "en": "'None' retains padding (pillarboxes on either side of the image for NTSC, on all sides for PAL) to emulate the same black bars generated in analog video output by real PSX hardware. 'Static' only removes horizontal padding, 'Dynamic' removes all padding.",
+            "zh-Hans": "「无」保留真机输出时的黑边；「固定」按固定数值裁切；「动态」按游戏实际画面自动裁切。"
+          },
+          "key": "beetle_psx_crop_overscan",
+          "restartRequired": false,
+          "title": {
+            "en": "Crop Overscan",
+            "zh-Hans": "过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "disabled": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "smart": {
+              "en": "Dynamic (default)",
+              "zh-Hans": "动态（默认）"
+            },
+            "static": {
+              "en": "Static",
+              "zh-Hans": "固定"
+            }
+          },
+          "values": [
+            "disabled",
+            "static",
+            "smart"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "When 'Crop Horizontal Overscan' is enabled, this option further reduces the width of the cropped image by the specified number of pixels.",
+            "zh-Hans": "在过扫描裁切的基础上，再从左右各裁掉指定的像素。"
+          },
+          "key": "beetle_psx_image_crop",
+          "restartRequired": false,
+          "title": {
+            "en": "Additional Cropping",
+            "zh-Hans": "额外裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "10px": {
+              "en": "10px",
+              "zh-Hans": "10px"
+            },
+            "11px": {
+              "en": "11px",
+              "zh-Hans": "11px"
+            },
+            "12px": {
+              "en": "12px",
+              "zh-Hans": "12px"
+            },
+            "13px": {
+              "en": "13px",
+              "zh-Hans": "13px"
+            },
+            "14px": {
+              "en": "14px",
+              "zh-Hans": "14px"
+            },
+            "15px": {
+              "en": "15px",
+              "zh-Hans": "15px"
+            },
+            "16px": {
+              "en": "16px",
+              "zh-Hans": "16px"
+            },
+            "17px": {
+              "en": "17px",
+              "zh-Hans": "17px"
+            },
+            "18px": {
+              "en": "18px",
+              "zh-Hans": "18px"
+            },
+            "19px": {
+              "en": "19px",
+              "zh-Hans": "19px"
+            },
+            "1px": {
+              "en": "1px",
+              "zh-Hans": "1px"
+            },
+            "20px": {
+              "en": "20px",
+              "zh-Hans": "20px"
+            },
+            "2px": {
+              "en": "2px",
+              "zh-Hans": "2px"
+            },
+            "3px": {
+              "en": "3px",
+              "zh-Hans": "3px"
+            },
+            "4px": {
+              "en": "4px",
+              "zh-Hans": "4px"
+            },
+            "5px": {
+              "en": "5px",
+              "zh-Hans": "5px"
+            },
+            "6px": {
+              "en": "6px",
+              "zh-Hans": "6px"
+            },
+            "7px": {
+              "en": "7px",
+              "zh-Hans": "7px"
+            },
+            "8px": {
+              "en": "8px",
+              "zh-Hans": "8px"
+            },
+            "9px": {
+              "en": "9px",
+              "zh-Hans": "9px"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "1px",
+            "2px",
+            "3px",
+            "4px",
+            "5px",
+            "6px",
+            "7px",
+            "8px",
+            "9px",
+            "10px",
+            "11px",
+            "12px",
+            "13px",
+            "14px",
+            "15px",
+            "16px",
+            "17px",
+            "18px",
+            "19px",
+            "20px"
+          ],
+          "visibleWhen": [
+            {
+              "beetle_psx_crop_overscan": [
+                "static",
+                "smart"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "When 'Crop Horizontal Overscan' is enabled, this allows the resultant cropped image to be offset horizontally to the right (positive) or left (negative) by the specified number of pixels. May be used to correct alignment issues. Only supported by the software renderer.",
+            "zh-Hans": "裁切后把画面整体向左或向右移动指定的像素，可用于修正部分游戏画面不居中的问题。"
+          },
+          "key": "beetle_psx_image_offset",
+          "restartRequired": false,
+          "title": {
+            "en": "Offset Cropped Image",
+            "zh-Hans": "画面水平偏移"
+          },
+          "type": "select",
+          "valueLabels": {
+            "+10px": {
+              "en": "+10px",
+              "zh-Hans": "+10px"
+            },
+            "+11px": {
+              "en": "+11px",
+              "zh-Hans": "+11px"
+            },
+            "+12px": {
+              "en": "+12px",
+              "zh-Hans": "+12px"
+            },
+            "+1px": {
+              "en": "+1px",
+              "zh-Hans": "+1px"
+            },
+            "+2px": {
+              "en": "+2px",
+              "zh-Hans": "+2px"
+            },
+            "+3px": {
+              "en": "+3px",
+              "zh-Hans": "+3px"
+            },
+            "+4px": {
+              "en": "+4px",
+              "zh-Hans": "+4px"
+            },
+            "+5px": {
+              "en": "+5px",
+              "zh-Hans": "+5px"
+            },
+            "+6px": {
+              "en": "+6px",
+              "zh-Hans": "+6px"
+            },
+            "+7px": {
+              "en": "+7px",
+              "zh-Hans": "+7px"
+            },
+            "+8px": {
+              "en": "+8px",
+              "zh-Hans": "+8px"
+            },
+            "+9px": {
+              "en": "+9px",
+              "zh-Hans": "+9px"
+            },
+            "-10px": {
+              "en": "-10px",
+              "zh-Hans": "-10px"
+            },
+            "-11px": {
+              "en": "-11px",
+              "zh-Hans": "-11px"
+            },
+            "-12px": {
+              "en": "-12px",
+              "zh-Hans": "-12px"
+            },
+            "-1px": {
+              "en": "-1px",
+              "zh-Hans": "-1px"
+            },
+            "-2px": {
+              "en": "-2px",
+              "zh-Hans": "-2px"
+            },
+            "-3px": {
+              "en": "-3px",
+              "zh-Hans": "-3px"
+            },
+            "-4px": {
+              "en": "-4px",
+              "zh-Hans": "-4px"
+            },
+            "-5px": {
+              "en": "-5px",
+              "zh-Hans": "-5px"
+            },
+            "-6px": {
+              "en": "-6px",
+              "zh-Hans": "-6px"
+            },
+            "-7px": {
+              "en": "-7px",
+              "zh-Hans": "-7px"
+            },
+            "-8px": {
+              "en": "-8px",
+              "zh-Hans": "-8px"
+            },
+            "-9px": {
+              "en": "-9px",
+              "zh-Hans": "-9px"
+            },
+            "disabled": {
+              "en": "None",
+              "zh-Hans": "不偏移"
+            }
+          },
+          "values": [
+            "-12px",
+            "-11px",
+            "-10px",
+            "-9px",
+            "-8px",
+            "-7px",
+            "-6px",
+            "-5px",
+            "-4px",
+            "-3px",
+            "-2px",
+            "-1px",
+            "disabled",
+            "+1px",
+            "+2px",
+            "+3px",
+            "+4px",
+            "+5px",
+            "+6px",
+            "+7px",
+            "+8px",
+            "+9px",
+            "+10px",
+            "+11px",
+            "+12px"
+          ],
+          "visibleWhen": [
+            {
+              "beetle_psx_crop_overscan": [
+                "static",
+                "smart"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "0",
+          "description": {
+            "en": "Choose the first displayed scan line when running NTSC content. Values greater than zero will reduce the height of output images by cropping pixels from the topmost edge. May be used to counteract letterboxing.",
+            "zh-Hans": "NTSC 游戏显示的第一条扫描线。大于 0 时会裁掉画面顶部，可用于去掉部分游戏的黑边。"
+          },
+          "key": "beetle_psx_initial_scanline",
+          "restartRequired": false,
+          "title": {
+            "en": "Initial Scan Line - NTSC",
+            "zh-Hans": "起始扫描线（NTSC）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0 (Default)",
+              "zh-Hans": "0 (Default)"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "239",
+          "description": {
+            "en": "Choose the last displayed scan line when running NTSC content. Values less than 239 will reduce the height of output images by cropping pixels from the bottommost edge. May be used to counteract letterboxing.",
+            "zh-Hans": "NTSC 游戏显示的最后一条扫描线。小于 239 时会裁掉画面底部。"
+          },
+          "key": "beetle_psx_last_scanline",
+          "restartRequired": false,
+          "title": {
+            "en": "Last Scan Line - NTSC",
+            "zh-Hans": "结束扫描线（NTSC）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "210": {
+              "en": "210",
+              "zh-Hans": "210"
+            },
+            "211": {
+              "en": "211",
+              "zh-Hans": "211"
+            },
+            "212": {
+              "en": "212",
+              "zh-Hans": "212"
+            },
+            "213": {
+              "en": "213",
+              "zh-Hans": "213"
+            },
+            "214": {
+              "en": "214",
+              "zh-Hans": "214"
+            },
+            "215": {
+              "en": "215",
+              "zh-Hans": "215"
+            },
+            "216": {
+              "en": "216",
+              "zh-Hans": "216"
+            },
+            "217": {
+              "en": "217",
+              "zh-Hans": "217"
+            },
+            "218": {
+              "en": "218",
+              "zh-Hans": "218"
+            },
+            "219": {
+              "en": "219",
+              "zh-Hans": "219"
+            },
+            "220": {
+              "en": "220",
+              "zh-Hans": "220"
+            },
+            "221": {
+              "en": "221",
+              "zh-Hans": "221"
+            },
+            "222": {
+              "en": "222",
+              "zh-Hans": "222"
+            },
+            "223": {
+              "en": "223",
+              "zh-Hans": "223"
+            },
+            "224": {
+              "en": "224",
+              "zh-Hans": "224"
+            },
+            "225": {
+              "en": "225",
+              "zh-Hans": "225"
+            },
+            "226": {
+              "en": "226",
+              "zh-Hans": "226"
+            },
+            "227": {
+              "en": "227",
+              "zh-Hans": "227"
+            },
+            "228": {
+              "en": "228",
+              "zh-Hans": "228"
+            },
+            "229": {
+              "en": "229",
+              "zh-Hans": "229"
+            },
+            "230": {
+              "en": "230",
+              "zh-Hans": "230"
+            },
+            "231": {
+              "en": "231",
+              "zh-Hans": "231"
+            },
+            "232": {
+              "en": "232",
+              "zh-Hans": "232"
+            },
+            "233": {
+              "en": "233",
+              "zh-Hans": "233"
+            },
+            "234": {
+              "en": "234",
+              "zh-Hans": "234"
+            },
+            "235": {
+              "en": "235",
+              "zh-Hans": "235"
+            },
+            "236": {
+              "en": "236",
+              "zh-Hans": "236"
+            },
+            "237": {
+              "en": "237",
+              "zh-Hans": "237"
+            },
+            "238": {
+              "en": "238",
+              "zh-Hans": "238"
+            },
+            "239": {
+              "en": "239 (Default)",
+              "zh-Hans": "239 (默认)"
+            }
+          },
+          "values": [
+            "210",
+            "211",
+            "212",
+            "213",
+            "214",
+            "215",
+            "216",
+            "217",
+            "218",
+            "219",
+            "220",
+            "221",
+            "222",
+            "223",
+            "224",
+            "225",
+            "226",
+            "227",
+            "228",
+            "229",
+            "230",
+            "231",
+            "232",
+            "233",
+            "234",
+            "235",
+            "236",
+            "237",
+            "238",
+            "239"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "0",
+          "description": {
+            "en": "Choose the first displayed scan line when running PAL content. Values greater than zero will reduce the height of output images by cropping pixels from the topmost edge. May be used to counteract letterboxing.",
+            "zh-Hans": "PAL 游戏显示的第一条扫描线。大于 0 时会裁掉画面顶部。"
+          },
+          "key": "beetle_psx_initial_scanline_pal",
+          "restartRequired": false,
+          "title": {
+            "en": "Initial Scan Line - PAL",
+            "zh-Hans": "起始扫描线（PAL）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0 (Default)",
+              "zh-Hans": "0 (Default)"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "287",
+          "description": {
+            "en": "Choose the last displayed scan line when running PAL content. Values below 287 will reduce the height of output images by cropping pixels from the bottommost edge. May be used to counteract letterboxing.",
+            "zh-Hans": "PAL 游戏显示的最后一条扫描线。小于 287 时会裁掉画面底部。"
+          },
+          "key": "beetle_psx_last_scanline_pal",
+          "restartRequired": false,
+          "title": {
+            "en": "Last Scan Line - PAL",
+            "zh-Hans": "结束扫描线（PAL）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "230": {
+              "en": "230",
+              "zh-Hans": "230"
+            },
+            "231": {
+              "en": "231",
+              "zh-Hans": "231"
+            },
+            "232": {
+              "en": "232",
+              "zh-Hans": "232"
+            },
+            "233": {
+              "en": "233",
+              "zh-Hans": "233"
+            },
+            "234": {
+              "en": "234",
+              "zh-Hans": "234"
+            },
+            "235": {
+              "en": "235",
+              "zh-Hans": "235"
+            },
+            "236": {
+              "en": "236",
+              "zh-Hans": "236"
+            },
+            "237": {
+              "en": "237",
+              "zh-Hans": "237"
+            },
+            "238": {
+              "en": "238",
+              "zh-Hans": "238"
+            },
+            "239": {
+              "en": "239",
+              "zh-Hans": "239"
+            },
+            "240": {
+              "en": "240",
+              "zh-Hans": "240"
+            },
+            "241": {
+              "en": "241",
+              "zh-Hans": "241"
+            },
+            "242": {
+              "en": "242",
+              "zh-Hans": "242"
+            },
+            "243": {
+              "en": "243",
+              "zh-Hans": "243"
+            },
+            "244": {
+              "en": "244",
+              "zh-Hans": "244"
+            },
+            "245": {
+              "en": "245",
+              "zh-Hans": "245"
+            },
+            "246": {
+              "en": "246",
+              "zh-Hans": "246"
+            },
+            "247": {
+              "en": "247",
+              "zh-Hans": "247"
+            },
+            "248": {
+              "en": "248",
+              "zh-Hans": "248"
+            },
+            "249": {
+              "en": "249",
+              "zh-Hans": "249"
+            },
+            "250": {
+              "en": "250",
+              "zh-Hans": "250"
+            },
+            "251": {
+              "en": "251",
+              "zh-Hans": "251"
+            },
+            "252": {
+              "en": "252",
+              "zh-Hans": "252"
+            },
+            "253": {
+              "en": "253",
+              "zh-Hans": "253"
+            },
+            "254": {
+              "en": "254",
+              "zh-Hans": "254"
+            },
+            "255": {
+              "en": "255",
+              "zh-Hans": "255"
+            },
+            "256": {
+              "en": "256",
+              "zh-Hans": "256"
+            },
+            "257": {
+              "en": "257",
+              "zh-Hans": "257"
+            },
+            "258": {
+              "en": "258",
+              "zh-Hans": "258"
+            },
+            "259": {
+              "en": "259",
+              "zh-Hans": "259"
+            },
+            "260": {
+              "en": "260",
+              "zh-Hans": "260"
+            },
+            "261": {
+              "en": "261",
+              "zh-Hans": "261"
+            },
+            "262": {
+              "en": "262",
+              "zh-Hans": "262"
+            },
+            "263": {
+              "en": "263",
+              "zh-Hans": "263"
+            },
+            "264": {
+              "en": "264",
+              "zh-Hans": "264"
+            },
+            "265": {
+              "en": "265",
+              "zh-Hans": "265"
+            },
+            "266": {
+              "en": "266",
+              "zh-Hans": "266"
+            },
+            "267": {
+              "en": "267",
+              "zh-Hans": "267"
+            },
+            "268": {
+              "en": "268",
+              "zh-Hans": "268"
+            },
+            "269": {
+              "en": "269",
+              "zh-Hans": "269"
+            },
+            "270": {
+              "en": "270",
+              "zh-Hans": "270"
+            },
+            "271": {
+              "en": "271",
+              "zh-Hans": "271"
+            },
+            "272": {
+              "en": "272",
+              "zh-Hans": "272"
+            },
+            "273": {
+              "en": "273",
+              "zh-Hans": "273"
+            },
+            "274": {
+              "en": "274",
+              "zh-Hans": "274"
+            },
+            "275": {
+              "en": "275",
+              "zh-Hans": "275"
+            },
+            "276": {
+              "en": "276",
+              "zh-Hans": "276"
+            },
+            "277": {
+              "en": "277",
+              "zh-Hans": "277"
+            },
+            "278": {
+              "en": "278",
+              "zh-Hans": "278"
+            },
+            "279": {
+              "en": "279",
+              "zh-Hans": "279"
+            },
+            "280": {
+              "en": "280",
+              "zh-Hans": "280"
+            },
+            "281": {
+              "en": "281",
+              "zh-Hans": "281"
+            },
+            "282": {
+              "en": "282",
+              "zh-Hans": "282"
+            },
+            "283": {
+              "en": "283",
+              "zh-Hans": "283"
+            },
+            "284": {
+              "en": "284",
+              "zh-Hans": "284"
+            },
+            "285": {
+              "en": "285",
+              "zh-Hans": "285"
+            },
+            "286": {
+              "en": "286",
+              "zh-Hans": "286"
+            },
+            "287": {
+              "en": "287 (Default)",
+              "zh-Hans": "287 (默认)"
+            }
+          },
+          "values": [
+            "230",
+            "231",
+            "232",
+            "233",
+            "234",
+            "235",
+            "236",
+            "237",
+            "238",
+            "239",
+            "240",
+            "241",
+            "242",
+            "243",
+            "244",
+            "245",
+            "246",
+            "247",
+            "248",
+            "249",
+            "250",
+            "251",
+            "252",
+            "253",
+            "254",
+            "255",
+            "256",
+            "257",
+            "258",
+            "259",
+            "260",
+            "261",
+            "262",
+            "263",
+            "264",
+            "265",
+            "266",
+            "267",
+            "268",
+            "269",
+            "270",
+            "271",
+            "272",
+            "273",
+            "274",
+            "275",
+            "276",
+            "277",
+            "278",
+            "279",
+            "280",
+            "281",
+            "282",
+            "283",
+            "284",
+            "285",
+            "286",
+            "287"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "weave",
+          "description": {
+            "en": "'Weave' shows both fields on the same frame for full high resolution still image, 'Bob' sacrificies resolution clarity for motion clarity.",
+            "zh-Hans": "「Weave」把两场合成一帧，静止画面最清晰；「Bob」牺牲清晰度换取运动画面的流畅。"
+          },
+          "key": "beetle_psx_deinterlacer",
+          "restartRequired": false,
+          "title": {
+            "en": "Deinterlace Method",
+            "zh-Hans": "去隔行方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bob": {
+              "en": "Bob",
+              "zh-Hans": "Bob"
+            },
+            "weave": {
+              "en": "Weave",
+              "zh-Hans": "Weave"
+            }
+          },
+          "values": [
+            "weave",
+            "bob"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "What is shown on-screen.",
+        "zh-Hans": "屏幕上显示哪些信息。"
+      },
+      "id": "osd",
+      "options": [
+        {
+          "categoryId": "osd",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Display the internal frame rate at which the emulated PlayStation system is rendering content. Note: Requires onscreen notifications to be enabled in the libretro frontend.",
+            "zh-Hans": "显示模拟主机实际渲染的帧率。"
+          },
+          "key": "beetle_psx_display_internal_fps",
+          "restartRequired": false,
+          "title": {
+            "en": "Display Internal FPS",
+            "zh-Hans": "显示内部帧率"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "osd",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Display OSD messages generated by the core.",
+            "zh-Hans": "显示核心产生的屏幕提示信息。"
+          },
+          "key": "beetle_psx_display_osd",
+          "restartRequired": false,
+          "title": {
+            "en": "Display Core Messages",
+            "zh-Hans": "显示核心提示"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "On-Screen Display",
+        "zh-Hans": "屏幕提示"
+      }
+    },
+    {
+      "description": {
+        "en": "Controller, multitap and neGcon settings.",
+        "zh-Hans": "手柄、多人适配器与 neGcon 设置。"
+      },
+      "id": "input",
+      "options": [
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "When the input device is set to DualShock, Analog Controller, Analog Joystick, or neGcon, this option enables dynamic calibration of analog inputs. Maximum registered input values are monitored in real time and used to scale analog coordinates passed to the emulator. This should be used for games such as Mega Man Legends 2 that expect larger values than what modern controllers provide. For best results, analog sticks should be rotated at full extent to tune the calibration algorithm each time content is loaded.",
+            "zh-Hans": "使用双摇杆手柄、模拟手柄或 neGcon 时，实时记录摇杆的最大输入值并据此校准，可改善部分手柄输入范围偏小的问题。"
+          },
+          "key": "beetle_psx_analog_calibration",
+          "restartRequired": false,
+          "title": {
+            "en": "Analog Self-Calibration",
+            "zh-Hans": "摇杆自动校准"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "When the input device type is DualShock, this option allows the emulated DualShock to be toggled between DIGITAL and ANALOG mode like original hardware. Mode can also be toggled by using the selected button combination.",
+            "zh-Hans": "允许像真机一样在数字模式和模拟模式之间切换，也可以用下面设置的组合键切换。"
+          },
+          "key": "beetle_psx_analog_toggle",
+          "restartRequired": false,
+          "title": {
+            "en": "DualShock Analog Mode Toggle",
+            "zh-Hans": "双摇杆模式切换"
+          },
+          "type": "select",
+          "valueLabels": {
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "On",
+              "zh-Hans": "开"
+            },
+            "enabled-analog": {
+              "en": "On (default to analog)",
+              "zh-Hans": "开（默认模拟模式）"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled",
+            "enabled-analog"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "l1+r1+select",
+          "description": {
+            "en": "Choose the button combination that will be used to toggle between DIGITAL and ANALOG mode for the emulated DualShock.",
+            "zh-Hans": "用于切换数字/模拟模式的组合键。"
+          },
+          "key": "beetle_psx_analog_toggle_combo",
+          "restartRequired": false,
+          "title": {
+            "en": "Analog Mode Combo",
+            "zh-Hans": "模式切换组合键"
+          },
+          "type": "select",
+          "valueLabels": {
+            "l1+l2+r1+r2+start+select": {
+              "en": "L1 + L2 + R1 + R2 + Start + Select",
+              "zh-Hans": "L1 + L2 + R1 + R2 + Start + Select"
+            },
+            "l1+r1+l3": {
+              "en": "L1 + R1 + L3",
+              "zh-Hans": "L1 + R1 + L3"
+            },
+            "l1+r1+r3": {
+              "en": "L1 + R1 + R3",
+              "zh-Hans": "L1 + R1 + R3"
+            },
+            "l1+r1+select": {
+              "en": "L1 + R1 + Select",
+              "zh-Hans": "L1 + R1 + Select"
+            },
+            "l1+r1+start": {
+              "en": "L1 + R1 + Start",
+              "zh-Hans": "L1 + R1 + Start"
+            },
+            "l2+r2+l3": {
+              "en": "L2 + R2 + L3",
+              "zh-Hans": "L2 + R2 + L3"
+            },
+            "l2+r2+r3": {
+              "en": "L2 + R2 + R3",
+              "zh-Hans": "L2 + R2 + R3"
+            },
+            "l2+r2+select": {
+              "en": "L2 + R2 + Select",
+              "zh-Hans": "L2 + R2 + Select"
+            },
+            "l2+r2+start": {
+              "en": "L2 + R2 + Start",
+              "zh-Hans": "L2 + R2 + Start"
+            },
+            "l3+r3": {
+              "en": "L3 + R3",
+              "zh-Hans": "L3 + R3"
+            }
+          },
+          "values": [
+            "l1+l2+r1+r2+start+select",
+            "l1+r1+select",
+            "l1+r1+start",
+            "l1+r1+l3",
+            "l1+r1+r3",
+            "l2+r2+select",
+            "l2+r2+start",
+            "l2+r2+l3",
+            "l2+r2+r3",
+            "l3+r3"
+          ],
+          "visibleWhen": [
+            {
+              "beetle_psx_analog_toggle": [
+                "enabled",
+                "enabled-analog"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "1",
+          "description": {
+            "en": "Set the hold time for the analog mode combo buttons.",
+            "zh-Hans": "组合键需要按住多久才触发切换。"
+          },
+          "key": "beetle_psx_analog_toggle_hold",
+          "restartRequired": false,
+          "title": {
+            "en": "Combo Hold Delay",
+            "zh-Hans": "组合键长按时长"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Instant",
+              "zh-Hans": "立即触发"
+            },
+            "1": {
+              "en": "1 second delay",
+              "zh-Hans": "长按 1 秒"
+            },
+            "2": {
+              "en": "2 second delay",
+              "zh-Hans": "长按 2 秒"
+            },
+            "3": {
+              "en": "3 second delay",
+              "zh-Hans": "长按 3 秒"
+            },
+            "4": {
+              "en": "4 second delay",
+              "zh-Hans": "长按 4 秒"
+            },
+            "5": {
+              "en": "5 second delay",
+              "zh-Hans": "长按 5 秒"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+          ],
+          "visibleWhen": [
+            {
+              "beetle_psx_analog_toggle": [
+                "enabled",
+                "enabled-analog"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enable multitap functionality on port 1.",
+            "zh-Hans": "在 1 号手柄口上启用多人适配器。"
+          },
+          "key": "beetle_psx_enable_multitap_port1",
+          "restartRequired": false,
+          "title": {
+            "en": "Port 1: Multitap",
+            "zh-Hans": "1 号口多人适配器"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enable multitap functionality on port 2.",
+            "zh-Hans": "在 2 号手柄口上启用多人适配器。"
+          },
+          "key": "beetle_psx_enable_multitap_port2",
+          "restartRequired": false,
+          "title": {
+            "en": "Port 2: Multitap",
+            "zh-Hans": "2 号口多人适配器"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "linear",
+          "description": {
+            "en": "Choose the response type of the RetroPad left analog stick when simulating the 'twist' action of emulated 'neGcon' input devices. Analog stick displacement may be mapped to neGcon rotation angle either linearly, quadratically or cubically. 'Quadratic' allows for greater precision than 'Linear' when making small movements. 'Cubic' further increases small movement precision, but 'exaggerates' larger movements. Note: 'Linear' is only recommended when using racing wheel peripherals. Conventional controllers implement analog input in a manner fundamentally different from the neGcon 'twist' mechanism, such that linear mapping over-amplifies small movements, impairing fine control. In most cases, 'Quadratic' provides the closest approximation of real hardware.",
+            "zh-Hans": "用左摇杆模拟 neGcon 手柄扭转动作时的响应曲线。"
+          },
+          "key": "beetle_psx_negcon_response",
+          "restartRequired": false,
+          "title": {
+            "en": "neGcon Twist Response",
+            "zh-Hans": "neGcon 扭转响应"
+          },
+          "type": "select",
+          "valueLabels": {
+            "cubic": {
+              "en": "Cubic",
+              "zh-Hans": "三次"
+            },
+            "linear": {
+              "en": "Linear",
+              "zh-Hans": "线性"
+            },
+            "quadratic": {
+              "en": "Quadratic",
+              "zh-Hans": "二次"
+            }
+          },
+          "values": [
+            "linear",
+            "quadratic",
+            "cubic"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "0%",
+          "description": {
+            "en": "Choose the deadzone of the RetroPad left analog stick when simulating the 'twist' action of emulated 'neGcon' input devices. Used to eliminate controller drift. Note: Most neGcon-compatible titles provide in-game options for setting a 'twist' deadzone value. To avoid loss of precision, the in-game deadzone should *always* be set to zero. Any required adjustments should *only* be applied via this core option. This is particularly important when 'neGcon Twist Response' is set to 'Quadratic' or 'Cubic'.",
+            "zh-Hans": "用左摇杆模拟 neGcon 扭转时的死区，可消除摇杆漂移。"
+          },
+          "key": "beetle_psx_negcon_deadzone",
+          "restartRequired": false,
+          "title": {
+            "en": "neGcon Twist Deadzone",
+            "zh-Hans": "neGcon 扭转死区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0%": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10%": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "15%": {
+              "en": "15%",
+              "zh-Hans": "15%"
+            },
+            "20%": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "25%": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "30%": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "5%": {
+              "en": "5%",
+              "zh-Hans": "5%"
+            }
+          },
+          "values": [
+            "0%",
+            "5%",
+            "10%",
+            "15%",
+            "20%",
+            "25%",
+            "30%"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Input",
+        "zh-Hans": "输入"
+      }
+    },
+    {
+      "description": {
+        "en": "Format and handling of the virtual memory cards.",
+        "zh-Hans": "虚拟记忆卡的格式与使用方式。"
+      },
+      "id": "memcards",
+      "options": [
+        {
+          "categoryId": "memcards",
+          "defaultValue": "libretro",
+          "description": {
+            "en": "Choose the save data format used for memory card 0. 'Mednafen' may be used for compatibility with the stand-alone version of Mednafen. When used with Beetle PSX, Libretro (.srm) and Mednafen (.mcr) saves have internally identical formats and can be converted between one another via renaming.",
+            "zh-Hans": "记忆卡 0 使用的存档格式。「Mednafen」格式（.mcr）可与独立版 Mednafen 通用，「Libretro」格式为 .srm。"
+          },
+          "key": "beetle_psx_use_mednafen_memcard0_method",
+          "restartRequired": true,
+          "title": {
+            "en": "Memory Card 0 Format",
+            "zh-Hans": "记忆卡 0 存档格式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "libretro": {
+              "en": "Libretro",
+              "zh-Hans": "Libretro"
+            },
+            "mednafen": {
+              "en": "Mednafen",
+              "zh-Hans": "Mednafen"
+            }
+          },
+          "values": [
+            "libretro",
+            "mednafen"
+          ]
+        },
+        {
+          "categoryId": "memcards",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Emulate a second memory card in slot 1. When disabled, games can only access the memory card in slot 0. Note: Some games require this option to be disabled for correct operation (e.g. Codename Tenka). Note: Memory Card 1 uses the Mednafen (.mcr) save format.",
+            "zh-Hans": "模拟插在第二个卡槽的记忆卡。个别游戏必须关闭才能正常运行，例如《Codename Tenka》。"
+          },
+          "key": "beetle_psx_enable_memcard1",
+          "restartRequired": true,
+          "title": {
+            "en": "Enable Memory Card 1",
+            "zh-Hans": "启用记忆卡 1"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "memcards",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "When enabled, all games will save to and load from the same memory card files. When disabled, separate memory card files will be generated for each item of loaded content. Note: if 'Memory Card 0 Method' is set to 'Libretro', only the right memory card will be affected.",
+            "zh-Hans": "开启后所有游戏共用同一份记忆卡文件；关闭则每个游戏各自生成记忆卡文件。"
+          },
+          "key": "beetle_psx_shared_memory_cards",
+          "restartRequired": true,
+          "title": {
+            "en": "Shared Memory Cards",
+            "zh-Hans": "共用记忆卡"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "memcards",
+          "defaultValue": "0",
+          "description": {
+            "en": "Change the memory card currently loaded in the left slot. This option will only work if Memory Card 0 method is set to Mednafen. The default card is index 0.",
+            "zh-Hans": "左卡槽当前使用的记忆卡编号。仅在记忆卡 0 使用 Mednafen 格式时有效。"
+          },
+          "key": "beetle_psx_memcard_left_index",
+          "restartRequired": false,
+          "title": {
+            "en": "Memory Card Left Index",
+            "zh-Hans": "左卡槽记忆卡编号"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "41": {
+              "en": "41",
+              "zh-Hans": "41"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "43": {
+              "en": "43",
+              "zh-Hans": "43"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "47": {
+              "en": "47",
+              "zh-Hans": "47"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "49": {
+              "en": "49",
+              "zh-Hans": "49"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "51": {
+              "en": "51",
+              "zh-Hans": "51"
+            },
+            "52": {
+              "en": "52",
+              "zh-Hans": "52"
+            },
+            "53": {
+              "en": "53",
+              "zh-Hans": "53"
+            },
+            "54": {
+              "en": "54",
+              "zh-Hans": "54"
+            },
+            "55": {
+              "en": "55",
+              "zh-Hans": "55"
+            },
+            "56": {
+              "en": "56",
+              "zh-Hans": "56"
+            },
+            "57": {
+              "en": "57",
+              "zh-Hans": "57"
+            },
+            "58": {
+              "en": "58",
+              "zh-Hans": "58"
+            },
+            "59": {
+              "en": "59",
+              "zh-Hans": "59"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "60": {
+              "en": "60",
+              "zh-Hans": "60"
+            },
+            "61": {
+              "en": "61",
+              "zh-Hans": "61"
+            },
+            "62": {
+              "en": "62",
+              "zh-Hans": "62"
+            },
+            "63": {
+              "en": "63",
+              "zh-Hans": "63"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50",
+            "51",
+            "52",
+            "53",
+            "54",
+            "55",
+            "56",
+            "57",
+            "58",
+            "59",
+            "60",
+            "61",
+            "62",
+            "63"
+          ],
+          "visibleWhen": [
+            {
+              "beetle_psx_use_mednafen_memcard0_method": [
+                "mednafen"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "memcards",
+          "defaultValue": "1",
+          "description": {
+            "en": "Change the memory card currently loaded in the right slot. This option will only work if Memory Card 1 is enabled. The default card is index 1.",
+            "zh-Hans": "右卡槽当前使用的记忆卡编号。仅在启用记忆卡 1 时有效。"
+          },
+          "key": "beetle_psx_memcard_right_index",
+          "restartRequired": false,
+          "title": {
+            "en": "Memory Card Right Index",
+            "zh-Hans": "右卡槽记忆卡编号"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1 (Default)",
+              "zh-Hans": "1 (Default)"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "41": {
+              "en": "41",
+              "zh-Hans": "41"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "43": {
+              "en": "43",
+              "zh-Hans": "43"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "47": {
+              "en": "47",
+              "zh-Hans": "47"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "49": {
+              "en": "49",
+              "zh-Hans": "49"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "51": {
+              "en": "51",
+              "zh-Hans": "51"
+            },
+            "52": {
+              "en": "52",
+              "zh-Hans": "52"
+            },
+            "53": {
+              "en": "53",
+              "zh-Hans": "53"
+            },
+            "54": {
+              "en": "54",
+              "zh-Hans": "54"
+            },
+            "55": {
+              "en": "55",
+              "zh-Hans": "55"
+            },
+            "56": {
+              "en": "56",
+              "zh-Hans": "56"
+            },
+            "57": {
+              "en": "57",
+              "zh-Hans": "57"
+            },
+            "58": {
+              "en": "58",
+              "zh-Hans": "58"
+            },
+            "59": {
+              "en": "59",
+              "zh-Hans": "59"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "60": {
+              "en": "60",
+              "zh-Hans": "60"
+            },
+            "61": {
+              "en": "61",
+              "zh-Hans": "61"
+            },
+            "62": {
+              "en": "62",
+              "zh-Hans": "62"
+            },
+            "63": {
+              "en": "63",
+              "zh-Hans": "63"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50",
+            "51",
+            "52",
+            "53",
+            "54",
+            "55",
+            "56",
+            "57",
+            "58",
+            "59",
+            "60",
+            "61",
+            "62",
+            "63"
+          ],
+          "visibleWhen": [
+            {
+              "beetle_psx_enable_memcard1": [
+                "enabled"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Memory Cards",
+        "zh-Hans": "记忆卡"
+      }
+    },
+    {
+      "description": {
+        "en": "Higher-precision 3D geometry that removes model jitter and texture warping.",
+        "zh-Hans": "提高 3D 顶点精度，消除模型抖动和纹理扭曲。"
+      },
+      "id": "pgxp",
+      "options": [
+        {
+          "categoryId": "pgxp",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Allows 3D objects to be rendered with subpixel precision, minimizing distortion and jitter of 3D objects seen on original hardware due to the usage of fixed point vertex coordinates. 'Memory Only' mode has minimal compatibility issues and is recommended for general use. 'Memory + CPU (Buggy)' mode can reduce jitter even further but has high performance requirements and may cause various geometry errors.",
+            "zh-Hans": "以更高精度处理 3D 顶点坐标，消除真机上 3D 模型抖动和纹理扭曲的问题。「仅内存」兼容性较好；「内存 + CPU」效果更强但容易出问题。"
+          },
+          "key": "beetle_psx_pgxp_mode",
+          "restartRequired": false,
+          "title": {
+            "en": "PGXP Operation Mode",
+            "zh-Hans": "PGXP 工作模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "memory + CPU": {
+              "en": "Memory + CPU (buggy)",
+              "zh-Hans": "内存 + CPU（不稳定）"
+            },
+            "memory only": {
+              "en": "Memory Only",
+              "zh-Hans": "仅内存"
+            }
+          },
+          "values": [
+            "disabled",
+            "memory only",
+            "memory + CPU"
+          ]
+        },
+        {
+          "categoryId": "pgxp",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Hide more glaring errors in PGXP operations: the value specifies the tolerance in which PGXP values will be kept in case of geometries without proper depth information.",
+            "zh-Hans": "缺少深度信息的图形在多大范围内仍套用 PGXP 处理，可减少 PGXP 造成的画面异常。"
+          },
+          "key": "beetle_psx_pgxp_2d_tol",
+          "restartRequired": false,
+          "title": {
+            "en": "PGXP 2D Geometry Tolerance",
+            "zh-Hans": "PGXP 2D 容差"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0px": {
+              "en": "0px",
+              "zh-Hans": "0px"
+            },
+            "1px": {
+              "en": "1px",
+              "zh-Hans": "1px"
+            },
+            "2px": {
+              "en": "2px",
+              "zh-Hans": "2px"
+            },
+            "3px": {
+              "en": "3px",
+              "zh-Hans": "3px"
+            },
+            "4px": {
+              "en": "4px",
+              "zh-Hans": "4px"
+            },
+            "5px": {
+              "en": "5px",
+              "zh-Hans": "5px"
+            },
+            "6px": {
+              "en": "6px",
+              "zh-Hans": "6px"
+            },
+            "7px": {
+              "en": "7px",
+              "zh-Hans": "7px"
+            },
+            "8px": {
+              "en": "8px",
+              "zh-Hans": "8px"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "0px",
+            "1px",
+            "2px",
+            "3px",
+            "4px",
+            "5px",
+            "6px",
+            "7px",
+            "8px"
+          ],
+          "visibleWhen": [
+            {
+              "beetle_psx_pgxp_mode": [
+                "memory only",
+                "memory + CPU"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "pgxp",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Use PGXP's NCLIP implementation. Improves appearance by reducing holes in geometries with PGXP coordinates. Known to cause some games to lock up in various circumstances.",
+            "zh-Hans": "使用 PGXP 的 NCLIP 实现，可减少模型上的破洞，但已知会导致部分游戏卡死。"
+          },
+          "key": "beetle_psx_pgxp_nclip",
+          "restartRequired": false,
+          "title": {
+            "en": "PGXP Primitive Culling",
+            "zh-Hans": "PGXP 图元剔除"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ],
+          "visibleWhen": [
+            {
+              "beetle_psx_pgxp_mode": [
+                "memory only",
+                "memory + CPU"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "PGXP",
+        "zh-Hans": "PGXP 几何增强"
+      }
+    },
+    {
+      "description": {
+        "en": "Widescreen, overclocking and compatibility tweaks.",
+        "zh-Hans": "宽屏、超频与兼容性修正。"
+      },
+      "id": "hacks",
+      "options": [
+        {
+          "categoryId": "hacks",
+          "defaultValue": "default",
+          "description": {
+            "en": "Choose line-to-quad hack method. Some games (e.g. Doom, Hexen, Soul Blade, etc.) draw horizontal lines by stretching single-pixel-high triangles across the screen, which are rasterized as a row of pixels on original hardware. This hack detects these small triangles and converts them to quads as required, allowing them to be displayed properly on the hardware renderers and at upscaled internal resolutions. 'Aggressive' is required for some titles (e.g. Dark Forces, Duke Nukem) but may otherwise introduce graphical glitches. Leave at 'Default' if unsure.",
+            "zh-Hans": "部分游戏（《Doom》《Hexen》《刀魂》等）用拉伸的细长三角形画横线，提高分辨率后会出现断线。该选项用于修正。"
+          },
+          "key": "beetle_psx_line_render",
+          "restartRequired": false,
+          "title": {
+            "en": "Line-to-Quad Hack",
+            "zh-Hans": "线条转四边形修正"
+          },
+          "type": "select",
+          "valueLabels": {
+            "aggressive": {
+              "en": "Aggressive",
+              "zh-Hans": "激进"
+            },
+            "default": {
+              "en": "Default",
+              "zh-Hans": "默认"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "default",
+            "aggressive",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Render 3D content anamorphically and output the emulated framebuffer at a widescreen aspect ratio. Produces best results with fully 3D games. 2D elements will be horizontally stretched and may be misaligned.",
+            "zh-Hans": "以宽屏比例渲染 3D 画面。纯 3D 游戏效果最好；2D 元素会被横向拉伸，可能出现错位。"
+          },
+          "key": "beetle_psx_widescreen_hack",
+          "restartRequired": false,
+          "title": {
+            "en": "Widescreen Mode Hack",
+            "zh-Hans": "宽屏补丁"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "16:9",
+          "description": {
+            "en": "Choose the aspect ratio to be used by the Widescreen Mode Hack.",
+            "zh-Hans": "宽屏补丁使用的画面比例。"
+          },
+          "key": "beetle_psx_widescreen_hack_aspect_ratio",
+          "restartRequired": false,
+          "title": {
+            "en": "Widescreen Hack Aspect Ratio",
+            "zh-Hans": "宽屏补丁比例"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16:10": {
+              "en": "16:10",
+              "zh-Hans": "16:10"
+            },
+            "16:9": {
+              "en": "16:9",
+              "zh-Hans": "16:9"
+            },
+            "18:9": {
+              "en": "18:9",
+              "zh-Hans": "18:9"
+            },
+            "19:9": {
+              "en": "19:9",
+              "zh-Hans": "19:9"
+            },
+            "20:9": {
+              "en": "20:9",
+              "zh-Hans": "20:9"
+            },
+            "21:9": {
+              "en": "21:9",
+              "zh-Hans": "21:9"
+            },
+            "32:9": {
+              "en": "32:9",
+              "zh-Hans": "32:9"
+            }
+          },
+          "values": [
+            "16:9",
+            "16:10",
+            "18:9",
+            "19:9",
+            "20:9",
+            "21:9",
+            "32:9"
+          ],
+          "visibleWhen": [
+            {
+              "beetle_psx_widescreen_hack": [
+                "enabled"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "100%(native)",
+          "description": {
+            "en": "Overclock (or underclock) the emulated PSX CPU. Overclocking can eliminate slowdown and improve frame rates in certain games at the expense of increased performance requirements. Note that some games have an internal frame rate limiter and may not benefit from overclocking. May cause certain effects to animate faster than intended in some titles when overclocked.",
+            "zh-Hans": "提高或降低模拟 CPU 的频率。超频可消除部分游戏的卡顿，但更耗性能，个别游戏还会因此出错。"
+          },
+          "key": "beetle_psx_cpu_freq_scale",
+          "restartRequired": false,
+          "title": {
+            "en": "CPU Frequency Scaling (Overclock)",
+            "zh-Hans": "CPU 频率（超频）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "100%(native)": {
+              "en": "100% (Native)",
+              "zh-Hans": "100%（原生）"
+            },
+            "110%": {
+              "en": "110%",
+              "zh-Hans": "110%"
+            },
+            "120%": {
+              "en": "120%",
+              "zh-Hans": "120%"
+            },
+            "130%": {
+              "en": "130%",
+              "zh-Hans": "130%"
+            },
+            "140%": {
+              "en": "140%",
+              "zh-Hans": "140%"
+            },
+            "150%": {
+              "en": "150%",
+              "zh-Hans": "150%"
+            },
+            "160%": {
+              "en": "160%",
+              "zh-Hans": "160%"
+            },
+            "170%": {
+              "en": "170%",
+              "zh-Hans": "170%"
+            },
+            "180%": {
+              "en": "180%",
+              "zh-Hans": "180%"
+            },
+            "190%": {
+              "en": "190%",
+              "zh-Hans": "190%"
+            },
+            "200%": {
+              "en": "200%",
+              "zh-Hans": "200%"
+            },
+            "210%": {
+              "en": "210%",
+              "zh-Hans": "210%"
+            },
+            "220%": {
+              "en": "220%",
+              "zh-Hans": "220%"
+            },
+            "230%": {
+              "en": "230%",
+              "zh-Hans": "230%"
+            },
+            "240%": {
+              "en": "240%",
+              "zh-Hans": "240%"
+            },
+            "250%": {
+              "en": "250%",
+              "zh-Hans": "250%"
+            },
+            "260%": {
+              "en": "260%",
+              "zh-Hans": "260%"
+            },
+            "270%": {
+              "en": "270%",
+              "zh-Hans": "270%"
+            },
+            "280%": {
+              "en": "280%",
+              "zh-Hans": "280%"
+            },
+            "290%": {
+              "en": "290%",
+              "zh-Hans": "290%"
+            },
+            "300%": {
+              "en": "300%",
+              "zh-Hans": "300%"
+            },
+            "310%": {
+              "en": "310%",
+              "zh-Hans": "310%"
+            },
+            "320%": {
+              "en": "320%",
+              "zh-Hans": "320%"
+            },
+            "330%": {
+              "en": "330%",
+              "zh-Hans": "330%"
+            },
+            "340%": {
+              "en": "340%",
+              "zh-Hans": "340%"
+            },
+            "350%": {
+              "en": "350%",
+              "zh-Hans": "350%"
+            },
+            "360%": {
+              "en": "360%",
+              "zh-Hans": "360%"
+            },
+            "370%": {
+              "en": "370%",
+              "zh-Hans": "370%"
+            },
+            "380%": {
+              "en": "380%",
+              "zh-Hans": "380%"
+            },
+            "390%": {
+              "en": "390%",
+              "zh-Hans": "390%"
+            },
+            "400%": {
+              "en": "400%",
+              "zh-Hans": "400%"
+            },
+            "410%": {
+              "en": "410%",
+              "zh-Hans": "410%"
+            },
+            "420%": {
+              "en": "420%",
+              "zh-Hans": "420%"
+            },
+            "430%": {
+              "en": "430%",
+              "zh-Hans": "430%"
+            },
+            "440%": {
+              "en": "440%",
+              "zh-Hans": "440%"
+            },
+            "450%": {
+              "en": "450%",
+              "zh-Hans": "450%"
+            },
+            "460%": {
+              "en": "460%",
+              "zh-Hans": "460%"
+            },
+            "470%": {
+              "en": "470%",
+              "zh-Hans": "470%"
+            },
+            "480%": {
+              "en": "480%",
+              "zh-Hans": "480%"
+            },
+            "490%": {
+              "en": "490%",
+              "zh-Hans": "490%"
+            },
+            "50%": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "500%": {
+              "en": "500%",
+              "zh-Hans": "500%"
+            },
+            "510%": {
+              "en": "510%",
+              "zh-Hans": "510%"
+            },
+            "520%": {
+              "en": "520%",
+              "zh-Hans": "520%"
+            },
+            "530%": {
+              "en": "530%",
+              "zh-Hans": "530%"
+            },
+            "540%": {
+              "en": "540%",
+              "zh-Hans": "540%"
+            },
+            "550%": {
+              "en": "550%",
+              "zh-Hans": "550%"
+            },
+            "560%": {
+              "en": "560%",
+              "zh-Hans": "560%"
+            },
+            "570%": {
+              "en": "570%",
+              "zh-Hans": "570%"
+            },
+            "580%": {
+              "en": "580%",
+              "zh-Hans": "580%"
+            },
+            "590%": {
+              "en": "590%",
+              "zh-Hans": "590%"
+            },
+            "60%": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "600%": {
+              "en": "600%",
+              "zh-Hans": "600%"
+            },
+            "610%": {
+              "en": "610%",
+              "zh-Hans": "610%"
+            },
+            "620%": {
+              "en": "620%",
+              "zh-Hans": "620%"
+            },
+            "630%": {
+              "en": "630%",
+              "zh-Hans": "630%"
+            },
+            "640%": {
+              "en": "640%",
+              "zh-Hans": "640%"
+            },
+            "650%": {
+              "en": "650%",
+              "zh-Hans": "650%"
+            },
+            "660%": {
+              "en": "660%",
+              "zh-Hans": "660%"
+            },
+            "670%": {
+              "en": "670%",
+              "zh-Hans": "670%"
+            },
+            "680%": {
+              "en": "680%",
+              "zh-Hans": "680%"
+            },
+            "690%": {
+              "en": "690%",
+              "zh-Hans": "690%"
+            },
+            "70%": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "700%": {
+              "en": "700%",
+              "zh-Hans": "700%"
+            },
+            "710%": {
+              "en": "710%",
+              "zh-Hans": "710%"
+            },
+            "720%": {
+              "en": "720%",
+              "zh-Hans": "720%"
+            },
+            "730%": {
+              "en": "730%",
+              "zh-Hans": "730%"
+            },
+            "740%": {
+              "en": "740%",
+              "zh-Hans": "740%"
+            },
+            "750%": {
+              "en": "750%",
+              "zh-Hans": "750%"
+            },
+            "80%": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "90%": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            }
+          },
+          "values": [
+            "50%",
+            "60%",
+            "70%",
+            "80%",
+            "90%",
+            "100%(native)",
+            "110%",
+            "120%",
+            "130%",
+            "140%",
+            "150%",
+            "160%",
+            "170%",
+            "180%",
+            "190%",
+            "200%",
+            "210%",
+            "220%",
+            "230%",
+            "240%",
+            "250%",
+            "260%",
+            "270%",
+            "280%",
+            "290%",
+            "300%",
+            "310%",
+            "320%",
+            "330%",
+            "340%",
+            "350%",
+            "360%",
+            "370%",
+            "380%",
+            "390%",
+            "400%",
+            "410%",
+            "420%",
+            "430%",
+            "440%",
+            "450%",
+            "460%",
+            "470%",
+            "480%",
+            "490%",
+            "500%",
+            "510%",
+            "520%",
+            "530%",
+            "540%",
+            "550%",
+            "560%",
+            "570%",
+            "580%",
+            "590%",
+            "600%",
+            "610%",
+            "620%",
+            "630%",
+            "640%",
+            "650%",
+            "660%",
+            "670%",
+            "680%",
+            "690%",
+            "700%",
+            "710%",
+            "720%",
+            "730%",
+            "740%",
+            "750%"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "1x(native)",
+          "description": {
+            "en": "Enable overclocking of the 2D rasterizer contained within the emulated PSX's GPU. Does not improve 3D rendering, and in general has little effect.",
+            "zh-Hans": "对 GPU 内的 2D 光栅化单元超频。对 3D 渲染没有帮助，总体效果有限。"
+          },
+          "key": "beetle_psx_gpu_overclock",
+          "restartRequired": false,
+          "title": {
+            "en": "GPU Rasterizer Overclock",
+            "zh-Hans": "GPU 光栅化超频"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16x": {
+              "en": "16x",
+              "zh-Hans": "16 倍"
+            },
+            "1x(native)": {
+              "en": "1x (Native)",
+              "zh-Hans": "1x（原生）"
+            },
+            "2x": {
+              "en": "2x",
+              "zh-Hans": "2 倍"
+            },
+            "32x": {
+              "en": "32x",
+              "zh-Hans": "32x"
+            },
+            "4x": {
+              "en": "4x",
+              "zh-Hans": "4 倍"
+            },
+            "8x": {
+              "en": "8x",
+              "zh-Hans": "8 倍"
+            }
+          },
+          "values": [
+            "1x(native)",
+            "2x",
+            "4x",
+            "8x",
+            "16x",
+            "32x"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Lower all emulated GTE (CPU coprocessor for 3D graphics) operations to a constant one-cycle latency. For games that make heavy use of the GTE, this can greatly improve frame rate and frame time stability.",
+            "zh-Hans": "把 GTE（负责 3D 运算的协处理器）的所有运算固定为一个周期。大量使用 3D 的游戏帧率会明显提升。"
+          },
+          "key": "beetle_psx_gte_overclock",
+          "restartRequired": false,
+          "title": {
+            "en": "GTE Overclock",
+            "zh-Hans": "GTE 超频"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Skip the PlayStation BIOS boot animation normally displayed when loading content. Note: Enabling this causes compatibility issues with a number of games (PAL copy protected games, Saga Frontier, etc.).",
+            "zh-Hans": "跳过启动时的 PS 开机动画。注意：开启后部分游戏会出现兼容性问题，例如 PAL 版防拷贝游戏和《Saga Frontier》。"
+          },
+          "key": "beetle_psx_skip_bios",
+          "restartRequired": true,
+          "title": {
+            "en": "Skip BIOS",
+            "zh-Hans": "跳过 BIOS 动画"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Override the standard region specific BIOS with a region-free one if found.",
+            "zh-Hans": "用免区域限制的 BIOS 替换标准的分区域 BIOS，需要先在核心 BIOS 中添加对应文件。"
+          },
+          "key": "beetle_psx_override_bios",
+          "restartRequired": true,
+          "title": {
+            "en": "Override BIOS",
+            "zh-Hans": "替换 BIOS"
+          },
+          "type": "select",
+          "valueLabels": {
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "ps1_rom": {
+              "en": "PS3 PS1 BIOS",
+              "zh-Hans": "PS3 上的 PS1 BIOS"
+            },
+            "psxonpsp": {
+              "en": "PSP PS1 BIOS",
+              "zh-Hans": "PSP 上的 PS1 BIOS"
+            }
+          },
+          "values": [
+            "disabled",
+            "psxonpsp",
+            "ps1_rom"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Emulation Hacks",
+        "zh-Hans": "模拟修改"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Beetle PSX",
+    "coreVersion": "v0.9.44.1",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

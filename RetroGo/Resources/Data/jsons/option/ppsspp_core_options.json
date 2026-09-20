@@ -1,0 +1,1899 @@
+{
+  "coreId": "ppsspp",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "CPU emulation, hardware model, language and I/O settings.",
+        "zh-Hans": "CPU 模拟、机型、语言与读取设置。"
+      },
+      "id": "system",
+      "options": [
+        {
+          "categoryId": "system",
+          "defaultValue": "JIT",
+          "description": {
+            "en": "'Dynarec (JIT)' is by far the fastest and should be used in almost all cases. 'IR Interpreter' is slower but more stable, and 'Interpreter' is for troubleshooting only.",
+            "zh-Hans": "「动态编译」速度最快，绝大多数情况下都应使用；「IR 解释执行」稍慢但更稳定；「解释执行」最慢，仅用于排查问题。"
+          },
+          "key": "ppsspp_cpu_core",
+          "restartRequired": true,
+          "title": {
+            "en": "CPU Core",
+            "zh-Hans": "CPU 模拟方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "IR JIT": {
+              "en": "IR Interpreter",
+              "zh-Hans": "IR 解释执行"
+            },
+            "Interpreter": {
+              "en": "Interpreter",
+              "zh-Hans": "解释执行"
+            },
+            "JIT": {
+              "en": "Dynarec (JIT)",
+              "zh-Hans": "动态编译（JIT）"
+            }
+          },
+          "values": [
+            "JIT",
+            "IR JIT",
+            "Interpreter"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Skip memory access checks for speed. A few games may crash with it enabled.",
+            "zh-Hans": "跳过内存访问检查以提升速度，少数游戏可能因此崩溃。"
+          },
+          "key": "ppsspp_fast_memory",
+          "restartRequired": true,
+          "title": {
+            "en": "Fast Memory",
+            "zh-Hans": "快速内存访问"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Ignore invalid memory accesses instead of reporting them, which keeps some games running.",
+            "zh-Hans": "忽略游戏的非法内存访问而不是报错，可避免部分游戏中断运行。"
+          },
+          "key": "ppsspp_ignore_bad_memory_access",
+          "restartRequired": false,
+          "title": {
+            "en": "Ignore Bad Memory Accesses",
+            "zh-Hans": "忽略非法内存访问"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "Fast",
+          "description": {
+            "en": "How long reading game data takes. 'Fast' is quickest; 'Simulate UMD delays' reproduces real disc timing, which a few games depend on.",
+            "zh-Hans": "模拟读取游戏数据的耗时。「快速」读取最快；「模拟 UMD 延迟」还原真机的光盘读取速度，个别依赖读取时间的游戏需要。"
+          },
+          "key": "ppsspp_io_timing_method",
+          "restartRequired": false,
+          "title": {
+            "en": "I/O Timing Method",
+            "zh-Hans": "读取时序模拟"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Fast": {
+              "en": "Fast",
+              "zh-Hans": "快速"
+            },
+            "Host": {
+              "en": "Host",
+              "zh-Hans": "跟随设备"
+            },
+            "Simulate UMD delays": {
+              "en": "Simulate UMD delays",
+              "zh-Hans": "模拟 UMD 延迟"
+            }
+          },
+          "values": [
+            "Fast",
+            "Host",
+            "Simulate UMD delays"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Sync to the real clock: slightly slower, but with less input lag.",
+            "zh-Hans": "按真实时钟同步运行，速度略慢但输入延迟更低。"
+          },
+          "key": "ppsspp_force_lag_sync",
+          "restartRequired": false,
+          "title": {
+            "en": "Force Real Clock Sync",
+            "zh-Hans": "强制真实时钟同步"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Lock the emulated PSP CPU to a fixed speed. Raising it reduces slowdown; the real hardware ran between 222MHz and 333MHz.",
+            "zh-Hans": "把模拟 PSP 的 CPU 锁定在指定频率。提高可减少卡顿，降低可省电。真机为 222MHz 到 333MHz。"
+          },
+          "key": "ppsspp_locked_cpu_speed",
+          "restartRequired": false,
+          "title": {
+            "en": "Locked CPU Speed",
+            "zh-Hans": "锁定 CPU 频率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "222MHz": {
+              "en": "222MHz",
+              "zh-Hans": "222MHz"
+            },
+            "266MHz": {
+              "en": "266MHz",
+              "zh-Hans": "266MHz"
+            },
+            "333MHz": {
+              "en": "333MHz",
+              "zh-Hans": "333MHz"
+            },
+            "366MHz": {
+              "en": "366MHz",
+              "zh-Hans": "366MHz"
+            },
+            "399MHz": {
+              "en": "399MHz",
+              "zh-Hans": "399MHz"
+            },
+            "432MHz": {
+              "en": "432MHz",
+              "zh-Hans": "432MHz"
+            },
+            "444MHz": {
+              "en": "444MHz",
+              "zh-Hans": "444MHz"
+            },
+            "466MHz": {
+              "en": "466MHz",
+              "zh-Hans": "466MHz"
+            },
+            "499MHz": {
+              "en": "499MHz",
+              "zh-Hans": "499MHz"
+            },
+            "532MHz": {
+              "en": "532MHz",
+              "zh-Hans": "532MHz"
+            },
+            "555MHz": {
+              "en": "555MHz",
+              "zh-Hans": "555MHz"
+            },
+            "566MHz": {
+              "en": "566MHz",
+              "zh-Hans": "566MHz"
+            },
+            "599MHz": {
+              "en": "599MHz",
+              "zh-Hans": "599MHz"
+            },
+            "632MHz": {
+              "en": "632MHz",
+              "zh-Hans": "632MHz"
+            },
+            "666MHz": {
+              "en": "666MHz",
+              "zh-Hans": "666MHz"
+            },
+            "777MHz": {
+              "en": "777MHz",
+              "zh-Hans": "777MHz"
+            },
+            "888MHz": {
+              "en": "888MHz",
+              "zh-Hans": "888MHz"
+            },
+            "999MHz": {
+              "en": "999MHz",
+              "zh-Hans": "999MHz"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "222MHz",
+            "266MHz",
+            "333MHz",
+            "366MHz",
+            "399MHz",
+            "432MHz",
+            "444MHz",
+            "466MHz",
+            "499MHz",
+            "532MHz",
+            "555MHz",
+            "566MHz",
+            "599MHz",
+            "632MHz",
+            "666MHz",
+            "777MHz",
+            "888MHz",
+            "999MHz"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Simulate inserting or ejecting the Memory Stick, which some games ask you to do.",
+            "zh-Hans": "模拟记忆棒的插拔。部分游戏需要拔出再插入记忆棒才能继续。"
+          },
+          "key": "ppsspp_memstick_inserted",
+          "restartRequired": false,
+          "title": {
+            "en": "Memory Stick Inserted",
+            "zh-Hans": "插入记忆棒"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Load the whole disc image into RAM for faster access, at a large cost in memory.",
+            "zh-Hans": "把整个游戏镜像读入内存，读取更快，但占用大量内存。"
+          },
+          "key": "ppsspp_cache_iso",
+          "restartRequired": true,
+          "title": {
+            "en": "Cache Full ISO in RAM",
+            "zh-Hans": "把游戏缓存到内存"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "Automatic",
+          "description": {
+            "en": "The emulated PSP's system language, which multi-language games follow. 'Automatic' uses the app language.",
+            "zh-Hans": "模拟 PSP 的系统语言，多语言游戏会跟随这个设置显示对应语言。「自动」跟随 App 的语言。"
+          },
+          "key": "ppsspp_language",
+          "restartRequired": true,
+          "title": {
+            "en": "System Language",
+            "zh-Hans": "系统语言"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Automatic": {
+              "en": "Automatic",
+              "zh-Hans": "自动"
+            },
+            "Chinese Simplified": {
+              "en": "Chinese Simplified",
+              "zh-Hans": "简体中文"
+            },
+            "English": {
+              "en": "English",
+              "zh-Hans": "English"
+            }
+          },
+          "values": [
+            "Automatic",
+            "English",
+            "Chinese Simplified"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "psp_2000_3000",
+          "description": {
+            "en": "Which PSP to emulate. The PSP-2000/3000 has more memory, which some games and homebrew require.",
+            "zh-Hans": "模拟的 PSP 机型。PSP-2000/3000 内存更大，部分游戏和自制程序需要。"
+          },
+          "key": "ppsspp_psp_model",
+          "restartRequired": true,
+          "title": {
+            "en": "PSP Model",
+            "zh-Hans": "PSP 机型"
+          },
+          "type": "select",
+          "valueLabels": {
+            "psp_1000": {
+              "en": "PSP-1000",
+              "zh-Hans": "PSP-1000"
+            },
+            "psp_2000_3000": {
+              "en": "PSP-2000/3000",
+              "zh-Hans": "PSP-2000/3000"
+            }
+          },
+          "values": [
+            "psp_1000",
+            "psp_2000_3000"
+          ]
+        }
+      ],
+      "title": {
+        "en": "System",
+        "zh-Hans": "系统"
+      }
+    },
+    {
+      "description": {
+        "en": "Backend, resolution, frameskip and texture settings.",
+        "zh-Hans": "渲染后端、分辨率、跳帧与纹理设置。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "auto",
+          "description": {
+            "en": "The graphics API to render with. 'Automatic' follows RetroGo's video driver setting.",
+            "zh-Hans": "使用的图形接口。「自动」跟随 RetroGo 的视频驱动设置。"
+          },
+          "key": "ppsspp_backend",
+          "restartRequired": true,
+          "title": {
+            "en": "Backend",
+            "zh-Hans": "渲染后端"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Automatic",
+              "zh-Hans": "自动"
+            },
+            "none": {
+              "en": "None",
+              "zh-Hans": "不渲染"
+            },
+            "opengl": {
+              "en": "OpenGL",
+              "zh-Hans": "OpenGL"
+            },
+            "vulkan": {
+              "en": "Vulkan",
+              "zh-Hans": "Vulkan"
+            }
+          },
+          "values": [
+            "auto",
+            "opengl",
+            "vulkan",
+            "none"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Render on the CPU: very slow but the most accurate, mainly for troubleshooting.",
+            "zh-Hans": "用 CPU 渲染画面，速度很慢但最准确，一般只用于排查画面问题。"
+          },
+          "key": "ppsspp_software_rendering",
+          "restartRequired": true,
+          "title": {
+            "en": "Software Rendering",
+            "zh-Hans": "软件渲染"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "480x272",
+          "description": {
+            "en": "Render at a multiple of the PSP's native resolution. Higher is sharper and more demanding.",
+            "zh-Hans": "以 PSP 原生分辨率的若干倍渲染。倍数越高画面越清晰，性能开销也越大。"
+          },
+          "key": "ppsspp_internal_resolution",
+          "restartRequired": true,
+          "title": {
+            "en": "Rendering Resolution",
+            "zh-Hans": "渲染分辨率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1440x816": {
+              "en": "3x (1440x816)",
+              "zh-Hans": "3x (1440x816)"
+            },
+            "1920x1088": {
+              "en": "4x (1920x1088)",
+              "zh-Hans": "4x (1920x1088)"
+            },
+            "2400x1360": {
+              "en": "5x (2400x1360)",
+              "zh-Hans": "5x (2400x1360)"
+            },
+            "2880x1632": {
+              "en": "6x (2880x1632)",
+              "zh-Hans": "6x (2880x1632)"
+            },
+            "3360x1904": {
+              "en": "7x (3360x1904)",
+              "zh-Hans": "7x (3360x1904)"
+            },
+            "3840x2176": {
+              "en": "8x (3840x2176)",
+              "zh-Hans": "8x (3840x2176)"
+            },
+            "4320x2448": {
+              "en": "9x (4320x2448)",
+              "zh-Hans": "9x (4320x2448)"
+            },
+            "4800x2720": {
+              "en": "10x (4800x2720)",
+              "zh-Hans": "10x (4800x2720)"
+            },
+            "480x272": {
+              "en": "1x (480x272)",
+              "zh-Hans": "1x (480x272)"
+            },
+            "960x544": {
+              "en": "2x (960x544)",
+              "zh-Hans": "2x (960x544)"
+            }
+          },
+          "values": [
+            "480x272",
+            "960x544",
+            "1440x816",
+            "1920x1088",
+            "2400x1360",
+            "2880x1632",
+            "3360x1904",
+            "3840x2176",
+            "4320x2448",
+            "4800x2720"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Multisample anti-aliasing for smoother edges. Vulkan only.",
+            "zh-Hans": "多重采样抗锯齿等级，边缘更平滑。仅 Vulkan 可用。"
+          },
+          "key": "ppsspp_mulitsample_level",
+          "restartRequired": true,
+          "title": {
+            "en": "MSAA Antialiasing",
+            "zh-Hans": "MSAA 抗锯齿"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "x2": {
+              "en": "x2",
+              "zh-Hans": "x2"
+            },
+            "x4": {
+              "en": "x4",
+              "zh-Hans": "x4"
+            },
+            "x8": {
+              "en": "x8",
+              "zh-Hans": "x8"
+            }
+          },
+          "values": [
+            "Disabled",
+            "x2",
+            "x4",
+            "x8"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Remove one line from the top and bottom for an exact 16:9 picture.",
+            "zh-Hans": "上下各裁掉一行像素，得到精确的 16:9 比例。"
+          },
+          "key": "ppsspp_cropto16x9",
+          "restartRequired": false,
+          "title": {
+            "en": "Crop to 16:9",
+            "zh-Hans": "裁切为 16:9"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Skip frames for performance at the cost of smoothness.",
+            "zh-Hans": "跳过部分画面以提升性能，代价是画面不够流畅。"
+          },
+          "key": "ppsspp_frameskip",
+          "restartRequired": false,
+          "title": {
+            "en": "Frameskip",
+            "zh-Hans": "跳帧"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "Number of frames",
+          "description": {
+            "en": "Skip a fixed number of frames, or skip based on a percentage of the frame rate.",
+            "zh-Hans": "按固定帧数跳帧，还是按帧率百分比跳帧。"
+          },
+          "key": "ppsspp_frameskiptype",
+          "restartRequired": false,
+          "title": {
+            "en": "Frameskip Type",
+            "zh-Hans": "跳帧方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Number of frames": {
+              "en": "Number of frames",
+              "zh-Hans": "按帧数"
+            },
+            "Percent of FPS": {
+              "en": "Percent of FPS",
+              "zh-Hans": "按帧率百分比"
+            }
+          },
+          "values": [
+            "Number of frames",
+            "Percent of FPS"
+          ],
+          "visibleWhen": [
+            {
+              "ppsspp_frameskip": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Skip frames automatically when the device cannot keep up.",
+            "zh-Hans": "性能不足时自动跳帧以维持速度。"
+          },
+          "key": "ppsspp_auto_frameskip",
+          "restartRequired": false,
+          "title": {
+            "en": "Auto Frameskip",
+            "zh-Hans": "自动跳帧"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Repeat frames up to 60Hz, which makes games that run at lower frame rates look smoother.",
+            "zh-Hans": "重复输出画面把帧率补到 60Hz，让原本低帧率运行的游戏看起来更顺滑。"
+          },
+          "key": "ppsspp_frame_duplication",
+          "restartRequired": false,
+          "title": {
+            "en": "Render Duplicate Frames to 60Hz",
+            "zh-Hans": "补帧到 60Hz"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Notify the frontend when the game's frame rate changes so it can adjust.",
+            "zh-Hans": "游戏帧率变化时通知前端调整同步方式。"
+          },
+          "key": "ppsspp_detect_vsync_swap_interval",
+          "restartRequired": true,
+          "title": {
+            "en": "Detect Frame Rate Changes",
+            "zh-Hans": "检测帧率变化"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ],
+          "visibleWhen": [
+            {
+              "ppsspp_auto_frameskip": [
+                "disabled"
+              ],
+              "ppsspp_frame_duplication": [
+                "disabled"
+              ],
+              "ppsspp_frameskip": [
+                "disabled"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "Up to 2",
+          "description": {
+            "en": "How many frames of graphics commands to buffer. Less buffering means lower input lag but lower speed.",
+            "zh-Hans": "缓冲的图形指令帧数。缓冲越少输入延迟越低，但速度也越慢。"
+          },
+          "key": "ppsspp_inflight_frames",
+          "restartRequired": true,
+          "title": {
+            "en": "Buffer Graphics Commands",
+            "zh-Hans": "图形指令缓冲"
+          },
+          "type": "select",
+          "valueLabels": {
+            "No buffer": {
+              "en": "No buffer",
+              "zh-Hans": "不缓冲"
+            },
+            "Up to 1": {
+              "en": "Up to 1 frame",
+              "zh-Hans": "最多 1 帧"
+            },
+            "Up to 2": {
+              "en": "Up to 2 frames",
+              "zh-Hans": "最多 2 帧"
+            }
+          },
+          "values": [
+            "No buffer",
+            "Up to 1",
+            "Up to 2"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Do vertex transforms on the GPU, which is much faster. Disable only to diagnose rendering problems.",
+            "zh-Hans": "由 GPU 完成顶点变换，速度更快。关闭仅用于排查画面问题。"
+          },
+          "key": "ppsspp_gpu_hardware_transform",
+          "restartRequired": false,
+          "title": {
+            "en": "Hardware Transform",
+            "zh-Hans": "硬件顶点变换"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Combine skinned model draws on the CPU, which is faster in most games.",
+            "zh-Hans": "在 CPU 上合并骨骼模型的绘制，多数游戏会更快。"
+          },
+          "key": "ppsspp_software_skinning",
+          "restartRequired": false,
+          "title": {
+            "en": "Software Skinning",
+            "zh-Hans": "软件骨骼蒙皮"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Generate curves on the GPU, which looks smoother in the games that use them.",
+            "zh-Hans": "由 GPU 生成曲面，部分游戏画面更平滑。"
+          },
+          "key": "ppsspp_hardware_tesselation",
+          "restartRequired": false,
+          "title": {
+            "en": "Hardware Tesselation",
+            "zh-Hans": "硬件曲面细分"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "xbrz",
+          "description": {
+            "en": "The algorithm used to upscale textures. xBRZ suits pixel art, while Bicubic is smoother.",
+            "zh-Hans": "放大纹理使用的算法。xBRZ 适合像素风格，Bicubic 更平滑。"
+          },
+          "key": "ppsspp_texture_scaling_type",
+          "restartRequired": false,
+          "title": {
+            "en": "Texture Upscale Type",
+            "zh-Hans": "纹理放大算法"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bicubic": {
+              "en": "Bicubic",
+              "zh-Hans": "Bicubic"
+            },
+            "hybrid": {
+              "en": "Hybrid",
+              "zh-Hans": "Hybrid"
+            },
+            "hybrid_bicubic": {
+              "en": "Hybrid + Bicubic",
+              "zh-Hans": "Hybrid + Bicubic"
+            },
+            "xbrz": {
+              "en": "xBRZ",
+              "zh-Hans": "xBRZ"
+            }
+          },
+          "values": [
+            "xbrz",
+            "hybrid",
+            "bicubic",
+            "hybrid_bicubic"
+          ],
+          "visibleWhen": [
+            {
+              "ppsspp_texture_scaling_level": [
+                "2x",
+                "3x",
+                "4x",
+                "5x"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "How much to upscale textures. Very CPU heavy; some textures are scaled later to avoid stutter.",
+            "zh-Hans": "纹理放大的倍数。非常吃 CPU，部分纹理会延迟处理以免卡顿。"
+          },
+          "key": "ppsspp_texture_scaling_level",
+          "restartRequired": false,
+          "title": {
+            "en": "Texture Upscaling Level",
+            "zh-Hans": "纹理放大倍数"
+          },
+          "type": "select",
+          "valueLabels": {
+            "2x": {
+              "en": "2x",
+              "zh-Hans": "2x"
+            },
+            "3x": {
+              "en": "3x",
+              "zh-Hans": "3x"
+            },
+            "4x": {
+              "en": "4x",
+              "zh-Hans": "4x"
+            },
+            "5x": {
+              "en": "5x",
+              "zh-Hans": "5x"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "2x",
+            "3x",
+            "4x",
+            "5x"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Fix the color banding that texture upscaling can introduce.",
+            "zh-Hans": "修正纹理放大后出现的色带问题。"
+          },
+          "key": "ppsspp_texture_deposterize",
+          "restartRequired": false,
+          "title": {
+            "en": "Texture Deposterize",
+            "zh-Hans": "纹理去色带"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ],
+          "visibleWhen": [
+            {
+              "ppsspp_texture_scaling_level": [
+                "2x",
+                "3x",
+                "4x",
+                "5x"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Upscale textures with a GPU shader, which is much faster than on the CPU. Vulkan only, and it overrides the texture upscale type.",
+            "zh-Hans": "用 GPU 着色器放大纹理，比 CPU 放大快得多。仅 Vulkan 可用，开启后会覆盖「纹理放大算法」。"
+          },
+          "key": "ppsspp_texture_shader",
+          "restartRequired": false,
+          "title": {
+            "en": "Texture Shader",
+            "zh-Hans": "纹理着色器"
+          },
+          "type": "select",
+          "valueLabels": {
+            "2xBRZ": {
+              "en": "Tex2xBRZ",
+              "zh-Hans": "Tex2xBRZ"
+            },
+            "4xBRZ": {
+              "en": "Tex4xBRZ",
+              "zh-Hans": "Tex4xBRZ"
+            },
+            "MMPX": {
+              "en": "TexMMPX",
+              "zh-Hans": "TexMMPX"
+            },
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "OFF"
+            }
+          },
+          "values": [
+            "disabled",
+            "2xBRZ",
+            "4xBRZ",
+            "MMPX"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "16x",
+          "description": {
+            "en": "Keep textures viewed at an angle, such as the ground, sharper.",
+            "zh-Hans": "让倾斜角度的纹理（例如地面）更清晰。"
+          },
+          "key": "ppsspp_texture_anisotropic_filtering",
+          "restartRequired": false,
+          "title": {
+            "en": "Anisotropic Filtering",
+            "zh-Hans": "各向异性过滤"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16x": {
+              "en": "16x",
+              "zh-Hans": "16x"
+            },
+            "2x": {
+              "en": "2x",
+              "zh-Hans": "2x"
+            },
+            "4x": {
+              "en": "4x",
+              "zh-Hans": "4x"
+            },
+            "8x": {
+              "en": "8x",
+              "zh-Hans": "8x"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "2x",
+            "4x",
+            "8x",
+            "16x"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "How textures are filtered. 'Nearest' keeps pixels crisp and 'Linear' is smoother.",
+            "zh-Hans": "纹理的过滤方式。「最近点」保留像素感，「线性」更平滑。"
+          },
+          "key": "ppsspp_texture_filtering",
+          "restartRequired": false,
+          "title": {
+            "en": "Texture Filtering",
+            "zh-Hans": "纹理过滤"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "Auto max quality": {
+              "en": "Auto max quality",
+              "zh-Hans": "自动（最高画质）"
+            },
+            "Linear": {
+              "en": "Linear",
+              "zh-Hans": "线性"
+            },
+            "Nearest": {
+              "en": "Nearest",
+              "zh-Hans": "最近点"
+            }
+          },
+          "values": [
+            "Auto",
+            "Nearest",
+            "Linear",
+            "Auto max quality"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Switch to nearest filtering in some 2D games to remove unnecessary blur.",
+            "zh-Hans": "对部分 2D 游戏自动改用最近点过滤，消除不必要的模糊。"
+          },
+          "key": "ppsspp_smart_2d_texture_filtering",
+          "restartRequired": false,
+          "title": {
+            "en": "Smart 2D Texture Filtering",
+            "zh-Hans": "智能 2D 纹理过滤"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Load community-made high-resolution texture packs.",
+            "zh-Hans": "加载自制的高清纹理替换包。"
+          },
+          "key": "ppsspp_texture_replacement",
+          "restartRequired": false,
+          "title": {
+            "en": "Texture Replacement",
+            "zh-Hans": "纹理替换包"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Confirmation button and analog stick settings.",
+        "zh-Hans": "确认键与摇杆设置。"
+      },
+      "id": "input",
+      "options": [
+        {
+          "categoryId": "input",
+          "defaultValue": "Cross",
+          "description": {
+            "en": "Which button confirms in the system menus. Japanese games usually use Circle, Western ones Cross.",
+            "zh-Hans": "系统界面中用哪个键确认。日版游戏多用圆圈，欧美版多用叉。"
+          },
+          "key": "ppsspp_button_preference",
+          "restartRequired": false,
+          "title": {
+            "en": "Confirmation Button",
+            "zh-Hans": "确认键"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Circle": {
+              "en": "Circle",
+              "zh-Hans": "圆圈"
+            },
+            "Cross": {
+              "en": "Cross",
+              "zh-Hans": "叉"
+            }
+          },
+          "values": [
+            "Cross",
+            "Circle"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Compensate for circular stick gates so diagonals can reach full range.",
+            "zh-Hans": "为圆形限位的摇杆做补偿，使其能达到对角方向的最大值。"
+          },
+          "key": "ppsspp_analog_is_circular",
+          "restartRequired": false,
+          "title": {
+            "en": "Analog Circle vs Square Gate Compensation",
+            "zh-Hans": "摇杆圆形限位补偿"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "0.0",
+          "description": {
+            "en": "An extra deadzone applied on top of RetroGo's own input.",
+            "zh-Hans": "在 RetroGo 输入之外额外增加的摇杆死区。"
+          },
+          "key": "ppsspp_analog_deadzone",
+          "restartRequired": false,
+          "title": {
+            "en": "Analog Deadzone",
+            "zh-Hans": "摇杆死区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0.0": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "0.05": {
+              "en": "5%",
+              "zh-Hans": "5%"
+            },
+            "0.10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "0.15": {
+              "en": "15%",
+              "zh-Hans": "15%"
+            },
+            "0.20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "0.25": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "0.30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "0.35": {
+              "en": "35%",
+              "zh-Hans": "35%"
+            },
+            "0.40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "0.45": {
+              "en": "45%",
+              "zh-Hans": "45%"
+            },
+            "0.50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            }
+          },
+          "values": [
+            "0.0",
+            "0.05",
+            "0.10",
+            "0.15",
+            "0.20",
+            "0.25",
+            "0.30",
+            "0.35",
+            "0.40",
+            "0.45",
+            "0.50"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "1.00",
+          "description": {
+            "en": "An extra sensitivity factor applied on top of RetroGo's own input.",
+            "zh-Hans": "在 RetroGo 输入之外额外施加的摇杆灵敏度系数。"
+          },
+          "key": "ppsspp_analog_sensitivity",
+          "restartRequired": false,
+          "title": {
+            "en": "Analog Axis Scale",
+            "zh-Hans": "摇杆灵敏度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1.00": {
+              "en": "1.00",
+              "zh-Hans": "1.00"
+            },
+            "1.01": {
+              "en": "1.01",
+              "zh-Hans": "1.01"
+            },
+            "1.02": {
+              "en": "1.02",
+              "zh-Hans": "1.02"
+            },
+            "1.03": {
+              "en": "1.03",
+              "zh-Hans": "1.03"
+            },
+            "1.04": {
+              "en": "1.04",
+              "zh-Hans": "1.04"
+            },
+            "1.05": {
+              "en": "1.05",
+              "zh-Hans": "1.05"
+            },
+            "1.06": {
+              "en": "1.06",
+              "zh-Hans": "1.06"
+            },
+            "1.07": {
+              "en": "1.07",
+              "zh-Hans": "1.07"
+            },
+            "1.08": {
+              "en": "1.08",
+              "zh-Hans": "1.08"
+            },
+            "1.09": {
+              "en": "1.09",
+              "zh-Hans": "1.09"
+            },
+            "1.10": {
+              "en": "1.10",
+              "zh-Hans": "1.10"
+            },
+            "1.11": {
+              "en": "1.11",
+              "zh-Hans": "1.11"
+            },
+            "1.12": {
+              "en": "1.12",
+              "zh-Hans": "1.12"
+            },
+            "1.13": {
+              "en": "1.13",
+              "zh-Hans": "1.13"
+            },
+            "1.14": {
+              "en": "1.14",
+              "zh-Hans": "1.14"
+            },
+            "1.15": {
+              "en": "1.15",
+              "zh-Hans": "1.15"
+            },
+            "1.16": {
+              "en": "1.16",
+              "zh-Hans": "1.16"
+            },
+            "1.17": {
+              "en": "1.17",
+              "zh-Hans": "1.17"
+            },
+            "1.18": {
+              "en": "1.18",
+              "zh-Hans": "1.18"
+            },
+            "1.19": {
+              "en": "1.19",
+              "zh-Hans": "1.19"
+            },
+            "1.20": {
+              "en": "1.20",
+              "zh-Hans": "1.20"
+            },
+            "1.21": {
+              "en": "1.21",
+              "zh-Hans": "1.21"
+            },
+            "1.22": {
+              "en": "1.22",
+              "zh-Hans": "1.22"
+            },
+            "1.23": {
+              "en": "1.23",
+              "zh-Hans": "1.23"
+            },
+            "1.24": {
+              "en": "1.24",
+              "zh-Hans": "1.24"
+            },
+            "1.25": {
+              "en": "1.25",
+              "zh-Hans": "1.25"
+            },
+            "1.26": {
+              "en": "1.26",
+              "zh-Hans": "1.26"
+            },
+            "1.27": {
+              "en": "1.27",
+              "zh-Hans": "1.27"
+            },
+            "1.28": {
+              "en": "1.28",
+              "zh-Hans": "1.28"
+            },
+            "1.29": {
+              "en": "1.29",
+              "zh-Hans": "1.29"
+            },
+            "1.30": {
+              "en": "1.30",
+              "zh-Hans": "1.30"
+            },
+            "1.31": {
+              "en": "1.31",
+              "zh-Hans": "1.31"
+            },
+            "1.32": {
+              "en": "1.32",
+              "zh-Hans": "1.32"
+            },
+            "1.33": {
+              "en": "1.33",
+              "zh-Hans": "1.33"
+            },
+            "1.34": {
+              "en": "1.34",
+              "zh-Hans": "1.34"
+            },
+            "1.35": {
+              "en": "1.35",
+              "zh-Hans": "1.35"
+            },
+            "1.36": {
+              "en": "1.36",
+              "zh-Hans": "1.36"
+            },
+            "1.37": {
+              "en": "1.37",
+              "zh-Hans": "1.37"
+            },
+            "1.38": {
+              "en": "1.38",
+              "zh-Hans": "1.38"
+            },
+            "1.39": {
+              "en": "1.39",
+              "zh-Hans": "1.39"
+            },
+            "1.40": {
+              "en": "1.40",
+              "zh-Hans": "1.40"
+            },
+            "1.41": {
+              "en": "1.41",
+              "zh-Hans": "1.41"
+            },
+            "1.42": {
+              "en": "1.42",
+              "zh-Hans": "1.42"
+            },
+            "1.43": {
+              "en": "1.43",
+              "zh-Hans": "1.43"
+            },
+            "1.44": {
+              "en": "1.44",
+              "zh-Hans": "1.44"
+            },
+            "1.45": {
+              "en": "1.45",
+              "zh-Hans": "1.45"
+            },
+            "1.46": {
+              "en": "1.46",
+              "zh-Hans": "1.46"
+            },
+            "1.47": {
+              "en": "1.47",
+              "zh-Hans": "1.47"
+            },
+            "1.48": {
+              "en": "1.48",
+              "zh-Hans": "1.48"
+            },
+            "1.49": {
+              "en": "1.49",
+              "zh-Hans": "1.49"
+            },
+            "1.50": {
+              "en": "1.50",
+              "zh-Hans": "1.50"
+            }
+          },
+          "values": [
+            "1.00",
+            "1.01",
+            "1.02",
+            "1.03",
+            "1.04",
+            "1.05",
+            "1.06",
+            "1.07",
+            "1.08",
+            "1.09",
+            "1.10",
+            "1.11",
+            "1.12",
+            "1.13",
+            "1.14",
+            "1.15",
+            "1.16",
+            "1.17",
+            "1.18",
+            "1.19",
+            "1.20",
+            "1.21",
+            "1.22",
+            "1.23",
+            "1.24",
+            "1.25",
+            "1.26",
+            "1.27",
+            "1.28",
+            "1.29",
+            "1.30",
+            "1.31",
+            "1.32",
+            "1.33",
+            "1.34",
+            "1.35",
+            "1.36",
+            "1.37",
+            "1.38",
+            "1.39",
+            "1.40",
+            "1.41",
+            "1.42",
+            "1.43",
+            "1.44",
+            "1.45",
+            "1.46",
+            "1.47",
+            "1.48",
+            "1.49",
+            "1.50"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Input",
+        "zh-Hans": "输入"
+      }
+    },
+    {
+      "description": {
+        "en": "Speed hacks that trade accuracy for performance and can cause rendering errors.",
+        "zh-Hans": "以准确性换取性能的手段，可能导致画面错误。"
+      },
+      "id": "hacks",
+      "options": [
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Skip effects that render to a buffer. Much faster, but some games may draw nothing at all.",
+            "zh-Hans": "跳过需要渲染到缓冲区的特效，速度明显提升，但部分游戏可能什么都画不出来。"
+          },
+          "key": "ppsspp_skip_buffer_effects",
+          "restartRequired": false,
+          "title": {
+            "en": "Skip Buffer Effects",
+            "zh-Hans": "跳过缓冲特效"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Turn off geometry culling, which fixes missing models in some games.",
+            "zh-Hans": "关闭图形剔除，可修复部分游戏模型缺失的问题。"
+          },
+          "key": "ppsspp_disable_range_culling",
+          "restartRequired": false,
+          "title": {
+            "en": "Disable Culling",
+            "zh-Hans": "禁用范围剔除"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Skip reading data back from the GPU for speed. Games that rely on readbacks will break.",
+            "zh-Hans": "跳过从 GPU 读回数据，速度更快。部分游戏依赖回读，开启后会出错。"
+          },
+          "key": "ppsspp_skip_gpu_readbacks",
+          "restartRequired": false,
+          "title": {
+            "en": "Skip GPU Readbacks",
+            "zh-Hans": "跳过 GPU 回读"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Faster texture caching that can cause text problems in a few games.",
+            "zh-Hans": "延迟处理纹理缓存以提升速度，少数游戏的文字可能显示异常。"
+          },
+          "key": "ppsspp_lazy_texture_caching",
+          "restartRequired": false,
+          "title": {
+            "en": "Lazy Texture Caching (Speedup)",
+            "zh-Hans": "延迟纹理缓存（提速）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "High",
+          "description": {
+            "en": "How finely curves are subdivided, which only some games use.",
+            "zh-Hans": "曲面的细分精度，只有部分游戏会用到。"
+          },
+          "key": "ppsspp_spline_quality",
+          "restartRequired": false,
+          "title": {
+            "en": "Spline/Bezier Curve Quality",
+            "zh-Hans": "曲面精度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "High": {
+              "en": "High",
+              "zh-Hans": "高"
+            },
+            "Low": {
+              "en": "Low",
+              "zh-Hans": "低"
+            },
+            "Medium": {
+              "en": "Medium",
+              "zh-Hans": "中"
+            }
+          },
+          "values": [
+            "Low",
+            "Medium",
+            "High"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Render effects at a lower resolution, which reduces artifacts at higher resolutions.",
+            "zh-Hans": "用较低分辨率渲染特效，可减少提高分辨率后出现的画面瑕疵。"
+          },
+          "key": "ppsspp_lower_resolution_for_effects",
+          "restartRequired": false,
+          "title": {
+            "en": "Lower Resolution for Effects",
+            "zh-Hans": "特效降分辨率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Aggressive": {
+              "en": "Aggressive",
+              "zh-Hans": "激进"
+            },
+            "Balanced": {
+              "en": "Balanced",
+              "zh-Hans": "均衡"
+            },
+            "Safe": {
+              "en": "Safe",
+              "zh-Hans": "保守"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "Safe",
+            "Balanced",
+            "Aggressive"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Hacks",
+        "zh-Hans": "模拟修改"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "PPSSPP",
+    "coreVersion": "Git",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

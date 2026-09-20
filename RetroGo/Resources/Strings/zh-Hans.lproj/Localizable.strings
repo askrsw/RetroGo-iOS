@@ -603,3 +603,26 @@
 "netplay_role_spectating"           = "观战中";
 "netplay_ping_fmt"                  = "%d ms";
 "netplay_in_session_client"         = "已加入房间";
+
+/* 核心选项 */
+"coreoption_title" = "核心选项";
+"coreoption_follow_core" = "跟随核心设置";
+"coreoption_follow_core_message" = "清除此游戏的全部核心选项覆盖，改为跟随核心设置？";
+"coreoption_inherited_core" = "跟随核心设置";
+"coreoption_default" = "默认值";
+"coreoption_overridden" = "已自定义";
+"coreoption_save_error" = "无法保存核心选项，已保留原有设置。请重试。";
+"coreoption_expanded" = "已展开";
+"coreoption_collapsed" = "已折叠";
+"coreoption_reset" = "恢复默认值";
+"coreoption_reset_message" = "将本页选项恢复为默认值？";
+"coreoption_cancel" = "取消";
+"coreoption_ok" = "好";
+"coreoption_empty" = "暂无核心选项。";
+"coreoption_restart" = "此选项将在退出游戏并重新打开后生效。";
+"coreoption_runtime_warning" = "修改核心选项可能导致核心运行错误，甚至使 App 崩溃。请谨慎调整。";
+"coreoption_load_error" = "无法加载核心选项。";
+"coreoption_file_import_error" = "无法导入所选文件。";
+"coreoption_file_import_success" = "已作为 %@ 导入核心 BIOS。";
+"coreoption_file_hint" = "选择该项时会让你挑选一个 %@ 文件，并以 %@ 的名称导入核心 BIOS。";
+"coreoption_file_restart_hint" = "可能需要退出并重新打开游戏后才会生效。";

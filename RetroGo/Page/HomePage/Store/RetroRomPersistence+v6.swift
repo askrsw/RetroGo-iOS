@@ -38,8 +38,7 @@ extension RetroRomPersistence {
     }
 
     /// v6 adds the user-created cheat library, the built-in cheat-template
-    /// binding cache, and CRC32 fields used by ROM-database matching. v6 is still
-    /// unreleased, so the former v7 schema is intentionally folded in here.
+    /// binding cache, and CRC32 fields used by ROM-database matching.
     private static func commonV6(db: Connection) throws {
         try db.transaction {
             try addColumnIfNeeded(db: db, table: "romgame", column: "crc32", type: "TEXT")
@@ -142,5 +141,19 @@ extension RetroRomPersistence {
 
             try db.run("PRAGMA user_version = \(6)")
         }
+    }
+}
+
+extension RetroRomPersistence {
+    static func migrationV6ToV7(db: Connection) throws {
+        try db.transaction {
+            try addColumnIfNeeded(db: db, table: "romconfig", column: "core_options", type: "BLOB")
+            try db.run("PRAGMA user_version = 7")
+        }
+    }
+
+    static func databaseV7(db: Connection) throws {
+        try databaseV6(db: db)
+        try migrationV6ToV7(db: db)
     }
 }

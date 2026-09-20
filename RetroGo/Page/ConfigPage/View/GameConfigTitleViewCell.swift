@@ -42,7 +42,20 @@ final class GameConfigTitleViewCell: GameConfigBaseViewCell {
         super.updateUI(aniamted: aniamted)
         titleLabel.text = entry?.getStringValue?()
         if entry?.detailButtonTapHandler != nil {
-            accessoryView = detailButton
+            if entry?.opensCoreOptions == true {
+                let container = UIView(frame: CGRect(x: 0, y: 0, width: 62, height: 44))
+                detailButton.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
+                container.addSubview(detailButton)
+                let arrow = UIImageView(image: UIImage(systemName: "chevron.right", withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)))
+                arrow.tintColor = .tertiaryLabel
+                arrow.frame = CGRect(x: 49, y: 14, width: 10, height: 16)
+                container.addSubview(arrow)
+                accessoryView = container
+            } else {
+                detailButton.removeFromSuperview()
+                detailButton.frame = CGRect(x: 0, y: 0, width: 28, height: 28)
+                accessoryView = detailButton
+            }
         } else {
             accessoryView = nil
         }

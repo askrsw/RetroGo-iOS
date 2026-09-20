@@ -35,6 +35,13 @@
 #include <input/input_driver.h>
 #include <defines/input_defines.h>
 #include <string.h>
+#include <core/ra_core_options.h>
+#include <core/core_option_manager.h>
+#include <intl/msg_hash.h>
+#include <lists/string_list.h>
+#import <objc/runtime.h>
+
+static char coreOptionConfigurationKey;
 
 @interface RAInputDevice()
 @property(nonatomic, readwrite, assign) NSInteger slot;
@@ -58,6 +65,11 @@
 @implementation RetroArchX (Config)
 
 - (void)config:(RAConfig *)cfg {
+    @synchronized (self) {
+        NSDictionary *pending = cfg.coreOptions && cfg.coreOptionsCoreId
+            ? @{ @"coreId": cfg.coreOptionsCoreId, @"values": [cfg.coreOptions copy] } : nil;
+        objc_setAssociatedObject(self, &coreOptionConfigurationKey, pending, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
     [self p_enforceBuiltinTurboDisabled];
 
     video_driver_set_threaded(cfg.logicThread);
@@ -87,6 +99,46 @@
     } else {
         [self.gameLogicRunner setFastForwardMultiplier:multiplier];
     }
+}
+
+- (BOOL)prepareCoreOptionsForCoreId:(NSString *)coreId {
+    NSDictionary *pending;
+    @synchronized (self) {
+        pending = objc_getAssociatedObject(self, &coreOptionConfigurationKey);
+        objc_setAssociatedObject(self, &coreOptionConfigurationKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    ra_core_options_clear();
+    if (![pending[@"coreId"] isEqualToString:coreId]) return YES;
+    NSDictionary<NSString *, NSString *> *values = pending[@"values"];
+    NSArray<NSString *> *keys = values.allKeys;
+    const char **rawKeys = keys.count ? calloc(keys.count, sizeof(char *)) : NULL;
+    const char **rawValues = keys.count ? calloc(keys.count, sizeof(char *)) : NULL;
+    if (keys.count && (!rawKeys || !rawValues)) {
+        free(rawKeys); free(rawValues);
+        return NO;
+    }
+    for (NSUInteger i = 0; i < keys.count; i++) {
+        rawKeys[i] = keys[i].UTF8String;
+        rawValues[i] = values[keys[i]].UTF8String;
+    }
+    BOOL result = ra_core_options_set(rawKeys, rawValues, keys.count, true);
+    free(rawKeys); free(rawValues);
+    NSLog(@"[CoreOptions] Prepared %@ launch snapshot (%lu options, success=%d)", coreId, (unsigned long)keys.count, result);
+    return result;
+}
+
+- (BOOL)updateRunningCoreOption:(NSString *)value forKey:(NSString *)key {
+    if (self.currentCoreItem == nil || self.dummyCoreRunning) return NO;
+    BOOL result = ra_core_options_queue_update(key.UTF8String, value.UTF8String);
+    NSLog(@"[CoreOptions] Live update %@=%@ (queued=%d)", key, value, result);
+    return result;
+}
+
+- (void)clearCoreOptionConfiguration {
+    @synchronized (self) {
+        objc_setAssociatedObject(self, &coreOptionConfigurationKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    ra_core_options_clear();
 }
 
 - (void)setMuteOnFastForward:(BOOL)value {
@@ -296,6 +348,65 @@
     if (input_st != NULL) {
         memset(&input_st->turbo_btns, 0, sizeof(input_st->turbo_btns));
     }
+}
+
+#pragma mark - Debug core option export
+
+static NSString *ra_debug_str(const char *s) {
+    return s ? ([NSString stringWithUTF8String:s] ?: @"") : @"";
+}
+
+- (nullable NSDictionary<NSString *, id> *)debugCurrentCoreOptionsSnapshot {
+    runloop_state_t *runloop_st = runloop_state_get_ptr();
+    core_option_manager_t *manager = runloop_st ? runloop_st->core_options : NULL;
+    if (!manager || !manager->opts) return nil;
+
+    NSString *language;
+    switch (*msg_hash_get_uint(MSG_HASH_USER_LANGUAGE)) {
+        case RETRO_LANGUAGE_ENGLISH: language = @"en"; break;
+        case RETRO_LANGUAGE_CHINESE_SIMPLIFIED: language = @"zh-Hans"; break;
+        default: language = @""; break;
+    }
+
+    NSMutableArray *categories = [NSMutableArray arrayWithCapacity:manager->cats_size];
+    for (size_t i = 0; i < manager->cats_size; i++) {
+        struct core_category *cat = &manager->cats[i];
+        if (!cat->key) continue;
+        [categories addObject:@{
+            @"key": ra_debug_str(cat->key),
+            @"desc": ra_debug_str(cat->desc),
+            @"info": ra_debug_str(cat->info),
+        }];
+    }
+
+    NSMutableArray *options = [NSMutableArray arrayWithCapacity:manager->size];
+    for (size_t i = 0; i < manager->size; i++) {
+        struct core_option *opt = &manager->opts[i];
+        if (!opt->key || !opt->vals || opt->vals->size == 0) continue;
+        NSMutableArray *values = [NSMutableArray arrayWithCapacity:opt->vals->size];
+        NSMutableArray *labels = [NSMutableArray arrayWithCapacity:opt->vals->size];
+        for (size_t k = 0; k < opt->vals->size; k++) {
+            NSString *value = ra_debug_str(opt->vals->elems[k].data);
+            const char *label = (opt->val_labels && k < opt->val_labels->size) ? opt->val_labels->elems[k].data : NULL;
+            [values addObject:value];
+            [labels addObject:(label && *label) ? ra_debug_str(label) : value];
+        }
+        size_t def = opt->default_index < opt->vals->size ? opt->default_index : 0;
+        [options addObject:@{
+            @"key": ra_debug_str(opt->key),
+            @"desc": ra_debug_str(opt->desc),
+            @"descCategorized": ra_debug_str(opt->desc_categorized),
+            @"info": ra_debug_str(opt->info),
+            @"infoCategorized": ra_debug_str(opt->info_categorized),
+            @"categoryKey": ra_debug_str(opt->category_key),
+            @"values": values,
+            @"labels": labels,
+            @"defaultValue": values[def],
+            @"visible": @(opt->visible),
+        }];
+    }
+
+    return @{ @"language": language, @"categories": categories, @"options": options };
 }
 
 @end

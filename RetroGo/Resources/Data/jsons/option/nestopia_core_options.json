@@ -1,0 +1,1655 @@
+{
+  "coreId": "nestopia",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Change system region and other hardware-related settings.",
+        "zh-Hans": "主机制式与 FDS 磁盘设置。"
+      },
+      "id": "system",
+      "options": [
+        {
+          "categoryId": "system",
+          "defaultValue": "auto",
+          "description": {
+            "en": "Choose the emulated console region. 'Auto' detects it from the ROM and falls back to NTSC.",
+            "zh-Hans": "选择模拟的主机制式。「自动」会根据 ROM 信息识别，无法识别时使用 NTSC。"
+          },
+          "key": "nestopia_favored_system",
+          "restartRequired": true,
+          "title": {
+            "en": "System Region",
+            "zh-Hans": "主机制式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "dendy": {
+              "en": "Dendy",
+              "zh-Hans": "Dendy"
+            },
+            "famicom": {
+              "en": "Famicom",
+              "zh-Hans": "Famicom"
+            },
+            "ntsc": {
+              "en": "NTSC",
+              "zh-Hans": "NTSC"
+            },
+            "pal": {
+              "en": "PAL",
+              "zh-Hans": "PAL"
+            }
+          },
+          "values": [
+            "auto",
+            "ntsc",
+            "pal",
+            "famicom",
+            "dendy"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Automatically insert first FDS disk on reset.",
+            "zh-Hans": "重置时自动插入 FDS 的第一张磁盘。"
+          },
+          "key": "nestopia_fds_auto_insert",
+          "restartRequired": true,
+          "title": {
+            "en": "FDS Auto Insert",
+            "zh-Hans": "FDS 自动插入磁盘"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "System",
+        "zh-Hans": "系统"
+      }
+    },
+    {
+      "description": {
+        "en": "Change aspect ratio, display cropping, color palette and video filter settings.",
+        "zh-Hans": "画面比例、过扫描遮罩、调色板与视频滤镜。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enable Blargg NTSC filters.",
+            "zh-Hans": "使用 Blargg NTSC 滤镜，模拟复合视频、S 端子等线材的信号效果。"
+          },
+          "key": "nestopia_blargg_ntsc_filter",
+          "restartRequired": false,
+          "title": {
+            "en": "Blargg NTSC Filter",
+            "zh-Hans": "Blargg NTSC 滤镜"
+          },
+          "type": "select",
+          "valueLabels": {
+            "composite": {
+              "en": "Composite Video",
+              "zh-Hans": "复合视频"
+            },
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "monochrome": {
+              "en": "Monochrome",
+              "zh-Hans": "黑白"
+            },
+            "rgb": {
+              "en": "RGB SCART",
+              "zh-Hans": "RGB SCART"
+            },
+            "svideo": {
+              "en": "S-Video",
+              "zh-Hans": "S 端子"
+            }
+          },
+          "values": [
+            "disabled",
+            "composite",
+            "svideo",
+            "rgb",
+            "monochrome"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "cxa2025as",
+          "description": {
+            "en": "Color palette to be used. Custom loads the custom.pal palette file added in the core's BIOS files.",
+            "zh-Hans": "选择画面使用的调色板。Custom 会读取在核心 BIOS 中添加的 custom.pal 调色板文件。"
+          },
+          "key": "nestopia_palette",
+          "restartRequired": false,
+          "title": {
+            "en": "Palette",
+            "zh-Hans": "调色板"
+          },
+          "type": "select",
+          "valueFiles": {
+            "custom": {
+              "extensions": [
+                "pal"
+              ],
+              "fileName": "custom.pal",
+              "restartRequired": true
+            }
+          },
+          "valueLabels": {
+            "alternative": {
+              "en": "Alternative",
+              "zh-Hans": "Alternative"
+            },
+            "canonical": {
+              "en": "Canonical",
+              "zh-Hans": "Canonical"
+            },
+            "composite-direct-fbx": {
+              "en": "Composite Direct FBX",
+              "zh-Hans": "Composite Direct FBX"
+            },
+            "consumer": {
+              "en": "Consumer",
+              "zh-Hans": "Consumer"
+            },
+            "custom": {
+              "en": "Custom",
+              "zh-Hans": "Custom"
+            },
+            "cxa2025as": {
+              "en": "CXA2025AS (US)",
+              "zh-Hans": "CXA2025AS (US)"
+            },
+            "cxa2025as_jp": {
+              "en": "CXA2025AS (JP)",
+              "zh-Hans": "CXA2025AS (JP)"
+            },
+            "nes-classic-fbx-fs": {
+              "en": "NES Classic FBx (fixed)",
+              "zh-Hans": "NES Classic FBx (fixed)"
+            },
+            "ntsc-hardware-fbx": {
+              "en": "NTSC hardware FBX",
+              "zh-Hans": "NTSC hardware FBX"
+            },
+            "pal": {
+              "en": "PAL",
+              "zh-Hans": "PAL"
+            },
+            "pvm-style-d93-fbx": {
+              "en": "PVM-style D93 FBX",
+              "zh-Hans": "PVM-style D93 FBX"
+            },
+            "raw": {
+              "en": "Raw",
+              "zh-Hans": "Raw"
+            },
+            "restored-wii-vc": {
+              "en": "Restored Wii VC",
+              "zh-Hans": "Restored Wii VC"
+            },
+            "rgb": {
+              "en": "RGB",
+              "zh-Hans": "RGB"
+            },
+            "royaltea": {
+              "en": "Royaltea",
+              "zh-Hans": "Royaltea"
+            },
+            "wii-vc": {
+              "en": "Wii Virtual Console",
+              "zh-Hans": "Wii Virtual Console"
+            }
+          },
+          "values": [
+            "cxa2025as",
+            "cxa2025as_jp",
+            "royaltea",
+            "consumer",
+            "canonical",
+            "alternative",
+            "rgb",
+            "pal",
+            "composite-direct-fbx",
+            "pvm-style-d93-fbx",
+            "ntsc-hardware-fbx",
+            "nes-classic-fbx-fs",
+            "restored-wii-vc",
+            "wii-vc",
+            "raw",
+            "custom"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "8",
+          "description": {
+            "en": "Mask out (vertically) the potentially random glitchy video output that would have been hidden by the bezel around the edge of a standard-definition television screen.",
+            "zh-Hans": "遮住画面顶部的像素。这些区域在传统 CRT 电视上会被边框挡住，可能出现杂乱的画面。"
+          },
+          "key": "nestopia_overscan_v_top",
+          "restartRequired": false,
+          "title": {
+            "en": "Mask Overscan (Top Vertical)",
+            "zh-Hans": "顶部过扫描遮罩"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "4",
+            "8",
+            "12",
+            "16",
+            "20",
+            "24"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "8",
+          "description": {
+            "en": "Mask out (vertically) the potentially random glitchy video output that would have been hidden by the bezel around the edge of a standard-definition television screen.",
+            "zh-Hans": "遮住画面底部的像素。这些区域在传统 CRT 电视上会被边框挡住，可能出现杂乱的画面。"
+          },
+          "key": "nestopia_overscan_v_bottom",
+          "restartRequired": false,
+          "title": {
+            "en": "Mask Overscan (Bottom Vertical)",
+            "zh-Hans": "底部过扫描遮罩"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "4",
+            "8",
+            "12",
+            "16",
+            "20",
+            "24"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "0",
+          "description": {
+            "en": "Mask out (horizontally) the potentially random glitchy video output that would have been hidden by the bezel around the edge of a standard-definition television screen.",
+            "zh-Hans": "遮住画面左侧的像素。这些区域在传统 CRT 电视上会被边框挡住，可能出现杂乱的画面。"
+          },
+          "key": "nestopia_overscan_h_left",
+          "restartRequired": false,
+          "title": {
+            "en": "Mask Overscan (Left Horizontal)",
+            "zh-Hans": "左侧过扫描遮罩"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "4",
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "0",
+          "description": {
+            "en": "Mask out (horizontally) the potentially random glitchy video output that would have been hidden by the bezel around the edge of a standard-definition television screen.",
+            "zh-Hans": "遮住画面右侧的像素。这些区域在传统 CRT 电视上会被边框挡住，可能出现杂乱的画面。"
+          },
+          "key": "nestopia_overscan_h_right",
+          "restartRequired": false,
+          "title": {
+            "en": "Mask Overscan (Right Horizontal)",
+            "zh-Hans": "右侧过扫描遮罩"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "4",
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "auto",
+          "description": {
+            "en": "'Auto' picks the NTSC or PAL ratio from the ROM. 'Uncorrected' shows square pixels.",
+            "zh-Hans": "「自动」会根据 ROM 信息选择 NTSC 或 PAL 比例；「未校正」按原始像素 1:1 显示。"
+          },
+          "key": "nestopia_aspect",
+          "restartRequired": false,
+          "title": {
+            "en": "Aspect Ratio",
+            "zh-Hans": "画面比例"
+          },
+          "type": "select",
+          "valueLabels": {
+            "4:3": {
+              "en": "4:3",
+              "zh-Hans": "4:3"
+            },
+            "auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "ntsc": {
+              "en": "NTSC",
+              "zh-Hans": "NTSC"
+            },
+            "pal": {
+              "en": "PAL",
+              "zh-Hans": "PAL"
+            },
+            "uncorrected": {
+              "en": "Uncorrected",
+              "zh-Hans": "未校正"
+            }
+          },
+          "values": [
+            "auto",
+            "ntsc",
+            "pal",
+            "4:3",
+            "uncorrected"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Change audio effects and channel volumes.",
+        "zh-Hans": "音效与各声道音量。"
+      },
+      "id": "audio",
+      "options": [
+        {
+          "categoryId": "audio",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "The Game Genie cheat device could inadvertently introduce sound distortion in games. By enabling this, you can simulate the distortion it would add to a game's sound.",
+            "zh-Hans": "Game Genie 金手指卡带会让游戏声音产生轻微失真，开启后可模拟这种效果。"
+          },
+          "key": "nestopia_genie_distortion",
+          "restartRequired": false,
+          "title": {
+            "en": "Game Genie Sound Distortion",
+            "zh-Hans": "Game Genie 音频失真"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the Square 1 channel volume.",
+            "zh-Hans": "调整方波 1声道的音量。"
+          },
+          "key": "nestopia_audio_vol_sq1",
+          "restartRequired": false,
+          "title": {
+            "en": "Square 1 Channel Volume",
+            "zh-Hans": "方波 1音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the Square 2 channel volume.",
+            "zh-Hans": "调整方波 2声道的音量。"
+          },
+          "key": "nestopia_audio_vol_sq2",
+          "restartRequired": false,
+          "title": {
+            "en": "Square 2 Channel Volume",
+            "zh-Hans": "方波 2音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the Triangle channel volume.",
+            "zh-Hans": "调整三角波声道的音量。"
+          },
+          "key": "nestopia_audio_vol_tri",
+          "restartRequired": false,
+          "title": {
+            "en": "Triangle Channel Volume",
+            "zh-Hans": "三角波音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the Noise channel volume.",
+            "zh-Hans": "调整噪声声道的音量。"
+          },
+          "key": "nestopia_audio_vol_noise",
+          "restartRequired": false,
+          "title": {
+            "en": "Noise Channel Volume",
+            "zh-Hans": "噪声音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the DPCM channel volume.",
+            "zh-Hans": "调整DPCM声道的音量。"
+          },
+          "key": "nestopia_audio_vol_dpcm",
+          "restartRequired": false,
+          "title": {
+            "en": "DPCM Channel Volume",
+            "zh-Hans": "DPCM音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the FDS channel volume.",
+            "zh-Hans": "调整FDS 扩展音源声道的音量。"
+          },
+          "key": "nestopia_audio_vol_fds",
+          "restartRequired": false,
+          "title": {
+            "en": "FDS Channel Volume",
+            "zh-Hans": "FDS 扩展音源音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the MMC5 channel volume.",
+            "zh-Hans": "调整MMC5 扩展音源声道的音量。"
+          },
+          "key": "nestopia_audio_vol_mmc5",
+          "restartRequired": false,
+          "title": {
+            "en": "MMC5 Channel Volume",
+            "zh-Hans": "MMC5 扩展音源音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the VRC6 channel volume.",
+            "zh-Hans": "调整VRC6 扩展音源声道的音量。"
+          },
+          "key": "nestopia_audio_vol_vrc6",
+          "restartRequired": false,
+          "title": {
+            "en": "VRC6 Channel Volume",
+            "zh-Hans": "VRC6 扩展音源音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the VRC7 channel volume.",
+            "zh-Hans": "调整VRC7 扩展音源声道的音量。"
+          },
+          "key": "nestopia_audio_vol_vrc7",
+          "restartRequired": false,
+          "title": {
+            "en": "VRC7 Channel Volume",
+            "zh-Hans": "VRC7 扩展音源音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the N163 channel volume.",
+            "zh-Hans": "调整N163 扩展音源声道的音量。"
+          },
+          "key": "nestopia_audio_vol_n163",
+          "restartRequired": false,
+          "title": {
+            "en": "N163 Channel Volume",
+            "zh-Hans": "N163 扩展音源音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust the S5B channel volume.",
+            "zh-Hans": "调整S5B 扩展音源声道的音量。"
+          },
+          "key": "nestopia_audio_vol_s5b",
+          "restartRequired": false,
+          "title": {
+            "en": "S5B Channel Volume",
+            "zh-Hans": "S5B 扩展音源音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "stereo",
+          "description": {
+            "en": "Specify whether the audio output should be mono or stereo.",
+            "zh-Hans": "选择单声道或立体声输出。"
+          },
+          "key": "nestopia_audio_type",
+          "restartRequired": false,
+          "title": {
+            "en": "Audio Output",
+            "zh-Hans": "音频输出"
+          },
+          "type": "select",
+          "valueLabels": {
+            "mono": {
+              "en": "Mono",
+              "zh-Hans": "单声道"
+            },
+            "stereo": {
+              "en": "Stereo",
+              "zh-Hans": "立体声"
+            }
+          },
+          "values": [
+            "mono",
+            "stereo"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Audio",
+        "zh-Hans": "音频"
+      }
+    },
+    {
+      "description": {
+        "en": "Change input devices and other input related settings.",
+        "zh-Hans": "输入设备相关设置。"
+      },
+      "id": "input",
+      "options": [
+        {
+          "categoryId": "input",
+          "defaultValue": "auto",
+          "description": {
+            "en": "Manually select a 4 Player Adapter if needed. Some games will not recognize the adapter correctly through the NstDatabase.xml database, this option should help fix that.",
+            "zh-Hans": "部分游戏无法自动识别四人适配器，可在此手动指定。「NTSC」对应 NES Four Score，「Famicom」对应 FC 四人适配器。"
+          },
+          "key": "nestopia_select_adapter",
+          "restartRequired": true,
+          "title": {
+            "en": "4 Player Adapter",
+            "zh-Hans": "四人适配器"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "famicom": {
+              "en": "Famicom",
+              "zh-Hans": "Famicom"
+            },
+            "ntsc": {
+              "en": "NTSC",
+              "zh-Hans": "NTSC"
+            }
+          },
+          "values": [
+            "auto",
+            "ntsc",
+            "famicom"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Input",
+        "zh-Hans": "输入"
+      }
+    },
+    {
+      "description": {
+        "en": "Change processor overclocking and emulation accuracy settings affecting low-level performance and compatibility.",
+        "zh-Hans": "处理器超频与模拟精度设置，影响底层性能与兼容性。"
+      },
+      "id": "hacks",
+      "options": [
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Remove 8-sprites-per-scanline hardware limit.",
+            "zh-Hans": "移除每条扫描线最多 8 个精灵的硬件限制，可减少精灵闪烁。"
+          },
+          "key": "nestopia_nospritelimit",
+          "restartRequired": false,
+          "title": {
+            "en": "Remove Sprite Limit",
+            "zh-Hans": "取消精灵数量限制"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "1x",
+          "description": {
+            "en": "Overclock the emulated CPU.",
+            "zh-Hans": "提高模拟 CPU 的速度，可减少部分游戏的卡顿。"
+          },
+          "key": "nestopia_overclock",
+          "restartRequired": false,
+          "title": {
+            "en": "CPU Speed (Overclock)",
+            "zh-Hans": "CPU 超频"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1x": {
+              "en": "1x",
+              "zh-Hans": "1x"
+            },
+            "2x": {
+              "en": "2x",
+              "zh-Hans": "2x"
+            }
+          },
+          "values": [
+            "1x",
+            "2x"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "0x00",
+          "description": {
+            "en": "RAM values on power up. Some games rely on initial RAM values for random number generation as an example.",
+            "zh-Hans": "设置开机时 RAM 的初始内容。部分游戏会用 RAM 初始值生成随机数等。"
+          },
+          "key": "nestopia_ram_power_state",
+          "restartRequired": true,
+          "title": {
+            "en": "RAM Power-On State",
+            "zh-Hans": "开机 RAM 初始值"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0x00": {
+              "en": "0x00",
+              "zh-Hans": "0x00"
+            },
+            "0xFF": {
+              "en": "0xFF",
+              "zh-Hans": "0xFF"
+            },
+            "random": {
+              "en": "Random",
+              "zh-Hans": "随机"
+            }
+          },
+          "values": [
+            "0x00",
+            "0xFF",
+            "random"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Emulation Hacks",
+        "zh-Hans": "模拟修改"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Nestopia",
+    "coreVersion": "1.53.1",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}
