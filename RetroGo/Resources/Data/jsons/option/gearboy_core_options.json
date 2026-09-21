@@ -1,0 +1,254 @@
+{
+  "coreId": "gearboy",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Hardware, palette and input settings.",
+        "zh-Hans": "机型、配色与输入设置。"
+      },
+      "id": "general",
+      "options": [
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "Which hardware to emulate. 'Auto' picks it from the game; GBA mode enables the extra content some games offer on a Game Boy Advance.",
+            "zh-Hans": "模拟哪种机型。「自动」按游戏选择，GBA 模式会启用部分游戏的 GBA 增强内容。"
+          },
+          "key": "gearboy_model",
+          "restartRequired": true,
+          "title": {
+            "en": "Game Boy Model",
+            "zh-Hans": "模拟机型"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "Game Boy Advance": {
+              "en": "Game Boy Advance",
+              "zh-Hans": "Game Boy Advance"
+            },
+            "Game Boy DMG": {
+              "en": "Game Boy DMG",
+              "zh-Hans": "Game Boy DMG"
+            }
+          },
+          "values": [
+            "Auto",
+            "Game Boy DMG",
+            "Game Boy Advance"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "The cartridge mapper (MBC) to use. 'Auto' reads it from the ROM header and is almost always correct; only some bootleg or hacked games need it set manually.",
+            "zh-Hans": "指定卡带使用的映射芯片（MBC）。「自动」会从 ROM 信息中识别，一般无需改动；只有个别盗版卡带或改版游戏需要手动指定。"
+          },
+          "key": "gearboy_mapper",
+          "restartRequired": true,
+          "title": {
+            "en": "Cartridge Mapper",
+            "zh-Hans": "卡带映射芯片"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "MBC 1": {
+              "en": "MBC 1",
+              "zh-Hans": "MBC 1"
+            },
+            "MBC 1 Multicart": {
+              "en": "MBC 1 Multicart",
+              "zh-Hans": "MBC 1 合卡"
+            },
+            "MBC 2": {
+              "en": "MBC 2",
+              "zh-Hans": "MBC 2"
+            },
+            "MBC 3": {
+              "en": "MBC 3",
+              "zh-Hans": "MBC 3"
+            },
+            "MBC 5": {
+              "en": "MBC 5",
+              "zh-Hans": "MBC 5"
+            },
+            "ROM Only": {
+              "en": "ROM Only",
+              "zh-Hans": "仅 ROM"
+            }
+          },
+          "values": [
+            "Auto",
+            "ROM Only",
+            "MBC 1",
+            "MBC 2",
+            "MBC 3",
+            "MBC 5",
+            "MBC 1 Multicart"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Original",
+          "description": {
+            "en": "The palette used for original Game Boy games. 'Original' mimics the green screen of the first Game Boy.",
+            "zh-Hans": "黑白 GB 游戏使用的配色。「Original」是初代 GB 的墨绿色屏幕效果。"
+          },
+          "key": "gearboy_palette",
+          "restartRequired": false,
+          "title": {
+            "en": "DMG Palette",
+            "zh-Hans": "DMG 调色板"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Autumn": {
+              "en": "Autumn",
+              "zh-Hans": "Autumn"
+            },
+            "B/W": {
+              "en": "B/W",
+              "zh-Hans": "B/W"
+            },
+            "Original": {
+              "en": "Original",
+              "zh-Hans": "Original"
+            },
+            "Sharp": {
+              "en": "Sharp",
+              "zh-Hans": "Sharp"
+            },
+            "Slime": {
+              "en": "Slime",
+              "zh-Hans": "Slime"
+            },
+            "Soft": {
+              "en": "Soft",
+              "zh-Hans": "Soft"
+            }
+          },
+          "values": [
+            "Original",
+            "Sharp",
+            "B/W",
+            "Autumn",
+            "Soft",
+            "Slime"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Run the official Game Boy boot program on startup, showing the Nintendo logo animation. Requires dmg_boot.bin added in the core's BIOS files.",
+            "zh-Hans": "开机时运行初代 GB 的官方启动程序，会显示任天堂的开机动画。需要在核心 BIOS 中添加 dmg_boot.bin 文件。"
+          },
+          "key": "gearboy_bootrom_dmg",
+          "restartRequired": true,
+          "title": {
+            "en": "Use DMG Bootrom",
+            "zh-Hans": "使用 DMG 启动程序"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "Enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Run the official Game Boy Color boot program on startup, showing the startup animation. Requires cgb_boot.bin added in the core's BIOS files.",
+            "zh-Hans": "开机时运行 GBC 的官方启动程序，会显示开机动画。需要在核心 BIOS 中添加 cgb_boot.bin 文件。"
+          },
+          "key": "gearboy_bootrom_gbc",
+          "restartRequired": true,
+          "title": {
+            "en": "Use Game Boy Color Bootrom",
+            "zh-Hans": "使用 GBC 启动程序"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "Enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Allow pressing up+down or left+right at the same time, which can cause movement glitches in some games.",
+            "zh-Hans": "允许同时按下「上+下」或「左+右」，可能导致部分游戏出现移动异常。"
+          },
+          "key": "gearboy_up_down_allowed",
+          "restartRequired": false,
+          "title": {
+            "en": "Allow Opposing Directions",
+            "zh-Hans": "允许相反方向同时按下"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "Enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "General",
+        "zh-Hans": "通用"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Gearboy",
+    "coreVersion": "3.4.1",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

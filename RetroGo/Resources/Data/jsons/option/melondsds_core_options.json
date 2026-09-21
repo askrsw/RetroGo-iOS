@@ -1,0 +1,6358 @@
+{
+  "coreId": "melondsds",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Console mode, BIOS, SD card and battery settings.",
+        "zh-Hans": "主机模式、BIOS、SD 卡与电量设置。"
+      },
+      "id": "system",
+      "options": [
+        {
+          "categoryId": "system",
+          "defaultValue": "ds",
+          "description": {
+            "en": "Whether melonDS should emulate a Nintendo DS or a Nintendo DSi. DSi mode has some limits:\n\n- Native BIOS/firmware/NAND files must be provided, including for the regular DS.\n- Some features (such as savestates) are not available in DSi mode.\n- Direct boot mode cannot be used for DSiWare.\n\nSee the DSi-specific options in this category for more information. If unsure, set to DS mode unless playing a DSi game. Changes take effect at the next restart.",
+            "zh-Hans": "模拟 DS 还是 DSi。DSi 模式限制较多：必须提供真机的 BIOS、固件和 NAND 文件，不支持即时存档，DSiWare 也不能用直接启动。不确定时保持 DS 模式。"
+          },
+          "key": "melonds_console_mode",
+          "restartRequired": true,
+          "title": {
+            "en": "Console Mode",
+            "zh-Hans": "主机模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "ds": {
+              "en": "DS",
+              "zh-Hans": "DS"
+            },
+            "dsi": {
+              "en": "DSi (experimental)",
+              "zh-Hans": "DSi（实验性）"
+            }
+          },
+          "values": [
+            "ds",
+            "dsi"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "auto",
+          "description": {
+            "en": "The peripheral that will be inserted into the emulated console's Slot-2. Ignored in DSi mode, or if a GBA ROM is explicitly loaded. If a GBA ROM for any game in the Boktai trilogy is inserted, the corresponding Solar Sensor setting will be forced. In supported NDS games, each Boktai cart will have different effects. \nChanges take effect at next core start.",
+            "zh-Hans": "模拟插在 GBA 卡槽中的扩展设备。「自动」会根据游戏自动选择。"
+          },
+          "key": "melonds_slot2_device",
+          "restartRequired": true,
+          "title": {
+            "en": "Slot-2 Device",
+            "zh-Hans": "卡槽 2 设备"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "expansion-pak": {
+              "en": "Memory Expansion Pak",
+              "zh-Hans": "内存扩展卡"
+            },
+            "rumble-pak": {
+              "en": "Rumble Pak",
+              "zh-Hans": "震动卡带"
+            },
+            "solar1": {
+              "en": "Solar Sensor (Boktai 1)",
+              "zh-Hans": "光感卡带（《太阳少年》1）"
+            },
+            "solar2": {
+              "en": "Solar Sensor (Boktai 2)",
+              "zh-Hans": "光感卡带（《太阳少年》2）"
+            },
+            "solar3": {
+              "en": "Solar Sensor (Boktai 3)",
+              "zh-Hans": "光感卡带（《太阳少年》3）"
+            }
+          },
+          "values": [
+            "auto",
+            "rumble-pak",
+            "expansion-pak",
+            "solar1",
+            "solar2",
+            "solar3"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "native",
+          "description": {
+            "en": "Determines whether melonDS uses native BIOS/firmware dumps or its own built-in replacements. Only applies to DS mode, as DSi mode always requires native BIOS and firmware dumps.\n\nNative mode uses BIOS and firmware files from a real DS. Place your dumps of these in the system directory or its \"melonDS DS\" subdirectory and name them as follows:\n\n- DS BIOS: bios7.bin, bios9.bin\n- DSi BIOS: dsi_bios7.bin, dsi_bios9.bin\n- Firmware: See the \"DS Firmware\" and \"DSi Firmware\" options.\n- DSi NAND: See the \"DSi NAND \" option.\n\nFalls back to Built-In if any BIOS/firmware file isn't found.\n\nBuilt-In mode uses melonDS's built-in BIOS and firmware, and is suitable for most games.\n\nChanges take effect at next restart.",
+            "zh-Hans": "使用真机的 BIOS 和固件文件，还是使用内置的开源替代实现。真机固件兼容性更好，需要先在核心 BIOS 中添加对应文件。"
+          },
+          "key": "melonds_sysfile_mode",
+          "restartRequired": true,
+          "title": {
+            "en": "BIOS/Firmware Mode (DS Mode)",
+            "zh-Hans": "BIOS/固件模式（DS 模式）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "builtin": {
+              "en": "Built-In",
+              "zh-Hans": "内置"
+            },
+            "native": {
+              "en": "Native",
+              "zh-Hans": "真机文件"
+            }
+          },
+          "values": [
+            "native",
+            "builtin"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "direct",
+          "description": {
+            "en": "Determines how melonDS boots games.\n\nNative: Load games through the system menu, similar to the real DS/DSi boot process. Requires native BIOS and firmware files in the system directory.\nDirect: Skip the system menu and go straight to the game. Supported for DSiWare if native DSi system files are available.\n\nIgnored if loaded without a game (Native is forced) or if using Built-In BIOS/Firmware (Direct is forced). Changes take effect at next restart.",
+            "zh-Hans": "「直接」跳过开机动画直接进入游戏；「真机」会先显示 DS 的开机画面和菜单，需要真机固件。"
+          },
+          "key": "melonds_boot_mode",
+          "restartRequired": true,
+          "title": {
+            "en": "Boot Mode",
+            "zh-Hans": "启动方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "direct": {
+              "en": "Direct",
+              "zh-Hans": "直接"
+            },
+            "native": {
+              "en": "Native",
+              "zh-Hans": "真机"
+            }
+          },
+          "values": [
+            "direct",
+            "native"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "If enabled, a virtual SD card will be made available to the emulated DSi. The card image must be within the frontend's system directory and be named dsi_sd_card.bin. If no image exists, a 4GB virtual SD card will be created. Ignored in DS mode. Changes take effect at next boot.",
+            "zh-Hans": "为 DSi 模式模拟一张 SD 卡。"
+          },
+          "key": "melonds_dsi_sdcard",
+          "restartRequired": true,
+          "title": {
+            "en": "Virtual SD Card (DSi)",
+            "zh-Hans": "虚拟 SD 卡（DSi）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_console_mode": [
+                "dsi"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "If enabled, the emulated DSi sees the virtual SD card as read-only. Changes take effect with next restart.",
+            "zh-Hans": "开启后游戏对 DSi 虚拟 SD 卡的写入不会保存。"
+          },
+          "key": "melonds_dsi_sdcard_readonly",
+          "restartRequired": true,
+          "title": {
+            "en": "Read-Only Mode (DSi)",
+            "zh-Hans": "SD 卡只读模式（DSi）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_console_mode": [
+                "dsi"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "If enabled, the virtual SD card's files will be synced to this core's save directory. Enable this if you want to add files to the virtual SD card from outside the core. Syncing happens when loading and unloading a game, so external changes won't have any effect while the core is running. Takes effect at the next boot. Adjusting this setting may overwrite existing save data.",
+            "zh-Hans": "关闭游戏时，把虚拟 SD 卡中的改动同步回设备上的文件夹。"
+          },
+          "key": "melonds_dsi_sdcard_sync_sdcard_to_host",
+          "restartRequired": false,
+          "title": {
+            "en": "Sync SD Card to Host (DSi)",
+            "zh-Hans": "同步 SD 卡到设备（DSi）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_console_mode": [
+                "dsi"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "If enabled, a virtual SD card will be made available to homebrew DS games. The card image must be within the frontend's system directory and be named dldi_sd_card.bin. If no image exists, a 4GB virtual SD card will be created. Ignored for retail games. Changes take effect at next boot.",
+            "zh-Hans": "为自制游戏模拟一张 SD 卡。"
+          },
+          "key": "melonds_homebrew_sdcard",
+          "restartRequired": true,
+          "title": {
+            "en": "Virtual SD Card",
+            "zh-Hans": "虚拟 SD 卡"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "If enabled, homebrew applications will see the virtual SD card as read-only. Changes take effect with next restart.",
+            "zh-Hans": "开启后自制游戏对虚拟 SD 卡的写入不会保存。"
+          },
+          "key": "melonds_homebrew_readonly",
+          "restartRequired": true,
+          "title": {
+            "en": "Read-Only Mode",
+            "zh-Hans": "SD 卡只读模式"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "If enabled, the virtual SD card's files will be synced to this core's save directory. Enable this if you want to add files to the virtual SD card from outside the core. Syncing happens when loading and unloading a game, so external changes won't have any effect while the core is running. Takes effect at the next boot. Adjusting this setting may overwrite existing save data.",
+            "zh-Hans": "关闭游戏时，把虚拟 SD 卡中的改动同步回设备上的文件夹。"
+          },
+          "key": "melonds_homebrew_sync_sdcard_to_host",
+          "restartRequired": false,
+          "title": {
+            "en": "Sync SD Card to Host",
+            "zh-Hans": "同步 SD 卡到设备"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "15",
+          "description": {
+            "en": "How often the emulated console's battery should be updated. Ignored if the frontend can't get the device's battery level.",
+            "zh-Hans": "每隔多久把设备的电量同步给模拟的主机。"
+          },
+          "key": "melonds_battery_update_interval",
+          "restartRequired": false,
+          "title": {
+            "en": "Battery Update Interval",
+            "zh-Hans": "电量更新间隔"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "1 second",
+              "zh-Hans": "1 秒"
+            },
+            "10": {
+              "en": "10 seconds",
+              "zh-Hans": "10 秒"
+            },
+            "15": {
+              "en": "15 seconds",
+              "zh-Hans": "15 秒"
+            },
+            "2": {
+              "en": "2 seconds",
+              "zh-Hans": "2 秒"
+            },
+            "20": {
+              "en": "20 seconds",
+              "zh-Hans": "20 秒"
+            },
+            "3": {
+              "en": "3 seconds",
+              "zh-Hans": "3 秒"
+            },
+            "30": {
+              "en": "30 seconds",
+              "zh-Hans": "30 秒"
+            },
+            "5": {
+              "en": "5 seconds",
+              "zh-Hans": "5 秒"
+            },
+            "60": {
+              "en": "60 seconds",
+              "zh-Hans": "60 秒"
+            }
+          },
+          "values": [
+            "1",
+            "2",
+            "3",
+            "5",
+            "10",
+            "15",
+            "20",
+            "30",
+            "60"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "20",
+          "description": {
+            "en": "If the host's battery level falls below this percentage, the emulated DS will report that its battery level is low. Ignored if running in DSi mode, no battery is available, or the frontend can't query the power status.",
+            "zh-Hans": "设备电量低于该值时，模拟的 DS 会认为电量不足并亮起低电量指示灯。"
+          },
+          "key": "melonds_ds_battery_ok_threshold",
+          "restartRequired": false,
+          "title": {
+            "en": "DS Low Battery Threshold",
+            "zh-Hans": "DS 低电量阈值"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Always OK",
+              "zh-Hans": "总是正常"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "Always Low",
+              "zh-Hans": "总是低电量"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            }
+          },
+          "values": [
+            "0",
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "90",
+            "100"
+          ]
+        }
+      ],
+      "title": {
+        "en": "System",
+        "zh-Hans": "系统"
+      }
+    },
+    {
+      "description": {
+        "en": "Date and time settings for the emulated console.",
+        "zh-Hans": "模拟主机的日期和时间设置。"
+      },
+      "id": "time",
+      "options": [
+        {
+          "categoryId": "time",
+          "defaultValue": "real",
+          "description": {
+            "en": "The initial time of the emulated console's internal clock.\n\n- Real: Start in sync with your device's clock.\n- Synchronized: Synchronize the emulated clock to your device's clock. May cause unexpected behavior in some games when rewinding or fast-forwarding.\n- Relative: Start in sync with your device's clock, plus or minus a specified offset. Will be constrained to dates that the DS can represent.\n- Absolute: Start at a specific date and time, regardless of your device's clock.\n\nAll dates and times are in your local timezone. Changes take effect at next restart.",
+            "zh-Hans": "设置模拟主机的时钟。「真实」使用设备当前时间；「同步」在此基础上持续同步；「相对」按设定的偏移量调整；「绝对」使用指定的固定时间。"
+          },
+          "key": "melonds_start_time_mode",
+          "restartRequired": true,
+          "title": {
+            "en": "Time Mode",
+            "zh-Hans": "时间模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "absolute": {
+              "en": "Absolute",
+              "zh-Hans": "绝对"
+            },
+            "real": {
+              "en": "Real",
+              "zh-Hans": "真实"
+            },
+            "relative": {
+              "en": "Relative",
+              "zh-Hans": "相对"
+            },
+            "sync": {
+              "en": "Synchronized",
+              "zh-Hans": "同步"
+            }
+          },
+          "values": [
+            "real",
+            "sync",
+            "relative",
+            "absolute"
+          ]
+        },
+        {
+          "categoryId": "time",
+          "defaultValue": "0",
+          "description": {
+            "en": "The number of years to offset the starting time by. Only used when Starting Time Mode is Relative. Changes take effect at next restart.",
+            "zh-Hans": "相对模式下，模拟主机的时间相对设备时间偏移多少年。"
+          },
+          "key": "melonds_start_time_relative_year_offset",
+          "restartRequired": true,
+          "title": {
+            "en": "Starting Time Offset (Years)",
+            "zh-Hans": "启动时间偏移（年）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "-1": {
+              "en": "-1 year",
+              "zh-Hans": "-1 年"
+            },
+            "-10": {
+              "en": "-10 years",
+              "zh-Hans": "-10 年"
+            },
+            "-11": {
+              "en": "-11 years",
+              "zh-Hans": "-11 年"
+            },
+            "-12": {
+              "en": "-12 years",
+              "zh-Hans": "-12 年"
+            },
+            "-13": {
+              "en": "-13 years",
+              "zh-Hans": "-13 年"
+            },
+            "-14": {
+              "en": "-14 years",
+              "zh-Hans": "-14 年"
+            },
+            "-15": {
+              "en": "-15 years",
+              "zh-Hans": "-15 年"
+            },
+            "-16": {
+              "en": "-16 years",
+              "zh-Hans": "-16 年"
+            },
+            "-17": {
+              "en": "-17 years",
+              "zh-Hans": "-17 年"
+            },
+            "-18": {
+              "en": "-18 years",
+              "zh-Hans": "-18 年"
+            },
+            "-19": {
+              "en": "-19 years",
+              "zh-Hans": "-19 年"
+            },
+            "-2": {
+              "en": "-2 years",
+              "zh-Hans": "-2 年"
+            },
+            "-20": {
+              "en": "-20 years",
+              "zh-Hans": "-20 年"
+            },
+            "-3": {
+              "en": "-3 years",
+              "zh-Hans": "-3 年"
+            },
+            "-4": {
+              "en": "-4 years",
+              "zh-Hans": "-4 年"
+            },
+            "-5": {
+              "en": "-5 years",
+              "zh-Hans": "-5 年"
+            },
+            "-6": {
+              "en": "-6 years",
+              "zh-Hans": "-6 年"
+            },
+            "-7": {
+              "en": "-7 years",
+              "zh-Hans": "-7 年"
+            },
+            "-8": {
+              "en": "-8 years",
+              "zh-Hans": "-8 年"
+            },
+            "-9": {
+              "en": "-9 years",
+              "zh-Hans": "-9 年"
+            },
+            "0": {
+              "en": "None",
+              "zh-Hans": "不偏移"
+            },
+            "1": {
+              "en": "+1 year",
+              "zh-Hans": "+1 年"
+            },
+            "10": {
+              "en": "+10 years",
+              "zh-Hans": "+10 年"
+            },
+            "11": {
+              "en": "+11 years",
+              "zh-Hans": "+11 年"
+            },
+            "12": {
+              "en": "+12 years",
+              "zh-Hans": "+12 年"
+            },
+            "13": {
+              "en": "+13 years",
+              "zh-Hans": "+13 年"
+            },
+            "14": {
+              "en": "+14 years",
+              "zh-Hans": "+14 年"
+            },
+            "15": {
+              "en": "+15 years",
+              "zh-Hans": "+15 年"
+            },
+            "16": {
+              "en": "+16 years",
+              "zh-Hans": "+16 年"
+            },
+            "17": {
+              "en": "+17 years",
+              "zh-Hans": "+17 年"
+            },
+            "18": {
+              "en": "+18 years",
+              "zh-Hans": "+18 年"
+            },
+            "19": {
+              "en": "+19 years",
+              "zh-Hans": "+19 年"
+            },
+            "2": {
+              "en": "+2 years",
+              "zh-Hans": "+2 年"
+            },
+            "20": {
+              "en": "+20 years",
+              "zh-Hans": "+20 年"
+            },
+            "3": {
+              "en": "+3 years",
+              "zh-Hans": "+3 年"
+            },
+            "4": {
+              "en": "+4 years",
+              "zh-Hans": "+4 年"
+            },
+            "5": {
+              "en": "+5 years",
+              "zh-Hans": "+5 年"
+            },
+            "6": {
+              "en": "+6 years",
+              "zh-Hans": "+6 年"
+            },
+            "7": {
+              "en": "+7 years",
+              "zh-Hans": "+7 年"
+            },
+            "8": {
+              "en": "+8 years",
+              "zh-Hans": "+8 年"
+            },
+            "9": {
+              "en": "+9 years",
+              "zh-Hans": "+9 年"
+            }
+          },
+          "values": [
+            "-20",
+            "-19",
+            "-18",
+            "-17",
+            "-16",
+            "-15",
+            "-14",
+            "-13",
+            "-12",
+            "-11",
+            "-10",
+            "-9",
+            "-8",
+            "-7",
+            "-6",
+            "-5",
+            "-4",
+            "-3",
+            "-2",
+            "-1",
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_start_time_mode": [
+                "relative"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "time",
+          "defaultValue": "0",
+          "description": {
+            "en": "The number of days to offset the starting time by. Only used when Starting Time Mode is Relative. Changes take effect at next restart.",
+            "zh-Hans": "相对模式下，模拟主机的时间相对设备时间偏移多少天。"
+          },
+          "key": "melonds_start_time_relative_day_offset",
+          "restartRequired": true,
+          "title": {
+            "en": "Starting Time Offset (Days)",
+            "zh-Hans": "启动时间偏移（天）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "-1": {
+              "en": "-1 day",
+              "zh-Hans": "-1 天"
+            },
+            "-10": {
+              "en": "-10 days",
+              "zh-Hans": "-10 天"
+            },
+            "-11": {
+              "en": "-11 days",
+              "zh-Hans": "-11 天"
+            },
+            "-12": {
+              "en": "-12 days",
+              "zh-Hans": "-12 天"
+            },
+            "-120": {
+              "en": "-120 days",
+              "zh-Hans": "-120 天"
+            },
+            "-13": {
+              "en": "-13 days",
+              "zh-Hans": "-13 天"
+            },
+            "-14": {
+              "en": "-14 days",
+              "zh-Hans": "-14 天"
+            },
+            "-150": {
+              "en": "-150 days",
+              "zh-Hans": "-150 天"
+            },
+            "-180": {
+              "en": "-180 days",
+              "zh-Hans": "-180 天"
+            },
+            "-2": {
+              "en": "-2 days",
+              "zh-Hans": "-2 天"
+            },
+            "-3": {
+              "en": "-3 days",
+              "zh-Hans": "-3 天"
+            },
+            "-30": {
+              "en": "-30 days",
+              "zh-Hans": "-30 天"
+            },
+            "-364": {
+              "en": "-364 days",
+              "zh-Hans": "-364 天"
+            },
+            "-4": {
+              "en": "-4 days",
+              "zh-Hans": "-4 天"
+            },
+            "-5": {
+              "en": "-5 days",
+              "zh-Hans": "-5 天"
+            },
+            "-6": {
+              "en": "-6 days",
+              "zh-Hans": "-6 天"
+            },
+            "-60": {
+              "en": "-60 days",
+              "zh-Hans": "-60 天"
+            },
+            "-7": {
+              "en": "-7 days",
+              "zh-Hans": "-7 天"
+            },
+            "-8": {
+              "en": "-8 days",
+              "zh-Hans": "-8 天"
+            },
+            "-9": {
+              "en": "-9 days",
+              "zh-Hans": "-9 天"
+            },
+            "-90": {
+              "en": "-90 days",
+              "zh-Hans": "-90 天"
+            },
+            "0": {
+              "en": "None",
+              "zh-Hans": "不偏移"
+            },
+            "1": {
+              "en": "+1 day",
+              "zh-Hans": "+1 天"
+            },
+            "10": {
+              "en": "+10 days",
+              "zh-Hans": "+10 天"
+            },
+            "11": {
+              "en": "+11 days",
+              "zh-Hans": "+11 天"
+            },
+            "12": {
+              "en": "+12 days",
+              "zh-Hans": "+12 天"
+            },
+            "120": {
+              "en": "+120 days",
+              "zh-Hans": "+120 天"
+            },
+            "13": {
+              "en": "+13 days",
+              "zh-Hans": "+13 天"
+            },
+            "14": {
+              "en": "+14 days",
+              "zh-Hans": "+14 天"
+            },
+            "150": {
+              "en": "+150 days",
+              "zh-Hans": "+150 天"
+            },
+            "180": {
+              "en": "+180 days",
+              "zh-Hans": "+180 天"
+            },
+            "2": {
+              "en": "+2 days",
+              "zh-Hans": "+2 天"
+            },
+            "3": {
+              "en": "+3 days",
+              "zh-Hans": "+3 天"
+            },
+            "30": {
+              "en": "+30 days",
+              "zh-Hans": "+30 天"
+            },
+            "364": {
+              "en": "+364 days",
+              "zh-Hans": "+364 天"
+            },
+            "4": {
+              "en": "+4 days",
+              "zh-Hans": "+4 天"
+            },
+            "5": {
+              "en": "+5 days",
+              "zh-Hans": "+5 天"
+            },
+            "6": {
+              "en": "+6 days",
+              "zh-Hans": "+6 天"
+            },
+            "60": {
+              "en": "+60 days",
+              "zh-Hans": "+60 天"
+            },
+            "7": {
+              "en": "+7 days",
+              "zh-Hans": "+7 天"
+            },
+            "8": {
+              "en": "+8 days",
+              "zh-Hans": "+8 天"
+            },
+            "9": {
+              "en": "+9 days",
+              "zh-Hans": "+9 天"
+            },
+            "90": {
+              "en": "+90 days",
+              "zh-Hans": "+90 天"
+            }
+          },
+          "values": [
+            "-364",
+            "-180",
+            "-150",
+            "-120",
+            "-90",
+            "-60",
+            "-30",
+            "-14",
+            "-13",
+            "-12",
+            "-11",
+            "-10",
+            "-9",
+            "-8",
+            "-7",
+            "-6",
+            "-5",
+            "-4",
+            "-3",
+            "-2",
+            "-1",
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "30",
+            "60",
+            "90",
+            "120",
+            "150",
+            "180",
+            "364"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_start_time_mode": [
+                "relative"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "time",
+          "defaultValue": "0",
+          "description": {
+            "en": "The number of hours to offset the starting time by. Only used when Starting Time Mode is Relative. Changes take effect at next restart.",
+            "zh-Hans": "相对模式下，模拟主机的时间相对设备时间偏移多少小时。"
+          },
+          "key": "melonds_start_time_relative_hour_offset",
+          "restartRequired": true,
+          "title": {
+            "en": "Starting Time Offset (Hours)",
+            "zh-Hans": "启动时间偏移（小时）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "-1": {
+              "en": "-1 hour",
+              "zh-Hans": "-1 小时"
+            },
+            "-10": {
+              "en": "-10 hours",
+              "zh-Hans": "-10 小时"
+            },
+            "-11": {
+              "en": "-11 hours",
+              "zh-Hans": "-11 小时"
+            },
+            "-12": {
+              "en": "-12 hours",
+              "zh-Hans": "-12 小时"
+            },
+            "-13": {
+              "en": "-13 hours",
+              "zh-Hans": "-13 小时"
+            },
+            "-14": {
+              "en": "-14 hours",
+              "zh-Hans": "-14 小时"
+            },
+            "-15": {
+              "en": "-15 hours",
+              "zh-Hans": "-15 小时"
+            },
+            "-16": {
+              "en": "-16 hours",
+              "zh-Hans": "-16 小时"
+            },
+            "-17": {
+              "en": "-17 hours",
+              "zh-Hans": "-17 小时"
+            },
+            "-18": {
+              "en": "-18 hours",
+              "zh-Hans": "-18 小时"
+            },
+            "-19": {
+              "en": "-19 hours",
+              "zh-Hans": "-19 小时"
+            },
+            "-2": {
+              "en": "-2 hours",
+              "zh-Hans": "-2 小时"
+            },
+            "-20": {
+              "en": "-20 hours",
+              "zh-Hans": "-20 小时"
+            },
+            "-21": {
+              "en": "-21 hours",
+              "zh-Hans": "-21 小时"
+            },
+            "-22": {
+              "en": "-22 hours",
+              "zh-Hans": "-22 小时"
+            },
+            "-23": {
+              "en": "-23 hours",
+              "zh-Hans": "-23 小时"
+            },
+            "-3": {
+              "en": "-3 hours",
+              "zh-Hans": "-3 小时"
+            },
+            "-4": {
+              "en": "-4 hours",
+              "zh-Hans": "-4 小时"
+            },
+            "-5": {
+              "en": "-5 hours",
+              "zh-Hans": "-5 小时"
+            },
+            "-6": {
+              "en": "-6 hours",
+              "zh-Hans": "-6 小时"
+            },
+            "-7": {
+              "en": "-7 hours",
+              "zh-Hans": "-7 小时"
+            },
+            "-8": {
+              "en": "-8 hours",
+              "zh-Hans": "-8 小时"
+            },
+            "-9": {
+              "en": "-9 hours",
+              "zh-Hans": "-9 小时"
+            },
+            "0": {
+              "en": "None",
+              "zh-Hans": "不偏移"
+            },
+            "1": {
+              "en": "+1 hour",
+              "zh-Hans": "+1 小时"
+            },
+            "10": {
+              "en": "+10 hours",
+              "zh-Hans": "+10 小时"
+            },
+            "11": {
+              "en": "+11 hours",
+              "zh-Hans": "+11 小时"
+            },
+            "12": {
+              "en": "+12 hours",
+              "zh-Hans": "+12 小时"
+            },
+            "13": {
+              "en": "+13 hours",
+              "zh-Hans": "+13 小时"
+            },
+            "14": {
+              "en": "+14 hours",
+              "zh-Hans": "+14 小时"
+            },
+            "15": {
+              "en": "+15 hours",
+              "zh-Hans": "+15 小时"
+            },
+            "16": {
+              "en": "+16 hours",
+              "zh-Hans": "+16 小时"
+            },
+            "17": {
+              "en": "+17 hours",
+              "zh-Hans": "+17 小时"
+            },
+            "18": {
+              "en": "+18 hours",
+              "zh-Hans": "+18 小时"
+            },
+            "19": {
+              "en": "+19 hours",
+              "zh-Hans": "+19 小时"
+            },
+            "2": {
+              "en": "+2 hours",
+              "zh-Hans": "+2 小时"
+            },
+            "20": {
+              "en": "+20 hours",
+              "zh-Hans": "+20 小时"
+            },
+            "21": {
+              "en": "+21 hours",
+              "zh-Hans": "+21 小时"
+            },
+            "22": {
+              "en": "+22 hours",
+              "zh-Hans": "+22 小时"
+            },
+            "23": {
+              "en": "+23 hours",
+              "zh-Hans": "+23 小时"
+            },
+            "3": {
+              "en": "+3 hours",
+              "zh-Hans": "+3 小时"
+            },
+            "4": {
+              "en": "+4 hours",
+              "zh-Hans": "+4 小时"
+            },
+            "5": {
+              "en": "+5 hours",
+              "zh-Hans": "+5 小时"
+            },
+            "6": {
+              "en": "+6 hours",
+              "zh-Hans": "+6 小时"
+            },
+            "7": {
+              "en": "+7 hours",
+              "zh-Hans": "+7 小时"
+            },
+            "8": {
+              "en": "+8 hours",
+              "zh-Hans": "+8 小时"
+            },
+            "9": {
+              "en": "+9 hours",
+              "zh-Hans": "+9 小时"
+            }
+          },
+          "values": [
+            "-23",
+            "-22",
+            "-21",
+            "-20",
+            "-19",
+            "-18",
+            "-17",
+            "-16",
+            "-15",
+            "-14",
+            "-13",
+            "-12",
+            "-11",
+            "-10",
+            "-9",
+            "-8",
+            "-7",
+            "-6",
+            "-5",
+            "-4",
+            "-3",
+            "-2",
+            "-1",
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_start_time_mode": [
+                "relative"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "time",
+          "defaultValue": "0",
+          "description": {
+            "en": "The number of minutes to offset the starting time by. Only used when Starting Time Mode is Relative. Changes take effect at next restart.",
+            "zh-Hans": "相对模式下，模拟主机的时间相对设备时间偏移多少分钟。"
+          },
+          "key": "melonds_start_time_relative_minute_offset",
+          "restartRequired": true,
+          "title": {
+            "en": "Starting Time Offset (Minutes)",
+            "zh-Hans": "启动时间偏移（分钟）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "-1": {
+              "en": "-1 minute",
+              "zh-Hans": "-1 分钟"
+            },
+            "-10": {
+              "en": "-10 minutes",
+              "zh-Hans": "-10 分钟"
+            },
+            "-11": {
+              "en": "-11 minutes",
+              "zh-Hans": "-11 分钟"
+            },
+            "-12": {
+              "en": "-12 minutes",
+              "zh-Hans": "-12 分钟"
+            },
+            "-13": {
+              "en": "-13 minutes",
+              "zh-Hans": "-13 分钟"
+            },
+            "-14": {
+              "en": "-14 minutes",
+              "zh-Hans": "-14 分钟"
+            },
+            "-15": {
+              "en": "-15 minutes",
+              "zh-Hans": "-15 分钟"
+            },
+            "-16": {
+              "en": "-16 minutes",
+              "zh-Hans": "-16 分钟"
+            },
+            "-17": {
+              "en": "-17 minutes",
+              "zh-Hans": "-17 分钟"
+            },
+            "-18": {
+              "en": "-18 minutes",
+              "zh-Hans": "-18 分钟"
+            },
+            "-19": {
+              "en": "-19 minutes",
+              "zh-Hans": "-19 分钟"
+            },
+            "-2": {
+              "en": "-2 minutes",
+              "zh-Hans": "-2 分钟"
+            },
+            "-20": {
+              "en": "-20 minutes",
+              "zh-Hans": "-20 分钟"
+            },
+            "-21": {
+              "en": "-21 minutes",
+              "zh-Hans": "-21 分钟"
+            },
+            "-22": {
+              "en": "-22 minutes",
+              "zh-Hans": "-22 分钟"
+            },
+            "-23": {
+              "en": "-23 minutes",
+              "zh-Hans": "-23 分钟"
+            },
+            "-24": {
+              "en": "-24 minutes",
+              "zh-Hans": "-24 分钟"
+            },
+            "-25": {
+              "en": "-25 minutes",
+              "zh-Hans": "-25 分钟"
+            },
+            "-26": {
+              "en": "-26 minutes",
+              "zh-Hans": "-26 分钟"
+            },
+            "-27": {
+              "en": "-27 minutes",
+              "zh-Hans": "-27 分钟"
+            },
+            "-28": {
+              "en": "-28 minutes",
+              "zh-Hans": "-28 分钟"
+            },
+            "-29": {
+              "en": "-29 minutes",
+              "zh-Hans": "-29 分钟"
+            },
+            "-3": {
+              "en": "-3 minutes",
+              "zh-Hans": "-3 分钟"
+            },
+            "-30": {
+              "en": "-30 minutes",
+              "zh-Hans": "-30 分钟"
+            },
+            "-31": {
+              "en": "-31 minutes",
+              "zh-Hans": "-31 分钟"
+            },
+            "-32": {
+              "en": "-32 minutes",
+              "zh-Hans": "-32 分钟"
+            },
+            "-33": {
+              "en": "-33 minutes",
+              "zh-Hans": "-33 分钟"
+            },
+            "-34": {
+              "en": "-34 minutes",
+              "zh-Hans": "-34 分钟"
+            },
+            "-35": {
+              "en": "-35 minutes",
+              "zh-Hans": "-35 分钟"
+            },
+            "-36": {
+              "en": "-36 minutes",
+              "zh-Hans": "-36 分钟"
+            },
+            "-37": {
+              "en": "-37 minutes",
+              "zh-Hans": "-37 分钟"
+            },
+            "-38": {
+              "en": "-38 minutes",
+              "zh-Hans": "-38 分钟"
+            },
+            "-39": {
+              "en": "-39 minutes",
+              "zh-Hans": "-39 分钟"
+            },
+            "-4": {
+              "en": "-4 minutes",
+              "zh-Hans": "-4 分钟"
+            },
+            "-40": {
+              "en": "-40 minutes",
+              "zh-Hans": "-40 分钟"
+            },
+            "-41": {
+              "en": "-41 minutes",
+              "zh-Hans": "-41 分钟"
+            },
+            "-42": {
+              "en": "-42 minutes",
+              "zh-Hans": "-42 分钟"
+            },
+            "-43": {
+              "en": "-43 minutes",
+              "zh-Hans": "-43 分钟"
+            },
+            "-44": {
+              "en": "-44 minutes",
+              "zh-Hans": "-44 分钟"
+            },
+            "-45": {
+              "en": "-45 minutes",
+              "zh-Hans": "-45 分钟"
+            },
+            "-46": {
+              "en": "-46 minutes",
+              "zh-Hans": "-46 分钟"
+            },
+            "-47": {
+              "en": "-47 minutes",
+              "zh-Hans": "-47 分钟"
+            },
+            "-48": {
+              "en": "-48 minutes",
+              "zh-Hans": "-48 分钟"
+            },
+            "-49": {
+              "en": "-49 minutes",
+              "zh-Hans": "-49 分钟"
+            },
+            "-5": {
+              "en": "-5 minutes",
+              "zh-Hans": "-5 分钟"
+            },
+            "-50": {
+              "en": "-50 minutes",
+              "zh-Hans": "-50 分钟"
+            },
+            "-51": {
+              "en": "-51 minutes",
+              "zh-Hans": "-51 分钟"
+            },
+            "-52": {
+              "en": "-52 minutes",
+              "zh-Hans": "-52 分钟"
+            },
+            "-53": {
+              "en": "-53 minutes",
+              "zh-Hans": "-53 分钟"
+            },
+            "-54": {
+              "en": "-54 minutes",
+              "zh-Hans": "-54 分钟"
+            },
+            "-55": {
+              "en": "-55 minutes",
+              "zh-Hans": "-55 分钟"
+            },
+            "-56": {
+              "en": "-56 minutes",
+              "zh-Hans": "-56 分钟"
+            },
+            "-57": {
+              "en": "-57 minutes",
+              "zh-Hans": "-57 分钟"
+            },
+            "-58": {
+              "en": "-58 minutes",
+              "zh-Hans": "-58 分钟"
+            },
+            "-59": {
+              "en": "-59 minutes",
+              "zh-Hans": "-59 分钟"
+            },
+            "-6": {
+              "en": "-6 minutes",
+              "zh-Hans": "-6 分钟"
+            },
+            "-7": {
+              "en": "-7 minutes",
+              "zh-Hans": "-7 分钟"
+            },
+            "-8": {
+              "en": "-8 minutes",
+              "zh-Hans": "-8 分钟"
+            },
+            "-9": {
+              "en": "-9 minutes",
+              "zh-Hans": "-9 分钟"
+            },
+            "0": {
+              "en": "None",
+              "zh-Hans": "不偏移"
+            },
+            "1": {
+              "en": "+1 minute",
+              "zh-Hans": "+1 分钟"
+            },
+            "10": {
+              "en": "+10 minutes",
+              "zh-Hans": "+10 分钟"
+            },
+            "11": {
+              "en": "+11 minutes",
+              "zh-Hans": "+11 分钟"
+            },
+            "12": {
+              "en": "+12 minutes",
+              "zh-Hans": "+12 分钟"
+            },
+            "13": {
+              "en": "+13 minutes",
+              "zh-Hans": "+13 分钟"
+            },
+            "14": {
+              "en": "+14 minutes",
+              "zh-Hans": "+14 分钟"
+            },
+            "15": {
+              "en": "+15 minutes",
+              "zh-Hans": "+15 分钟"
+            },
+            "16": {
+              "en": "+16 minutes",
+              "zh-Hans": "+16 分钟"
+            },
+            "17": {
+              "en": "+17 minutes",
+              "zh-Hans": "+17 分钟"
+            },
+            "18": {
+              "en": "+18 minutes",
+              "zh-Hans": "+18 分钟"
+            },
+            "19": {
+              "en": "+19 minutes",
+              "zh-Hans": "+19 分钟"
+            },
+            "2": {
+              "en": "+2 minutes",
+              "zh-Hans": "+2 分钟"
+            },
+            "20": {
+              "en": "+20 minutes",
+              "zh-Hans": "+20 分钟"
+            },
+            "21": {
+              "en": "+21 minutes",
+              "zh-Hans": "+21 分钟"
+            },
+            "22": {
+              "en": "+22 minutes",
+              "zh-Hans": "+22 分钟"
+            },
+            "23": {
+              "en": "+23 minutes",
+              "zh-Hans": "+23 分钟"
+            },
+            "24": {
+              "en": "+24 minutes",
+              "zh-Hans": "+24 分钟"
+            },
+            "25": {
+              "en": "+25 minutes",
+              "zh-Hans": "+25 分钟"
+            },
+            "26": {
+              "en": "+26 minutes",
+              "zh-Hans": "+26 分钟"
+            },
+            "27": {
+              "en": "+27 minutes",
+              "zh-Hans": "+27 分钟"
+            },
+            "28": {
+              "en": "+28 minutes",
+              "zh-Hans": "+28 分钟"
+            },
+            "29": {
+              "en": "+29 minutes",
+              "zh-Hans": "+29 分钟"
+            },
+            "3": {
+              "en": "+3 minutes",
+              "zh-Hans": "+3 分钟"
+            },
+            "30": {
+              "en": "+30 minutes",
+              "zh-Hans": "+30 分钟"
+            },
+            "31": {
+              "en": "+31 minutes",
+              "zh-Hans": "+31 分钟"
+            },
+            "32": {
+              "en": "+32 minutes",
+              "zh-Hans": "+32 分钟"
+            },
+            "33": {
+              "en": "+33 minutes",
+              "zh-Hans": "+33 分钟"
+            },
+            "34": {
+              "en": "+34 minutes",
+              "zh-Hans": "+34 分钟"
+            },
+            "35": {
+              "en": "+35 minutes",
+              "zh-Hans": "+35 分钟"
+            },
+            "36": {
+              "en": "+36 minutes",
+              "zh-Hans": "+36 分钟"
+            },
+            "37": {
+              "en": "+37 minutes",
+              "zh-Hans": "+37 分钟"
+            },
+            "38": {
+              "en": "+38 minutes",
+              "zh-Hans": "+38 分钟"
+            },
+            "39": {
+              "en": "+39 minutes",
+              "zh-Hans": "+39 分钟"
+            },
+            "4": {
+              "en": "+4 minutes",
+              "zh-Hans": "+4 分钟"
+            },
+            "40": {
+              "en": "+40 minutes",
+              "zh-Hans": "+40 分钟"
+            },
+            "41": {
+              "en": "+41 minutes",
+              "zh-Hans": "+41 分钟"
+            },
+            "42": {
+              "en": "+42 minutes",
+              "zh-Hans": "+42 分钟"
+            },
+            "43": {
+              "en": "+43 minutes",
+              "zh-Hans": "+43 分钟"
+            },
+            "44": {
+              "en": "+44 minutes",
+              "zh-Hans": "+44 分钟"
+            },
+            "45": {
+              "en": "+45 minutes",
+              "zh-Hans": "+45 分钟"
+            },
+            "46": {
+              "en": "+46 minutes",
+              "zh-Hans": "+46 分钟"
+            },
+            "47": {
+              "en": "+47 minutes",
+              "zh-Hans": "+47 分钟"
+            },
+            "48": {
+              "en": "+48 minutes",
+              "zh-Hans": "+48 分钟"
+            },
+            "49": {
+              "en": "+49 minutes",
+              "zh-Hans": "+49 分钟"
+            },
+            "5": {
+              "en": "+5 minutes",
+              "zh-Hans": "+5 分钟"
+            },
+            "50": {
+              "en": "+50 minutes",
+              "zh-Hans": "+50 分钟"
+            },
+            "51": {
+              "en": "+51 minutes",
+              "zh-Hans": "+51 分钟"
+            },
+            "52": {
+              "en": "+52 minutes",
+              "zh-Hans": "+52 分钟"
+            },
+            "53": {
+              "en": "+53 minutes",
+              "zh-Hans": "+53 分钟"
+            },
+            "54": {
+              "en": "+54 minutes",
+              "zh-Hans": "+54 分钟"
+            },
+            "55": {
+              "en": "+55 minutes",
+              "zh-Hans": "+55 分钟"
+            },
+            "56": {
+              "en": "+56 minutes",
+              "zh-Hans": "+56 分钟"
+            },
+            "57": {
+              "en": "+57 minutes",
+              "zh-Hans": "+57 分钟"
+            },
+            "58": {
+              "en": "+58 minutes",
+              "zh-Hans": "+58 分钟"
+            },
+            "59": {
+              "en": "+59 minutes",
+              "zh-Hans": "+59 分钟"
+            },
+            "6": {
+              "en": "+6 minutes",
+              "zh-Hans": "+6 分钟"
+            },
+            "7": {
+              "en": "+7 minutes",
+              "zh-Hans": "+7 分钟"
+            },
+            "8": {
+              "en": "+8 minutes",
+              "zh-Hans": "+8 分钟"
+            },
+            "9": {
+              "en": "+9 minutes",
+              "zh-Hans": "+9 分钟"
+            }
+          },
+          "values": [
+            "-59",
+            "-58",
+            "-57",
+            "-56",
+            "-55",
+            "-54",
+            "-53",
+            "-52",
+            "-51",
+            "-50",
+            "-49",
+            "-48",
+            "-47",
+            "-46",
+            "-45",
+            "-44",
+            "-43",
+            "-42",
+            "-41",
+            "-40",
+            "-39",
+            "-38",
+            "-37",
+            "-36",
+            "-35",
+            "-34",
+            "-33",
+            "-32",
+            "-31",
+            "-30",
+            "-29",
+            "-28",
+            "-27",
+            "-26",
+            "-25",
+            "-24",
+            "-23",
+            "-22",
+            "-21",
+            "-20",
+            "-19",
+            "-18",
+            "-17",
+            "-16",
+            "-15",
+            "-14",
+            "-13",
+            "-12",
+            "-11",
+            "-10",
+            "-9",
+            "-8",
+            "-7",
+            "-6",
+            "-5",
+            "-4",
+            "-3",
+            "-2",
+            "-1",
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50",
+            "51",
+            "52",
+            "53",
+            "54",
+            "55",
+            "56",
+            "57",
+            "58",
+            "59"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_start_time_mode": [
+                "relative"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "time",
+          "defaultValue": "2004",
+          "description": {
+            "en": "The initial year to use when Starting Time Mode is Absolute. Changes take effect at next restart.",
+            "zh-Hans": "绝对模式下，模拟主机启动时的年份。"
+          },
+          "key": "melonds_start_time_absolute_year",
+          "restartRequired": true,
+          "title": {
+            "en": "Starting Year",
+            "zh-Hans": "启动年份"
+          },
+          "type": "select",
+          "valueLabels": {
+            "2000": {
+              "en": "2000",
+              "zh-Hans": "2000"
+            },
+            "2001": {
+              "en": "2001",
+              "zh-Hans": "2001"
+            },
+            "2002": {
+              "en": "2002",
+              "zh-Hans": "2002"
+            },
+            "2003": {
+              "en": "2003",
+              "zh-Hans": "2003"
+            },
+            "2004": {
+              "en": "2004",
+              "zh-Hans": "2004"
+            },
+            "2005": {
+              "en": "2005",
+              "zh-Hans": "2005"
+            },
+            "2006": {
+              "en": "2006",
+              "zh-Hans": "2006"
+            },
+            "2007": {
+              "en": "2007",
+              "zh-Hans": "2007"
+            },
+            "2008": {
+              "en": "2008",
+              "zh-Hans": "2008"
+            },
+            "2009": {
+              "en": "2009",
+              "zh-Hans": "2009"
+            },
+            "2010": {
+              "en": "2010",
+              "zh-Hans": "2010"
+            },
+            "2011": {
+              "en": "2011",
+              "zh-Hans": "2011"
+            },
+            "2012": {
+              "en": "2012",
+              "zh-Hans": "2012"
+            },
+            "2013": {
+              "en": "2013",
+              "zh-Hans": "2013"
+            },
+            "2014": {
+              "en": "2014",
+              "zh-Hans": "2014"
+            },
+            "2015": {
+              "en": "2015",
+              "zh-Hans": "2015"
+            },
+            "2016": {
+              "en": "2016",
+              "zh-Hans": "2016"
+            },
+            "2017": {
+              "en": "2017",
+              "zh-Hans": "2017"
+            },
+            "2018": {
+              "en": "2018",
+              "zh-Hans": "2018"
+            },
+            "2019": {
+              "en": "2019",
+              "zh-Hans": "2019"
+            },
+            "2020": {
+              "en": "2020",
+              "zh-Hans": "2020"
+            },
+            "2021": {
+              "en": "2021",
+              "zh-Hans": "2021"
+            },
+            "2022": {
+              "en": "2022",
+              "zh-Hans": "2022"
+            },
+            "2023": {
+              "en": "2023",
+              "zh-Hans": "2023"
+            },
+            "2024": {
+              "en": "2024",
+              "zh-Hans": "2024"
+            },
+            "2025": {
+              "en": "2025",
+              "zh-Hans": "2025"
+            },
+            "2026": {
+              "en": "2026",
+              "zh-Hans": "2026"
+            },
+            "2027": {
+              "en": "2027",
+              "zh-Hans": "2027"
+            },
+            "2028": {
+              "en": "2028",
+              "zh-Hans": "2028"
+            },
+            "2029": {
+              "en": "2029",
+              "zh-Hans": "2029"
+            },
+            "2030": {
+              "en": "2030",
+              "zh-Hans": "2030"
+            },
+            "2031": {
+              "en": "2031",
+              "zh-Hans": "2031"
+            },
+            "2032": {
+              "en": "2032",
+              "zh-Hans": "2032"
+            },
+            "2033": {
+              "en": "2033",
+              "zh-Hans": "2033"
+            },
+            "2034": {
+              "en": "2034",
+              "zh-Hans": "2034"
+            },
+            "2035": {
+              "en": "2035",
+              "zh-Hans": "2035"
+            },
+            "2036": {
+              "en": "2036",
+              "zh-Hans": "2036"
+            },
+            "2037": {
+              "en": "2037",
+              "zh-Hans": "2037"
+            },
+            "2038": {
+              "en": "2038",
+              "zh-Hans": "2038"
+            },
+            "2039": {
+              "en": "2039",
+              "zh-Hans": "2039"
+            },
+            "2040": {
+              "en": "2040",
+              "zh-Hans": "2040"
+            },
+            "2041": {
+              "en": "2041",
+              "zh-Hans": "2041"
+            },
+            "2042": {
+              "en": "2042",
+              "zh-Hans": "2042"
+            },
+            "2043": {
+              "en": "2043",
+              "zh-Hans": "2043"
+            },
+            "2044": {
+              "en": "2044",
+              "zh-Hans": "2044"
+            },
+            "2045": {
+              "en": "2045",
+              "zh-Hans": "2045"
+            },
+            "2046": {
+              "en": "2046",
+              "zh-Hans": "2046"
+            },
+            "2047": {
+              "en": "2047",
+              "zh-Hans": "2047"
+            },
+            "2048": {
+              "en": "2048",
+              "zh-Hans": "2048"
+            },
+            "2049": {
+              "en": "2049",
+              "zh-Hans": "2049"
+            },
+            "2050": {
+              "en": "2050",
+              "zh-Hans": "2050"
+            },
+            "2051": {
+              "en": "2051",
+              "zh-Hans": "2051"
+            },
+            "2052": {
+              "en": "2052",
+              "zh-Hans": "2052"
+            },
+            "2053": {
+              "en": "2053",
+              "zh-Hans": "2053"
+            },
+            "2054": {
+              "en": "2054",
+              "zh-Hans": "2054"
+            },
+            "2055": {
+              "en": "2055",
+              "zh-Hans": "2055"
+            },
+            "2056": {
+              "en": "2056",
+              "zh-Hans": "2056"
+            },
+            "2057": {
+              "en": "2057",
+              "zh-Hans": "2057"
+            },
+            "2058": {
+              "en": "2058",
+              "zh-Hans": "2058"
+            },
+            "2059": {
+              "en": "2059",
+              "zh-Hans": "2059"
+            },
+            "2060": {
+              "en": "2060",
+              "zh-Hans": "2060"
+            },
+            "2061": {
+              "en": "2061",
+              "zh-Hans": "2061"
+            },
+            "2062": {
+              "en": "2062",
+              "zh-Hans": "2062"
+            },
+            "2063": {
+              "en": "2063",
+              "zh-Hans": "2063"
+            },
+            "2064": {
+              "en": "2064",
+              "zh-Hans": "2064"
+            },
+            "2065": {
+              "en": "2065",
+              "zh-Hans": "2065"
+            },
+            "2066": {
+              "en": "2066",
+              "zh-Hans": "2066"
+            },
+            "2067": {
+              "en": "2067",
+              "zh-Hans": "2067"
+            },
+            "2068": {
+              "en": "2068",
+              "zh-Hans": "2068"
+            },
+            "2069": {
+              "en": "2069",
+              "zh-Hans": "2069"
+            },
+            "2070": {
+              "en": "2070",
+              "zh-Hans": "2070"
+            },
+            "2071": {
+              "en": "2071",
+              "zh-Hans": "2071"
+            },
+            "2072": {
+              "en": "2072",
+              "zh-Hans": "2072"
+            },
+            "2073": {
+              "en": "2073",
+              "zh-Hans": "2073"
+            },
+            "2074": {
+              "en": "2074",
+              "zh-Hans": "2074"
+            },
+            "2075": {
+              "en": "2075",
+              "zh-Hans": "2075"
+            },
+            "2076": {
+              "en": "2076",
+              "zh-Hans": "2076"
+            },
+            "2077": {
+              "en": "2077",
+              "zh-Hans": "2077"
+            },
+            "2078": {
+              "en": "2078",
+              "zh-Hans": "2078"
+            },
+            "2079": {
+              "en": "2079",
+              "zh-Hans": "2079"
+            },
+            "2080": {
+              "en": "2080",
+              "zh-Hans": "2080"
+            },
+            "2081": {
+              "en": "2081",
+              "zh-Hans": "2081"
+            },
+            "2082": {
+              "en": "2082",
+              "zh-Hans": "2082"
+            },
+            "2083": {
+              "en": "2083",
+              "zh-Hans": "2083"
+            },
+            "2084": {
+              "en": "2084",
+              "zh-Hans": "2084"
+            },
+            "2085": {
+              "en": "2085",
+              "zh-Hans": "2085"
+            },
+            "2086": {
+              "en": "2086",
+              "zh-Hans": "2086"
+            },
+            "2087": {
+              "en": "2087",
+              "zh-Hans": "2087"
+            },
+            "2088": {
+              "en": "2088",
+              "zh-Hans": "2088"
+            },
+            "2089": {
+              "en": "2089",
+              "zh-Hans": "2089"
+            },
+            "2090": {
+              "en": "2090",
+              "zh-Hans": "2090"
+            },
+            "2091": {
+              "en": "2091",
+              "zh-Hans": "2091"
+            },
+            "2092": {
+              "en": "2092",
+              "zh-Hans": "2092"
+            },
+            "2093": {
+              "en": "2093",
+              "zh-Hans": "2093"
+            },
+            "2094": {
+              "en": "2094",
+              "zh-Hans": "2094"
+            },
+            "2095": {
+              "en": "2095",
+              "zh-Hans": "2095"
+            },
+            "2096": {
+              "en": "2096",
+              "zh-Hans": "2096"
+            },
+            "2097": {
+              "en": "2097",
+              "zh-Hans": "2097"
+            },
+            "2098": {
+              "en": "2098",
+              "zh-Hans": "2098"
+            },
+            "2099": {
+              "en": "2099",
+              "zh-Hans": "2099"
+            },
+            "2100": {
+              "en": "2100",
+              "zh-Hans": "2100"
+            }
+          },
+          "values": [
+            "2000",
+            "2001",
+            "2002",
+            "2003",
+            "2004",
+            "2005",
+            "2006",
+            "2007",
+            "2008",
+            "2009",
+            "2010",
+            "2011",
+            "2012",
+            "2013",
+            "2014",
+            "2015",
+            "2016",
+            "2017",
+            "2018",
+            "2019",
+            "2020",
+            "2021",
+            "2022",
+            "2023",
+            "2024",
+            "2025",
+            "2026",
+            "2027",
+            "2028",
+            "2029",
+            "2030",
+            "2031",
+            "2032",
+            "2033",
+            "2034",
+            "2035",
+            "2036",
+            "2037",
+            "2038",
+            "2039",
+            "2040",
+            "2041",
+            "2042",
+            "2043",
+            "2044",
+            "2045",
+            "2046",
+            "2047",
+            "2048",
+            "2049",
+            "2050",
+            "2051",
+            "2052",
+            "2053",
+            "2054",
+            "2055",
+            "2056",
+            "2057",
+            "2058",
+            "2059",
+            "2060",
+            "2061",
+            "2062",
+            "2063",
+            "2064",
+            "2065",
+            "2066",
+            "2067",
+            "2068",
+            "2069",
+            "2070",
+            "2071",
+            "2072",
+            "2073",
+            "2074",
+            "2075",
+            "2076",
+            "2077",
+            "2078",
+            "2079",
+            "2080",
+            "2081",
+            "2082",
+            "2083",
+            "2084",
+            "2085",
+            "2086",
+            "2087",
+            "2088",
+            "2089",
+            "2090",
+            "2091",
+            "2092",
+            "2093",
+            "2094",
+            "2095",
+            "2096",
+            "2097",
+            "2098",
+            "2099",
+            "2100"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_start_time_mode": [
+                "absolute"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "time",
+          "defaultValue": "1",
+          "description": {
+            "en": "The initial month to use when Starting Time Mode is Absolute. Changes take effect at next restart.",
+            "zh-Hans": "绝对模式下，模拟主机启动时的月份。"
+          },
+          "key": "melonds_start_time_absolute_month",
+          "restartRequired": true,
+          "title": {
+            "en": "Starting Month",
+            "zh-Hans": "启动月份"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "January",
+              "zh-Hans": "1 月"
+            },
+            "10": {
+              "en": "October",
+              "zh-Hans": "10 月"
+            },
+            "11": {
+              "en": "November",
+              "zh-Hans": "11 月"
+            },
+            "12": {
+              "en": "December",
+              "zh-Hans": "12 月"
+            },
+            "2": {
+              "en": "February",
+              "zh-Hans": "2 月"
+            },
+            "3": {
+              "en": "March",
+              "zh-Hans": "3 月"
+            },
+            "4": {
+              "en": "April",
+              "zh-Hans": "4 月"
+            },
+            "5": {
+              "en": "May",
+              "zh-Hans": "5 月"
+            },
+            "6": {
+              "en": "June",
+              "zh-Hans": "6 月"
+            },
+            "7": {
+              "en": "July",
+              "zh-Hans": "7 月"
+            },
+            "8": {
+              "en": "August",
+              "zh-Hans": "8 月"
+            },
+            "9": {
+              "en": "September",
+              "zh-Hans": "9 月"
+            }
+          },
+          "values": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_start_time_mode": [
+                "absolute"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "time",
+          "defaultValue": "1",
+          "description": {
+            "en": "The initial day of the month to use when Starting Time Mode is Absolute. Days that extend past the end of a month will roll over to the next (e.g. April 31st will become May 1st). Changes take effect at next restart.",
+            "zh-Hans": "绝对模式下，模拟主机启动时的日期。"
+          },
+          "key": "melonds_start_time_absolute_day",
+          "restartRequired": true,
+          "title": {
+            "en": "Starting Day",
+            "zh-Hans": "启动日期"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "1st",
+              "zh-Hans": "1 日"
+            },
+            "10": {
+              "en": "10th",
+              "zh-Hans": "10 日"
+            },
+            "11": {
+              "en": "11th",
+              "zh-Hans": "11 日"
+            },
+            "12": {
+              "en": "12th",
+              "zh-Hans": "12 日"
+            },
+            "13": {
+              "en": "13th",
+              "zh-Hans": "13 日"
+            },
+            "14": {
+              "en": "14th",
+              "zh-Hans": "14 日"
+            },
+            "15": {
+              "en": "15th",
+              "zh-Hans": "15 日"
+            },
+            "16": {
+              "en": "16th",
+              "zh-Hans": "16 日"
+            },
+            "17": {
+              "en": "17th",
+              "zh-Hans": "17 日"
+            },
+            "18": {
+              "en": "18th",
+              "zh-Hans": "18 日"
+            },
+            "19": {
+              "en": "19th",
+              "zh-Hans": "19 日"
+            },
+            "2": {
+              "en": "2nd",
+              "zh-Hans": "2 日"
+            },
+            "20": {
+              "en": "20th",
+              "zh-Hans": "20 日"
+            },
+            "21": {
+              "en": "21st",
+              "zh-Hans": "21 日"
+            },
+            "22": {
+              "en": "22nd",
+              "zh-Hans": "22 日"
+            },
+            "23": {
+              "en": "23rd",
+              "zh-Hans": "23 日"
+            },
+            "24": {
+              "en": "24th",
+              "zh-Hans": "24 日"
+            },
+            "25": {
+              "en": "25th",
+              "zh-Hans": "25 日"
+            },
+            "26": {
+              "en": "26th",
+              "zh-Hans": "26 日"
+            },
+            "27": {
+              "en": "27th",
+              "zh-Hans": "27 日"
+            },
+            "28": {
+              "en": "28th",
+              "zh-Hans": "28 日"
+            },
+            "29": {
+              "en": "29th",
+              "zh-Hans": "29 日"
+            },
+            "3": {
+              "en": "3rd",
+              "zh-Hans": "3 日"
+            },
+            "30": {
+              "en": "30th",
+              "zh-Hans": "30 日"
+            },
+            "31": {
+              "en": "31st",
+              "zh-Hans": "31 日"
+            },
+            "4": {
+              "en": "4th",
+              "zh-Hans": "4 日"
+            },
+            "5": {
+              "en": "5th",
+              "zh-Hans": "5 日"
+            },
+            "6": {
+              "en": "6th",
+              "zh-Hans": "6 日"
+            },
+            "7": {
+              "en": "7th",
+              "zh-Hans": "7 日"
+            },
+            "8": {
+              "en": "8th",
+              "zh-Hans": "8 日"
+            },
+            "9": {
+              "en": "9th",
+              "zh-Hans": "9 日"
+            }
+          },
+          "values": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_start_time_mode": [
+                "absolute"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "time",
+          "defaultValue": "0",
+          "description": {
+            "en": "The initial hour to use when Starting Time Mode is Absolute. Changes take effect at next restart.",
+            "zh-Hans": "绝对模式下，模拟主机启动时的小时。"
+          },
+          "key": "melonds_start_time_absolute_hour",
+          "restartRequired": true,
+          "title": {
+            "en": "Starting Hour",
+            "zh-Hans": "启动小时"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0:00",
+              "zh-Hans": "0:00"
+            },
+            "1": {
+              "en": "1:00",
+              "zh-Hans": "1:00"
+            },
+            "10": {
+              "en": "10:00",
+              "zh-Hans": "10:00"
+            },
+            "11": {
+              "en": "11:00",
+              "zh-Hans": "11:00"
+            },
+            "12": {
+              "en": "12:00",
+              "zh-Hans": "12:00"
+            },
+            "13": {
+              "en": "13:00",
+              "zh-Hans": "13:00"
+            },
+            "14": {
+              "en": "14:00",
+              "zh-Hans": "14:00"
+            },
+            "15": {
+              "en": "15:00",
+              "zh-Hans": "15:00"
+            },
+            "16": {
+              "en": "16:00",
+              "zh-Hans": "16:00"
+            },
+            "17": {
+              "en": "17:00",
+              "zh-Hans": "17:00"
+            },
+            "18": {
+              "en": "18:00",
+              "zh-Hans": "18:00"
+            },
+            "19": {
+              "en": "19:00",
+              "zh-Hans": "19:00"
+            },
+            "2": {
+              "en": "2:00",
+              "zh-Hans": "2:00"
+            },
+            "20": {
+              "en": "20:00",
+              "zh-Hans": "20:00"
+            },
+            "21": {
+              "en": "21:00",
+              "zh-Hans": "21:00"
+            },
+            "22": {
+              "en": "22:00",
+              "zh-Hans": "22:00"
+            },
+            "23": {
+              "en": "23:00",
+              "zh-Hans": "23:00"
+            },
+            "3": {
+              "en": "3:00",
+              "zh-Hans": "3:00"
+            },
+            "4": {
+              "en": "4:00",
+              "zh-Hans": "4:00"
+            },
+            "5": {
+              "en": "5:00",
+              "zh-Hans": "5:00"
+            },
+            "6": {
+              "en": "6:00",
+              "zh-Hans": "6:00"
+            },
+            "7": {
+              "en": "7:00",
+              "zh-Hans": "7:00"
+            },
+            "8": {
+              "en": "8:00",
+              "zh-Hans": "8:00"
+            },
+            "9": {
+              "en": "9:00",
+              "zh-Hans": "9:00"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_start_time_mode": [
+                "absolute"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "time",
+          "defaultValue": "0",
+          "description": {
+            "en": "The initial minute to use when Starting Time Mode is Absolute. Changes take effect at next restart.",
+            "zh-Hans": "绝对模式下，模拟主机启动时的分钟。"
+          },
+          "key": "melonds_start_time_absolute_minute",
+          "restartRequired": true,
+          "title": {
+            "en": "Starting Minute",
+            "zh-Hans": "启动分钟"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": ":00",
+              "zh-Hans": ":00"
+            },
+            "1": {
+              "en": ":01",
+              "zh-Hans": ":01"
+            },
+            "10": {
+              "en": ":10",
+              "zh-Hans": ":10"
+            },
+            "11": {
+              "en": ":11",
+              "zh-Hans": ":11"
+            },
+            "12": {
+              "en": ":12",
+              "zh-Hans": ":12"
+            },
+            "13": {
+              "en": ":13",
+              "zh-Hans": ":13"
+            },
+            "14": {
+              "en": ":14",
+              "zh-Hans": ":14"
+            },
+            "15": {
+              "en": ":15",
+              "zh-Hans": ":15"
+            },
+            "16": {
+              "en": ":16",
+              "zh-Hans": ":16"
+            },
+            "17": {
+              "en": ":17",
+              "zh-Hans": ":17"
+            },
+            "18": {
+              "en": ":18",
+              "zh-Hans": ":18"
+            },
+            "19": {
+              "en": ":19",
+              "zh-Hans": ":19"
+            },
+            "2": {
+              "en": ":02",
+              "zh-Hans": ":02"
+            },
+            "20": {
+              "en": ":20",
+              "zh-Hans": ":20"
+            },
+            "21": {
+              "en": ":21",
+              "zh-Hans": ":21"
+            },
+            "22": {
+              "en": ":22",
+              "zh-Hans": ":22"
+            },
+            "23": {
+              "en": ":23",
+              "zh-Hans": ":23"
+            },
+            "24": {
+              "en": ":24",
+              "zh-Hans": ":24"
+            },
+            "25": {
+              "en": ":25",
+              "zh-Hans": ":25"
+            },
+            "26": {
+              "en": ":26",
+              "zh-Hans": ":26"
+            },
+            "27": {
+              "en": ":27",
+              "zh-Hans": ":27"
+            },
+            "28": {
+              "en": ":28",
+              "zh-Hans": ":28"
+            },
+            "29": {
+              "en": ":29",
+              "zh-Hans": ":29"
+            },
+            "3": {
+              "en": ":03",
+              "zh-Hans": ":03"
+            },
+            "30": {
+              "en": ":30",
+              "zh-Hans": ":30"
+            },
+            "31": {
+              "en": ":31",
+              "zh-Hans": ":31"
+            },
+            "32": {
+              "en": ":32",
+              "zh-Hans": ":32"
+            },
+            "33": {
+              "en": ":33",
+              "zh-Hans": ":33"
+            },
+            "34": {
+              "en": ":34",
+              "zh-Hans": ":34"
+            },
+            "35": {
+              "en": ":35",
+              "zh-Hans": ":35"
+            },
+            "36": {
+              "en": ":36",
+              "zh-Hans": ":36"
+            },
+            "37": {
+              "en": ":37",
+              "zh-Hans": ":37"
+            },
+            "38": {
+              "en": ":38",
+              "zh-Hans": ":38"
+            },
+            "39": {
+              "en": ":39",
+              "zh-Hans": ":39"
+            },
+            "4": {
+              "en": ":04",
+              "zh-Hans": ":04"
+            },
+            "40": {
+              "en": ":40",
+              "zh-Hans": ":40"
+            },
+            "41": {
+              "en": ":41",
+              "zh-Hans": ":41"
+            },
+            "42": {
+              "en": ":42",
+              "zh-Hans": ":42"
+            },
+            "43": {
+              "en": ":43",
+              "zh-Hans": ":43"
+            },
+            "44": {
+              "en": ":44",
+              "zh-Hans": ":44"
+            },
+            "45": {
+              "en": ":45",
+              "zh-Hans": ":45"
+            },
+            "46": {
+              "en": ":46",
+              "zh-Hans": ":46"
+            },
+            "47": {
+              "en": ":47",
+              "zh-Hans": ":47"
+            },
+            "48": {
+              "en": ":48",
+              "zh-Hans": ":48"
+            },
+            "49": {
+              "en": ":49",
+              "zh-Hans": ":49"
+            },
+            "5": {
+              "en": ":05",
+              "zh-Hans": ":05"
+            },
+            "50": {
+              "en": ":50",
+              "zh-Hans": ":50"
+            },
+            "51": {
+              "en": ":51",
+              "zh-Hans": ":51"
+            },
+            "52": {
+              "en": ":52",
+              "zh-Hans": ":52"
+            },
+            "53": {
+              "en": ":53",
+              "zh-Hans": ":53"
+            },
+            "54": {
+              "en": ":54",
+              "zh-Hans": ":54"
+            },
+            "55": {
+              "en": ":55",
+              "zh-Hans": ":55"
+            },
+            "56": {
+              "en": ":56",
+              "zh-Hans": ":56"
+            },
+            "57": {
+              "en": ":57",
+              "zh-Hans": ":57"
+            },
+            "58": {
+              "en": ":58",
+              "zh-Hans": ":58"
+            },
+            "59": {
+              "en": ":59",
+              "zh-Hans": ":59"
+            },
+            "6": {
+              "en": ":06",
+              "zh-Hans": ":06"
+            },
+            "7": {
+              "en": ":07",
+              "zh-Hans": ":07"
+            },
+            "8": {
+              "en": ":08",
+              "zh-Hans": ":08"
+            },
+            "9": {
+              "en": ":09",
+              "zh-Hans": ":09"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50",
+            "51",
+            "52",
+            "53",
+            "54",
+            "55",
+            "56",
+            "57",
+            "58",
+            "59"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_start_time_mode": [
+                "absolute"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Date/Time",
+        "zh-Hans": "日期与时间"
+      }
+    },
+    {
+      "description": {
+        "en": "Rendering settings.",
+        "zh-Hans": "渲染相关设置。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "If enabled, the software renderer will run on a separate thread. Changes take effect immediately. If unsure, leave this enabled.",
+            "zh-Hans": "在单独的线程上进行软件渲染，通常能提升性能，但可能增加一点延迟。"
+          },
+          "key": "melonds_threaded_renderer",
+          "restartRequired": false,
+          "title": {
+            "en": "Threaded Software Renderer",
+            "zh-Hans": "多线程软件渲染"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Audio output and microphone input settings.",
+        "zh-Hans": "音频输出与麦克风输入设置。"
+      },
+      "id": "audio",
+      "options": [
+        {
+          "categoryId": "audio",
+          "defaultValue": "blow",
+          "description": {
+            "en": "What to feed the emulated microphone while the mic button is held. 'Blow' simulates blowing into it, which is what most games expect.",
+            "zh-Hans": "按下麦克风键时，向模拟主机输入什么声音。「吹气」模拟对着麦克风吹气，适合需要吹气的游戏；「静音」输入无声；「噪声」输入白噪声。"
+          },
+          "key": "melonds_mic_input",
+          "restartRequired": false,
+          "title": {
+            "en": "Microphone Input Mode",
+            "zh-Hans": "麦克风输入模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "blow": {
+              "en": "Blow",
+              "zh-Hans": "吹气"
+            },
+            "noise": {
+              "en": "Noise",
+              "zh-Hans": "噪声"
+            },
+            "silence": {
+              "en": "Silence",
+              "zh-Hans": "静音"
+            }
+          },
+          "values": [
+            "silence",
+            "blow",
+            "noise"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "hold",
+          "description": {
+            "en": "Set the behavior of the Microphone button, even if Microphone Input Mode is set to Blow or Noise. The emulated microphone receives silence when disabled by the button.\n\nHold: Button enables mic input while held.\nToggle: Button enables mic input when pressed, disables it when pressed again.\nAlways: Button is ignored, mic input is always enabled.\n\nIgnored if Microphone Input Mode is set to Silence.",
+            "zh-Hans": "麦克风键的触发方式：按住生效、点按切换，或始终开启。"
+          },
+          "key": "melonds_mic_input_active",
+          "restartRequired": false,
+          "title": {
+            "en": "Microphone Button Mode",
+            "zh-Hans": "麦克风键模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "always": {
+              "en": "Always",
+              "zh-Hans": "始终开启"
+            },
+            "hold": {
+              "en": "Hold",
+              "zh-Hans": "按住"
+            },
+            "toggle": {
+              "en": "Toggle",
+              "zh-Hans": "切换"
+            }
+          },
+          "values": [
+            "hold",
+            "toggle",
+            "always"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "auto",
+          "description": {
+            "en": "The number of bits used for each audio sample. Automatic matches the original hardware's behavior by using 10-bit audio for DS mode and 16-bit audio for DSi mode. If unsure, set to Automatic.",
+            "zh-Hans": "音频输出的位深。DS 为 10 位，DSi 为 16 位，「自动」按主机模式选择。"
+          },
+          "key": "melonds_audio_bitdepth",
+          "restartRequired": false,
+          "title": {
+            "en": "Bit Depth",
+            "zh-Hans": "音频位深"
+          },
+          "type": "select",
+          "valueLabels": {
+            "10bit": {
+              "en": "10-bit",
+              "zh-Hans": "10 位"
+            },
+            "16bit": {
+              "en": "16-bit",
+              "zh-Hans": "16-bit"
+            },
+            "auto": {
+              "en": "Automatic",
+              "zh-Hans": "自动"
+            }
+          },
+          "values": [
+            "auto",
+            "10bit",
+            "16bit"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Interpolates audio output for improved quality. Disable this to match the behavior of the original DS hardware.",
+            "zh-Hans": "对音频重采样使用的插值算法，可以让声音更平滑。真机没有这一处理。"
+          },
+          "key": "melonds_audio_interpolation",
+          "restartRequired": false,
+          "title": {
+            "en": "Interpolation",
+            "zh-Hans": "音频插值"
+          },
+          "type": "select",
+          "valueLabels": {
+            "cosine": {
+              "en": "Cosine",
+              "zh-Hans": "余弦"
+            },
+            "cubic": {
+              "en": "Cubic",
+              "zh-Hans": "三次"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "gaussian": {
+              "en": "Gaussian",
+              "zh-Hans": "高斯"
+            },
+            "linear": {
+              "en": "Linear",
+              "zh-Hans": "线性"
+            }
+          },
+          "values": [
+            "disabled",
+            "linear",
+            "cosine",
+            "cubic",
+            "gaussian"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Audio",
+        "zh-Hans": "音频"
+      }
+    },
+    {
+      "description": {
+        "en": "Screen layout, gap and touch settings.",
+        "zh-Hans": "双屏布局、间距与触摸设置。"
+      },
+      "id": "screen",
+      "options": [
+        {
+          "categoryId": "screen",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Determines when a cursor should appear on the bottom screen. Never is recommended for touch screens; the other settings are best suited for mouse or joystick input.",
+            "zh-Hans": "何时在下屏显示触摸光标。"
+          },
+          "key": "melonds_show_cursor",
+          "restartRequired": false,
+          "title": {
+            "en": "Cursor Mode",
+            "zh-Hans": "光标显示"
+          },
+          "type": "select",
+          "valueLabels": {
+            "always": {
+              "en": "Always",
+              "zh-Hans": "始终"
+            },
+            "disabled": {
+              "en": "Never",
+              "zh-Hans": "从不"
+            },
+            "timeout": {
+              "en": "Until Timeout",
+              "zh-Hans": "触摸后一段时间"
+            },
+            "touching": {
+              "en": "While Touching",
+              "zh-Hans": "触摸时"
+            }
+          },
+          "values": [
+            "disabled",
+            "touching",
+            "timeout",
+            "always"
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "3",
+          "description": {
+            "en": "If Cursor Mode is set to \"Until Timeout\", then the cursor will be hidden if it hasn't been moved for a certain time.",
+            "zh-Hans": "最后一次触摸后，光标继续显示多久。"
+          },
+          "key": "melonds_cursor_timeout",
+          "restartRequired": false,
+          "title": {
+            "en": "Cursor Timeout",
+            "zh-Hans": "光标显示时长"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "1 second",
+              "zh-Hans": "1 秒"
+            },
+            "10": {
+              "en": "10 seconds",
+              "zh-Hans": "10 秒"
+            },
+            "15": {
+              "en": "15 seconds",
+              "zh-Hans": "15 秒"
+            },
+            "2": {
+              "en": "2 seconds",
+              "zh-Hans": "2 秒"
+            },
+            "20": {
+              "en": "20 seconds",
+              "zh-Hans": "20 秒"
+            },
+            "3": {
+              "en": "3 seconds",
+              "zh-Hans": "3 秒"
+            },
+            "30": {
+              "en": "30 seconds",
+              "zh-Hans": "30 秒"
+            },
+            "5": {
+              "en": "5 seconds",
+              "zh-Hans": "5 秒"
+            },
+            "60": {
+              "en": "60 seconds",
+              "zh-Hans": "60 秒"
+            }
+          },
+          "values": [
+            "1",
+            "2",
+            "3",
+            "5",
+            "10",
+            "15",
+            "20",
+            "30",
+            "60"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_show_cursor": [
+                "timeout"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "auto",
+          "description": {
+            "en": "Determines how the console's touch screen is emulated.\n\nJoystick: Use a joystick to control the cursor. Recommended if you don't have a mouse or a real touch screen available.\nPointer: Use your mouse or touch screen to control the cursor.\nAuto: Use either Joystick or Pointer, depending on which you last touched.\n\nIf unsure, set to Auto.",
+            "zh-Hans": "如何操作下屏：用摇杆移动光标，或直接触摸屏幕。「自动」会根据最近使用的输入方式切换。"
+          },
+          "key": "melonds_touch_mode",
+          "restartRequired": false,
+          "title": {
+            "en": "Touch Mode",
+            "zh-Hans": "触摸方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "joystick": {
+              "en": "Joystick",
+              "zh-Hans": "摇杆"
+            },
+            "touch": {
+              "en": "Pointer",
+              "zh-Hans": "触摸"
+            }
+          },
+          "values": [
+            "joystick",
+            "touch",
+            "auto"
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "2",
+          "description": {
+            "en": "The number of screen layouts to cycle through with the Next Layout button.",
+            "zh-Hans": "可以循环切换的布局数量。游戏中用「切换布局」按键在这些布局之间轮换。"
+          },
+          "key": "melonds_number_of_screen_layouts",
+          "restartRequired": false,
+          "title": {
+            "en": "Number of Screen Layouts",
+            "zh-Hans": "屏幕布局数量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8"
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "top-bottom",
+          "description": {
+            "en": "",
+            "zh-Hans": "第 1 个屏幕布局。"
+          },
+          "key": "melonds_screen_layout1",
+          "restartRequired": false,
+          "title": {
+            "en": "Layout #1",
+            "zh-Hans": "布局 1"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bottom": {
+              "en": "Bottom Only",
+              "zh-Hans": "仅下屏"
+            },
+            "bottom-top": {
+              "en": "Bottom/Top",
+              "zh-Hans": "下/上"
+            },
+            "flipped-hybrid-bottom": {
+              "en": "Flipped Hybrid (Focus Bottom)",
+              "zh-Hans": "翻转混合（下屏为主）"
+            },
+            "flipped-hybrid-top": {
+              "en": "Flipped Hybrid (Focus Top)",
+              "zh-Hans": "翻转混合（上屏为主）"
+            },
+            "hybrid-bottom": {
+              "en": "Hybrid (Focus Bottom)",
+              "zh-Hans": "混合（下屏为主）"
+            },
+            "hybrid-top": {
+              "en": "Hybrid (Focus Top)",
+              "zh-Hans": "混合（上屏为主）"
+            },
+            "left-right": {
+              "en": "Left/Right",
+              "zh-Hans": "左/右"
+            },
+            "right-left": {
+              "en": "Right/Left",
+              "zh-Hans": "右/左"
+            },
+            "rotate-180": {
+              "en": "Upside Down",
+              "zh-Hans": "上下颠倒"
+            },
+            "rotate-left": {
+              "en": "Rotated Left",
+              "zh-Hans": "向左旋转"
+            },
+            "rotate-right": {
+              "en": "Rotated Right",
+              "zh-Hans": "向右旋转"
+            },
+            "top": {
+              "en": "Top Only",
+              "zh-Hans": "仅上屏"
+            },
+            "top-bottom": {
+              "en": "Top/Bottom",
+              "zh-Hans": "上/下"
+            }
+          },
+          "values": [
+            "top-bottom",
+            "bottom-top",
+            "left-right",
+            "right-left",
+            "top",
+            "bottom",
+            "hybrid-top",
+            "hybrid-bottom",
+            "flipped-hybrid-top",
+            "flipped-hybrid-bottom",
+            "rotate-left",
+            "rotate-right",
+            "rotate-180"
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "left-right",
+          "description": {
+            "en": "",
+            "zh-Hans": "第 2 个屏幕布局。"
+          },
+          "key": "melonds_screen_layout2",
+          "restartRequired": false,
+          "title": {
+            "en": "Layout #2",
+            "zh-Hans": "布局 2"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bottom": {
+              "en": "Bottom Only",
+              "zh-Hans": "仅下屏"
+            },
+            "bottom-top": {
+              "en": "Bottom/Top",
+              "zh-Hans": "下/上"
+            },
+            "flipped-hybrid-bottom": {
+              "en": "Flipped Hybrid (Focus Bottom)",
+              "zh-Hans": "翻转混合（下屏为主）"
+            },
+            "flipped-hybrid-top": {
+              "en": "Flipped Hybrid (Focus Top)",
+              "zh-Hans": "翻转混合（上屏为主）"
+            },
+            "hybrid-bottom": {
+              "en": "Hybrid (Focus Bottom)",
+              "zh-Hans": "混合（下屏为主）"
+            },
+            "hybrid-top": {
+              "en": "Hybrid (Focus Top)",
+              "zh-Hans": "混合（上屏为主）"
+            },
+            "left-right": {
+              "en": "Left/Right",
+              "zh-Hans": "左/右"
+            },
+            "right-left": {
+              "en": "Right/Left",
+              "zh-Hans": "右/左"
+            },
+            "rotate-180": {
+              "en": "Upside Down",
+              "zh-Hans": "上下颠倒"
+            },
+            "rotate-left": {
+              "en": "Rotated Left",
+              "zh-Hans": "向左旋转"
+            },
+            "rotate-right": {
+              "en": "Rotated Right",
+              "zh-Hans": "向右旋转"
+            },
+            "top": {
+              "en": "Top Only",
+              "zh-Hans": "仅上屏"
+            },
+            "top-bottom": {
+              "en": "Top/Bottom",
+              "zh-Hans": "上/下"
+            }
+          },
+          "values": [
+            "top-bottom",
+            "bottom-top",
+            "left-right",
+            "right-left",
+            "top",
+            "bottom",
+            "hybrid-top",
+            "hybrid-bottom",
+            "flipped-hybrid-top",
+            "flipped-hybrid-bottom",
+            "rotate-left",
+            "rotate-right",
+            "rotate-180"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_number_of_screen_layouts": [
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "top",
+          "description": {
+            "en": "",
+            "zh-Hans": "第 3 个屏幕布局。"
+          },
+          "key": "melonds_screen_layout3",
+          "restartRequired": false,
+          "title": {
+            "en": "Layout #3",
+            "zh-Hans": "布局 3"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bottom": {
+              "en": "Bottom Only",
+              "zh-Hans": "仅下屏"
+            },
+            "bottom-top": {
+              "en": "Bottom/Top",
+              "zh-Hans": "下/上"
+            },
+            "flipped-hybrid-bottom": {
+              "en": "Flipped Hybrid (Focus Bottom)",
+              "zh-Hans": "翻转混合（下屏为主）"
+            },
+            "flipped-hybrid-top": {
+              "en": "Flipped Hybrid (Focus Top)",
+              "zh-Hans": "翻转混合（上屏为主）"
+            },
+            "hybrid-bottom": {
+              "en": "Hybrid (Focus Bottom)",
+              "zh-Hans": "混合（下屏为主）"
+            },
+            "hybrid-top": {
+              "en": "Hybrid (Focus Top)",
+              "zh-Hans": "混合（上屏为主）"
+            },
+            "left-right": {
+              "en": "Left/Right",
+              "zh-Hans": "左/右"
+            },
+            "right-left": {
+              "en": "Right/Left",
+              "zh-Hans": "右/左"
+            },
+            "rotate-180": {
+              "en": "Upside Down",
+              "zh-Hans": "上下颠倒"
+            },
+            "rotate-left": {
+              "en": "Rotated Left",
+              "zh-Hans": "向左旋转"
+            },
+            "rotate-right": {
+              "en": "Rotated Right",
+              "zh-Hans": "向右旋转"
+            },
+            "top": {
+              "en": "Top Only",
+              "zh-Hans": "仅上屏"
+            },
+            "top-bottom": {
+              "en": "Top/Bottom",
+              "zh-Hans": "上/下"
+            }
+          },
+          "values": [
+            "top-bottom",
+            "bottom-top",
+            "left-right",
+            "right-left",
+            "top",
+            "bottom",
+            "hybrid-top",
+            "hybrid-bottom",
+            "flipped-hybrid-top",
+            "flipped-hybrid-bottom",
+            "rotate-left",
+            "rotate-right",
+            "rotate-180"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_number_of_screen_layouts": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "bottom",
+          "description": {
+            "en": "",
+            "zh-Hans": "第 4 个屏幕布局。"
+          },
+          "key": "melonds_screen_layout4",
+          "restartRequired": false,
+          "title": {
+            "en": "Layout #4",
+            "zh-Hans": "布局 4"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bottom": {
+              "en": "Bottom Only",
+              "zh-Hans": "仅下屏"
+            },
+            "bottom-top": {
+              "en": "Bottom/Top",
+              "zh-Hans": "下/上"
+            },
+            "flipped-hybrid-bottom": {
+              "en": "Flipped Hybrid (Focus Bottom)",
+              "zh-Hans": "翻转混合（下屏为主）"
+            },
+            "flipped-hybrid-top": {
+              "en": "Flipped Hybrid (Focus Top)",
+              "zh-Hans": "翻转混合（上屏为主）"
+            },
+            "hybrid-bottom": {
+              "en": "Hybrid (Focus Bottom)",
+              "zh-Hans": "混合（下屏为主）"
+            },
+            "hybrid-top": {
+              "en": "Hybrid (Focus Top)",
+              "zh-Hans": "混合（上屏为主）"
+            },
+            "left-right": {
+              "en": "Left/Right",
+              "zh-Hans": "左/右"
+            },
+            "right-left": {
+              "en": "Right/Left",
+              "zh-Hans": "右/左"
+            },
+            "rotate-180": {
+              "en": "Upside Down",
+              "zh-Hans": "上下颠倒"
+            },
+            "rotate-left": {
+              "en": "Rotated Left",
+              "zh-Hans": "向左旋转"
+            },
+            "rotate-right": {
+              "en": "Rotated Right",
+              "zh-Hans": "向右旋转"
+            },
+            "top": {
+              "en": "Top Only",
+              "zh-Hans": "仅上屏"
+            },
+            "top-bottom": {
+              "en": "Top/Bottom",
+              "zh-Hans": "上/下"
+            }
+          },
+          "values": [
+            "top-bottom",
+            "bottom-top",
+            "left-right",
+            "right-left",
+            "top",
+            "bottom",
+            "hybrid-top",
+            "hybrid-bottom",
+            "flipped-hybrid-top",
+            "flipped-hybrid-bottom",
+            "rotate-left",
+            "rotate-right",
+            "rotate-180"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_number_of_screen_layouts": [
+                "4",
+                "5",
+                "6",
+                "7",
+                "8"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "hybrid-top",
+          "description": {
+            "en": "",
+            "zh-Hans": "第 5 个屏幕布局。"
+          },
+          "key": "melonds_screen_layout5",
+          "restartRequired": false,
+          "title": {
+            "en": "Layout #5",
+            "zh-Hans": "布局 5"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bottom": {
+              "en": "Bottom Only",
+              "zh-Hans": "仅下屏"
+            },
+            "bottom-top": {
+              "en": "Bottom/Top",
+              "zh-Hans": "下/上"
+            },
+            "flipped-hybrid-bottom": {
+              "en": "Flipped Hybrid (Focus Bottom)",
+              "zh-Hans": "翻转混合（下屏为主）"
+            },
+            "flipped-hybrid-top": {
+              "en": "Flipped Hybrid (Focus Top)",
+              "zh-Hans": "翻转混合（上屏为主）"
+            },
+            "hybrid-bottom": {
+              "en": "Hybrid (Focus Bottom)",
+              "zh-Hans": "混合（下屏为主）"
+            },
+            "hybrid-top": {
+              "en": "Hybrid (Focus Top)",
+              "zh-Hans": "混合（上屏为主）"
+            },
+            "left-right": {
+              "en": "Left/Right",
+              "zh-Hans": "左/右"
+            },
+            "right-left": {
+              "en": "Right/Left",
+              "zh-Hans": "右/左"
+            },
+            "rotate-180": {
+              "en": "Upside Down",
+              "zh-Hans": "上下颠倒"
+            },
+            "rotate-left": {
+              "en": "Rotated Left",
+              "zh-Hans": "向左旋转"
+            },
+            "rotate-right": {
+              "en": "Rotated Right",
+              "zh-Hans": "向右旋转"
+            },
+            "top": {
+              "en": "Top Only",
+              "zh-Hans": "仅上屏"
+            },
+            "top-bottom": {
+              "en": "Top/Bottom",
+              "zh-Hans": "上/下"
+            }
+          },
+          "values": [
+            "top-bottom",
+            "bottom-top",
+            "left-right",
+            "right-left",
+            "top",
+            "bottom",
+            "hybrid-top",
+            "hybrid-bottom",
+            "flipped-hybrid-top",
+            "flipped-hybrid-bottom",
+            "rotate-left",
+            "rotate-right",
+            "rotate-180"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_number_of_screen_layouts": [
+                "5",
+                "6",
+                "7",
+                "8"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "hybrid-bottom",
+          "description": {
+            "en": "",
+            "zh-Hans": "第 6 个屏幕布局。"
+          },
+          "key": "melonds_screen_layout6",
+          "restartRequired": false,
+          "title": {
+            "en": "Layout #6",
+            "zh-Hans": "布局 6"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bottom": {
+              "en": "Bottom Only",
+              "zh-Hans": "仅下屏"
+            },
+            "bottom-top": {
+              "en": "Bottom/Top",
+              "zh-Hans": "下/上"
+            },
+            "flipped-hybrid-bottom": {
+              "en": "Flipped Hybrid (Focus Bottom)",
+              "zh-Hans": "翻转混合（下屏为主）"
+            },
+            "flipped-hybrid-top": {
+              "en": "Flipped Hybrid (Focus Top)",
+              "zh-Hans": "翻转混合（上屏为主）"
+            },
+            "hybrid-bottom": {
+              "en": "Hybrid (Focus Bottom)",
+              "zh-Hans": "混合（下屏为主）"
+            },
+            "hybrid-top": {
+              "en": "Hybrid (Focus Top)",
+              "zh-Hans": "混合（上屏为主）"
+            },
+            "left-right": {
+              "en": "Left/Right",
+              "zh-Hans": "左/右"
+            },
+            "right-left": {
+              "en": "Right/Left",
+              "zh-Hans": "右/左"
+            },
+            "rotate-180": {
+              "en": "Upside Down",
+              "zh-Hans": "上下颠倒"
+            },
+            "rotate-left": {
+              "en": "Rotated Left",
+              "zh-Hans": "向左旋转"
+            },
+            "rotate-right": {
+              "en": "Rotated Right",
+              "zh-Hans": "向右旋转"
+            },
+            "top": {
+              "en": "Top Only",
+              "zh-Hans": "仅上屏"
+            },
+            "top-bottom": {
+              "en": "Top/Bottom",
+              "zh-Hans": "上/下"
+            }
+          },
+          "values": [
+            "top-bottom",
+            "bottom-top",
+            "left-right",
+            "right-left",
+            "top",
+            "bottom",
+            "hybrid-top",
+            "hybrid-bottom",
+            "flipped-hybrid-top",
+            "flipped-hybrid-bottom",
+            "rotate-left",
+            "rotate-right",
+            "rotate-180"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_number_of_screen_layouts": [
+                "6",
+                "7",
+                "8"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "bottom-top",
+          "description": {
+            "en": "",
+            "zh-Hans": "第 7 个屏幕布局。"
+          },
+          "key": "melonds_screen_layout7",
+          "restartRequired": false,
+          "title": {
+            "en": "Layout #7",
+            "zh-Hans": "布局 7"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bottom": {
+              "en": "Bottom Only",
+              "zh-Hans": "仅下屏"
+            },
+            "bottom-top": {
+              "en": "Bottom/Top",
+              "zh-Hans": "下/上"
+            },
+            "flipped-hybrid-bottom": {
+              "en": "Flipped Hybrid (Focus Bottom)",
+              "zh-Hans": "翻转混合（下屏为主）"
+            },
+            "flipped-hybrid-top": {
+              "en": "Flipped Hybrid (Focus Top)",
+              "zh-Hans": "翻转混合（上屏为主）"
+            },
+            "hybrid-bottom": {
+              "en": "Hybrid (Focus Bottom)",
+              "zh-Hans": "混合（下屏为主）"
+            },
+            "hybrid-top": {
+              "en": "Hybrid (Focus Top)",
+              "zh-Hans": "混合（上屏为主）"
+            },
+            "left-right": {
+              "en": "Left/Right",
+              "zh-Hans": "左/右"
+            },
+            "right-left": {
+              "en": "Right/Left",
+              "zh-Hans": "右/左"
+            },
+            "rotate-180": {
+              "en": "Upside Down",
+              "zh-Hans": "上下颠倒"
+            },
+            "rotate-left": {
+              "en": "Rotated Left",
+              "zh-Hans": "向左旋转"
+            },
+            "rotate-right": {
+              "en": "Rotated Right",
+              "zh-Hans": "向右旋转"
+            },
+            "top": {
+              "en": "Top Only",
+              "zh-Hans": "仅上屏"
+            },
+            "top-bottom": {
+              "en": "Top/Bottom",
+              "zh-Hans": "上/下"
+            }
+          },
+          "values": [
+            "top-bottom",
+            "bottom-top",
+            "left-right",
+            "right-left",
+            "top",
+            "bottom",
+            "hybrid-top",
+            "hybrid-bottom",
+            "flipped-hybrid-top",
+            "flipped-hybrid-bottom",
+            "rotate-left",
+            "rotate-right",
+            "rotate-180"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_number_of_screen_layouts": [
+                "7",
+                "8"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "right-left",
+          "description": {
+            "en": "",
+            "zh-Hans": "第 8 个屏幕布局。"
+          },
+          "key": "melonds_screen_layout8",
+          "restartRequired": false,
+          "title": {
+            "en": "Layout #8",
+            "zh-Hans": "布局 8"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bottom": {
+              "en": "Bottom Only",
+              "zh-Hans": "仅下屏"
+            },
+            "bottom-top": {
+              "en": "Bottom/Top",
+              "zh-Hans": "下/上"
+            },
+            "flipped-hybrid-bottom": {
+              "en": "Flipped Hybrid (Focus Bottom)",
+              "zh-Hans": "翻转混合（下屏为主）"
+            },
+            "flipped-hybrid-top": {
+              "en": "Flipped Hybrid (Focus Top)",
+              "zh-Hans": "翻转混合（上屏为主）"
+            },
+            "hybrid-bottom": {
+              "en": "Hybrid (Focus Bottom)",
+              "zh-Hans": "混合（下屏为主）"
+            },
+            "hybrid-top": {
+              "en": "Hybrid (Focus Top)",
+              "zh-Hans": "混合（上屏为主）"
+            },
+            "left-right": {
+              "en": "Left/Right",
+              "zh-Hans": "左/右"
+            },
+            "right-left": {
+              "en": "Right/Left",
+              "zh-Hans": "右/左"
+            },
+            "rotate-180": {
+              "en": "Upside Down",
+              "zh-Hans": "上下颠倒"
+            },
+            "rotate-left": {
+              "en": "Rotated Left",
+              "zh-Hans": "向左旋转"
+            },
+            "rotate-right": {
+              "en": "Rotated Right",
+              "zh-Hans": "向右旋转"
+            },
+            "top": {
+              "en": "Top Only",
+              "zh-Hans": "仅上屏"
+            },
+            "top-bottom": {
+              "en": "Top/Bottom",
+              "zh-Hans": "上/下"
+            }
+          },
+          "values": [
+            "top-bottom",
+            "bottom-top",
+            "left-right",
+            "right-left",
+            "top",
+            "bottom",
+            "hybrid-top",
+            "hybrid-bottom",
+            "flipped-hybrid-top",
+            "flipped-hybrid-bottom",
+            "rotate-left",
+            "rotate-right",
+            "rotate-180"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_number_of_screen_layouts": [
+                "8"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "2",
+          "description": {
+            "en": "The size of the larger screen relative to the smaller ones when using a hybrid layout.",
+            "zh-Hans": "混合布局中主屏幕相对小屏幕的放大倍数。"
+          },
+          "key": "melonds_hybrid_ratio",
+          "restartRequired": false,
+          "title": {
+            "en": "Hybrid Ratio",
+            "zh-Hans": "混合布局比例"
+          },
+          "type": "select",
+          "valueLabels": {
+            "2": {
+              "en": "2:1",
+              "zh-Hans": "2:1"
+            },
+            "3": {
+              "en": "3:1",
+              "zh-Hans": "3:1"
+            }
+          },
+          "values": [
+            "2",
+            "3"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_screen_layout1": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout2": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout3": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout4": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout5": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout6": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout7": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout8": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "both",
+          "description": {
+            "en": "Choose which screens will be shown when using a hybrid layout.",
+            "zh-Hans": "混合布局中侧边显示哪块屏幕。"
+          },
+          "key": "melonds_hybrid_small_screen",
+          "restartRequired": false,
+          "title": {
+            "en": "Hybrid Small Screen Mode",
+            "zh-Hans": "混合布局小屏显示"
+          },
+          "type": "select",
+          "valueLabels": {
+            "both": {
+              "en": "Show Both Screens",
+              "zh-Hans": "两块屏幕都显示"
+            },
+            "one": {
+              "en": "Show Opposite Screen",
+              "zh-Hans": "只显示另一块屏幕"
+            }
+          },
+          "values": [
+            "one",
+            "both"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_screen_layout1": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout2": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout3": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout4": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout5": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout6": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout7": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            },
+            {
+              "melonds_screen_layout8": [
+                "hybrid-top",
+                "hybrid-bottom",
+                "flipped-hybrid-top",
+                "flipped-hybrid-bottom"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "screen",
+          "defaultValue": "0",
+          "description": {
+            "en": "Choose how large the gap between the screens should be. Vertical layouts (including rotations) only. Dimensions exclude the effects of the frontend's scaling.",
+            "zh-Hans": "上下屏之间留出的间距，单位为像素。"
+          },
+          "key": "melonds_screen_gap",
+          "restartRequired": false,
+          "title": {
+            "en": "Screen Gap",
+            "zh-Hans": "屏幕间距"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "1": {
+              "en": "1px",
+              "zh-Hans": "1px"
+            },
+            "10": {
+              "en": "10px",
+              "zh-Hans": "10px"
+            },
+            "100": {
+              "en": "100px",
+              "zh-Hans": "100px"
+            },
+            "101": {
+              "en": "101px",
+              "zh-Hans": "101px"
+            },
+            "102": {
+              "en": "102px",
+              "zh-Hans": "102px"
+            },
+            "103": {
+              "en": "103px",
+              "zh-Hans": "103px"
+            },
+            "104": {
+              "en": "104px",
+              "zh-Hans": "104px"
+            },
+            "105": {
+              "en": "105px",
+              "zh-Hans": "105px"
+            },
+            "106": {
+              "en": "106px",
+              "zh-Hans": "106px"
+            },
+            "107": {
+              "en": "107px",
+              "zh-Hans": "107px"
+            },
+            "108": {
+              "en": "108px",
+              "zh-Hans": "108px"
+            },
+            "109": {
+              "en": "109px",
+              "zh-Hans": "109px"
+            },
+            "11": {
+              "en": "11px",
+              "zh-Hans": "11px"
+            },
+            "110": {
+              "en": "110px",
+              "zh-Hans": "110px"
+            },
+            "111": {
+              "en": "111px",
+              "zh-Hans": "111px"
+            },
+            "112": {
+              "en": "112px",
+              "zh-Hans": "112px"
+            },
+            "113": {
+              "en": "113px",
+              "zh-Hans": "113px"
+            },
+            "114": {
+              "en": "114px",
+              "zh-Hans": "114px"
+            },
+            "115": {
+              "en": "115px",
+              "zh-Hans": "115px"
+            },
+            "116": {
+              "en": "116px",
+              "zh-Hans": "116px"
+            },
+            "117": {
+              "en": "117px",
+              "zh-Hans": "117px"
+            },
+            "118": {
+              "en": "118px",
+              "zh-Hans": "118px"
+            },
+            "119": {
+              "en": "119px",
+              "zh-Hans": "119px"
+            },
+            "12": {
+              "en": "12px",
+              "zh-Hans": "12px"
+            },
+            "120": {
+              "en": "120px",
+              "zh-Hans": "120px"
+            },
+            "121": {
+              "en": "121px",
+              "zh-Hans": "121px"
+            },
+            "122": {
+              "en": "122px",
+              "zh-Hans": "122px"
+            },
+            "123": {
+              "en": "123px",
+              "zh-Hans": "123px"
+            },
+            "124": {
+              "en": "124px",
+              "zh-Hans": "124px"
+            },
+            "125": {
+              "en": "125px",
+              "zh-Hans": "125px"
+            },
+            "126": {
+              "en": "126px",
+              "zh-Hans": "126px"
+            },
+            "13": {
+              "en": "13px",
+              "zh-Hans": "13px"
+            },
+            "14": {
+              "en": "14px",
+              "zh-Hans": "14px"
+            },
+            "15": {
+              "en": "15px",
+              "zh-Hans": "15px"
+            },
+            "16": {
+              "en": "16px",
+              "zh-Hans": "16px"
+            },
+            "17": {
+              "en": "17px",
+              "zh-Hans": "17px"
+            },
+            "18": {
+              "en": "18px",
+              "zh-Hans": "18px"
+            },
+            "19": {
+              "en": "19px",
+              "zh-Hans": "19px"
+            },
+            "2": {
+              "en": "2px",
+              "zh-Hans": "2px"
+            },
+            "20": {
+              "en": "20px",
+              "zh-Hans": "20px"
+            },
+            "21": {
+              "en": "21px",
+              "zh-Hans": "21px"
+            },
+            "22": {
+              "en": "22px",
+              "zh-Hans": "22px"
+            },
+            "23": {
+              "en": "23px",
+              "zh-Hans": "23px"
+            },
+            "24": {
+              "en": "24px",
+              "zh-Hans": "24px"
+            },
+            "25": {
+              "en": "25px",
+              "zh-Hans": "25px"
+            },
+            "26": {
+              "en": "26px",
+              "zh-Hans": "26px"
+            },
+            "27": {
+              "en": "27px",
+              "zh-Hans": "27px"
+            },
+            "28": {
+              "en": "28px",
+              "zh-Hans": "28px"
+            },
+            "29": {
+              "en": "29px",
+              "zh-Hans": "29px"
+            },
+            "3": {
+              "en": "3px",
+              "zh-Hans": "3px"
+            },
+            "30": {
+              "en": "30px",
+              "zh-Hans": "30px"
+            },
+            "31": {
+              "en": "31px",
+              "zh-Hans": "31px"
+            },
+            "32": {
+              "en": "32px",
+              "zh-Hans": "32px"
+            },
+            "33": {
+              "en": "33px",
+              "zh-Hans": "33px"
+            },
+            "34": {
+              "en": "34px",
+              "zh-Hans": "34px"
+            },
+            "35": {
+              "en": "35px",
+              "zh-Hans": "35px"
+            },
+            "36": {
+              "en": "36px",
+              "zh-Hans": "36px"
+            },
+            "37": {
+              "en": "37px",
+              "zh-Hans": "37px"
+            },
+            "38": {
+              "en": "38px",
+              "zh-Hans": "38px"
+            },
+            "39": {
+              "en": "39px",
+              "zh-Hans": "39px"
+            },
+            "4": {
+              "en": "4px",
+              "zh-Hans": "4px"
+            },
+            "40": {
+              "en": "40px",
+              "zh-Hans": "40px"
+            },
+            "41": {
+              "en": "41px",
+              "zh-Hans": "41px"
+            },
+            "42": {
+              "en": "42px",
+              "zh-Hans": "42px"
+            },
+            "43": {
+              "en": "43px",
+              "zh-Hans": "43px"
+            },
+            "44": {
+              "en": "44px",
+              "zh-Hans": "44px"
+            },
+            "45": {
+              "en": "45px",
+              "zh-Hans": "45px"
+            },
+            "46": {
+              "en": "46px",
+              "zh-Hans": "46px"
+            },
+            "47": {
+              "en": "47px",
+              "zh-Hans": "47px"
+            },
+            "48": {
+              "en": "48px",
+              "zh-Hans": "48px"
+            },
+            "49": {
+              "en": "49px",
+              "zh-Hans": "49px"
+            },
+            "5": {
+              "en": "5px",
+              "zh-Hans": "5px"
+            },
+            "50": {
+              "en": "50px",
+              "zh-Hans": "50px"
+            },
+            "51": {
+              "en": "51px",
+              "zh-Hans": "51px"
+            },
+            "52": {
+              "en": "52px",
+              "zh-Hans": "52px"
+            },
+            "53": {
+              "en": "53px",
+              "zh-Hans": "53px"
+            },
+            "54": {
+              "en": "54px",
+              "zh-Hans": "54px"
+            },
+            "55": {
+              "en": "55px",
+              "zh-Hans": "55px"
+            },
+            "56": {
+              "en": "56px",
+              "zh-Hans": "56px"
+            },
+            "57": {
+              "en": "57px",
+              "zh-Hans": "57px"
+            },
+            "58": {
+              "en": "58px",
+              "zh-Hans": "58px"
+            },
+            "59": {
+              "en": "59px",
+              "zh-Hans": "59px"
+            },
+            "6": {
+              "en": "6px",
+              "zh-Hans": "6px"
+            },
+            "60": {
+              "en": "60px",
+              "zh-Hans": "60px"
+            },
+            "61": {
+              "en": "61px",
+              "zh-Hans": "61px"
+            },
+            "62": {
+              "en": "62px",
+              "zh-Hans": "62px"
+            },
+            "63": {
+              "en": "63px",
+              "zh-Hans": "63px"
+            },
+            "64": {
+              "en": "64px",
+              "zh-Hans": "64px"
+            },
+            "65": {
+              "en": "65px",
+              "zh-Hans": "65px"
+            },
+            "66": {
+              "en": "66px",
+              "zh-Hans": "66px"
+            },
+            "67": {
+              "en": "67px",
+              "zh-Hans": "67px"
+            },
+            "68": {
+              "en": "68px",
+              "zh-Hans": "68px"
+            },
+            "69": {
+              "en": "69px",
+              "zh-Hans": "69px"
+            },
+            "7": {
+              "en": "7px",
+              "zh-Hans": "7px"
+            },
+            "70": {
+              "en": "70px",
+              "zh-Hans": "70px"
+            },
+            "71": {
+              "en": "71px",
+              "zh-Hans": "71px"
+            },
+            "72": {
+              "en": "72px",
+              "zh-Hans": "72px"
+            },
+            "73": {
+              "en": "73px",
+              "zh-Hans": "73px"
+            },
+            "74": {
+              "en": "74px",
+              "zh-Hans": "74px"
+            },
+            "75": {
+              "en": "75px",
+              "zh-Hans": "75px"
+            },
+            "76": {
+              "en": "76px",
+              "zh-Hans": "76px"
+            },
+            "77": {
+              "en": "77px",
+              "zh-Hans": "77px"
+            },
+            "78": {
+              "en": "78px",
+              "zh-Hans": "78px"
+            },
+            "79": {
+              "en": "79px",
+              "zh-Hans": "79px"
+            },
+            "8": {
+              "en": "8px",
+              "zh-Hans": "8px"
+            },
+            "80": {
+              "en": "80px",
+              "zh-Hans": "80px"
+            },
+            "81": {
+              "en": "81px",
+              "zh-Hans": "81px"
+            },
+            "82": {
+              "en": "82px",
+              "zh-Hans": "82px"
+            },
+            "83": {
+              "en": "83px",
+              "zh-Hans": "83px"
+            },
+            "84": {
+              "en": "84px",
+              "zh-Hans": "84px"
+            },
+            "85": {
+              "en": "85px",
+              "zh-Hans": "85px"
+            },
+            "86": {
+              "en": "86px",
+              "zh-Hans": "86px"
+            },
+            "87": {
+              "en": "87px",
+              "zh-Hans": "87px"
+            },
+            "88": {
+              "en": "88px",
+              "zh-Hans": "88px"
+            },
+            "89": {
+              "en": "89px",
+              "zh-Hans": "89px"
+            },
+            "9": {
+              "en": "9px",
+              "zh-Hans": "9px"
+            },
+            "90": {
+              "en": "90px",
+              "zh-Hans": "90px"
+            },
+            "91": {
+              "en": "91px",
+              "zh-Hans": "91px"
+            },
+            "92": {
+              "en": "92px",
+              "zh-Hans": "92px"
+            },
+            "93": {
+              "en": "93px",
+              "zh-Hans": "93px"
+            },
+            "94": {
+              "en": "94px",
+              "zh-Hans": "94px"
+            },
+            "95": {
+              "en": "95px",
+              "zh-Hans": "95px"
+            },
+            "96": {
+              "en": "96px",
+              "zh-Hans": "96px"
+            },
+            "97": {
+              "en": "97px",
+              "zh-Hans": "97px"
+            },
+            "98": {
+              "en": "98px",
+              "zh-Hans": "98px"
+            },
+            "99": {
+              "en": "99px",
+              "zh-Hans": "99px"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50",
+            "51",
+            "52",
+            "53",
+            "54",
+            "55",
+            "56",
+            "57",
+            "58",
+            "59",
+            "60",
+            "61",
+            "62",
+            "63",
+            "64",
+            "65",
+            "66",
+            "67",
+            "68",
+            "69",
+            "70",
+            "71",
+            "72",
+            "73",
+            "74",
+            "75",
+            "76",
+            "77",
+            "78",
+            "79",
+            "80",
+            "81",
+            "82",
+            "83",
+            "84",
+            "85",
+            "86",
+            "87",
+            "88",
+            "89",
+            "90",
+            "91",
+            "92",
+            "93",
+            "94",
+            "95",
+            "96",
+            "97",
+            "98",
+            "99",
+            "100",
+            "101",
+            "102",
+            "103",
+            "104",
+            "105",
+            "106",
+            "107",
+            "108",
+            "109",
+            "110",
+            "111",
+            "112",
+            "113",
+            "114",
+            "115",
+            "116",
+            "117",
+            "118",
+            "119",
+            "120",
+            "121",
+            "122",
+            "123",
+            "124",
+            "125",
+            "126"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Screen",
+        "zh-Hans": "屏幕"
+      }
+    },
+    {
+      "description": {
+        "en": "Override the emulated firmware's settings.",
+        "zh-Hans": "覆盖模拟主机固件中的个人设置。"
+      },
+      "id": "firmware",
+      "options": [
+        {
+          "categoryId": "firmware",
+          "defaultValue": "auto",
+          "description": {
+            "en": "Override the language stored in the emulated firmware. Multi-language games follow this setting.",
+            "zh-Hans": "覆盖模拟主机固件中的语言设置。多语言游戏会跟随这个设置显示对应语言。"
+          },
+          "key": "melonds_firmware_language",
+          "restartRequired": true,
+          "title": {
+            "en": "System Language",
+            "zh-Hans": "系统语言"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Use Host",
+              "zh-Hans": "跟随设备"
+            },
+            "default": {
+              "en": "Don't Override",
+              "zh-Hans": "不覆盖"
+            },
+            "en": {
+              "en": "English",
+              "zh-Hans": "English"
+            }
+          },
+          "values": [
+            "auto",
+            "en",
+            "default"
+          ]
+        },
+        {
+          "categoryId": "firmware",
+          "defaultValue": "guess_username",
+          "description": {
+            "en": "Overrides the username given to the emulated console.\n\nDon't Override: Uses whatever name is defined on the firmware.\nGuess: Try to get your username from the frontend. If that fails, try the USER, USERNAME, and LOGNAME environment variables.\nmelonDS DS: Uses \"melonDS DS\". This is the default if nothing else works.\n\nNames are truncated to 10 characters. Changes take effect at next restart.",
+            "zh-Hans": "覆盖模拟主机固件中的用户名。部分游戏会显示这个名字。"
+          },
+          "key": "melonds_firmware_username",
+          "restartRequired": true,
+          "title": {
+            "en": "Username",
+            "zh-Hans": "用户名"
+          },
+          "type": "select",
+          "valueLabels": {
+            "existing_username": {
+              "en": "Don't Override",
+              "zh-Hans": "不覆盖"
+            },
+            "guess_username": {
+              "en": "Guess",
+              "zh-Hans": "自动猜测"
+            },
+            "melonDS DS": {
+              "en": "melonDS DS",
+              "zh-Hans": "melonDS DS"
+            }
+          },
+          "values": [
+            "guess_username",
+            "melonDS DS",
+            "existing_username"
+          ]
+        },
+        {
+          "categoryId": "firmware",
+          "defaultValue": "0",
+          "description": {
+            "en": "The theme (\"favorite color\") of the emulated console. Changes take effect at next restart.",
+            "zh-Hans": "覆盖模拟主机固件中的主题颜色，会影响 DS 系统菜单和部分游戏的配色。"
+          },
+          "key": "melonds_firmware_favorite_color",
+          "restartRequired": true,
+          "title": {
+            "en": "Favorite Color",
+            "zh-Hans": "主题颜色"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Gray",
+              "zh-Hans": "灰色"
+            },
+            "1": {
+              "en": "Brown",
+              "zh-Hans": "棕色"
+            },
+            "10": {
+              "en": "Light Blue",
+              "zh-Hans": "浅蓝色"
+            },
+            "11": {
+              "en": "Blue",
+              "zh-Hans": "蓝色"
+            },
+            "12": {
+              "en": "Dark Blue",
+              "zh-Hans": "深蓝色"
+            },
+            "13": {
+              "en": "Dark Purple",
+              "zh-Hans": "深紫色"
+            },
+            "14": {
+              "en": "Light Purple",
+              "zh-Hans": "浅紫色"
+            },
+            "15": {
+              "en": "Dark Pink",
+              "zh-Hans": "深粉色"
+            },
+            "2": {
+              "en": "Red",
+              "zh-Hans": "红色"
+            },
+            "3": {
+              "en": "Light Pink",
+              "zh-Hans": "浅粉色"
+            },
+            "4": {
+              "en": "Orange",
+              "zh-Hans": "橙色"
+            },
+            "5": {
+              "en": "Yellow",
+              "zh-Hans": "黄色"
+            },
+            "6": {
+              "en": "Lime",
+              "zh-Hans": "黄绿色"
+            },
+            "7": {
+              "en": "Light Green",
+              "zh-Hans": "浅绿色"
+            },
+            "8": {
+              "en": "Dark Green",
+              "zh-Hans": "深绿色"
+            },
+            "9": {
+              "en": "Turquoise",
+              "zh-Hans": "蓝绿色"
+            },
+            "default": {
+              "en": "Don't Override",
+              "zh-Hans": "不覆盖"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "default"
+          ]
+        },
+        {
+          "categoryId": "firmware",
+          "defaultValue": "default",
+          "description": {
+            "en": "The month of your birthday. Changes take effect at next restart.",
+            "zh-Hans": "覆盖模拟主机固件中的生日月份。部分游戏会在生日当天给出特别问候。"
+          },
+          "key": "melonds_firmware_birth_month",
+          "restartRequired": true,
+          "title": {
+            "en": "Birth Month",
+            "zh-Hans": "生日月份"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "January",
+              "zh-Hans": "1 月"
+            },
+            "10": {
+              "en": "October",
+              "zh-Hans": "10 月"
+            },
+            "11": {
+              "en": "November",
+              "zh-Hans": "11 月"
+            },
+            "12": {
+              "en": "December",
+              "zh-Hans": "12 月"
+            },
+            "2": {
+              "en": "February",
+              "zh-Hans": "2 月"
+            },
+            "3": {
+              "en": "March",
+              "zh-Hans": "3 月"
+            },
+            "4": {
+              "en": "April",
+              "zh-Hans": "4 月"
+            },
+            "5": {
+              "en": "May",
+              "zh-Hans": "5 月"
+            },
+            "6": {
+              "en": "June",
+              "zh-Hans": "6 月"
+            },
+            "7": {
+              "en": "July",
+              "zh-Hans": "7 月"
+            },
+            "8": {
+              "en": "August",
+              "zh-Hans": "8 月"
+            },
+            "9": {
+              "en": "September",
+              "zh-Hans": "9 月"
+            },
+            "default": {
+              "en": "Don't Override",
+              "zh-Hans": "不覆盖"
+            }
+          },
+          "values": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "default"
+          ]
+        },
+        {
+          "categoryId": "firmware",
+          "defaultValue": "default",
+          "description": {
+            "en": "The day within the month of your birthday. Changes take effect at next restart.",
+            "zh-Hans": "覆盖模拟主机固件中的生日日期。"
+          },
+          "key": "melonds_firmware_birth_day",
+          "restartRequired": true,
+          "title": {
+            "en": "Birth Day",
+            "zh-Hans": "生日日期"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "1st",
+              "zh-Hans": "1 日"
+            },
+            "10": {
+              "en": "10th",
+              "zh-Hans": "10 日"
+            },
+            "11": {
+              "en": "11th",
+              "zh-Hans": "11 日"
+            },
+            "12": {
+              "en": "12th",
+              "zh-Hans": "12 日"
+            },
+            "13": {
+              "en": "13th",
+              "zh-Hans": "13 日"
+            },
+            "14": {
+              "en": "14th",
+              "zh-Hans": "14 日"
+            },
+            "15": {
+              "en": "15th",
+              "zh-Hans": "15 日"
+            },
+            "16": {
+              "en": "16th",
+              "zh-Hans": "16 日"
+            },
+            "17": {
+              "en": "17th",
+              "zh-Hans": "17 日"
+            },
+            "18": {
+              "en": "18th",
+              "zh-Hans": "18 日"
+            },
+            "19": {
+              "en": "19th",
+              "zh-Hans": "19 日"
+            },
+            "2": {
+              "en": "2nd",
+              "zh-Hans": "2 日"
+            },
+            "20": {
+              "en": "20th",
+              "zh-Hans": "20 日"
+            },
+            "21": {
+              "en": "21st",
+              "zh-Hans": "21 日"
+            },
+            "22": {
+              "en": "22nd",
+              "zh-Hans": "22 日"
+            },
+            "23": {
+              "en": "23rd",
+              "zh-Hans": "23 日"
+            },
+            "24": {
+              "en": "24th",
+              "zh-Hans": "24 日"
+            },
+            "25": {
+              "en": "25th",
+              "zh-Hans": "25 日"
+            },
+            "26": {
+              "en": "26th",
+              "zh-Hans": "26 日"
+            },
+            "27": {
+              "en": "27th",
+              "zh-Hans": "27 日"
+            },
+            "28": {
+              "en": "28th",
+              "zh-Hans": "28 日"
+            },
+            "29": {
+              "en": "29th",
+              "zh-Hans": "29 日"
+            },
+            "3": {
+              "en": "3rd",
+              "zh-Hans": "3 日"
+            },
+            "30": {
+              "en": "30th",
+              "zh-Hans": "30 日"
+            },
+            "31": {
+              "en": "31st",
+              "zh-Hans": "31 日"
+            },
+            "4": {
+              "en": "4th",
+              "zh-Hans": "4 日"
+            },
+            "5": {
+              "en": "5th",
+              "zh-Hans": "5 日"
+            },
+            "6": {
+              "en": "6th",
+              "zh-Hans": "6 日"
+            },
+            "7": {
+              "en": "7th",
+              "zh-Hans": "7 日"
+            },
+            "8": {
+              "en": "8th",
+              "zh-Hans": "8 日"
+            },
+            "9": {
+              "en": "9th",
+              "zh-Hans": "9 日"
+            },
+            "default": {
+              "en": "Don't Override",
+              "zh-Hans": "不覆盖"
+            }
+          },
+          "values": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "default"
+          ]
+        },
+        {
+          "categoryId": "firmware",
+          "defaultValue": "default",
+          "description": {
+            "en": "Whether the emulated console's alarm is enabled. Changes take effect at next restart.",
+            "zh-Hans": "覆盖模拟主机固件中的闹钟开关。"
+          },
+          "key": "melonds_firmware_enable_alarm",
+          "restartRequired": true,
+          "title": {
+            "en": "Enable Alarm",
+            "zh-Hans": "启用闹钟"
+          },
+          "type": "select",
+          "valueLabels": {
+            "default": {
+              "en": "Don't Override",
+              "zh-Hans": "不覆盖"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "On",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled",
+            "default"
+          ]
+        },
+        {
+          "categoryId": "firmware",
+          "defaultValue": "default",
+          "description": {
+            "en": "The hour of the configured alarm. Changes take effect at next restart.",
+            "zh-Hans": "覆盖模拟主机固件中的闹钟小时。"
+          },
+          "key": "melonds_firmware_alarm_hour",
+          "restartRequired": true,
+          "title": {
+            "en": "Alarm Hour",
+            "zh-Hans": "闹钟小时"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0:00",
+              "zh-Hans": "0:00"
+            },
+            "1": {
+              "en": "1:00",
+              "zh-Hans": "1:00"
+            },
+            "10": {
+              "en": "10:00",
+              "zh-Hans": "10:00"
+            },
+            "11": {
+              "en": "11:00",
+              "zh-Hans": "11:00"
+            },
+            "12": {
+              "en": "12:00",
+              "zh-Hans": "12:00"
+            },
+            "13": {
+              "en": "13:00",
+              "zh-Hans": "13:00"
+            },
+            "14": {
+              "en": "14:00",
+              "zh-Hans": "14:00"
+            },
+            "15": {
+              "en": "15:00",
+              "zh-Hans": "15:00"
+            },
+            "16": {
+              "en": "16:00",
+              "zh-Hans": "16:00"
+            },
+            "17": {
+              "en": "17:00",
+              "zh-Hans": "17:00"
+            },
+            "18": {
+              "en": "18:00",
+              "zh-Hans": "18:00"
+            },
+            "19": {
+              "en": "19:00",
+              "zh-Hans": "19:00"
+            },
+            "2": {
+              "en": "2:00",
+              "zh-Hans": "2:00"
+            },
+            "20": {
+              "en": "20:00",
+              "zh-Hans": "20:00"
+            },
+            "21": {
+              "en": "21:00",
+              "zh-Hans": "21:00"
+            },
+            "22": {
+              "en": "22:00",
+              "zh-Hans": "22:00"
+            },
+            "23": {
+              "en": "23:00",
+              "zh-Hans": "23:00"
+            },
+            "3": {
+              "en": "3:00",
+              "zh-Hans": "3:00"
+            },
+            "4": {
+              "en": "4:00",
+              "zh-Hans": "4:00"
+            },
+            "5": {
+              "en": "5:00",
+              "zh-Hans": "5:00"
+            },
+            "6": {
+              "en": "6:00",
+              "zh-Hans": "6:00"
+            },
+            "7": {
+              "en": "7:00",
+              "zh-Hans": "7:00"
+            },
+            "8": {
+              "en": "8:00",
+              "zh-Hans": "8:00"
+            },
+            "9": {
+              "en": "9:00",
+              "zh-Hans": "9:00"
+            },
+            "default": {
+              "en": "Don't Override",
+              "zh-Hans": "不覆盖"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "default"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_firmware_enable_alarm": [
+                "enabled"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "firmware",
+          "defaultValue": "default",
+          "description": {
+            "en": "The minute of the configured alarm. Changes take effect at next restart.",
+            "zh-Hans": "覆盖模拟主机固件中的闹钟分钟。"
+          },
+          "key": "melonds_firmware_alarm_minute",
+          "restartRequired": true,
+          "title": {
+            "en": "Alarm Minute",
+            "zh-Hans": "闹钟分钟"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "00",
+              "zh-Hans": "00"
+            },
+            "1": {
+              "en": "01",
+              "zh-Hans": "01"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "02",
+              "zh-Hans": "02"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "03",
+              "zh-Hans": "03"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "04",
+              "zh-Hans": "04"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "41": {
+              "en": "41",
+              "zh-Hans": "41"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "43": {
+              "en": "43",
+              "zh-Hans": "43"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "47": {
+              "en": "47",
+              "zh-Hans": "47"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "49": {
+              "en": "49",
+              "zh-Hans": "49"
+            },
+            "5": {
+              "en": "05",
+              "zh-Hans": "05"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "51": {
+              "en": "51",
+              "zh-Hans": "51"
+            },
+            "52": {
+              "en": "52",
+              "zh-Hans": "52"
+            },
+            "53": {
+              "en": "53",
+              "zh-Hans": "53"
+            },
+            "54": {
+              "en": "54",
+              "zh-Hans": "54"
+            },
+            "55": {
+              "en": "55",
+              "zh-Hans": "55"
+            },
+            "56": {
+              "en": "56",
+              "zh-Hans": "56"
+            },
+            "57": {
+              "en": "57",
+              "zh-Hans": "57"
+            },
+            "58": {
+              "en": "58",
+              "zh-Hans": "58"
+            },
+            "59": {
+              "en": "59",
+              "zh-Hans": "59"
+            },
+            "6": {
+              "en": "06",
+              "zh-Hans": "06"
+            },
+            "7": {
+              "en": "07",
+              "zh-Hans": "07"
+            },
+            "8": {
+              "en": "08",
+              "zh-Hans": "08"
+            },
+            "9": {
+              "en": "09",
+              "zh-Hans": "09"
+            },
+            "default": {
+              "en": "Don't Override",
+              "zh-Hans": "不覆盖"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50",
+            "51",
+            "52",
+            "53",
+            "54",
+            "55",
+            "56",
+            "57",
+            "58",
+            "59",
+            "default"
+          ],
+          "visibleWhen": [
+            {
+              "melonds_firmware_enable_alarm": [
+                "enabled"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Firmware",
+        "zh-Hans": "固件"
+      }
+    },
+    {
+      "description": {
+        "en": "Change what extra information is shown on-screen.",
+        "zh-Hans": "控制屏幕上额外显示哪些信息。"
+      },
+      "id": "osd",
+      "options": [
+        {
+          "categoryId": "osd",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enable to display an on-screen message if melonDS tries to use certain unsupported features. These warnings will be logged regardless of this setting.",
+            "zh-Hans": "游戏使用了当前不支持的功能时显示提示。"
+          },
+          "key": "melonds_show_unsupported_features",
+          "restartRequired": false,
+          "title": {
+            "en": "Warn About Unsupported Features",
+            "zh-Hans": "提示不支持的功能"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "osd",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enable to display warnings if your BIOS files have certain known problems. A warning will always be shown if your BIOS files are missing or invalid, regardless of this setting.",
+            "zh-Hans": "BIOS 或固件文件存在问题时显示提示。"
+          },
+          "key": "melonds_show_bios_warnings",
+          "restartRequired": false,
+          "title": {
+            "en": "Warn About BIOS Problems",
+            "zh-Hans": "提示 BIOS 问题"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "osd",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enable to show which screen layout within the configured sequence is active.",
+            "zh-Hans": "切换屏幕布局时在屏幕上显示当前布局名称。"
+          },
+          "key": "melonds_show_current_layout",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Screen Layout",
+            "zh-Hans": "显示当前布局"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "osd",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enable to show whether your device's microphone is active.",
+            "zh-Hans": "麦克风开启或关闭时在屏幕上显示提示。"
+          },
+          "key": "melonds_show_mic_state",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Microphone State",
+            "zh-Hans": "显示麦克风状态"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "osd",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enable to show whether your device's camera is active.",
+            "zh-Hans": "摄像头开启或关闭时在屏幕上显示提示。"
+          },
+          "key": "melonds_show_camera_state",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Camera State",
+            "zh-Hans": "显示摄像头状态"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "osd",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enable to show whether the emulated screens are closed.",
+            "zh-Hans": "模拟的机盖开合时在屏幕上显示提示。"
+          },
+          "key": "melonds_show_lid_state",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Lid State",
+            "zh-Hans": "显示开合盖状态"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "osd",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enable to show the emulated input of any peripheral sensors that aren't already managed by one of the other OSD options, e.g. the solar sensor embedded in the Boktai trilogy's carts. If no peripherals (including GBA carts) are available, this option will have no effect.",
+            "zh-Hans": "使用光感卡带等传感器设备时，在屏幕上显示当前读数。"
+          },
+          "key": "melonds_show_sensor_reading",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Sensor Reading",
+            "zh-Hans": "显示传感器读数"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "On-Screen Notifications",
+        "zh-Hans": "屏幕提示"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "melonDS DS",
+    "coreVersion": "1.2.0",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

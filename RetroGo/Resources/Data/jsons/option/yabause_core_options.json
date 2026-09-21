@@ -1,0 +1,229 @@
+{
+  "coreId": "yabause",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "BIOS, add-on cartridge, controller and performance settings.",
+        "zh-Hans": "BIOS、扩展卡带、手柄与性能设置。"
+      },
+      "id": "general",
+      "options": [
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Skip frames to improve performance.",
+            "zh-Hans": "跳过部分画面以提升性能，代价是画面不够流畅。"
+          },
+          "key": "yabause_frameskip",
+          "restartRequired": false,
+          "title": {
+            "en": "Frameskip",
+            "zh-Hans": "跳帧"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Use High Level Emulation BIOS. Not recommended, as it's causing more issues than it solves.",
+            "zh-Hans": "使用高层模拟的 BIOS，无需提供真机 BIOS 文件。不建议开启，它带来的问题往往比解决的多。"
+          },
+          "key": "yabause_force_hle_bios",
+          "restartRequired": true,
+          "title": {
+            "en": "Force HLE BIOS",
+            "zh-Hans": "强制使用 HLE BIOS"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "none",
+          "description": {
+            "en": "Emulate an add-on RAM expansion cartridge. Some games require this to be played, while a few others will have improved performance.",
+            "zh-Hans": "模拟插在主机上的内存扩展卡带。部分游戏（如《月华剑士》《拳皇》系列的部分版本）必须使用才能运行，少数游戏开启后性能更好。"
+          },
+          "key": "yabause_addon_cartridge",
+          "restartRequired": true,
+          "title": {
+            "en": "Add-on Cartridge",
+            "zh-Hans": "扩展卡带"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1M_ram": {
+              "en": "1MB RAM",
+              "zh-Hans": "1MB 内存"
+            },
+            "4M_ram": {
+              "en": "4MB RAM",
+              "zh-Hans": "4MB 内存"
+            },
+            "none": {
+              "en": "None",
+              "zh-Hans": "无"
+            }
+          },
+          "values": [
+            "none",
+            "1M_ram",
+            "4M_ram"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enable multitap in port 1.",
+            "zh-Hans": "在 1 号手柄口上模拟 6 人适配器。"
+          },
+          "key": "yabause_multitap_port1",
+          "restartRequired": false,
+          "title": {
+            "en": "6 Player Adaptor on Port 1",
+            "zh-Hans": "1 号口多人适配器"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enable multitap in port 2.",
+            "zh-Hans": "在 2 号手柄口上模拟 6 人适配器。"
+          },
+          "key": "yabause_multitap_port2",
+          "restartRequired": false,
+          "title": {
+            "en": "6 Player Adaptor on Port 2",
+            "zh-Hans": "2 号口多人适配器"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "4",
+          "description": {
+            "en": "Depending on your CPU, changing this value can improve performance.",
+            "zh-Hans": "模拟使用的线程数量。根据设备的 CPU 不同，调整这个值可能提升性能。"
+          },
+          "key": "yabause_numthreads",
+          "restartRequired": true,
+          "title": {
+            "en": "Number of Threads",
+            "zh-Hans": "线程数量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "1",
+            "2",
+            "4",
+            "8",
+            "16",
+            "32"
+          ]
+        }
+      ],
+      "title": {
+        "en": "General",
+        "zh-Hans": "通用"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Yabause",
+    "coreVersion": "v0.9.15",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

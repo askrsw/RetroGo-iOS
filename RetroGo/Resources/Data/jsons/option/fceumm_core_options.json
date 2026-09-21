@@ -1,0 +1,1203 @@
+{
+  "coreId": "fceumm",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Change region and hardware add-on settings.",
+        "zh-Hans": "地区与硬件外设设置。"
+      },
+      "id": "system",
+      "options": [
+        {
+          "categoryId": "system",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "Force core to use NTSC, PAL or Dendy region timings.",
+            "zh-Hans": "强制使用 NTSC、PAL 或 Dendy 制式的时序。"
+          },
+          "key": "fceumm_region",
+          "restartRequired": true,
+          "title": {
+            "en": "Region",
+            "zh-Hans": "地区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "Dendy": {
+              "en": "Dendy",
+              "zh-Hans": "Dendy"
+            },
+            "NTSC": {
+              "en": "NTSC",
+              "zh-Hans": "NTSC"
+            },
+            "PAL": {
+              "en": "PAL",
+              "zh-Hans": "PAL"
+            }
+          },
+          "values": [
+            "Auto",
+            "NTSC",
+            "PAL",
+            "Dendy"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enable emulation of a Game Genie add-on cartridge, allowing cheat codes to be entered when launching games. The Game Genie ROM file 'gamegenie.nes' must be present in the frontend's system directory. Does not apply to FDS or arcade content.",
+            "zh-Hans": "模拟 Game Genie 外接卡带，可在游戏启动时输入作弊码。需要将 Game Genie ROM 文件 gamegenie.nes 放入 BIOS 目录。不适用于 FDS 和街机游戏。"
+          },
+          "key": "fceumm_game_genie",
+          "restartRequired": true,
+          "title": {
+            "en": "Game Genie Add-On",
+            "zh-Hans": "Game Genie 金手指卡带"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "System",
+        "zh-Hans": "系统"
+      }
+    },
+    {
+      "description": {
+        "en": "Change aspect ratio, display cropping, color palette and video filter options.",
+        "zh-Hans": "画面比例、过扫描裁切、调色板与视频滤镜。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "8:7 PAR",
+          "description": {
+            "en": "Choose preferred aspect ratio.",
+            "zh-Hans": "选择画面的宽高比。"
+          },
+          "key": "fceumm_aspect",
+          "restartRequired": false,
+          "title": {
+            "en": "Aspect Ratio",
+            "zh-Hans": "画面比例"
+          },
+          "type": "select",
+          "valueLabels": {
+            "4:3": {
+              "en": "4:3",
+              "zh-Hans": "4:3"
+            },
+            "8:7 PAR": {
+              "en": "8:7 PAR",
+              "zh-Hans": "8:7 PAR"
+            },
+            "PP": {
+              "en": "Pixel Perfect",
+              "zh-Hans": "像素完美"
+            }
+          },
+          "values": [
+            "8:7 PAR",
+            "4:3",
+            "PP"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "0",
+          "description": {
+            "en": "Removes pixels from left side of the screen to simulate overscan seen on standard CRT televisions.",
+            "zh-Hans": "裁掉画面左侧的像素，模拟传统 CRT 电视的过扫描效果。"
+          },
+          "key": "fceumm_overscan_h_left",
+          "restartRequired": false,
+          "title": {
+            "en": "Crop Horizontal Left Overscan",
+            "zh-Hans": "左侧过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "4",
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "0",
+          "description": {
+            "en": "Removes pixels from right side of the screen to simulate overscan seen on standard CRT televisions.",
+            "zh-Hans": "裁掉画面右侧的像素，模拟传统 CRT 电视的过扫描效果。"
+          },
+          "key": "fceumm_overscan_h_right",
+          "restartRequired": false,
+          "title": {
+            "en": "Crop Horizontal Right Overscan",
+            "zh-Hans": "右侧过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "4",
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "8",
+          "description": {
+            "en": "Removes pixels from the top of the screen to simulate overscan seen on standard CRT televisions.",
+            "zh-Hans": "裁掉画面顶部的像素，模拟传统 CRT 电视的过扫描效果。"
+          },
+          "key": "fceumm_overscan_v_top",
+          "restartRequired": false,
+          "title": {
+            "en": "Crop Vertical Top Overscan",
+            "zh-Hans": "顶部过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "4",
+            "8",
+            "12",
+            "16",
+            "20",
+            "24"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "8",
+          "description": {
+            "en": "Removes pixels from the bottom of the screen to simulate overscan seen on standard CRT televisions.",
+            "zh-Hans": "裁掉画面底部的像素，模拟传统 CRT 电视的过扫描效果。"
+          },
+          "key": "fceumm_overscan_v_bottom",
+          "restartRequired": false,
+          "title": {
+            "en": "Crop Vertical Bottom Overscan",
+            "zh-Hans": "底部过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "4",
+            "8",
+            "12",
+            "16",
+            "20",
+            "24"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "default",
+          "description": {
+            "en": "Choose from pre-generated palettes. Raw needs a NES decoder shader. Custom loads the nes.pal palette file added in the core's BIOS files.",
+            "zh-Hans": "选择预设调色板。Raw 需要配合 NES 解码着色器使用；Custom 会读取在核心 BIOS 中添加的 nes.pal 调色板文件。"
+          },
+          "key": "fceumm_palette",
+          "restartRequired": false,
+          "title": {
+            "en": "Color Palette",
+            "zh-Hans": "调色板"
+          },
+          "type": "select",
+          "valueFiles": {
+            "custom": {
+              "extensions": [
+                "pal"
+              ],
+              "fileName": "nes.pal",
+              "restartRequired": true
+            }
+          },
+          "valueLabels": {
+            "asqrealc": {
+              "en": "AspiringSquire's Real",
+              "zh-Hans": "AspiringSquire's Real"
+            },
+            "bmf-final2": {
+              "en": "BMF's Final 2",
+              "zh-Hans": "BMF's Final 2"
+            },
+            "bmf-final3": {
+              "en": "BMF's Final 3",
+              "zh-Hans": "BMF's Final 3"
+            },
+            "composite-direct-fbx": {
+              "en": "FBX's Composite Direct",
+              "zh-Hans": "FBX's Composite Direct"
+            },
+            "custom": {
+              "en": "Custom",
+              "zh-Hans": "Custom"
+            },
+            "default": {
+              "en": "Default",
+              "zh-Hans": "Default"
+            },
+            "digital-prime-fbx": {
+              "en": "FBX's Digital Prime",
+              "zh-Hans": "FBX's Digital Prime"
+            },
+            "magnum-fbx": {
+              "en": "FBX's Magnum",
+              "zh-Hans": "FBX's Magnum"
+            },
+            "mugicha": {
+              "en": "Mugicha",
+              "zh-Hans": "Mugicha"
+            },
+            "nes-classic-fbx": {
+              "en": "FBX's NES Classic",
+              "zh-Hans": "FBX's NES Classic"
+            },
+            "nes-classic-fbx-fs": {
+              "en": "FBX's NES Classic (fixed)",
+              "zh-Hans": "FBX's NES Classic (fixed)"
+            },
+            "nescap": {
+              "en": "RGBSource's NESCAP",
+              "zh-Hans": "RGBSource's NESCAP"
+            },
+            "ntsc-hardware-fbx": {
+              "en": "FBX's NTSC Hardware",
+              "zh-Hans": "FBX's NTSC Hardware"
+            },
+            "pal": {
+              "en": "PAL",
+              "zh-Hans": "PAL"
+            },
+            "pvm-style-d93-fbx": {
+              "en": "FBX's PVM Style D93",
+              "zh-Hans": "FBX's PVM Style D93"
+            },
+            "raw": {
+              "en": "Raw",
+              "zh-Hans": "Raw"
+            },
+            "restored-wii-vc": {
+              "en": "Restored Wii VC",
+              "zh-Hans": "Restored Wii VC"
+            },
+            "rgb": {
+              "en": "Nintendo RGB PPU",
+              "zh-Hans": "Nintendo RGB PPU"
+            },
+            "royaltea": {
+              "en": "Royaltea (PVM-2530)",
+              "zh-Hans": "Royaltea (PVM-2530)"
+            },
+            "smooth-fbx": {
+              "en": "FBX's Smooth",
+              "zh-Hans": "FBX's Smooth"
+            },
+            "smooth-v2-fbx": {
+              "en": "FBX's Smooth V2",
+              "zh-Hans": "FBX's Smooth V2"
+            },
+            "sony-cxa2025as-us": {
+              "en": "Sony CXA2025AS US",
+              "zh-Hans": "Sony CXA2025AS US"
+            },
+            "unsaturated-final": {
+              "en": "FBX's Unsaturated-Final",
+              "zh-Hans": "FBX's Unsaturated-Final"
+            },
+            "wavebeam": {
+              "en": "nakedarthur's Wavebeam",
+              "zh-Hans": "nakedarthur's Wavebeam"
+            },
+            "wii-vc": {
+              "en": "Wii Virtual Console",
+              "zh-Hans": "Wii Virtual Console"
+            },
+            "yuv-v3": {
+              "en": "FBX's YUV-V3",
+              "zh-Hans": "FBX's YUV-V3"
+            }
+          },
+          "values": [
+            "default",
+            "asqrealc",
+            "restored-wii-vc",
+            "wii-vc",
+            "rgb",
+            "yuv-v3",
+            "unsaturated-final",
+            "sony-cxa2025as-us",
+            "pal",
+            "bmf-final2",
+            "bmf-final3",
+            "smooth-fbx",
+            "composite-direct-fbx",
+            "pvm-style-d93-fbx",
+            "ntsc-hardware-fbx",
+            "nes-classic-fbx-fs",
+            "nescap",
+            "wavebeam",
+            "digital-prime-fbx",
+            "magnum-fbx",
+            "smooth-v2-fbx",
+            "nes-classic-fbx",
+            "royaltea",
+            "mugicha",
+            "raw",
+            "custom"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Blargg's NTSC filters are used to replicate RF, Composite, S-Video, and RGB cable signals.",
+            "zh-Hans": "使用 Blargg NTSC 滤镜，模拟 RF、复合视频、S 端子和 RGB 线材的信号效果。"
+          },
+          "key": "fceumm_ntsc_filter",
+          "restartRequired": true,
+          "title": {
+            "en": "NTSC Filter",
+            "zh-Hans": "NTSC 滤镜"
+          },
+          "type": "select",
+          "valueLabels": {
+            "composite": {
+              "en": "Composite",
+              "zh-Hans": "复合视频"
+            },
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "monochrome": {
+              "en": "Monochrome",
+              "zh-Hans": "黑白"
+            },
+            "rgb": {
+              "en": "RGB",
+              "zh-Hans": "RGB"
+            },
+            "svideo": {
+              "en": "S-Video",
+              "zh-Hans": "S 端子"
+            }
+          },
+          "values": [
+            "disabled",
+            "composite",
+            "svideo",
+            "rgb",
+            "monochrome"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Change sound quality, volume, channel enable settings.",
+        "zh-Hans": "音质、音量与各声道开关。"
+      },
+      "id": "audio",
+      "options": [
+        {
+          "categoryId": "audio",
+          "defaultValue": "Low",
+          "description": {
+            "en": "Enable higher quality sound. Increases performance requirements.",
+            "zh-Hans": "启用更高的音频质量，会增加性能开销。"
+          },
+          "key": "fceumm_sndquality",
+          "restartRequired": false,
+          "title": {
+            "en": "Sound Quality",
+            "zh-Hans": "音质"
+          },
+          "type": "select",
+          "valueLabels": {
+            "High": {
+              "en": "High",
+              "zh-Hans": "高"
+            },
+            "Low": {
+              "en": "Low",
+              "zh-Hans": "低"
+            },
+            "Very High": {
+              "en": "Very High",
+              "zh-Hans": "极高"
+            }
+          },
+          "values": [
+            "Low",
+            "High",
+            "Very High"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Apply a low pass audio filter to simulate the 'muted' sound of the NES when connected to a television via the RF modulator.",
+            "zh-Hans": "应用低通滤波，模拟 FC 通过 RF 射频线连接电视时略显沉闷的声音。"
+          },
+          "key": "fceumm_sndlowpass",
+          "restartRequired": false,
+          "title": {
+            "en": "Audio RF Filter",
+            "zh-Hans": "RF 音频滤波"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enable a fake stereo sound effect by delaying the right audio channel when upmixing the mono signal output from the NES.",
+            "zh-Hans": "延迟右声道输出，把 FC 的单声道声音模拟成立体声效果。"
+          },
+          "key": "fceumm_sndstereodelay",
+          "restartRequired": false,
+          "title": {
+            "en": "Stereo Sound Effect",
+            "zh-Hans": "伪立体声"
+          },
+          "type": "select",
+          "valueLabels": {
+            "01_ms_delay": {
+              "en": "1ms Delay",
+              "zh-Hans": "延迟 1 毫秒"
+            },
+            "02_ms_delay": {
+              "en": "2ms Delay",
+              "zh-Hans": "延迟 2 毫秒"
+            },
+            "03_ms_delay": {
+              "en": "3ms Delay",
+              "zh-Hans": "延迟 3 毫秒"
+            },
+            "04_ms_delay": {
+              "en": "4ms Delay",
+              "zh-Hans": "延迟 4 毫秒"
+            },
+            "05_ms_delay": {
+              "en": "5ms Delay",
+              "zh-Hans": "延迟 5 毫秒"
+            },
+            "06_ms_delay": {
+              "en": "6ms Delay",
+              "zh-Hans": "延迟 6 毫秒"
+            },
+            "07_ms_delay": {
+              "en": "7ms Delay",
+              "zh-Hans": "延迟 7 毫秒"
+            },
+            "08_ms_delay": {
+              "en": "8ms Delay",
+              "zh-Hans": "延迟 8 毫秒"
+            },
+            "09_ms_delay": {
+              "en": "9ms Delay",
+              "zh-Hans": "延迟 9 毫秒"
+            },
+            "10_ms_delay": {
+              "en": "10ms Delay",
+              "zh-Hans": "延迟 10 毫秒"
+            },
+            "11_ms_delay": {
+              "en": "11ms Delay",
+              "zh-Hans": "延迟 11 毫秒"
+            },
+            "12_ms_delay": {
+              "en": "12ms Delay",
+              "zh-Hans": "延迟 12 毫秒"
+            },
+            "13_ms_delay": {
+              "en": "13ms Delay",
+              "zh-Hans": "延迟 13 毫秒"
+            },
+            "14_ms_delay": {
+              "en": "14ms Delay",
+              "zh-Hans": "延迟 14 毫秒"
+            },
+            "15_ms_delay": {
+              "en": "15ms Delay (Default)",
+              "zh-Hans": "延迟 15 毫秒（默认）"
+            },
+            "16_ms_delay": {
+              "en": "16ms Delay",
+              "zh-Hans": "延迟 16 毫秒"
+            },
+            "17_ms_delay": {
+              "en": "17ms Delay",
+              "zh-Hans": "延迟 17 毫秒"
+            },
+            "18_ms_delay": {
+              "en": "18ms Delay",
+              "zh-Hans": "延迟 18 毫秒"
+            },
+            "19_ms_delay": {
+              "en": "19ms Delay",
+              "zh-Hans": "延迟 19 毫秒"
+            },
+            "20_ms_delay": {
+              "en": "20ms Delay",
+              "zh-Hans": "延迟 20 毫秒"
+            },
+            "21_ms_delay": {
+              "en": "21ms Delay",
+              "zh-Hans": "延迟 21 毫秒"
+            },
+            "22_ms_delay": {
+              "en": "22ms Delay",
+              "zh-Hans": "延迟 22 毫秒"
+            },
+            "23_ms_delay": {
+              "en": "23ms Delay",
+              "zh-Hans": "延迟 23 毫秒"
+            },
+            "24_ms_delay": {
+              "en": "24ms Delay",
+              "zh-Hans": "延迟 24 毫秒"
+            },
+            "25_ms_delay": {
+              "en": "25ms Delay",
+              "zh-Hans": "延迟 25 毫秒"
+            },
+            "26_ms_delay": {
+              "en": "26ms Delay",
+              "zh-Hans": "延迟 26 毫秒"
+            },
+            "27_ms_delay": {
+              "en": "27ms Delay",
+              "zh-Hans": "延迟 27 毫秒"
+            },
+            "28_ms_delay": {
+              "en": "28ms Delay",
+              "zh-Hans": "延迟 28 毫秒"
+            },
+            "29_ms_delay": {
+              "en": "29ms Delay",
+              "zh-Hans": "延迟 29 毫秒"
+            },
+            "30_ms_delay": {
+              "en": "30ms Delay",
+              "zh-Hans": "延迟 30 毫秒"
+            },
+            "31_ms_delay": {
+              "en": "31ms Delay",
+              "zh-Hans": "延迟 31 毫秒"
+            },
+            "32_ms_delay": {
+              "en": "32ms Delay",
+              "zh-Hans": "延迟 32 毫秒"
+            },
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "01_ms_delay",
+            "02_ms_delay",
+            "03_ms_delay",
+            "04_ms_delay",
+            "05_ms_delay",
+            "06_ms_delay",
+            "07_ms_delay",
+            "08_ms_delay",
+            "09_ms_delay",
+            "10_ms_delay",
+            "11_ms_delay",
+            "12_ms_delay",
+            "13_ms_delay",
+            "14_ms_delay",
+            "15_ms_delay",
+            "16_ms_delay",
+            "17_ms_delay",
+            "18_ms_delay",
+            "19_ms_delay",
+            "20_ms_delay",
+            "21_ms_delay",
+            "22_ms_delay",
+            "23_ms_delay",
+            "24_ms_delay",
+            "25_ms_delay",
+            "26_ms_delay",
+            "27_ms_delay",
+            "28_ms_delay",
+            "29_ms_delay",
+            "30_ms_delay",
+            "31_ms_delay",
+            "32_ms_delay"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Simulates the sound from famiclones that have the pulse wave channels duty cycle bits reversed.",
+            "zh-Hans": "模拟部分兼容机（山寨机）方波声道占空比位颠倒后的声音。"
+          },
+          "key": "fceumm_swapduty",
+          "restartRequired": false,
+          "title": {
+            "en": "Swap Duty Cycles",
+            "zh-Hans": "交换占空比"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "7",
+          "description": {
+            "en": "Change master volume level.",
+            "zh-Hans": "调整主音量。"
+          },
+          "key": "fceumm_sndvolume",
+          "restartRequired": false,
+          "title": {
+            "en": "Master Volume",
+            "zh-Hans": "主音量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "1": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "10": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "2": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "3": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "4": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "5": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "6": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "7": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "8": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "9": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables pulse wave generator audio output 1.",
+            "zh-Hans": "开启或关闭第 1 路方波声道。"
+          },
+          "key": "fceumm_apu_1",
+          "restartRequired": false,
+          "title": {
+            "en": "Channel 1 (Square 1)",
+            "zh-Hans": "声道 1（方波 1）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables pulse wave generator audio output 2.",
+            "zh-Hans": "开启或关闭第 2 路方波声道。"
+          },
+          "key": "fceumm_apu_2",
+          "restartRequired": false,
+          "title": {
+            "en": "Channel 2 (Square 2)",
+            "zh-Hans": "声道 2（方波 2）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables triangle wave generator audio output.",
+            "zh-Hans": "开启或关闭三角波声道。"
+          },
+          "key": "fceumm_apu_3",
+          "restartRequired": false,
+          "title": {
+            "en": "Channel 3 (Triangle)",
+            "zh-Hans": "声道 3（三角波）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables noise generator audio output.",
+            "zh-Hans": "开启或关闭噪声声道。"
+          },
+          "key": "fceumm_apu_4",
+          "restartRequired": false,
+          "title": {
+            "en": "Channel 4 (Noise)",
+            "zh-Hans": "声道 4（噪声）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables delta modulation channel audio output.",
+            "zh-Hans": "开启或关闭 DPCM 采样声道。"
+          },
+          "key": "fceumm_apu_5",
+          "restartRequired": false,
+          "title": {
+            "en": "Channel 5 (PCM)",
+            "zh-Hans": "声道 5（PCM）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Audio",
+        "zh-Hans": "音频"
+      }
+    },
+    {
+      "description": {
+        "en": "Change input settings.",
+        "zh-Hans": "按键输入相关设置。"
+      },
+      "id": "input",
+      "options": [
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Allows simultaneous UP+DOWN or LEFT+RIGHT button combinations, which can create different effects in some games.",
+            "zh-Hans": "允许同时按下「上+下」或「左+右」，在部分游戏中会产生特殊效果。"
+          },
+          "key": "fceumm_up_down_allowed",
+          "restartRequired": false,
+          "title": {
+            "en": "Allow Opposing Directions",
+            "zh-Hans": "允许相反方向同时按下"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Input",
+        "zh-Hans": "输入"
+      }
+    },
+    {
+      "description": {
+        "en": "Change processor overclocking and emulation accuracy settings affecting low-level performance and compatibility.",
+        "zh-Hans": "处理器超频与模拟精度设置，影响底层性能与兼容性。"
+      },
+      "id": "hacks",
+      "options": [
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Removes the 8-per-scanline hardware limit. This reduces sprite flickering but can cause some games to glitch since some use this for effects.",
+            "zh-Hans": "移除每条扫描线最多 8 个精灵的硬件限制，可减少精灵闪烁；但部分游戏利用这一限制实现特效，可能出现画面错误。"
+          },
+          "key": "fceumm_nospritelimit",
+          "restartRequired": false,
+          "title": {
+            "en": "No Sprite Limit",
+            "zh-Hans": "取消精灵数量限制"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enables or disables overclocking, which can reduce slowdowns in some games. Postrender method is more compatible with every game, Vblank is more effective for games like Contra Force.",
+            "zh-Hans": "开启超频可减少部分游戏的卡顿。Postrender 方式兼容性最好；VBlank 方式对《魂斗罗 Force》等游戏效果更明显。"
+          },
+          "key": "fceumm_overclocking",
+          "restartRequired": false,
+          "title": {
+            "en": "Overclock",
+            "zh-Hans": "超频"
+          },
+          "type": "select",
+          "valueLabels": {
+            "2x-Postrender": {
+              "en": "2x-Postrender",
+              "zh-Hans": "2x-Postrender"
+            },
+            "2x-VBlank": {
+              "en": "2x-VBlank",
+              "zh-Hans": "2x-VBlank"
+            },
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "2x-Postrender",
+            "2x-VBlank"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "fill $ff",
+          "description": {
+            "en": "RAM values on power up. Some games rely on initial RAM values for random number generation as an example.",
+            "zh-Hans": "设置开机时 RAM 的初始内容。部分游戏会用 RAM 初始值生成随机数等。"
+          },
+          "key": "fceumm_ramstate",
+          "restartRequired": true,
+          "title": {
+            "en": "RAM Power-On Fill",
+            "zh-Hans": "开机 RAM 初始值"
+          },
+          "type": "select",
+          "valueLabels": {
+            "fill $00": {
+              "en": "$00",
+              "zh-Hans": "$00"
+            },
+            "fill $ff": {
+              "en": "$FF",
+              "zh-Hans": "$FF"
+            },
+            "random": {
+              "en": "Random",
+              "zh-Hans": "随机"
+            }
+          },
+          "values": [
+            "fill $ff",
+            "fill $00",
+            "random"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Emulation Hacks",
+        "zh-Hans": "模拟修改"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "FCEUmm",
+    "coreVersion": "SVN",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

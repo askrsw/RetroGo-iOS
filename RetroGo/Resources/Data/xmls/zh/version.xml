@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.8.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.8.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 9 月 20 日</i>。
+        </p-paragraph>
+        <p-list id="v1.8.0" style="number">
+            <p-item>新增<b>核心选项</b>设置：在游戏设置中可直接调整核心自身的参数，如画面比例、调色板、滤镜、超频、音频处理等。全部选项均已<b>中文化</b>并按功能分组，同时支持<b>核心级与游戏级</b>分别配置。</p-item>
+            <p-item>核心选项已覆盖全部 <b>15 个核心</b>，并针对 RetroGo 做了精简：移除了不适用于 iOS 的联机、光枪、鼠标等选项，避免与屏幕按键的连发功能冲突；相互关联的选项会<b>按当前选择自动显示或隐藏</b>，例如 N64 的图形插件参数只在选中对应插件时出现。</p-item>
+            <p-item>大部分核心选项支持<b>游戏中即时生效</b>，调整后无需退出游戏即可看到效果；少数需要重新载入的选项会明确标注「重启后生效」。</p-item>
+            <p-item>FC 核心（<b>FCEUmm、Nestopia、Mesen</b>）支持<b>导入自定义调色板</b>：选择「Custom」后可直接挑选 .pal 文件，RetroGo 会自动放入对应核心的 BIOS 目录。</p-item>
+            <p-item>优化 <b>iPad</b> 使用体验：标签栏固定在底部，与 iPhone 保持一致；同时修复了旋转屏幕与分屏宽度变化时的布局问题。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.7.1" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.7.1</p-title>
         <p-paragraph fontsize="13">

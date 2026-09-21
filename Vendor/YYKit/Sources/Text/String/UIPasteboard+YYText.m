@@ -12,35 +12,40 @@
 #import "UIPasteboard+YYText.h"
 #import "YYImage-Fixed.h"
 #import "NSAttributedString+YYText.h"
-#import <MobileCoreServices/MobileCoreServices.h>
 
 NSString *const YYPasteboardTypeAttributedString = @"com.ibireme.NSAttributedString";
 NSString *const YYUTTypeWEBP = @"com.google.webp";
 
+// Stable UTI identifiers preserve iOS 13 support without deprecated constants.
+static NSString *const YYUTTypePNG = @"public.png";
+static NSString *const YYUTTypeJPEG = @"public.jpeg";
+static NSString *const YYUTTypeGIF = @"com.compuserve.gif";
+static NSString *const YYUTTypeImage = @"public.image";
+
 @implementation UIPasteboard (YYText)
 
 - (void)setPNGData:(NSData *)PNGData {
-    [self setData:PNGData forPasteboardType:(id)kUTTypePNG];
+    [self setData:PNGData forPasteboardType:YYUTTypePNG];
 }
 
 - (NSData *)PNGData {
-    return [self dataForPasteboardType:(id)kUTTypePNG];
+    return [self dataForPasteboardType:YYUTTypePNG];
 }
 
 - (void)setJPEGData:(NSData *)JPEGData {
-    [self setData:JPEGData forPasteboardType:(id)kUTTypeJPEG];
+    [self setData:JPEGData forPasteboardType:YYUTTypeJPEG];
 }
 
 - (NSData *)JPEGData {
-    return [self dataForPasteboardType:(id)kUTTypeJPEG];
+    return [self dataForPasteboardType:YYUTTypeJPEG];
 }
 
 - (void)setGIFData:(NSData *)GIFData {
-    [self setData:GIFData forPasteboardType:(id)kUTTypeGIF];
+    [self setData:GIFData forPasteboardType:YYUTTypeGIF];
 }
 
 - (NSData *)GIFData {
-    return [self dataForPasteboardType:(id)kUTTypeGIF];
+    return [self dataForPasteboardType:YYUTTypeGIF];
 }
 
 - (void)setWEBPData:(NSData *)WEBPData {
@@ -52,11 +57,11 @@ NSString *const YYUTTypeWEBP = @"com.google.webp";
 }
 
 - (void)setImageData:(NSData *)imageData {
-    [self setData:imageData forPasteboardType:(id)kUTTypeImage];
+    [self setData:imageData forPasteboardType:YYUTTypeImage];
 }
 
 - (NSData *)imageData {
-    return [self dataForPasteboardType:(id)kUTTypeImage];
+    return [self dataForPasteboardType:YYUTTypeImage];
 }
 
 - (void)setAttributedString:(NSAttributedString *)attributedString {
@@ -74,10 +79,10 @@ NSString *const YYUTTypeWEBP = @"com.google.webp";
             
             if ([img isKindOfClass:[YYImage class]] && ((YYImage *)img).animatedImageData) {
                 if (((YYImage *)img).animatedImageType == YYImageTypeGIF) {
-                    NSDictionary *item = @{(id)kUTTypeGIF : ((YYImage *)img).animatedImageData};
+                    NSDictionary *item = @{YYUTTypeGIF : ((YYImage *)img).animatedImageData};
                     [self addItems:@[item]];
                 } else if (((YYImage *)img).animatedImageType == YYImageTypePNG) {
-                    NSDictionary *item = @{(id)kUTTypePNG : ((YYImage *)img).animatedImageData};
+                    NSDictionary *item = @{YYUTTypePNG : ((YYImage *)img).animatedImageData};
                     [self addItems:@[item]];
                 } else if (((YYImage *)img).animatedImageType == YYImageTypeWebP) {
                     NSDictionary *item = @{(id)YYUTTypeWEBP : ((YYImage *)img).animatedImageData};
@@ -107,11 +112,11 @@ NSString *const YYUTTypeWEBP = @"com.google.webp";
                     if (data) {
                         switch (type) {
                             case YYImageTypeGIF: {
-                                NSDictionary *item = @{(id)kUTTypeGIF : data};
+                                NSDictionary *item = @{YYUTTypeGIF : data};
                                 [self addItems:@[item]];
                             } break;
                             case YYImageTypePNG: { // APNG
-                                NSDictionary *item = @{(id)kUTTypePNG : data};
+                                NSDictionary *item = @{YYUTTypePNG : data};
                                 [self addItems:@[item]];
                             } break;
                             case YYImageTypeWebP: {

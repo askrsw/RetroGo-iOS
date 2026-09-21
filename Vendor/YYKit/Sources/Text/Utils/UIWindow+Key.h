@@ -10,10 +10,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UIWindow (Key)
-+ (UIWindow *)currentKeyWindow;
-+ (UIWindow *)currentTopWindow;
-+ (NSArray<UIWindow *> *)currentWindows;
-+ (UIWindowScene *)foregroundScene;
++ (nullable UIWindow *)currentKeyWindow;
++ (nullable UIWindow *)currentTopWindow;
++ (nullable NSArray<UIWindow *> *)currentWindows;
++ (nullable UIWindowScene *)foregroundScene;
 @end
 
 NS_ASSUME_NONNULL_END

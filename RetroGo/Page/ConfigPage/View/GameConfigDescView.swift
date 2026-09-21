@@ -88,8 +88,16 @@ final class GameConfigDescView: UIView {
             .paragraphStyle: paragraphStyle
         ]
 
-        let maxWidth = viewController.view.width
-        var size = CGSize(width: maxWidth - 40 - cornerRadius * 2, height: 0)
+        // The bubble lives in the window, so it must be placed in window
+        // coordinates. Wrapping still follows the presenting view, which on iPad
+        // is a form sheet much narrower than the window.
+        let leftLimit = 20 + window.safeAreaInsets.left
+        let rightLimit = window.bounds.width - 20 - window.safeAreaInsets.right
+        // Never wider than the span the bubble may occupy, otherwise a long text
+        // in landscape would run past the safe area and clip its last words.
+        let bubbleWidth = min(viewController.view.width - 40, rightLimit - leftLimit)
+
+        var size = CGSize(width: bubbleWidth - cornerRadius * 2, height: 0)
         size = (desc as NSString).boundingRect(with: size, options: .usesLineFragmentOrigin, attributes: attributes, context: nil).size
         label.size = size
         label.numberOfLines = 0
@@ -104,14 +112,17 @@ final class GameConfigDescView: UIView {
 
         self.size = size
         var x = sourceRect.minX - 20
-        if x < 20 {
-            x = 20
-        } else if x + size.width + 20 > maxWidth {
-            x = maxWidth - 20 - size.width
+        if x < leftLimit {
+            x = leftLimit
+        } else if x + size.width > rightLimit {
+            x = max(leftLimit, rightLimit - size.width)
         }
         self.left = x
 
-        let anchorX = sourceRect.midX - x
+        // Keep the arrow inside the rounded body even when the bubble had to be
+        // pushed away from the source view.
+        let anchorInset = cornerRadius + sharpWidth / 2
+        let anchorX = min(max(sourceRect.midX - x, anchorInset), size.width - anchorInset)
         let anchorY: CGFloat
         let y: CGFloat
         if sourceRect.minY - deltaHeight - size.height - window.safeAreaInsets.top - 20 > 0 {

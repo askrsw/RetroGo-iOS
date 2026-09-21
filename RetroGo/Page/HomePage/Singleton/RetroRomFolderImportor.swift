@@ -201,12 +201,12 @@ extension RetroRomFolderImportor {
             let message = NSString.localizedStringWithFormat(format as NSString, details) as String
             let title = Bundle.localizedString(forKey: "homepage_import_incomplete_groups_title")
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self] _ in
+            let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self = self] _ in
                 self.incompletePolicy = .cancel
                 self.procSemphore.signal()
             }
             alert.addAction(cancelAction)
-            let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self] _ in
+            let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self = self] _ in
                 self.incompletePolicy = .skip
                 self.procSemphore.signal()
             }
@@ -733,12 +733,12 @@ extension RetroRomFolderImportor {
                 let msgFormatter = Bundle.localizedString(forKey: "homepage_import_file_exists_path")
                 let message = String(format: msgFormatter, path)
                 let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self] _ in
+                let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self = self] _ in
                     self.conflictPolicy = .cancel
                     self.procSemphore.signal()
                 }
                 alert.addAction(cancelAction)
-                let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self] _ in
+                let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self = self] _ in
                     self.conflictPolicy = .skip
                     self.procSemphore.signal()
                 }
@@ -940,18 +940,18 @@ extension RetroRomFolderImportor {
                     canMerge = true
                 }
                 let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-                let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self] _ in
+                let cancelAction = UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { [unowned self = self] _ in
                     self.conflictPolicy = .cancel
                     self.procSemphore.signal()
                 }
                 alert.addAction(cancelAction)
-                let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self] _ in
+                let skipAction = UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [unowned self = self] _ in
                     self.conflictPolicy = .skip
                     self.procSemphore.signal()
                 }
                 alert.addAction(skipAction)
                 if canMerge {
-                    let mergeAction = UIAlertAction(title: Bundle.localizedString(forKey: "homepage_import_folder_merge"), style: .default) { [unowned self] _ in
+                    let mergeAction = UIAlertAction(title: Bundle.localizedString(forKey: "homepage_import_folder_merge"), style: .default) { [unowned self = self] _ in
                         self.conflictPolicy = .merge
                         self.procSemphore.signal()
                     }

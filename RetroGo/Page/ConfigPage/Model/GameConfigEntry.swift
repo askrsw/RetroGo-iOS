@@ -71,6 +71,7 @@ final class GameConfigEntry: NSObject {
     var proGatePresentation: AppStoreProGatePresentation = .alert
 
     var enabled: Bool = true
+    var opensCoreOptions = false
     var desc: String?
     weak var session: GameConfigSession?
     @objc dynamic var refresh: Bool = false

@@ -248,7 +248,7 @@ final class GameCoverService {
         // disk read returns, we skip further I/O while still calling completion so
         // the caller can clean up its loading state.
         imageCache.retrieveImage(forKey: imgKey) { [weak imageView] result in
-            Task { @MainActor [weak self, weak imageView] in
+            Task { @MainActor [weak self = self, weak imageView] in
                 guard let self else { return }
 
                 // Kingfisher compatibility note:

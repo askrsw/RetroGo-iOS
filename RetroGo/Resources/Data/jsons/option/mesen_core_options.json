@@ -1,0 +1,948 @@
+{
+  "coreId": "mesen",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Change overclocking, region, RAM and FDS settings.",
+        "zh-Hans": "超频、地区、RAM 与 FDS 设置。"
+      },
+      "id": "system",
+      "options": [
+        {
+          "categoryId": "system",
+          "defaultValue": "None",
+          "description": {
+            "en": "Use this to overclock or underclock the CPU. NOTE: Overclocking can cause issues in some games.",
+            "zh-Hans": "提高或降低模拟 CPU 的速度。注意：超频可能导致部分游戏出现问题。"
+          },
+          "key": "mesen_overclock",
+          "restartRequired": false,
+          "title": {
+            "en": "Overclock",
+            "zh-Hans": "CPU 超频"
+          },
+          "type": "select",
+          "valueLabels": {
+            "High": {
+              "en": "High",
+              "zh-Hans": "高"
+            },
+            "Low": {
+              "en": "Low",
+              "zh-Hans": "低"
+            },
+            "Medium": {
+              "en": "Medium",
+              "zh-Hans": "中"
+            },
+            "None": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "Very High": {
+              "en": "Very High",
+              "zh-Hans": "极高"
+            }
+          },
+          "values": [
+            "None",
+            "Low",
+            "Medium",
+            "High",
+            "Very High"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "Before NMI (Recommended)",
+          "description": {
+            "en": "Increases the number of scanlines in the PPU, before or after the NMI signal is triggered at the end of the visible frame. This effectively gives more time for games to perform calculations, which can reduce slowdowns in games. 'Before NMI' is the preferred option for overclocking, 'After NMI' should only be used if it does not work as expected.",
+            "zh-Hans": "在可见画面结束、NMI 信号触发之前或之后增加额外的扫描线，让游戏有更多时间运算，从而减少卡顿。优先使用「NMI 前」，效果不理想时再尝试「NMI 后」。"
+          },
+          "key": "mesen_overclock_type",
+          "restartRequired": false,
+          "title": {
+            "en": "Overclock Type",
+            "zh-Hans": "超频方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "After NMI": {
+              "en": "After NMI",
+              "zh-Hans": "NMI 后"
+            },
+            "Before NMI (Recommended)": {
+              "en": "Before NMI (Recommended)",
+              "zh-Hans": "NMI 前（推荐）"
+            }
+          },
+          "values": [
+            "Before NMI (Recommended)",
+            "After NMI"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "When set to Auto, the emulator will try to detect the game's region (NTSC or PAL), however this is not always possible. When there is nothing to suggest a game is for the PAL region, the NTSC region will be used by default. Dendy is used to mimic a number of different NES clones, in particular, the Dendy, which was a popular clone in Russia.",
+            "zh-Hans": "「自动」会尝试识别游戏是 NTSC 还是 PAL 版本，无法识别时使用 NTSC。Dendy 模拟俄罗斯等地流行的 Dendy 兼容机。"
+          },
+          "key": "mesen_region",
+          "restartRequired": true,
+          "title": {
+            "en": "Region",
+            "zh-Hans": "地区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "Dendy": {
+              "en": "Dendy",
+              "zh-Hans": "Dendy"
+            },
+            "NTSC": {
+              "en": "NTSC",
+              "zh-Hans": "NTSC"
+            },
+            "PAL": {
+              "en": "PAL",
+              "zh-Hans": "PAL"
+            }
+          },
+          "values": [
+            "Auto",
+            "NTSC",
+            "PAL",
+            "Dendy"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "All 0s (Default)",
+          "description": {
+            "en": "On a console, the RAM's state at power on is undetermined and relatively random. This option lets you select Mesen's behavior when initializing RAM: set all bits to 0, set all bits to 1, or randomize the value of each bit.",
+            "zh-Hans": "真实主机开机时 RAM 的内容不确定。可选择全部置 0、全部置 1 或随机填充。部分游戏会用 RAM 初始值生成随机数等。"
+          },
+          "key": "mesen_ramstate",
+          "restartRequired": true,
+          "title": {
+            "en": "RAM Power-On State",
+            "zh-Hans": "开机 RAM 初始值"
+          },
+          "type": "select",
+          "valueLabels": {
+            "All 0s (Default)": {
+              "en": "All 0s (Default)",
+              "zh-Hans": "全 0（默认）"
+            },
+            "All 1s": {
+              "en": "All 1s",
+              "zh-Hans": "全 1"
+            },
+            "Random Values": {
+              "en": "Random Values",
+              "zh-Hans": "随机"
+            }
+          },
+          "values": [
+            "All 0s (Default)",
+            "All 1s",
+            "Random Values"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "By default, the FDS boots with no disk inserted in the drive. This option makes it so the player does not need to manually insert disk 1, side A manually.",
+            "zh-Hans": "FDS 默认开机时驱动器中没有磁盘。开启后会自动插入第 1 张磁盘的 A 面，无需手动操作。"
+          },
+          "key": "mesen_fdsautoinsertdisk",
+          "restartRequired": true,
+          "title": {
+            "en": "FDS: Automatically Insert Disk",
+            "zh-Hans": "FDS 自动插入磁盘"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "FDS games contain a large number of load screens due to their data being stored on floppy drives. Mesen needs to emulate this floppy drive's speed to ensure accurate emulation. This option makes it so Mesen runs the emulation as fast as it can when a game is loading data from the disk, which greatly reduces the time spent on loading screens.",
+            "zh-Hans": "FDS 游戏存放在磁盘上，读盘画面很多。开启后读盘期间全速运行，大幅缩短等待时间。"
+          },
+          "key": "mesen_fdsfastforwardload",
+          "restartRequired": false,
+          "title": {
+            "en": "FDS: Fast Forward While Loading",
+            "zh-Hans": "FDS 读盘时加速"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "System",
+        "zh-Hans": "系统"
+      }
+    },
+    {
+      "description": {
+        "en": "Change filter, palette, overscan, aspect ratio and rotation settings.",
+        "zh-Hans": "滤镜、调色板、过扫描裁切、画面比例与旋转。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Select a filter to apply to the picture. Blargg filters are fast, Bisqwit filters are slower.",
+            "zh-Hans": "为画面应用 NTSC 信号滤镜。Blargg 滤镜速度较快；Bisqwit 滤镜效果更细腻，但更耗性能。"
+          },
+          "key": "mesen_ntsc_filter",
+          "restartRequired": true,
+          "title": {
+            "en": "NTSC Filter",
+            "zh-Hans": "NTSC 滤镜"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Bisqwit 2x": {
+              "en": "Bisqwit 2x",
+              "zh-Hans": "Bisqwit 2x"
+            },
+            "Bisqwit 4x": {
+              "en": "Bisqwit 4x",
+              "zh-Hans": "Bisqwit 4x"
+            },
+            "Bisqwit 8x": {
+              "en": "Bisqwit 8x",
+              "zh-Hans": "Bisqwit 8x"
+            },
+            "Composite (Blargg)": {
+              "en": "Composite (Blargg)",
+              "zh-Hans": "复合视频 (Blargg)"
+            },
+            "Disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "Monochrome (Blargg)": {
+              "en": "Monochrome (Blargg)",
+              "zh-Hans": "黑白 (Blargg)"
+            },
+            "RGB (Blargg)": {
+              "en": "RGB (Blargg)",
+              "zh-Hans": "RGB (Blargg)"
+            },
+            "S-Video (Blargg)": {
+              "en": "S-Video (Blargg)",
+              "zh-Hans": "S 端子 (Blargg)"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Composite (Blargg)",
+            "S-Video (Blargg)",
+            "RGB (Blargg)",
+            "Monochrome (Blargg)",
+            "Bisqwit 2x",
+            "Bisqwit 4x",
+            "Bisqwit 8x"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "Default",
+          "description": {
+            "en": "Color palette to be used. Custom loads the MesenPalette.pal palette file added in the core's BIOS files.",
+            "zh-Hans": "选择画面使用的调色板。Custom 会读取在核心 BIOS 中添加的 MesenPalette.pal 调色板文件。"
+          },
+          "key": "mesen_palette",
+          "restartRequired": false,
+          "title": {
+            "en": "Palette",
+            "zh-Hans": "调色板"
+          },
+          "type": "select",
+          "valueFiles": {
+            "Custom": {
+              "extensions": [
+                "pal"
+              ],
+              "fileName": "MesenPalette.pal",
+              "restartRequired": true
+            }
+          },
+          "valueLabels": {
+            "Composite Direct (by FirebrandX)": {
+              "en": "Composite Direct (by FirebrandX)",
+              "zh-Hans": "Composite Direct (by FirebrandX)"
+            },
+            "Custom": {
+              "en": "Custom",
+              "zh-Hans": "Custom"
+            },
+            "Default": {
+              "en": "Default",
+              "zh-Hans": "Default"
+            },
+            "Nes Classic": {
+              "en": "Nes Classic",
+              "zh-Hans": "Nes Classic"
+            },
+            "Nestopia (RGB)": {
+              "en": "Nestopia (RGB)",
+              "zh-Hans": "Nestopia (RGB)"
+            },
+            "Original Hardware (by FirebrandX)": {
+              "en": "Original Hardware (by FirebrandX)",
+              "zh-Hans": "Original Hardware (by FirebrandX)"
+            },
+            "PVM Style (by FirebrandX)": {
+              "en": "PVM Style (by FirebrandX)",
+              "zh-Hans": "PVM Style (by FirebrandX)"
+            },
+            "Raw": {
+              "en": "Raw",
+              "zh-Hans": "Raw"
+            },
+            "Sony CXA2025AS": {
+              "en": "Sony CXA2025AS",
+              "zh-Hans": "Sony CXA2025AS"
+            },
+            "Unsaturated v6 (by FirebrandX)": {
+              "en": "Unsaturated v6 (by FirebrandX)",
+              "zh-Hans": "Unsaturated v6 (by FirebrandX)"
+            },
+            "Wavebeam (by nakedarthur)": {
+              "en": "Wavebeam (by nakedarthur)",
+              "zh-Hans": "Wavebeam (by nakedarthur)"
+            },
+            "YUV v3 (by FirebrandX)": {
+              "en": "YUV v3 (by FirebrandX)",
+              "zh-Hans": "YUV v3 (by FirebrandX)"
+            }
+          },
+          "values": [
+            "Default",
+            "Composite Direct (by FirebrandX)",
+            "Nes Classic",
+            "Nestopia (RGB)",
+            "Original Hardware (by FirebrandX)",
+            "PVM Style (by FirebrandX)",
+            "Sony CXA2025AS",
+            "Unsaturated v6 (by FirebrandX)",
+            "YUV v3 (by FirebrandX)",
+            "Wavebeam (by nakedarthur)",
+            "Custom",
+            "Raw"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "The NES can normally only draw up to 8 sprites per line, this limitation is indirectly responsible for some of the flickering seen in games at times. When this option is enabled, the limit is disabled, allowing up to 64 sprites to be drawn on the same line.",
+            "zh-Hans": "NES 每条扫描线最多只能绘制 8 个精灵，这是部分游戏画面闪烁的原因之一。开启后上限提高到 64 个。"
+          },
+          "key": "mesen_nospritelimit",
+          "restartRequired": false,
+          "title": {
+            "en": "Remove Sprite Limit",
+            "zh-Hans": "取消精灵数量限制"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "None",
+          "description": {
+            "en": "This overscan setting allow you to cut out pixels on the left side of the screen.",
+            "zh-Hans": "裁掉画面左侧的像素。"
+          },
+          "key": "mesen_overscan_left",
+          "restartRequired": false,
+          "title": {
+            "en": "Left Overscan",
+            "zh-Hans": "左侧过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "12px": {
+              "en": "12px",
+              "zh-Hans": "12px"
+            },
+            "16px": {
+              "en": "16px",
+              "zh-Hans": "16px"
+            },
+            "4px": {
+              "en": "4px",
+              "zh-Hans": "4px"
+            },
+            "8px": {
+              "en": "8px",
+              "zh-Hans": "8px"
+            },
+            "None": {
+              "en": "None",
+              "zh-Hans": "无"
+            }
+          },
+          "values": [
+            "None",
+            "4px",
+            "8px",
+            "12px",
+            "16px"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "None",
+          "description": {
+            "en": "This overscan setting allow you to cut out pixels on the right side of the screen.",
+            "zh-Hans": "裁掉画面右侧的像素。"
+          },
+          "key": "mesen_overscan_right",
+          "restartRequired": false,
+          "title": {
+            "en": "Right Overscan",
+            "zh-Hans": "右侧过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "12px": {
+              "en": "12px",
+              "zh-Hans": "12px"
+            },
+            "16px": {
+              "en": "16px",
+              "zh-Hans": "16px"
+            },
+            "4px": {
+              "en": "4px",
+              "zh-Hans": "4px"
+            },
+            "8px": {
+              "en": "8px",
+              "zh-Hans": "8px"
+            },
+            "None": {
+              "en": "None",
+              "zh-Hans": "无"
+            }
+          },
+          "values": [
+            "None",
+            "4px",
+            "8px",
+            "12px",
+            "16px"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "None",
+          "description": {
+            "en": "This overscan setting allow you to cut out pixels on the top of the screen.",
+            "zh-Hans": "裁掉画面顶部的像素。"
+          },
+          "key": "mesen_overscan_up",
+          "restartRequired": false,
+          "title": {
+            "en": "Top Overscan",
+            "zh-Hans": "顶部过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "12px": {
+              "en": "12px",
+              "zh-Hans": "12px"
+            },
+            "16px": {
+              "en": "16px",
+              "zh-Hans": "16px"
+            },
+            "20px": {
+              "en": "20px",
+              "zh-Hans": "20px"
+            },
+            "24px": {
+              "en": "24px",
+              "zh-Hans": "24px"
+            },
+            "4px": {
+              "en": "4px",
+              "zh-Hans": "4px"
+            },
+            "8px": {
+              "en": "8px",
+              "zh-Hans": "8px"
+            },
+            "None": {
+              "en": "None",
+              "zh-Hans": "无"
+            }
+          },
+          "values": [
+            "None",
+            "4px",
+            "8px",
+            "12px",
+            "16px",
+            "20px",
+            "24px"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "None",
+          "description": {
+            "en": "This overscan setting allow you to cut out pixels on the bottom of the screen.",
+            "zh-Hans": "裁掉画面底部的像素。"
+          },
+          "key": "mesen_overscan_down",
+          "restartRequired": false,
+          "title": {
+            "en": "Bottom Overscan",
+            "zh-Hans": "底部过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "12px": {
+              "en": "12px",
+              "zh-Hans": "12px"
+            },
+            "16px": {
+              "en": "16px",
+              "zh-Hans": "16px"
+            },
+            "20px": {
+              "en": "20px",
+              "zh-Hans": "20px"
+            },
+            "24px": {
+              "en": "24px",
+              "zh-Hans": "24px"
+            },
+            "4px": {
+              "en": "4px",
+              "zh-Hans": "4px"
+            },
+            "8px": {
+              "en": "8px",
+              "zh-Hans": "8px"
+            },
+            "None": {
+              "en": "None",
+              "zh-Hans": "无"
+            }
+          },
+          "values": [
+            "None",
+            "4px",
+            "8px",
+            "12px",
+            "16px",
+            "20px",
+            "24px"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "'Auto' uses the NTSC or PAL ratio for the game's region. 'No Stretching' shows square pixels. 'Preserved' keeps the ratio after overscan cropping.",
+            "zh-Hans": "「自动」按游戏地区使用 NTSC 或 PAL 比例；「不拉伸」按原始像素显示；带「保持」的选项在裁切过扫描后仍维持该比例。"
+          },
+          "key": "mesen_aspect_ratio",
+          "restartRequired": false,
+          "title": {
+            "en": "Aspect Ratio",
+            "zh-Hans": "画面比例"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16:9": {
+              "en": "16:9",
+              "zh-Hans": "16:9"
+            },
+            "16:9 (Preserved)": {
+              "en": "16:9 (Preserved)",
+              "zh-Hans": "16:9（保持）"
+            },
+            "4:3": {
+              "en": "4:3",
+              "zh-Hans": "4:3"
+            },
+            "4:3 (Preserved)": {
+              "en": "4:3 (Preserved)",
+              "zh-Hans": "4:3（保持）"
+            },
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "NTSC": {
+              "en": "NTSC",
+              "zh-Hans": "NTSC"
+            },
+            "No Stretching": {
+              "en": "No Stretching",
+              "zh-Hans": "不拉伸"
+            },
+            "PAL": {
+              "en": "PAL",
+              "zh-Hans": "PAL"
+            }
+          },
+          "values": [
+            "Auto",
+            "No Stretching",
+            "NTSC",
+            "PAL",
+            "4:3",
+            "4:3 (Preserved)",
+            "16:9",
+            "16:9 (Preserved)"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Load Mesen HD Packs for supported games.",
+            "zh-Hans": "为支持的游戏加载 Mesen HD 高清材质包。"
+          },
+          "key": "mesen_hdpacks",
+          "restartRequired": true,
+          "title": {
+            "en": "Enable HD Packs",
+            "zh-Hans": "HD 高清包"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "None",
+          "description": {
+            "en": "Rotates the display by the specified angle. This is useful to play games (generally homebrew games) designed for a vertical display.",
+            "zh-Hans": "按指定角度旋转画面，适合为竖屏设计的游戏（多为自制游戏）。"
+          },
+          "key": "mesen_screenrotation",
+          "restartRequired": true,
+          "title": {
+            "en": "Screen Rotation",
+            "zh-Hans": "画面旋转"
+          },
+          "type": "select",
+          "valueLabels": {
+            "180 degrees": {
+              "en": "180 degrees",
+              "zh-Hans": "180°"
+            },
+            "270 degrees": {
+              "en": "270 degrees",
+              "zh-Hans": "270°"
+            },
+            "90 degrees": {
+              "en": "90 degrees",
+              "zh-Hans": "90°"
+            },
+            "None": {
+              "en": "None",
+              "zh-Hans": "无"
+            }
+          },
+          "values": [
+            "None",
+            "90 degrees",
+            "180 degrees",
+            "270 degrees"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Change sound effects and channel settings.",
+        "zh-Hans": "音效与声道设置。"
+      },
+      "id": "audio",
+      "options": [
+        {
+          "categoryId": "audio",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Delay one channel to simulate a stereo effect.",
+            "zh-Hans": "延迟一侧声道，把单声道声音模拟成立体声效果。"
+          },
+          "key": "mesen_fake_stereo",
+          "restartRequired": false,
+          "title": {
+            "en": "Fake Stereo Effect",
+            "zh-Hans": "伪立体声"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "This option mutes the triangle channel under certain conditions, which prevents it from causing popping sounds.",
+            "zh-Hans": "在特定情况下静音三角波声道，避免产生爆音。"
+          },
+          "key": "mesen_mute_triangle_ultrasonic",
+          "restartRequired": false,
+          "title": {
+            "en": "Reduce Popping on Triangle Channel",
+            "zh-Hans": "减少三角波声道爆音"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "This option prevents games from changing the output of the DMC channel too abruptly, which often causes popping sounds.",
+            "zh-Hans": "防止游戏过于突然地改变 DMC 声道输出，这通常是爆音的来源。"
+          },
+          "key": "mesen_reduce_dmc_popping",
+          "restartRequired": false,
+          "title": {
+            "en": "Reduce Popping on DMC Channel",
+            "zh-Hans": "减少 DMC 声道爆音"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "This option is to mimic some older NES clones that had incorrect sound output for both of the square channels. It greatly alters the sound in some games, and shouldn't be enabled unless you want this behavior.",
+            "zh-Hans": "模拟部分早期兼容机（山寨机）两路方波声道输出错误的声音。会明显改变部分游戏的音效，除非需要这种效果，否则不建议开启。"
+          },
+          "key": "mesen_swap_duty_cycle",
+          "restartRequired": false,
+          "title": {
+            "en": "Swap Square Channel Duty Cycles",
+            "zh-Hans": "交换方波占空比"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Very early Famicom models did not implement this feature, so this option is available to mimic early Famicom consoles. It changes the sound output of the noise channel in some games, and shouldn't be enabled unless you want this behavior.",
+            "zh-Hans": "非常早期的 FC 没有实现这项功能，开启后可模拟早期机型。会改变部分游戏的噪声音效，除非需要这种效果，否则不建议开启。"
+          },
+          "key": "mesen_disable_noise_mode_flag",
+          "restartRequired": false,
+          "title": {
+            "en": "Disable Noise Channel Mode Flag",
+            "zh-Hans": "禁用噪声声道模式位"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "48000",
+          "description": {
+            "en": "Sample rate of the core's audio output. The default is fine in most cases.",
+            "zh-Hans": "核心输出音频的采样率，一般保持默认即可。"
+          },
+          "key": "mesen_audio_sample_rate",
+          "restartRequired": true,
+          "title": {
+            "en": "Sound Output Sample Rate",
+            "zh-Hans": "音频采样率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "11025": {
+              "en": "11025 Hz",
+              "zh-Hans": "11025 Hz"
+            },
+            "22050": {
+              "en": "22050 Hz",
+              "zh-Hans": "22050 Hz"
+            },
+            "44100": {
+              "en": "44100 Hz",
+              "zh-Hans": "44100 Hz"
+            },
+            "48000": {
+              "en": "48000 Hz",
+              "zh-Hans": "48000 Hz"
+            },
+            "96000": {
+              "en": "96000 Hz",
+              "zh-Hans": "96000 Hz"
+            }
+          },
+          "values": [
+            "11025",
+            "22050",
+            "44100",
+            "48000",
+            "96000"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Audio",
+        "zh-Hans": "音频"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Mesen",
+    "coreVersion": "0.9.9",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

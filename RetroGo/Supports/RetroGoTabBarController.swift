@@ -95,6 +95,9 @@ private final class RetroGoNavigationController: UINavigationController {
 /// navigation within a tab doesn't affect the others.
 final class RetroGoTabBarController: UITabBarController {
 
+    /// Last size class pushed to the tabs, so layout passes don't reapply it.
+    private var appliedChildSizeClass: UIUserInterfaceSizeClass?
+
     init() {
         super.init(nibName: nil, bundle: nil)
         delegate = self
@@ -111,8 +114,16 @@ final class RetroGoTabBarController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureAppearance()
+
         buildTabs()
+        configureAppearance()
+    }
+
+    /// Covers every way the window can change width: rotation, iPad window
+    /// resizing and folding/unfolding a foldable phone.
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        syncChildSizeClass()
     }
 }
 
@@ -134,11 +145,65 @@ private extension RetroGoTabBarController {
     }
 
     func configureAppearance() {
-        let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        tabBar.standardAppearance   = appearance
-        tabBar.scrollEdgeAppearance = appearance
-        tabBar.tintColor = .mainColor
+        if #available(iOS 18.0, *) {
+            mode = .tabBar
+            if keepsTabBarAtBottom {
+                // From iOS 18 UIKit moves the tab bar to the top whenever the
+                // horizontal size class is regular, which on iPad leaves it
+                // crowded right above each tab's navigation bar. RetroGo has no
+                // sidebar to justify that layout, so the tab bar stays at the
+                // bottom on every device, as it is on iPhone.
+                traitOverrides.horizontalSizeClass = .compact
+            }
+            syncChildSizeClass()
+        }
+
+        if #available(iOS 26.0, *) {
+            tabBarMinimizeBehavior = .automatic
+            tabBar.isTranslucent = true
+            tabBar.backgroundColor = .clear
+        } else {
+            let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.shadowColor = .clear
+            tabBar.tintColor = .mainColor
+
+            tabBar.standardAppearance = appearance
+            tabBar.scrollEdgeAppearance = appearance
+            tabBar.isTranslucent = false
+        }
+    }
+
+    /// Whether the bottom tab bar is kept by overriding this controller's own
+    /// size class. Only iOS 18 and later relocate the tab bar.
+    var keepsTabBarAtBottom: Bool {
+        guard #available(iOS 18.0, *) else { return false }
+        return true
+    }
+
+    /// The size class the window really has. Reading it from the window keeps
+    /// it free of the compact override applied to this controller, so a wide
+    /// iPad window and an unfolded foldable phone both report `.regular`.
+    var environmentSizeClass: UIUserInterfaceSizeClass {
+        if let window = view.window {
+            return window.traitCollection.horizontalSizeClass
+        }
+        // Before the view reaches a window, fall back to the regular-width
+        // threshold UIKit itself uses.
+        return view.bounds.width >= 768 ? .regular : .compact
+    }
+
+    /// Passes the real size class down to the tabs. Only this controller is
+    /// pinned to compact; its children must keep adapting, otherwise a narrow
+    /// window would still lay out as if it were full screen.
+    func syncChildSizeClass() {
+        guard keepsTabBarAtBottom, let viewControllers else { return }
+        let sizeClass = environmentSizeClass
+        guard sizeClass != appliedChildSizeClass else { return }
+        appliedChildSizeClass = sizeClass
+        viewControllers.forEach { controller in
+            controller.traitOverrides.horizontalSizeClass = sizeClass
+        }
     }
 }
 

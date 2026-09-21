@@ -601,3 +601,26 @@
 "netplay_role_spectating"           = "Spectating";
 "netplay_ping_fmt"                  = "%d ms";
 "netplay_in_session_client"         = "In a room";
+
+/* Core Option */
+"coreoption_title" = "Core Options";
+"coreoption_follow_core" = "Use Core Settings";
+"coreoption_follow_core_message" = "Remove all core option overrides for this game and use the core settings?";
+"coreoption_inherited_core" = "From core settings";
+"coreoption_default" = "Default";
+"coreoption_overridden" = "Custom";
+"coreoption_save_error" = "Unable to save core options. Your previous settings have been kept. Please try again.";
+"coreoption_expanded" = "Expanded";
+"coreoption_collapsed" = "Collapsed";
+"coreoption_reset" = "Restore Defaults";
+"coreoption_reset_message" = "Restore the options on this page to their default values?";
+"coreoption_cancel" = "Cancel";
+"coreoption_ok" = "OK";
+"coreoption_empty" = "No core options available.";
+"coreoption_restart" = "Takes effect after closing and reopening the game.";
+"coreoption_runtime_warning" = "Changing core options may cause errors while the core is running or crash the app. Adjust these settings with care.";
+"coreoption_load_error" = "Unable to load core options.";
+"coreoption_file_import_error" = "Could not import the selected file.";
+"coreoption_file_import_success" = "Imported as %@ in the core's BIOS files.";
+"coreoption_file_hint" = "Choosing this asks for a %@ file, which is imported into the core's BIOS files as %@.";
+"coreoption_file_restart_hint" = "It may only take effect after you close and reopen the game.";

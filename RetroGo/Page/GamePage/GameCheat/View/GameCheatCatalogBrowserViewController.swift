@@ -255,7 +255,7 @@ final class GameCheatCatalogBrowserViewController: UIViewController {
                 break
             }
 
-            DispatchQueue.main.async { [weak self] in
+            DispatchQueue.main.async { [weak self = self] in
                 self?.updateInfoRows(gamerdbEntry: matchedEntry, crc32: matchedCRC32, binding: binding)
             }
         }

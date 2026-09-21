@@ -1,0 +1,1342 @@
+{
+  "coreId": "vbam",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "BIOS, hardware and cartridge settings.",
+        "zh-Hans": "BIOS、机型与卡带设置。"
+      },
+      "id": "system",
+      "options": [
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Use official BIOS when available. Core needs to be restarted for changes to apply.",
+            "zh-Hans": "可用时使用官方 BIOS 文件，开机会显示 GBA 的开机动画，兼容性也更好。需要先在核心 BIOS 中添加对应文件。"
+          },
+          "key": "vbam_usebios",
+          "restartRequired": true,
+          "title": {
+            "en": "Use Official BIOS",
+            "zh-Hans": "使用官方 BIOS"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Forces the internal real-time clock to be enabled regardless of rom. Usuable for rom patches that requires clock to be enabled (aka Pokemon).",
+            "zh-Hans": "不论 ROM 是否声明都启用卡带内的实时时钟。部分改版游戏（例如宝可梦系列的改版）需要开启才能正常计时。"
+          },
+          "key": "vbam_forceRTCenable",
+          "restartRequired": true,
+          "title": {
+            "en": "Force-Enable RTC",
+            "zh-Hans": "强制启用实时时钟"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "gbc",
+          "description": {
+            "en": "Sets the Game Boy hardware type to emulate. Restart core to apply.",
+            "zh-Hans": "模拟哪种 GB 机型。「自动」按游戏选择。"
+          },
+          "key": "vbam_gbHardware",
+          "restartRequired": true,
+          "title": {
+            "en": "(GB) Emulated Hardware",
+            "zh-Hans": "模拟机型（GB）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Automatic",
+              "zh-Hans": "自动"
+            },
+            "gb": {
+              "en": "Game Boy",
+              "zh-Hans": "Game Boy"
+            },
+            "gba": {
+              "en": "Game Boy Advance",
+              "zh-Hans": "Game Boy Advance"
+            },
+            "gbc": {
+              "en": "Game Boy Color",
+              "zh-Hans": "Game Boy Color"
+            },
+            "sgb": {
+              "en": "Super Game Boy",
+              "zh-Hans": "Super Game Boy"
+            },
+            "sgb2": {
+              "en": "Super Game Boy 2",
+              "zh-Hans": "Super Game Boy 2"
+            }
+          },
+          "values": [
+            "gbc",
+            "auto",
+            "sgb",
+            "gb",
+            "gba",
+            "sgb2"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Allows Colorizer hacked GB games (e.g. DX patched games) to normally run in GBC/GBA hardware type. This also disables the use of bios file. NOT RECOMMENDED for use on non-colorized games.",
+            "zh-Hans": "让经过上色改版的 GB 游戏（例如 DX 补丁版）能在 GBC/GBA 机型下正常运行。开启后不再使用 BIOS 文件。非改版游戏不建议开启。"
+          },
+          "key": "vbam_allowcolorizerhack",
+          "restartRequired": true,
+          "title": {
+            "en": "(GB) Enable Colorizer Hack",
+            "zh-Hans": "允许上色改版（GB）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "System",
+        "zh-Hans": "系统"
+      }
+    },
+    {
+      "description": {
+        "en": "Palette, filter and picture settings.",
+        "zh-Hans": "配色、滤镜与画面效果。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "black and white",
+          "description": {
+            "en": "Set Game Boy palettes to use.",
+            "zh-Hans": "黑白 GB 游戏使用的配色。"
+          },
+          "key": "vbam_palettes",
+          "restartRequired": false,
+          "title": {
+            "en": "(GB) Color Palette",
+            "zh-Hans": "GB 调色板"
+          },
+          "type": "select",
+          "valueLabels": {
+            "black and white": {
+              "en": "black and white",
+              "zh-Hans": "black and white"
+            },
+            "blue sea": {
+              "en": "blue sea",
+              "zh-Hans": "blue sea"
+            },
+            "dark knight": {
+              "en": "dark knight",
+              "zh-Hans": "dark knight"
+            },
+            "gba sp": {
+              "en": "gba sp",
+              "zh-Hans": "gba sp"
+            },
+            "green forest": {
+              "en": "green forest",
+              "zh-Hans": "green forest"
+            },
+            "hot desert": {
+              "en": "hot desert",
+              "zh-Hans": "hot desert"
+            },
+            "original gameboy": {
+              "en": "original gameboy",
+              "zh-Hans": "original gameboy"
+            },
+            "pink dreams": {
+              "en": "pink dreams",
+              "zh-Hans": "pink dreams"
+            },
+            "wierd colors": {
+              "en": "wierd colors",
+              "zh-Hans": "wierd colors"
+            }
+          },
+          "values": [
+            "black and white",
+            "blue sea",
+            "dark knight",
+            "green forest",
+            "hot desert",
+            "pink dreams",
+            "wierd colors",
+            "original gameboy",
+            "gba sp"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "When enabled, if loaded content is SGB compatible, this will show the border from the game if available.",
+            "zh-Hans": "游戏支持超级 GB 时，显示游戏自带的边框画面。"
+          },
+          "key": "vbam_showborders",
+          "restartRequired": true,
+          "title": {
+            "en": "(GB) Show Borders",
+            "zh-Hans": "显示 SGB 边框"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "On",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled",
+            "auto"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Applies color correction which fixes colors in some games.",
+            "zh-Hans": "应用色彩校正，修正部分游戏偏色的问题。"
+          },
+          "key": "vbam_gbcoloroption",
+          "restartRequired": false,
+          "title": {
+            "en": "(GB) Color Correction",
+            "zh-Hans": "色彩校正（GB）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Darkens the onscreen colors by applying a screen filter.",
+            "zh-Hans": "压暗画面颜色，模拟真实 LCD 屏幕的观感。"
+          },
+          "key": "vbam_lcdfilter",
+          "restartRequired": false,
+          "title": {
+            "en": "LCD Color Filter",
+            "zh-Hans": "LCD 滤镜"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Simulates LCD ghosting effects. 'Smart' attempts to detect screen flickering, and only performs a 50:50 mix on affected pixels, while 'Motion Blur' mimics natural LCD response times by combining multiple buffered frames. 'Smart' blending is required when playing games that aggressively exploit LCD ghosting for transparency effects (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, the Boktai series...).",
+            "zh-Hans": "模拟 LCD 残影。「智能」会识别画面闪烁，只对受影响的像素做混合；「运动模糊」用多帧模拟真实屏幕的响应速度。部分游戏靠残影实现半透明效果。"
+          },
+          "key": "vbam_interframeblending",
+          "restartRequired": false,
+          "title": {
+            "en": "Interframe Blending",
+            "zh-Hans": "帧混合"
+          },
+          "type": "select",
+          "valueLabels": {
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "motion blur": {
+              "en": "Motion Blur",
+              "zh-Hans": "运动模糊"
+            },
+            "smart": {
+              "en": "Smart",
+              "zh-Hans": "智能"
+            }
+          },
+          "values": [
+            "disabled",
+            "smart",
+            "motion blur"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Audio processing settings.",
+        "zh-Hans": "音频处理设置。"
+      },
+      "id": "audio",
+      "options": [
+        {
+          "categoryId": "audio",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enable or disable sound filtering.",
+            "zh-Hans": "对音频做平滑处理，声音更柔和。"
+          },
+          "key": "vbam_soundinterpolation",
+          "restartRequired": false,
+          "title": {
+            "en": "Sound Interpolation",
+            "zh-Hans": "音频插值"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "5",
+          "description": {
+            "en": "Sets the amount of filtering to use. Higher value reduces higher frequencies.",
+            "zh-Hans": "数值越大，削减的高频越多，声音越闷。"
+          },
+          "key": "vbam_soundfiltering",
+          "restartRequired": false,
+          "title": {
+            "en": "Sound Filtering",
+            "zh-Hans": "音频滤波强度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Audio",
+        "zh-Hans": "音频"
+      }
+    },
+    {
+      "description": {
+        "en": "Sensor and analog stick settings.",
+        "zh-Hans": "传感器与摇杆设置。"
+      },
+      "id": "input",
+      "options": [
+        {
+          "categoryId": "input",
+          "defaultValue": "0",
+          "description": {
+            "en": "Adjusts simulated solar level in Boktai games. L2/R2 buttons can also be used to quickly change levels.",
+            "zh-Hans": "调整《太阳少年》系列中模拟的光照强度。也可以用 L2/R2 键快速调整。"
+          },
+          "key": "vbam_solarsensor",
+          "restartRequired": false,
+          "title": {
+            "en": "Solar Sensor Level",
+            "zh-Hans": "光感强度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "15",
+          "description": {
+            "en": "Set deadzone (in percent) of analog sticks.",
+            "zh-Hans": "设置摇杆模拟传感器时的死区范围。"
+          },
+          "key": "vbam_astick_deadzone",
+          "restartRequired": false,
+          "title": {
+            "en": "Sensor Deadzone",
+            "zh-Hans": "传感器死区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            }
+          },
+          "values": [
+            "0",
+            "5",
+            "10",
+            "15",
+            "20",
+            "25",
+            "30"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "100",
+          "description": {
+            "en": "Default bind is left analog. Used to adjust sensitivity level for gyro-enabled games.",
+            "zh-Hans": "调整陀螺仪类游戏（例如《瓦里奥制造》）的灵敏度，默认由左摇杆模拟。"
+          },
+          "key": "vbam_gyro_sensitivity",
+          "restartRequired": false,
+          "title": {
+            "en": "Gyroscope Sensitivity",
+            "zh-Hans": "陀螺仪灵敏度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "100": {
+              "en": "100",
+              "zh-Hans": "100"
+            },
+            "105": {
+              "en": "105",
+              "zh-Hans": "105"
+            },
+            "110": {
+              "en": "110",
+              "zh-Hans": "110"
+            },
+            "115": {
+              "en": "115",
+              "zh-Hans": "115"
+            },
+            "120": {
+              "en": "120",
+              "zh-Hans": "120"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "55": {
+              "en": "55",
+              "zh-Hans": "55"
+            },
+            "60": {
+              "en": "60",
+              "zh-Hans": "60"
+            },
+            "65": {
+              "en": "65",
+              "zh-Hans": "65"
+            },
+            "70": {
+              "en": "70",
+              "zh-Hans": "70"
+            },
+            "75": {
+              "en": "75",
+              "zh-Hans": "75"
+            },
+            "80": {
+              "en": "80",
+              "zh-Hans": "80"
+            },
+            "85": {
+              "en": "85",
+              "zh-Hans": "85"
+            },
+            "90": {
+              "en": "90",
+              "zh-Hans": "90"
+            },
+            "95": {
+              "en": "95",
+              "zh-Hans": "95"
+            }
+          },
+          "values": [
+            "10",
+            "15",
+            "20",
+            "25",
+            "30",
+            "35",
+            "40",
+            "45",
+            "50",
+            "55",
+            "60",
+            "65",
+            "70",
+            "75",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100",
+            "105",
+            "110",
+            "115",
+            "120"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "100",
+          "description": {
+            "en": "Default bind is right analog. Used to adjust sensitivity level for gyro-enabled games.",
+            "zh-Hans": "调整倾斜传感器类游戏（例如《猴子球》）的灵敏度，默认由右摇杆模拟。"
+          },
+          "key": "vbam_tilt_sensitivity",
+          "restartRequired": false,
+          "title": {
+            "en": "Tilt Sensor Sensitivity",
+            "zh-Hans": "倾斜传感器灵敏度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "100": {
+              "en": "100",
+              "zh-Hans": "100"
+            },
+            "105": {
+              "en": "105",
+              "zh-Hans": "105"
+            },
+            "110": {
+              "en": "110",
+              "zh-Hans": "110"
+            },
+            "115": {
+              "en": "115",
+              "zh-Hans": "115"
+            },
+            "120": {
+              "en": "120",
+              "zh-Hans": "120"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "55": {
+              "en": "55",
+              "zh-Hans": "55"
+            },
+            "60": {
+              "en": "60",
+              "zh-Hans": "60"
+            },
+            "65": {
+              "en": "65",
+              "zh-Hans": "65"
+            },
+            "70": {
+              "en": "70",
+              "zh-Hans": "70"
+            },
+            "75": {
+              "en": "75",
+              "zh-Hans": "75"
+            },
+            "80": {
+              "en": "80",
+              "zh-Hans": "80"
+            },
+            "85": {
+              "en": "85",
+              "zh-Hans": "85"
+            },
+            "90": {
+              "en": "90",
+              "zh-Hans": "90"
+            },
+            "95": {
+              "en": "95",
+              "zh-Hans": "95"
+            }
+          },
+          "values": [
+            "10",
+            "15",
+            "20",
+            "25",
+            "30",
+            "35",
+            "40",
+            "45",
+            "50",
+            "55",
+            "60",
+            "65",
+            "70",
+            "75",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100",
+            "105",
+            "110",
+            "115",
+            "120"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Swaps left and right analog stick function for gyro and tilt.",
+            "zh-Hans": "交换左右摇杆在陀螺仪和倾斜传感器上的分工。"
+          },
+          "key": "vbam_swap_astick",
+          "restartRequired": false,
+          "title": {
+            "en": "Swap Left/Right Analog",
+            "zh-Hans": "交换左右摇杆"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Input",
+        "zh-Hans": "输入"
+      }
+    },
+    {
+      "description": {
+        "en": "Toggle individual sound channels and graphics layers.",
+        "zh-Hans": "单独开关各个声道和图层，多用于调试或去除特定音效。"
+      },
+      "id": "advanced",
+      "options": [
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables tone & sweep sound channel.",
+            "zh-Hans": "开启或关闭音调与滑音声道。"
+          },
+          "key": "vbam_sound_1",
+          "restartRequired": false,
+          "title": {
+            "en": "Sound Channel 1 (Tone & Sweep)",
+            "zh-Hans": "声道 1（音调与滑音）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables tone sound channel.",
+            "zh-Hans": "开启或关闭音调声道。"
+          },
+          "key": "vbam_sound_2",
+          "restartRequired": false,
+          "title": {
+            "en": "Sound Channel 2 (Tone)",
+            "zh-Hans": "声道 2（音调）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables wave output sound channel.",
+            "zh-Hans": "开启或关闭波形输出声道。"
+          },
+          "key": "vbam_sound_3",
+          "restartRequired": false,
+          "title": {
+            "en": "Sound Channel 3 (Wave)",
+            "zh-Hans": "声道 3（波形）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables noise audio channel.",
+            "zh-Hans": "开启或关闭噪声声道。"
+          },
+          "key": "vbam_sound_4",
+          "restartRequired": false,
+          "title": {
+            "en": "Sound Channel 4 (Noise)",
+            "zh-Hans": "声道 4（噪声）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables DMA sound channel A.",
+            "zh-Hans": "开启或关闭 DMA 声道 A（GBA 的采样音频）。"
+          },
+          "key": "vbam_sound_5",
+          "restartRequired": false,
+          "title": {
+            "en": "DMA Sound Channel A",
+            "zh-Hans": "DMA 声道 A"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Enables or disables DMA sound channel B.",
+            "zh-Hans": "开启或关闭 DMA 声道 B（GBA 的采样音频）。"
+          },
+          "key": "vbam_sound_6",
+          "restartRequired": false,
+          "title": {
+            "en": "DMA Sound Channel B",
+            "zh-Hans": "DMA 声道 B"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Shows or hides background layer 1.",
+            "zh-Hans": "显示或隐藏背景层 1。"
+          },
+          "key": "vbam_layer_1",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Background Layer 1",
+            "zh-Hans": "显示背景层 1"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Shows or hides background layer 2.",
+            "zh-Hans": "显示或隐藏背景层 2。"
+          },
+          "key": "vbam_layer_2",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Background Layer 2",
+            "zh-Hans": "显示背景层 2"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Shows or hides background layer 3.",
+            "zh-Hans": "显示或隐藏背景层 3。"
+          },
+          "key": "vbam_layer_3",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Background Layer 3",
+            "zh-Hans": "显示背景层 3"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Shows or hides background layer 4.",
+            "zh-Hans": "显示或隐藏背景层 4。"
+          },
+          "key": "vbam_layer_4",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Background Layer 4",
+            "zh-Hans": "显示背景层 4"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Shows or hides sprite layer.",
+            "zh-Hans": "显示或隐藏精灵层，也就是角色等可移动的图像。"
+          },
+          "key": "vbam_layer_5",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Sprite Layer",
+            "zh-Hans": "显示精灵层"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Shows or hides window layer 1.",
+            "zh-Hans": "显示或隐藏窗口层 1。"
+          },
+          "key": "vbam_layer_6",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Window Layer 1",
+            "zh-Hans": "显示窗口层 1"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Shows or hides window layer 2.",
+            "zh-Hans": "显示或隐藏窗口层 2。"
+          },
+          "key": "vbam_layer_7",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Window Layer 2",
+            "zh-Hans": "显示窗口层 2"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "advanced",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Shows or hides sprite window layer.",
+            "zh-Hans": "显示或隐藏精灵窗口层。"
+          },
+          "key": "vbam_layer_8",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Sprite Window Layer",
+            "zh-Hans": "显示精灵窗口层"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Advanced",
+        "zh-Hans": "高级"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "VBA-M",
+    "coreVersion": "2.1.4",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

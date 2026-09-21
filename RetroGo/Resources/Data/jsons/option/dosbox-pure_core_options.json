@@ -1,0 +1,3416 @@
+{
+  "coreId": "dosbox-pure",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Save states, start menu and fixed FPS settings.",
+        "zh-Hans": "即时存档、启动菜单、固定帧率等设置。"
+      },
+      "id": "General",
+      "options": [
+        {
+          "categoryId": "General",
+          "defaultValue": "false",
+          "description": {
+            "en": "Enable this to force output at a fixed rate. Try 60 FPS if you encounter screen tearing or vsync issues.\nOutput will have frames skipped at lower rates and frames duplicated at higher rates.",
+            "zh-Hans": "以固定帧率输出画面。遇到画面撕裂或垂直同步问题时可以试试 60 FPS。低于该帧率时会跳帧，高于时会重复帧。"
+          },
+          "key": "dosbox_pure_force60fps",
+          "restartRequired": true,
+          "title": {
+            "en": "Force Output FPS",
+            "zh-Hans": "固定输出帧率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "10": {
+              "en": "On (10 FPS)",
+              "zh-Hans": "开（10 FPS）"
+            },
+            "120": {
+              "en": "On (120 FPS)",
+              "zh-Hans": "开（120 FPS）"
+            },
+            "144": {
+              "en": "On (144 FPS)",
+              "zh-Hans": "开（144 FPS）"
+            },
+            "15": {
+              "en": "On (15 FPS)",
+              "zh-Hans": "开（15 FPS）"
+            },
+            "20": {
+              "en": "On (20 FPS)",
+              "zh-Hans": "开（20 FPS）"
+            },
+            "240": {
+              "en": "On (240 FPS)",
+              "zh-Hans": "开（240 FPS）"
+            },
+            "30": {
+              "en": "On (30 FPS)",
+              "zh-Hans": "开（30 FPS）"
+            },
+            "35": {
+              "en": "On (35 FPS)",
+              "zh-Hans": "开（35 FPS）"
+            },
+            "360": {
+              "en": "On (360 FPS)",
+              "zh-Hans": "开（360 FPS）"
+            },
+            "50": {
+              "en": "On (50 FPS)",
+              "zh-Hans": "开（50 FPS）"
+            },
+            "70": {
+              "en": "On (70 FPS)",
+              "zh-Hans": "开（70 FPS）"
+            },
+            "90": {
+              "en": "On (90 FPS)",
+              "zh-Hans": "开（90 FPS）"
+            },
+            "false": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "true": {
+              "en": "On (60 FPS)",
+              "zh-Hans": "开（60 FPS）"
+            }
+          },
+          "values": [
+            "false",
+            "10",
+            "15",
+            "20",
+            "30",
+            "35",
+            "50",
+            "true",
+            "70",
+            "90",
+            "120",
+            "144",
+            "240",
+            "360"
+          ]
+        },
+        {
+          "categoryId": "General",
+          "defaultValue": "on",
+          "description": {
+            "en": "Make sure to test it in each game before using it. Complex late era DOS games might have problems.\nBe aware that states saved with different video, CPU or memory settings are not loadable.\nRewind support comes at a high performance cost and needs at least 40MB of rewind buffer.",
+            "zh-Hans": "使用前请先在每个游戏里测试。后期的复杂 DOS 游戏可能有问题。用不同的视频、CPU 或内存设置保存的存档无法读取。倒带功能很耗性能，且至少需要 40MB 缓冲区。"
+          },
+          "key": "dosbox_pure_savestate",
+          "restartRequired": false,
+          "title": {
+            "en": "Save State Support",
+            "zh-Hans": "即时存档支持"
+          },
+          "type": "select",
+          "valueLabels": {
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "on": {
+              "en": "Enable save states",
+              "zh-Hans": "开启即时存档"
+            },
+            "rewind": {
+              "en": "Enable save states with rewind",
+              "zh-Hans": "开启即时存档和倒带"
+            }
+          },
+          "values": [
+            "on",
+            "rewind",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "General",
+          "defaultValue": "false",
+          "description": {
+            "en": "Disable the command line, running installed operating systems and using .BAT/.COM/.EXE/DOS.YML files from the save game.",
+            "zh-Hans": "禁用命令行、禁止运行已安装的操作系统，也不再执行存档中的 .BAT/.COM/.EXE/DOS.YML 文件。"
+          },
+          "key": "dosbox_pure_strict_mode",
+          "restartRequired": false,
+          "title": {
+            "en": "Use Strict Mode",
+            "zh-Hans": "严格模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "false": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "true": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "false",
+            "true"
+          ]
+        },
+        {
+          "categoryId": "General",
+          "defaultValue": "false",
+          "description": {
+            "en": "DOSBox Pure is meant to be configured via core options but optionally supports loading of legacy .conf files.",
+            "zh-Hans": "DOSBox Pure 主要通过核心选项来配置，也可以选择加载传统的 .conf 配置文件。"
+          },
+          "key": "dosbox_pure_conf",
+          "restartRequired": true,
+          "title": {
+            "en": "Loading of dosbox.conf",
+            "zh-Hans": "加载 dosbox.conf"
+          },
+          "type": "select",
+          "valueLabels": {
+            "false": {
+              "en": "Disabled (default)",
+              "zh-Hans": "不加载（默认）"
+            },
+            "inside": {
+              "en": "Try 'dosbox.conf' inside the loaded content (ZIP or folder)",
+              "zh-Hans": "读取游戏内的 dosbox.conf（ZIP 或文件夹内）"
+            },
+            "outside": {
+              "en": "Try a '.conf' file next to the loaded content",
+              "zh-Hans": "读取与游戏同名的 .conf 文件（ZIP 或文件夹旁）"
+            }
+          },
+          "values": [
+            "false",
+            "inside",
+            "outside"
+          ]
+        },
+        {
+          "categoryId": "General",
+          "defaultValue": "99",
+          "description": {
+            "en": "Set the behavior of the start menu before and after launching a game.\nYou can also force it to open by holding shift or L2/R2 when selecting 'Restart'.",
+            "zh-Hans": "设置启动游戏前后启动菜单的行为。选择「重启」时按住 shift 或 L2/R2 也可以强制打开菜单。"
+          },
+          "key": "dosbox_pure_menu_time",
+          "restartRequired": false,
+          "title": {
+            "en": "Start Menu",
+            "zh-Hans": "启动菜单"
+          },
+          "type": "select",
+          "valueLabels": {
+            "-1": {
+              "en": "Always show the menu at start and after the game exits, ignoring auto start",
+              "zh-Hans": "忽略自动启动设置，启动时和游戏退出后总是显示菜单"
+            },
+            "0": {
+              "en": "Show at start, shut down immediately after the auto-started game exits",
+              "zh-Hans": "启动时显示，自动启动的游戏退出后立即关闭核心"
+            },
+            "3": {
+              "en": "Show at start, shut down 3 seconds after the auto-started game exits",
+              "zh-Hans": "启动时显示，自动启动的游戏退出 3 秒后关闭核心"
+            },
+            "5": {
+              "en": "Show at start, shut down 5 seconds after the auto-started game exits",
+              "zh-Hans": "启动时显示，自动启动的游戏退出 5 秒后关闭核心"
+            },
+            "99": {
+              "en": "Show at start and again after the game exits (default)",
+              "zh-Hans": "启动时显示，游戏退出后再次显示（默认）"
+            }
+          },
+          "values": [
+            "99",
+            "5",
+            "3",
+            "0",
+            "-1"
+          ]
+        },
+        {
+          "categoryId": "General",
+          "defaultValue": "70",
+          "description": {
+            "en": "Set the transparency level of the Menu and the On Screen Keyboard.",
+            "zh-Hans": "设置启动菜单和屏幕键盘的透明度。"
+          },
+          "key": "dosbox_pure_menu_transparency",
+          "restartRequired": false,
+          "title": {
+            "en": "Menu Transparency",
+            "zh-Hans": "菜单透明度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            }
+          },
+          "values": [
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "60",
+            "70",
+            "80",
+            "90",
+            "100"
+          ]
+        }
+      ],
+      "title": {
+        "en": "General",
+        "zh-Hans": "通用"
+      }
+    },
+    {
+      "description": {
+        "en": "Keyboard, mouse and joystick settings.",
+        "zh-Hans": "键盘、鼠标与摇杆设置。"
+      },
+      "id": "Input",
+      "options": [
+        {
+          "categoryId": "Input",
+          "defaultValue": "true",
+          "description": {
+            "en": "Always bind the L3 controller button to show the menu to swap CDs/Disks and use the On-Screen Keyboard.",
+            "zh-Hans": "始终把手柄的 L3 键绑定为打开菜单，用于切换光盘/软盘和使用屏幕键盘。"
+          },
+          "key": "dosbox_pure_on_screen_keyboard",
+          "restartRequired": false,
+          "title": {
+            "en": "Use L3 Button to Show Menu",
+            "zh-Hans": "用 L3 键打开菜单"
+          },
+          "type": "select",
+          "valueLabels": {
+            "false": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "true": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "true",
+            "false"
+          ]
+        },
+        {
+          "categoryId": "Input",
+          "defaultValue": "pad",
+          "description": {
+            "en": "You can disable input handling from a mouse or a touchscreen (emulated mouse through joypad will still work).\nIn touchpad mode use drag to move, tap to click, two finger tap to right-click and press-and-hold to drag",
+            "zh-Hans": "可以关闭鼠标或触摸屏的输入（用手柄模拟鼠标仍然可用）。触控板模式下：拖动移动光标，轻点为左键，双指轻点为右键，按住拖动为拖拽。"
+          },
+          "key": "dosbox_pure_mouse_input",
+          "restartRequired": false,
+          "title": {
+            "en": "Mouse Input Mode",
+            "zh-Hans": "鼠标输入模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "direct": {
+              "en": "Direct controlled mouse (not supported by all games)",
+              "zh-Hans": "直接控制鼠标（部分游戏不支持）"
+            },
+            "false": {
+              "en": "Off (ignore mouse input)",
+              "zh-Hans": "关闭（忽略鼠标输入）"
+            },
+            "pad": {
+              "en": "Touchpad mode (default, best for touch screens)",
+              "zh-Hans": "触控板模式（默认，最适合触摸屏）"
+            },
+            "true": {
+              "en": "Auto (virtual or direct)",
+              "zh-Hans": "自动（虚拟或直接）"
+            },
+            "virtual": {
+              "en": "Virtual mouse movement",
+              "zh-Hans": "虚拟鼠标移动"
+            }
+          },
+          "values": [
+            "pad",
+            "true",
+            "virtual",
+            "direct",
+            "false"
+          ]
+        },
+        {
+          "categoryId": "Input",
+          "defaultValue": "67/68",
+          "description": {
+            "en": "Bind mouse wheel up and down to two keyboard keys to be able to use it in DOS games.",
+            "zh-Hans": "把鼠标滚轮的上下滚动映射到两个键盘按键，以便在 DOS 游戏中使用。"
+          },
+          "key": "dosbox_pure_mouse_wheel",
+          "restartRequired": false,
+          "title": {
+            "en": "Bind Mouse Wheel to Keys",
+            "zh-Hans": "鼠标滚轮映射按键"
+          },
+          "type": "select",
+          "valueLabels": {
+            "11/13": {
+              "en": "Q/E",
+              "zh-Hans": "Q/E"
+            },
+            "64/65": {
+              "en": "Minus/Equals",
+              "zh-Hans": "Minus/Equals"
+            },
+            "67/68": {
+              "en": "Left-Bracket/Right-Bracket",
+              "zh-Hans": "Left-Bracket/Right-Bracket"
+            },
+            "69/70": {
+              "en": "Semicolon/Quote",
+              "zh-Hans": "Semicolon/Quote"
+            },
+            "72/71": {
+              "en": "Comma/Period",
+              "zh-Hans": "Comma/Period"
+            },
+            "78/81": {
+              "en": "Home/End",
+              "zh-Hans": "Home/End"
+            },
+            "79/82": {
+              "en": "Page-Up/Page-Down",
+              "zh-Hans": "Page-Up/Page-Down"
+            },
+            "80/82": {
+              "en": "Delete/Page-Down",
+              "zh-Hans": "Delete/Page-Down"
+            },
+            "83/86": {
+              "en": "Left/Right",
+              "zh-Hans": "Left/Right"
+            },
+            "84/85": {
+              "en": "Up/Down",
+              "zh-Hans": "Up/Down"
+            },
+            "97/98": {
+              "en": "Numpad Divide/Multiply",
+              "zh-Hans": "Numpad Divide/Multiply"
+            },
+            "99/100": {
+              "en": "Numpad Minus/Plus",
+              "zh-Hans": "Numpad Minus/Plus"
+            },
+            "none": {
+              "en": "OFF",
+              "zh-Hans": "OFF"
+            }
+          },
+          "values": [
+            "67/68",
+            "72/71",
+            "79/82",
+            "78/81",
+            "80/82",
+            "64/65",
+            "69/70",
+            "99/100",
+            "97/98",
+            "84/85",
+            "83/86",
+            "11/13",
+            "none"
+          ]
+        },
+        {
+          "categoryId": "Input",
+          "defaultValue": "1.0",
+          "description": {
+            "en": "Sets the overall mouse cursor movement speed.\n\n",
+            "zh-Hans": "设置鼠标光标的整体移动速度。"
+          },
+          "key": "dosbox_pure_mouse_speed_factor",
+          "restartRequired": false,
+          "title": {
+            "en": "Mouse Sensitivity",
+            "zh-Hans": "鼠标灵敏度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0.2": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "0.25": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "0.3": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "0.35": {
+              "en": "35%",
+              "zh-Hans": "35%"
+            },
+            "0.4": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "0.45": {
+              "en": "45%",
+              "zh-Hans": "45%"
+            },
+            "0.5": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "0.55": {
+              "en": "55%",
+              "zh-Hans": "55%"
+            },
+            "0.6": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "0.65": {
+              "en": "65%",
+              "zh-Hans": "65%"
+            },
+            "0.7": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "0.75": {
+              "en": "75%",
+              "zh-Hans": "75%"
+            },
+            "0.8": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "0.85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "0.9": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "0.95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            },
+            "1.0": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "1.1": {
+              "en": "110%",
+              "zh-Hans": "110%"
+            },
+            "1.2": {
+              "en": "120%",
+              "zh-Hans": "120%"
+            },
+            "1.3": {
+              "en": "130%",
+              "zh-Hans": "130%"
+            },
+            "1.4": {
+              "en": "140%",
+              "zh-Hans": "140%"
+            },
+            "1.5": {
+              "en": "150%",
+              "zh-Hans": "150%"
+            },
+            "1.6": {
+              "en": "160%",
+              "zh-Hans": "160%"
+            },
+            "1.7": {
+              "en": "170%",
+              "zh-Hans": "170%"
+            },
+            "1.8": {
+              "en": "180%",
+              "zh-Hans": "180%"
+            },
+            "1.9": {
+              "en": "190%",
+              "zh-Hans": "190%"
+            },
+            "2.0": {
+              "en": "200%",
+              "zh-Hans": "200%"
+            },
+            "2.2": {
+              "en": "220%",
+              "zh-Hans": "220%"
+            },
+            "2.4": {
+              "en": "240%",
+              "zh-Hans": "240%"
+            },
+            "2.6": {
+              "en": "260%",
+              "zh-Hans": "260%"
+            },
+            "2.8": {
+              "en": "280%",
+              "zh-Hans": "280%"
+            },
+            "3.0": {
+              "en": "300%",
+              "zh-Hans": "300%"
+            },
+            "3.2": {
+              "en": "320%",
+              "zh-Hans": "320%"
+            },
+            "3.4": {
+              "en": "340%",
+              "zh-Hans": "340%"
+            },
+            "3.6": {
+              "en": "360%",
+              "zh-Hans": "360%"
+            },
+            "3.8": {
+              "en": "380%",
+              "zh-Hans": "380%"
+            },
+            "4.0": {
+              "en": "400%",
+              "zh-Hans": "400%"
+            },
+            "4.2": {
+              "en": "420%",
+              "zh-Hans": "420%"
+            },
+            "4.4": {
+              "en": "440%",
+              "zh-Hans": "440%"
+            },
+            "4.6": {
+              "en": "460%",
+              "zh-Hans": "460%"
+            },
+            "4.8": {
+              "en": "480%",
+              "zh-Hans": "480%"
+            },
+            "5.0": {
+              "en": "500%",
+              "zh-Hans": "500%"
+            }
+          },
+          "values": [
+            "0.2",
+            "0.25",
+            "0.3",
+            "0.35",
+            "0.4",
+            "0.45",
+            "0.5",
+            "0.55",
+            "0.6",
+            "0.65",
+            "0.7",
+            "0.75",
+            "0.8",
+            "0.85",
+            "0.9",
+            "0.95",
+            "1.0",
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4",
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8",
+            "1.9",
+            "2.0",
+            "2.2",
+            "2.4",
+            "2.6",
+            "2.8",
+            "3.0",
+            "3.2",
+            "3.4",
+            "3.6",
+            "3.8",
+            "4.0",
+            "4.2",
+            "4.4",
+            "4.6",
+            "4.8",
+            "5.0"
+          ]
+        },
+        {
+          "categoryId": "Input",
+          "defaultValue": "1.0",
+          "description": {
+            "en": "Experiment with this value if the mouse is too fast/slow when moving left/right.",
+            "zh-Hans": "如果鼠标左右移动过快或过慢，可以单独调整水平方向的速度。"
+          },
+          "key": "dosbox_pure_mouse_speed_factor_x",
+          "restartRequired": false,
+          "title": {
+            "en": "Horizontal Mouse Sensitivity",
+            "zh-Hans": "水平鼠标灵敏度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0.2": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "0.25": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "0.3": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "0.35": {
+              "en": "35%",
+              "zh-Hans": "35%"
+            },
+            "0.4": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "0.45": {
+              "en": "45%",
+              "zh-Hans": "45%"
+            },
+            "0.5": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "0.55": {
+              "en": "55%",
+              "zh-Hans": "55%"
+            },
+            "0.6": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "0.65": {
+              "en": "65%",
+              "zh-Hans": "65%"
+            },
+            "0.7": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "0.75": {
+              "en": "75%",
+              "zh-Hans": "75%"
+            },
+            "0.8": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "0.85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "0.9": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "0.95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            },
+            "1.0": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "1.1": {
+              "en": "110%",
+              "zh-Hans": "110%"
+            },
+            "1.2": {
+              "en": "120%",
+              "zh-Hans": "120%"
+            },
+            "1.3": {
+              "en": "130%",
+              "zh-Hans": "130%"
+            },
+            "1.4": {
+              "en": "140%",
+              "zh-Hans": "140%"
+            },
+            "1.5": {
+              "en": "150%",
+              "zh-Hans": "150%"
+            },
+            "1.6": {
+              "en": "160%",
+              "zh-Hans": "160%"
+            },
+            "1.7": {
+              "en": "170%",
+              "zh-Hans": "170%"
+            },
+            "1.8": {
+              "en": "180%",
+              "zh-Hans": "180%"
+            },
+            "1.9": {
+              "en": "190%",
+              "zh-Hans": "190%"
+            },
+            "2.0": {
+              "en": "200%",
+              "zh-Hans": "200%"
+            },
+            "2.2": {
+              "en": "220%",
+              "zh-Hans": "220%"
+            },
+            "2.4": {
+              "en": "240%",
+              "zh-Hans": "240%"
+            },
+            "2.6": {
+              "en": "260%",
+              "zh-Hans": "260%"
+            },
+            "2.8": {
+              "en": "280%",
+              "zh-Hans": "280%"
+            },
+            "3.0": {
+              "en": "300%",
+              "zh-Hans": "300%"
+            },
+            "3.2": {
+              "en": "320%",
+              "zh-Hans": "320%"
+            },
+            "3.4": {
+              "en": "340%",
+              "zh-Hans": "340%"
+            },
+            "3.6": {
+              "en": "360%",
+              "zh-Hans": "360%"
+            },
+            "3.8": {
+              "en": "380%",
+              "zh-Hans": "380%"
+            },
+            "4.0": {
+              "en": "400%",
+              "zh-Hans": "400%"
+            },
+            "4.2": {
+              "en": "420%",
+              "zh-Hans": "420%"
+            },
+            "4.4": {
+              "en": "440%",
+              "zh-Hans": "440%"
+            },
+            "4.6": {
+              "en": "460%",
+              "zh-Hans": "460%"
+            },
+            "4.8": {
+              "en": "480%",
+              "zh-Hans": "480%"
+            },
+            "5.0": {
+              "en": "500%",
+              "zh-Hans": "500%"
+            }
+          },
+          "values": [
+            "0.2",
+            "0.25",
+            "0.3",
+            "0.35",
+            "0.4",
+            "0.45",
+            "0.5",
+            "0.55",
+            "0.6",
+            "0.65",
+            "0.7",
+            "0.75",
+            "0.8",
+            "0.85",
+            "0.9",
+            "0.95",
+            "1.0",
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4",
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8",
+            "1.9",
+            "2.0",
+            "2.2",
+            "2.4",
+            "2.6",
+            "2.8",
+            "3.0",
+            "3.2",
+            "3.4",
+            "3.6",
+            "3.8",
+            "4.0",
+            "4.2",
+            "4.4",
+            "4.6",
+            "4.8",
+            "5.0"
+          ]
+        },
+        {
+          "categoryId": "Input",
+          "defaultValue": "14",
+          "description": {
+            "en": "Sets which inputs control the action wheel.",
+            "zh-Hans": "设置用哪些输入来控制动作轮盘。"
+          },
+          "key": "dosbox_pure_actionwheel_inputs",
+          "restartRequired": false,
+          "title": {
+            "en": "Action Wheel Inputs",
+            "zh-Hans": "动作轮盘输入方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "Left Stick",
+              "zh-Hans": "左摇杆"
+            },
+            "10": {
+              "en": "Right Stick, Mouse",
+              "zh-Hans": "右摇杆、鼠标"
+            },
+            "11": {
+              "en": "Both Sticks, Mouse",
+              "zh-Hans": "双摇杆、鼠标"
+            },
+            "12": {
+              "en": "D-Pad, Mouse",
+              "zh-Hans": "十字键、鼠标"
+            },
+            "13": {
+              "en": "Left Stick, D-Pad, Mouse",
+              "zh-Hans": "左摇杆、十字键、鼠标"
+            },
+            "14": {
+              "en": "Right Stick, D-Pad, Mouse (default)",
+              "zh-Hans": "右摇杆、十字键、鼠标（默认）"
+            },
+            "15": {
+              "en": "Both Sticks, D-Pad, Mouse",
+              "zh-Hans": "双摇杆、十字键、鼠标"
+            },
+            "2": {
+              "en": "Right Stick",
+              "zh-Hans": "右摇杆"
+            },
+            "3": {
+              "en": "Both Sticks",
+              "zh-Hans": "双摇杆"
+            },
+            "4": {
+              "en": "D-Pad",
+              "zh-Hans": "十字键"
+            },
+            "5": {
+              "en": "Left Stick, D-Pad",
+              "zh-Hans": "左摇杆、十字键"
+            },
+            "6": {
+              "en": "Right Stick, D-Pad",
+              "zh-Hans": "右摇杆、十字键"
+            },
+            "7": {
+              "en": "Both Sticks, D-Pad",
+              "zh-Hans": "双摇杆、十字键"
+            },
+            "8": {
+              "en": "Mouse",
+              "zh-Hans": "鼠标"
+            },
+            "9": {
+              "en": "Left Stick, Mouse",
+              "zh-Hans": "左摇杆、鼠标"
+            }
+          },
+          "values": [
+            "14",
+            "6",
+            "10",
+            "2",
+            "15",
+            "7",
+            "11",
+            "3",
+            "13",
+            "5",
+            "9",
+            "1",
+            "12",
+            "4",
+            "8"
+          ]
+        },
+        {
+          "categoryId": "Input",
+          "defaultValue": "true",
+          "description": {
+            "en": "DOSBox Pure can automatically apply a gamepad control mapping scheme when it detects a game.\nThese button mappings are provided by the Keyb2Joypad Project (by Jemy Murphy and bigjim).",
+            "zh-Hans": "识别到游戏时自动套用对应的手柄按键映射方案。映射数据来自 Keyb2Joypad 项目（作者 Jemy Murphy 和 bigjim）。"
+          },
+          "key": "dosbox_pure_auto_mapping",
+          "restartRequired": false,
+          "title": {
+            "en": "Automatic Game Pad Mappings",
+            "zh-Hans": "自动手柄映射"
+          },
+          "type": "select",
+          "valueLabels": {
+            "false": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "notify": {
+              "en": "On, with a notification on game detection",
+              "zh-Hans": "开启，并在识别到游戏时提示"
+            },
+            "true": {
+              "en": "On (default)",
+              "zh-Hans": "开（默认）"
+            }
+          },
+          "values": [
+            "true",
+            "notify",
+            "false"
+          ]
+        },
+        {
+          "categoryId": "Input",
+          "defaultValue": "us",
+          "description": {
+            "en": "Select the keyboard layout (will not change the On-Screen Keyboard).",
+            "zh-Hans": "选择模拟的键盘布局（不影响屏幕键盘）。"
+          },
+          "key": "dosbox_pure_keyboard_layout",
+          "restartRequired": false,
+          "title": {
+            "en": "Keyboard Layout",
+            "zh-Hans": "键盘布局"
+          },
+          "type": "select",
+          "valueLabels": {
+            "be": {
+              "en": "Belgium",
+              "zh-Hans": "Belgium"
+            },
+            "br": {
+              "en": "Brazil",
+              "zh-Hans": "Brazil"
+            },
+            "cz243": {
+              "en": "Czech Republic",
+              "zh-Hans": "Czech Republic"
+            },
+            "dk": {
+              "en": "Denmark",
+              "zh-Hans": "Denmark"
+            },
+            "fr": {
+              "en": "France",
+              "zh-Hans": "France"
+            },
+            "gk": {
+              "en": "Greece",
+              "zh-Hans": "Greece"
+            },
+            "gr": {
+              "en": "Germany",
+              "zh-Hans": "Germany"
+            },
+            "hr": {
+              "en": "Croatia",
+              "zh-Hans": "Croatia"
+            },
+            "hu": {
+              "en": "Hungary",
+              "zh-Hans": "Hungary"
+            },
+            "is161": {
+              "en": "Iceland",
+              "zh-Hans": "Iceland"
+            },
+            "it": {
+              "en": "Italy",
+              "zh-Hans": "Italy"
+            },
+            "nl": {
+              "en": "Netherlands",
+              "zh-Hans": "Netherlands"
+            },
+            "no": {
+              "en": "Norway",
+              "zh-Hans": "Norway"
+            },
+            "pl": {
+              "en": "Poland",
+              "zh-Hans": "Poland"
+            },
+            "po": {
+              "en": "Portugal",
+              "zh-Hans": "Portugal"
+            },
+            "ru": {
+              "en": "Russia",
+              "zh-Hans": "Russia"
+            },
+            "sf": {
+              "en": "Switzerland (French)",
+              "zh-Hans": "Switzerland (French)"
+            },
+            "sg": {
+              "en": "Switzerland (German)",
+              "zh-Hans": "Switzerland (German)"
+            },
+            "si": {
+              "en": "Slovenia",
+              "zh-Hans": "Slovenia"
+            },
+            "sk": {
+              "en": "Slovakia",
+              "zh-Hans": "Slovakia"
+            },
+            "sp": {
+              "en": "Spain",
+              "zh-Hans": "Spain"
+            },
+            "su": {
+              "en": "Finland",
+              "zh-Hans": "Finland"
+            },
+            "sv": {
+              "en": "Sweden",
+              "zh-Hans": "Sweden"
+            },
+            "tr": {
+              "en": "Turkey",
+              "zh-Hans": "Turkey"
+            },
+            "uk": {
+              "en": "UK",
+              "zh-Hans": "UK"
+            },
+            "us": {
+              "en": "US (default)",
+              "zh-Hans": "US (default)"
+            }
+          },
+          "values": [
+            "us",
+            "uk",
+            "be",
+            "br",
+            "hr",
+            "cz243",
+            "dk",
+            "su",
+            "fr",
+            "gr",
+            "gk",
+            "hu",
+            "is161",
+            "it",
+            "nl",
+            "no",
+            "pl",
+            "po",
+            "ru",
+            "sk",
+            "si",
+            "sp",
+            "sv",
+            "sg",
+            "sf",
+            "tr"
+          ]
+        },
+        {
+          "categoryId": "Input",
+          "defaultValue": "15",
+          "description": {
+            "en": "Set the deadzone of the joystick analog sticks. May be used to eliminate drift caused by poorly calibrated joystick hardware.",
+            "zh-Hans": "设置摇杆的死区范围，可以消除因硬件校准不佳造成的漂移。"
+          },
+          "key": "dosbox_pure_joystick_analog_deadzone",
+          "restartRequired": false,
+          "title": {
+            "en": "Joystick Analog Deadzone",
+            "zh-Hans": "摇杆死区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "15": {
+              "en": "15%",
+              "zh-Hans": "15%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "25": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "35": {
+              "en": "35%",
+              "zh-Hans": "35%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "5": {
+              "en": "5%",
+              "zh-Hans": "5%"
+            }
+          },
+          "values": [
+            "0",
+            "5",
+            "10",
+            "15",
+            "20",
+            "25",
+            "30",
+            "35",
+            "40"
+          ]
+        },
+        {
+          "categoryId": "Input",
+          "defaultValue": "true",
+          "description": {
+            "en": "Enable timed intervals for joystick axes. Experiment with this option if your joystick drifts.\n\n",
+            "zh-Hans": "为摇杆轴启用定时间隔。摇杆出现漂移时可以尝试这个选项。"
+          },
+          "key": "dosbox_pure_joystick_timed",
+          "restartRequired": false,
+          "title": {
+            "en": "Enable Joystick Timed Intervals",
+            "zh-Hans": "启用摇杆定时间隔"
+          },
+          "type": "select",
+          "valueLabels": {
+            "false": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "true": {
+              "en": "On (default)",
+              "zh-Hans": "开（默认）"
+            }
+          },
+          "values": [
+            "true",
+            "false"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Input",
+        "zh-Hans": "输入"
+      }
+    },
+    {
+      "description": {
+        "en": "Adjust the performance of the emulated CPU.",
+        "zh-Hans": "调整模拟 CPU 的性能。"
+      },
+      "id": "Performance",
+      "options": [
+        {
+          "categoryId": "Performance",
+          "defaultValue": "auto",
+          "description": {
+            "en": "The raw performance that DOSBox will try to emulate.\n\n",
+            "zh-Hans": "DOSBox 尝试模拟的运算性能，相当于选择一台什么年代的机器。"
+          },
+          "key": "dosbox_pure_cycles",
+          "restartRequired": false,
+          "title": {
+            "en": "Emulated Performance",
+            "zh-Hans": "模拟性能"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1000000": {
+              "en": "AMD Athlon, 1.2 GHz from 2000 (1000000 cps)",
+              "zh-Hans": "AMD Athlon, 1.2 GHz from 2000 (1000000 cps)"
+            },
+            "1320": {
+              "en": "286, 6 MHz from 1982 (1320 cps)",
+              "zh-Hans": "286, 6 MHz from 1982 (1320 cps)"
+            },
+            "13400": {
+              "en": "486DX, 33 MHz from 1990 (13400 cps)",
+              "zh-Hans": "486DX, 33 MHz from 1990 (13400 cps)"
+            },
+            "200000": {
+              "en": "Pentium II, 300 MHz from 1997 (200000 cps)",
+              "zh-Hans": "Pentium II, 300 MHz from 1997 (200000 cps)"
+            },
+            "26800": {
+              "en": "486DX2, 66 MHz from 1992 (26800 cps)",
+              "zh-Hans": "486DX2, 66 MHz from 1992 (26800 cps)"
+            },
+            "2750": {
+              "en": "286, 12.5 MHz from 1985 (2750 cps)",
+              "zh-Hans": "286, 12.5 MHz from 1985 (2750 cps)"
+            },
+            "315": {
+              "en": "8086/8088, 4.77 MHz from 1980 (315 cps)",
+              "zh-Hans": "8086/8088, 4.77 MHz from 1980 (315 cps)"
+            },
+            "4720": {
+              "en": "386, 20 MHz from 1987 (4720 cps)",
+              "zh-Hans": "386, 20 MHz from 1987 (4720 cps)"
+            },
+            "500000": {
+              "en": "Pentium III, 600 MHz from 1999 (500000 cps)",
+              "zh-Hans": "Pentium III, 600 MHz from 1999 (500000 cps)"
+            },
+            "77000": {
+              "en": "Pentium, 100 MHz from 1995 (77000 cps)",
+              "zh-Hans": "Pentium, 100 MHz from 1995 (77000 cps)"
+            },
+            "7800": {
+              "en": "386DX, 33 MHz from 1989 (7800 cps)",
+              "zh-Hans": "386DX, 33 MHz from 1989 (7800 cps)"
+            },
+            "auto": {
+              "en": "AUTO - DOSBox will try to detect performance needs (default)",
+              "zh-Hans": "AUTO - DOSBox will try to detect performance needs (default)"
+            },
+            "max": {
+              "en": "MAX - Emulate as many instructions as possible",
+              "zh-Hans": "MAX - Emulate as many instructions as possible"
+            }
+          },
+          "values": [
+            "auto",
+            "max",
+            "315",
+            "1320",
+            "2750",
+            "4720",
+            "7800",
+            "13400",
+            "26800",
+            "77000",
+            "200000",
+            "500000",
+            "1000000"
+          ]
+        },
+        {
+          "categoryId": "Performance",
+          "defaultValue": "none",
+          "description": {
+            "en": "With dynamic CPU speed (AUTO or MAX above), the maximum emulated performance level.",
+            "zh-Hans": "在 AUTO 或 MAX 模式下，模拟性能的上限。"
+          },
+          "key": "dosbox_pure_cycles_max",
+          "restartRequired": false,
+          "title": {
+            "en": "Maximum Emulated Performance",
+            "zh-Hans": "最高模拟性能"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1000000": {
+              "en": "AMD Athlon, 1.2 GHz from 2000 (1000000 cps)",
+              "zh-Hans": "AMD Athlon, 1.2 GHz from 2000 (1000000 cps)"
+            },
+            "1320": {
+              "en": "286, 6 MHz from 1982 (1320 cps)",
+              "zh-Hans": "286, 6 MHz from 1982 (1320 cps)"
+            },
+            "13400": {
+              "en": "486DX, 33 MHz from 1990 (13400 cps)",
+              "zh-Hans": "486DX, 33 MHz from 1990 (13400 cps)"
+            },
+            "200000": {
+              "en": "Pentium II, 300 MHz from 1997 (200000 cps)",
+              "zh-Hans": "Pentium II, 300 MHz from 1997 (200000 cps)"
+            },
+            "26800": {
+              "en": "486DX2, 66 MHz from 1992 (26800 cps)",
+              "zh-Hans": "486DX2, 66 MHz from 1992 (26800 cps)"
+            },
+            "2750": {
+              "en": "286, 12.5 MHz from 1985 (2750 cps)",
+              "zh-Hans": "286, 12.5 MHz from 1985 (2750 cps)"
+            },
+            "315": {
+              "en": "8086/8088, 4.77 MHz from 1980 (315 cps)",
+              "zh-Hans": "8086/8088, 4.77 MHz from 1980 (315 cps)"
+            },
+            "4720": {
+              "en": "386, 20 MHz from 1987 (4720 cps)",
+              "zh-Hans": "386, 20 MHz from 1987 (4720 cps)"
+            },
+            "500000": {
+              "en": "Pentium III, 600 MHz from 1999 (500000 cps)",
+              "zh-Hans": "Pentium III, 600 MHz from 1999 (500000 cps)"
+            },
+            "77000": {
+              "en": "Pentium, 100 MHz from 1995 (77000 cps)",
+              "zh-Hans": "Pentium, 100 MHz from 1995 (77000 cps)"
+            },
+            "7800": {
+              "en": "386DX, 33 MHz from 1989 (7800 cps)",
+              "zh-Hans": "386DX, 33 MHz from 1989 (7800 cps)"
+            },
+            "none": {
+              "en": "Unlimited",
+              "zh-Hans": "Unlimited"
+            }
+          },
+          "values": [
+            "none",
+            "315",
+            "1320",
+            "2750",
+            "4720",
+            "7800",
+            "13400",
+            "26800",
+            "77000",
+            "200000",
+            "500000",
+            "1000000"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_cycles": [
+                "auto",
+                "max"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Performance",
+          "defaultValue": "1.0",
+          "description": {
+            "en": "Fine tune the emulated performance for specific needs.",
+            "zh-Hans": "按比例微调模拟性能，以满足特定需求。"
+          },
+          "key": "dosbox_pure_cycles_scale",
+          "restartRequired": false,
+          "title": {
+            "en": "Performance Scale",
+            "zh-Hans": "性能缩放"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0.2": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "0.25": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "0.3": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "0.35": {
+              "en": "35%",
+              "zh-Hans": "35%"
+            },
+            "0.4": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "0.45": {
+              "en": "45%",
+              "zh-Hans": "45%"
+            },
+            "0.5": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "0.55": {
+              "en": "55%",
+              "zh-Hans": "55%"
+            },
+            "0.6": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "0.65": {
+              "en": "65%",
+              "zh-Hans": "65%"
+            },
+            "0.7": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "0.75": {
+              "en": "75%",
+              "zh-Hans": "75%"
+            },
+            "0.8": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "0.85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "0.9": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "0.95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            },
+            "1.0": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "1.05": {
+              "en": "105%",
+              "zh-Hans": "105%"
+            },
+            "1.1": {
+              "en": "110%",
+              "zh-Hans": "110%"
+            },
+            "1.15": {
+              "en": "115%",
+              "zh-Hans": "115%"
+            },
+            "1.2": {
+              "en": "120%",
+              "zh-Hans": "120%"
+            },
+            "1.25": {
+              "en": "125%",
+              "zh-Hans": "125%"
+            },
+            "1.3": {
+              "en": "130%",
+              "zh-Hans": "130%"
+            },
+            "1.35": {
+              "en": "135%",
+              "zh-Hans": "135%"
+            },
+            "1.4": {
+              "en": "140%",
+              "zh-Hans": "140%"
+            },
+            "1.45": {
+              "en": "145%",
+              "zh-Hans": "145%"
+            },
+            "1.5": {
+              "en": "150%",
+              "zh-Hans": "150%"
+            },
+            "1.55": {
+              "en": "155%",
+              "zh-Hans": "155%"
+            },
+            "1.6": {
+              "en": "160%",
+              "zh-Hans": "160%"
+            },
+            "1.65": {
+              "en": "165%",
+              "zh-Hans": "165%"
+            },
+            "1.7": {
+              "en": "170%",
+              "zh-Hans": "170%"
+            },
+            "1.75": {
+              "en": "175%",
+              "zh-Hans": "175%"
+            },
+            "1.8": {
+              "en": "180%",
+              "zh-Hans": "180%"
+            },
+            "1.85": {
+              "en": "185%",
+              "zh-Hans": "185%"
+            },
+            "1.9": {
+              "en": "190%",
+              "zh-Hans": "190%"
+            },
+            "1.95": {
+              "en": "195%",
+              "zh-Hans": "195%"
+            },
+            "2.0": {
+              "en": "200%",
+              "zh-Hans": "200%"
+            }
+          },
+          "values": [
+            "0.2",
+            "0.25",
+            "0.3",
+            "0.35",
+            "0.4",
+            "0.45",
+            "0.5",
+            "0.55",
+            "0.6",
+            "0.65",
+            "0.7",
+            "0.75",
+            "0.8",
+            "0.85",
+            "0.9",
+            "0.95",
+            "1.0",
+            "1.05",
+            "1.1",
+            "1.15",
+            "1.2",
+            "1.25",
+            "1.3",
+            "1.35",
+            "1.4",
+            "1.45",
+            "1.5",
+            "1.55",
+            "1.6",
+            "1.65",
+            "1.7",
+            "1.75",
+            "1.8",
+            "1.85",
+            "1.9",
+            "1.95",
+            "2.0"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_cycles": [
+                "315",
+                "1320",
+                "2750",
+                "4720",
+                "7800",
+                "13400",
+                "26800",
+                "77000",
+                "200000",
+                "500000",
+                "1000000"
+              ]
+            },
+            {
+              "dosbox_pure_cycles": [
+                "auto",
+                "max"
+              ],
+              "dosbox_pure_cycles_max": [
+                "315",
+                "1320",
+                "2750",
+                "4720",
+                "7800",
+                "13400",
+                "26800",
+                "77000",
+                "200000",
+                "500000",
+                "1000000"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Performance",
+          "defaultValue": "1.0",
+          "description": {
+            "en": "When emulating DOS as fast as possible, how much time per frame should be used by the emulation.\nLower this if your device becomes hot while using this core.\n\n",
+            "zh-Hans": "以最快速度模拟 DOS 时，每帧最多占用多少时间。设备发烫时可以调低。"
+          },
+          "key": "dosbox_pure_cycle_limit",
+          "restartRequired": false,
+          "title": {
+            "en": "Limit CPU Usage",
+            "zh-Hans": "限制 CPU 占用"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0.5": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "0.51": {
+              "en": "51%",
+              "zh-Hans": "51%"
+            },
+            "0.52": {
+              "en": "52%",
+              "zh-Hans": "52%"
+            },
+            "0.53": {
+              "en": "53%",
+              "zh-Hans": "53%"
+            },
+            "0.54": {
+              "en": "54%",
+              "zh-Hans": "54%"
+            },
+            "0.55": {
+              "en": "55%",
+              "zh-Hans": "55%"
+            },
+            "0.56": {
+              "en": "56%",
+              "zh-Hans": "56%"
+            },
+            "0.57": {
+              "en": "57%",
+              "zh-Hans": "57%"
+            },
+            "0.58": {
+              "en": "58%",
+              "zh-Hans": "58%"
+            },
+            "0.59": {
+              "en": "59%",
+              "zh-Hans": "59%"
+            },
+            "0.6": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "0.61": {
+              "en": "61%",
+              "zh-Hans": "61%"
+            },
+            "0.62": {
+              "en": "62%",
+              "zh-Hans": "62%"
+            },
+            "0.63": {
+              "en": "63%",
+              "zh-Hans": "63%"
+            },
+            "0.64": {
+              "en": "64%",
+              "zh-Hans": "64%"
+            },
+            "0.65": {
+              "en": "65%",
+              "zh-Hans": "65%"
+            },
+            "0.66": {
+              "en": "66%",
+              "zh-Hans": "66%"
+            },
+            "0.67": {
+              "en": "67%",
+              "zh-Hans": "67%"
+            },
+            "0.68": {
+              "en": "68%",
+              "zh-Hans": "68%"
+            },
+            "0.69": {
+              "en": "69%",
+              "zh-Hans": "69%"
+            },
+            "0.7": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "0.71": {
+              "en": "71%",
+              "zh-Hans": "71%"
+            },
+            "0.72": {
+              "en": "72%",
+              "zh-Hans": "72%"
+            },
+            "0.73": {
+              "en": "73%",
+              "zh-Hans": "73%"
+            },
+            "0.74": {
+              "en": "74%",
+              "zh-Hans": "74%"
+            },
+            "0.75": {
+              "en": "75%",
+              "zh-Hans": "75%"
+            },
+            "0.76": {
+              "en": "76%",
+              "zh-Hans": "76%"
+            },
+            "0.77": {
+              "en": "77%",
+              "zh-Hans": "77%"
+            },
+            "0.78": {
+              "en": "78%",
+              "zh-Hans": "78%"
+            },
+            "0.79": {
+              "en": "79%",
+              "zh-Hans": "79%"
+            },
+            "0.8": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "0.81": {
+              "en": "81%",
+              "zh-Hans": "81%"
+            },
+            "0.82": {
+              "en": "82%",
+              "zh-Hans": "82%"
+            },
+            "0.83": {
+              "en": "83%",
+              "zh-Hans": "83%"
+            },
+            "0.84": {
+              "en": "84%",
+              "zh-Hans": "84%"
+            },
+            "0.85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "0.86": {
+              "en": "86%",
+              "zh-Hans": "86%"
+            },
+            "0.87": {
+              "en": "87%",
+              "zh-Hans": "87%"
+            },
+            "0.88": {
+              "en": "88%",
+              "zh-Hans": "88%"
+            },
+            "0.89": {
+              "en": "89%",
+              "zh-Hans": "89%"
+            },
+            "0.9": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "0.91": {
+              "en": "91%",
+              "zh-Hans": "91%"
+            },
+            "0.92": {
+              "en": "92%",
+              "zh-Hans": "92%"
+            },
+            "0.93": {
+              "en": "93%",
+              "zh-Hans": "93%"
+            },
+            "0.94": {
+              "en": "94%",
+              "zh-Hans": "94%"
+            },
+            "0.95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            },
+            "0.96": {
+              "en": "96%",
+              "zh-Hans": "96%"
+            },
+            "0.97": {
+              "en": "97%",
+              "zh-Hans": "97%"
+            },
+            "0.98": {
+              "en": "98%",
+              "zh-Hans": "98%"
+            },
+            "0.99": {
+              "en": "99%",
+              "zh-Hans": "99%"
+            },
+            "1.0": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            }
+          },
+          "values": [
+            "0.5",
+            "0.51",
+            "0.52",
+            "0.53",
+            "0.54",
+            "0.55",
+            "0.56",
+            "0.57",
+            "0.58",
+            "0.59",
+            "0.6",
+            "0.61",
+            "0.62",
+            "0.63",
+            "0.64",
+            "0.65",
+            "0.66",
+            "0.67",
+            "0.68",
+            "0.69",
+            "0.7",
+            "0.71",
+            "0.72",
+            "0.73",
+            "0.74",
+            "0.75",
+            "0.76",
+            "0.77",
+            "0.78",
+            "0.79",
+            "0.8",
+            "0.81",
+            "0.82",
+            "0.83",
+            "0.84",
+            "0.85",
+            "0.86",
+            "0.87",
+            "0.88",
+            "0.89",
+            "0.9",
+            "0.91",
+            "0.92",
+            "0.93",
+            "0.94",
+            "0.95",
+            "0.96",
+            "0.97",
+            "0.98",
+            "0.99",
+            "1.0"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_cycles": [
+                "auto",
+                "max"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Performance",
+          "defaultValue": "none",
+          "description": {
+            "en": "Enable this to show statistics about performance and framerate and check if emulation runs at full speed.",
+            "zh-Hans": "显示性能和帧率统计，用于确认模拟是否达到满速。"
+          },
+          "key": "dosbox_pure_perfstats",
+          "restartRequired": false,
+          "title": {
+            "en": "Show Performance Statistics",
+            "zh-Hans": "显示性能统计"
+          },
+          "type": "select",
+          "valueLabels": {
+            "detailed": {
+              "en": "Detailed",
+              "zh-Hans": "详细"
+            },
+            "none": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "simple": {
+              "en": "Simple",
+              "zh-Hans": "简略"
+            }
+          },
+          "values": [
+            "none",
+            "simple",
+            "detailed"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Performance",
+        "zh-Hans": "性能"
+      }
+    },
+    {
+      "description": {
+        "en": "Emulated graphics card and aspect ratio settings.",
+        "zh-Hans": "模拟显卡与画面比例设置。"
+      },
+      "id": "Video",
+      "options": [
+        {
+          "categoryId": "Video",
+          "defaultValue": "svga",
+          "description": {
+            "en": "The type of graphics chip that DOSBox will emulate.",
+            "zh-Hans": "DOSBox 模拟的显卡类型。"
+          },
+          "key": "dosbox_pure_machine",
+          "restartRequired": true,
+          "title": {
+            "en": "Emulated Graphics Chip",
+            "zh-Hans": "模拟显卡"
+          },
+          "type": "select",
+          "valueLabels": {
+            "cga": {
+              "en": "CGA (Color Graphics Adapter)",
+              "zh-Hans": "CGA (Color Graphics Adapter)"
+            },
+            "ega": {
+              "en": "EGA (Enhanced Graphics Adapter)",
+              "zh-Hans": "EGA (Enhanced Graphics Adapter)"
+            },
+            "hercules": {
+              "en": "Hercules (Hercules Graphics Card)",
+              "zh-Hans": "Hercules (Hercules Graphics Card)"
+            },
+            "pcjr": {
+              "en": "PCjr",
+              "zh-Hans": "PCjr"
+            },
+            "svga": {
+              "en": "SVGA (Super Video Graphics Array) (default)",
+              "zh-Hans": "SVGA (Super Video Graphics Array) (default)"
+            },
+            "tandy": {
+              "en": "Tandy (Tandy Graphics Adapter)",
+              "zh-Hans": "Tandy (Tandy Graphics Adapter)"
+            },
+            "vga": {
+              "en": "VGA (Video Graphics Array)",
+              "zh-Hans": "VGA (Video Graphics Array)"
+            }
+          },
+          "values": [
+            "svga",
+            "vga",
+            "ega",
+            "cga",
+            "tandy",
+            "hercules",
+            "pcjr"
+          ]
+        },
+        {
+          "categoryId": "Video",
+          "defaultValue": "early_auto",
+          "description": {
+            "en": "The CGA variation that is being emulated.",
+            "zh-Hans": "模拟的 CGA 变体型号。"
+          },
+          "key": "dosbox_pure_cga",
+          "restartRequired": false,
+          "title": {
+            "en": "CGA Mode",
+            "zh-Hans": "CGA 模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "early_auto": {
+              "en": "Early model, composite auto (default)",
+              "zh-Hans": "早期型号，复合视频自动（默认）"
+            },
+            "early_off": {
+              "en": "Early model, composite off",
+              "zh-Hans": "早期型号，复合视频关"
+            },
+            "early_on": {
+              "en": "Early model, composite on",
+              "zh-Hans": "早期型号，复合视频开"
+            },
+            "late_auto": {
+              "en": "Late model, composite auto",
+              "zh-Hans": "后期型号，复合视频自动"
+            },
+            "late_off": {
+              "en": "Late model, composite off",
+              "zh-Hans": "后期型号，复合视频关"
+            },
+            "late_on": {
+              "en": "Late model, composite on",
+              "zh-Hans": "后期型号，复合视频开"
+            }
+          },
+          "values": [
+            "early_auto",
+            "early_on",
+            "early_off",
+            "late_auto",
+            "late_on",
+            "late_off"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_machine": [
+                "cga"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Video",
+          "defaultValue": "white",
+          "description": {
+            "en": "The color scheme for Hercules emulation.",
+            "zh-Hans": "Hercules 显卡模拟使用的配色方案。"
+          },
+          "key": "dosbox_pure_hercules",
+          "restartRequired": false,
+          "title": {
+            "en": "Hercules Color Mode",
+            "zh-Hans": "Hercules 配色"
+          },
+          "type": "select",
+          "valueLabels": {
+            "amber": {
+              "en": "Black & amber",
+              "zh-Hans": "黑琥珀"
+            },
+            "green": {
+              "en": "Black & green",
+              "zh-Hans": "黑绿"
+            },
+            "white": {
+              "en": "Black & white (default)",
+              "zh-Hans": "黑白（默认）"
+            }
+          },
+          "values": [
+            "white",
+            "amber",
+            "green"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_machine": [
+                "hercules"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Video",
+          "defaultValue": "svga_s3",
+          "description": {
+            "en": "The SVGA variation that is being emulated. Try changing this if you encounter graphical glitches.",
+            "zh-Hans": "模拟的 SVGA 芯片型号。出现画面异常时可以尝试更换。"
+          },
+          "key": "dosbox_pure_svga",
+          "restartRequired": true,
+          "title": {
+            "en": "SVGA Mode",
+            "zh-Hans": "SVGA 型号"
+          },
+          "type": "select",
+          "valueLabels": {
+            "svga_et3000": {
+              "en": "Tseng Labs ET3000",
+              "zh-Hans": "Tseng Labs ET3000"
+            },
+            "svga_et4000": {
+              "en": "Tseng Labs ET4000",
+              "zh-Hans": "Tseng Labs ET4000"
+            },
+            "svga_paradise": {
+              "en": "Paradise PVGA1A",
+              "zh-Hans": "Paradise PVGA1A"
+            },
+            "svga_s3": {
+              "en": "S3 Trio64 (default)",
+              "zh-Hans": "S3 Trio64 (default)"
+            },
+            "vesa_nolfb": {
+              "en": "S3 Trio64 no-line buffer hack (reduces flickering in some games)",
+              "zh-Hans": "S3 Trio64 no-line buffer hack (reduces flickering in some games)"
+            },
+            "vesa_oldvbe": {
+              "en": "S3 Trio64 VESA 1.3",
+              "zh-Hans": "S3 Trio64 VESA 1.3"
+            }
+          },
+          "values": [
+            "svga_s3",
+            "vesa_nolfb",
+            "vesa_oldvbe",
+            "svga_et3000",
+            "svga_et4000",
+            "svga_paradise"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_machine": [
+                "svga"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Video",
+          "defaultValue": "2",
+          "description": {
+            "en": "The amount of memory available to the emulated SVGA card.",
+            "zh-Hans": "模拟的 SVGA 显卡可用的显存大小。"
+          },
+          "key": "dosbox_pure_svgamem",
+          "restartRequired": true,
+          "title": {
+            "en": "SVGA Memory",
+            "zh-Hans": "SVGA 显存"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "512KB",
+              "zh-Hans": "512KB"
+            },
+            "1": {
+              "en": "1MB",
+              "zh-Hans": "1MB"
+            },
+            "2": {
+              "en": "2MB (default)",
+              "zh-Hans": "2MB (default)"
+            },
+            "3": {
+              "en": "3MB",
+              "zh-Hans": "3MB"
+            },
+            "4": {
+              "en": "4MB",
+              "zh-Hans": "4MB"
+            },
+            "8": {
+              "en": "8MB (not always recognized)",
+              "zh-Hans": "8MB (not always recognized)"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "8"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_machine": [
+                "svga"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Video",
+          "defaultValue": "8mb",
+          "description": {
+            "en": "Enables certain games with support for the Voodoo 3D accelerator.\n3dfx Voodoo Graphics SST-1/2 emulator by Aaron Giles and the MAME team (license: BSD-3-Clause)",
+            "zh-Hans": "为支持 3dfx Voodoo 加速卡的游戏启用该显卡模拟。Voodoo Graphics SST-1/2 模拟器由 Aaron Giles 和 MAME 团队开发（BSD-3-Clause 授权）。"
+          },
+          "key": "dosbox_pure_voodoo",
+          "restartRequired": true,
+          "title": {
+            "en": "3dfx Voodoo Emulation",
+            "zh-Hans": "3dfx Voodoo 模拟"
+          },
+          "type": "select",
+          "valueLabels": {
+            "12mb": {
+              "en": "Enabled - 12MB memory, dual texture",
+              "zh-Hans": "开启 - 12MB 显存，双纹理"
+            },
+            "4mb": {
+              "en": "Enabled - 4MB memory, low resolution only",
+              "zh-Hans": "开启 - 4MB 显存，仅低分辨率"
+            },
+            "8mb": {
+              "en": "Enabled - 8MB memory (default)",
+              "zh-Hans": "开启 - 8MB 显存（默认）"
+            },
+            "off": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "8mb",
+            "12mb",
+            "4mb",
+            "off"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_machine": [
+                "svga"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Video",
+          "defaultValue": "auto",
+          "description": {
+            "en": "Options to tweak the behavior of the 3dfx Voodoo emulation.\nSwitching to OpenGL requires a restart.\nIf OpenGL is available, host-side 3D acceleration is used which can make 3D rendering much faster.\nAuto will use OpenGL if it is the active video driver in the frontend.",
+            "zh-Hans": "调整 3dfx Voodoo 模拟的工作方式。切换到 OpenGL 需要重启游戏。可用时会使用设备的 3D 加速，渲染速度快很多。"
+          },
+          "key": "dosbox_pure_voodoo_perf",
+          "restartRequired": true,
+          "title": {
+            "en": "3dfx Voodoo Performance",
+            "zh-Hans": "3dfx Voodoo 性能"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Software, single-threaded",
+              "zh-Hans": "软件渲染，单线程"
+            },
+            "1": {
+              "en": "Software, multi-threaded",
+              "zh-Hans": "软件渲染，多线程"
+            },
+            "2": {
+              "en": "Software, single-threaded, low quality",
+              "zh-Hans": "软件渲染，单线程，低画质"
+            },
+            "3": {
+              "en": "Software, multi-threaded, low quality",
+              "zh-Hans": "软件渲染，多线程，低画质"
+            },
+            "4": {
+              "en": "Hardware OpenGL",
+              "zh-Hans": "硬件 OpenGL"
+            },
+            "auto": {
+              "en": "Auto (default)",
+              "zh-Hans": "自动（默认）"
+            }
+          },
+          "values": [
+            "auto",
+            "4",
+            "1",
+            "3",
+            "2",
+            "0"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_machine": [
+                "svga"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Video",
+          "defaultValue": "1",
+          "description": {
+            "en": "Increase the native resolution of the rendered image.",
+            "zh-Hans": "提高 3dfx 渲染画面的原生分辨率。"
+          },
+          "key": "dosbox_pure_voodoo_scale",
+          "restartRequired": true,
+          "title": {
+            "en": "3dfx Voodoo OpenGL Scaling",
+            "zh-Hans": "3dfx Voodoo 分辨率倍数"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "1x",
+              "zh-Hans": "1x"
+            },
+            "2": {
+              "en": "2x",
+              "zh-Hans": "2x"
+            },
+            "3": {
+              "en": "3x",
+              "zh-Hans": "3x"
+            },
+            "4": {
+              "en": "4x",
+              "zh-Hans": "4x"
+            },
+            "5": {
+              "en": "5x",
+              "zh-Hans": "5x"
+            },
+            "6": {
+              "en": "6x",
+              "zh-Hans": "6x"
+            },
+            "7": {
+              "en": "7x",
+              "zh-Hans": "7x"
+            },
+            "8": {
+              "en": "8x",
+              "zh-Hans": "8x"
+            }
+          },
+          "values": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_machine": [
+                "svga"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Video",
+          "defaultValue": "-2",
+          "description": {
+            "en": "Change brightness of rendered 3dfx output.",
+            "zh-Hans": "调整 3dfx 输出画面的亮度。"
+          },
+          "key": "dosbox_pure_voodoo_gamma",
+          "restartRequired": false,
+          "title": {
+            "en": "3dfx Voodoo Gamma Correction",
+            "zh-Hans": "3dfx Voodoo 伽马校正"
+          },
+          "type": "select",
+          "valueLabels": {
+            "-1": {
+              "en": "-1",
+              "zh-Hans": "-1"
+            },
+            "-10": {
+              "en": "-10",
+              "zh-Hans": "-10"
+            },
+            "-2": {
+              "en": "-2",
+              "zh-Hans": "-2"
+            },
+            "-3": {
+              "en": "-3",
+              "zh-Hans": "-3"
+            },
+            "-4": {
+              "en": "-4",
+              "zh-Hans": "-4"
+            },
+            "-5": {
+              "en": "-5",
+              "zh-Hans": "-5"
+            },
+            "-6": {
+              "en": "-6",
+              "zh-Hans": "-6"
+            },
+            "-7": {
+              "en": "-7",
+              "zh-Hans": "-7"
+            },
+            "-8": {
+              "en": "-8",
+              "zh-Hans": "-8"
+            },
+            "-9": {
+              "en": "-9",
+              "zh-Hans": "-9"
+            },
+            "0": {
+              "en": "None",
+              "zh-Hans": "不调整"
+            },
+            "1": {
+              "en": "+1",
+              "zh-Hans": "+1"
+            },
+            "10": {
+              "en": "+10",
+              "zh-Hans": "+10"
+            },
+            "2": {
+              "en": "+2",
+              "zh-Hans": "+2"
+            },
+            "3": {
+              "en": "+3",
+              "zh-Hans": "+3"
+            },
+            "4": {
+              "en": "+4",
+              "zh-Hans": "+4"
+            },
+            "5": {
+              "en": "+5",
+              "zh-Hans": "+5"
+            },
+            "6": {
+              "en": "+6",
+              "zh-Hans": "+6"
+            },
+            "7": {
+              "en": "+7",
+              "zh-Hans": "+7"
+            },
+            "8": {
+              "en": "+8",
+              "zh-Hans": "+8"
+            },
+            "9": {
+              "en": "+9",
+              "zh-Hans": "+9"
+            },
+            "999": {
+              "en": "Disable gamma correction",
+              "zh-Hans": "关闭伽马校正"
+            }
+          },
+          "values": [
+            "-10",
+            "-9",
+            "-8",
+            "-7",
+            "-6",
+            "-5",
+            "-4",
+            "-3",
+            "-2",
+            "-1",
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "999"
+          ],
+          "visibleWhen": [
+            {
+              "dosbox_pure_machine": [
+                "svga"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "Video",
+          "defaultValue": "false",
+          "description": {
+            "en": "Adjust the core's aspect ratio to approximate what a CRT monitor would display (works best on high resolution displays and without integer scaling).",
+            "zh-Hans": "把画面比例调整成接近 CRT 显示器的效果（在高分辨率屏幕上、且不使用整数缩放时效果最好）。"
+          },
+          "key": "dosbox_pure_aspect_correction",
+          "restartRequired": true,
+          "title": {
+            "en": "Aspect Ratio Correction",
+            "zh-Hans": "画面比例校正"
+          },
+          "type": "select",
+          "valueLabels": {
+            "doublescan": {
+              "en": "On (double-scan when applicable)",
+              "zh-Hans": "开（适用时双扫描）"
+            },
+            "false": {
+              "en": "Off (default)",
+              "zh-Hans": "关（默认）"
+            },
+            "padded": {
+              "en": "Padded to 4:3 (single-scan)",
+              "zh-Hans": "补边至 4:3（单扫描）"
+            },
+            "padded-doublescan": {
+              "en": "Padded to 4:3 (double-scan when applicable)",
+              "zh-Hans": "补边至 4:3（适用时双扫描）"
+            },
+            "true": {
+              "en": "On (single-scan)",
+              "zh-Hans": "开（单扫描）"
+            }
+          },
+          "values": [
+            "false",
+            "true",
+            "doublescan",
+            "padded",
+            "padded-doublescan"
+          ]
+        },
+        {
+          "categoryId": "Video",
+          "defaultValue": "0",
+          "description": {
+            "en": "When enabled, show a border around the display. Some games use the color of the border to convey information.\n\n",
+            "zh-Hans": "在画面周围显示一圈边框。部分游戏会用边框颜色传达信息。"
+          },
+          "key": "dosbox_pure_overscan",
+          "restartRequired": true,
+          "title": {
+            "en": "Overscan Border Size",
+            "zh-Hans": "过扫描边框"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Off (default)",
+              "zh-Hans": "关（默认）"
+            },
+            "1": {
+              "en": "Small",
+              "zh-Hans": "小"
+            },
+            "2": {
+              "en": "Medium",
+              "zh-Hans": "中"
+            },
+            "3": {
+              "en": "Large",
+              "zh-Hans": "大"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Memory, CPU and operating system settings.",
+        "zh-Hans": "内存、CPU 与操作系统相关设置。"
+      },
+      "id": "System",
+      "options": [
+        {
+          "categoryId": "System",
+          "defaultValue": "16",
+          "description": {
+            "en": "The amount of (high) memory that the emulated machine has. You can also disable extended memory (EMS/XMS).\nUsing more than the default is not recommended, due to incompatibility with certain games and applications.",
+            "zh-Hans": "模拟机器的内存大小，也可以关闭扩展内存（EMS/XMS）。不建议超过默认值，部分游戏和软件会不兼容。"
+          },
+          "key": "dosbox_pure_memory_size",
+          "restartRequired": true,
+          "title": {
+            "en": "Memory Size",
+            "zh-Hans": "内存大小"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1024": {
+              "en": "1024 MB",
+              "zh-Hans": "1024 MB"
+            },
+            "128": {
+              "en": "128 MB",
+              "zh-Hans": "128 MB"
+            },
+            "16": {
+              "en": "16 MB (default)",
+              "zh-Hans": "16 MB (default)"
+            },
+            "224": {
+              "en": "224 MB",
+              "zh-Hans": "224 MB"
+            },
+            "24": {
+              "en": "24 MB",
+              "zh-Hans": "24 MB"
+            },
+            "256": {
+              "en": "256 MB",
+              "zh-Hans": "256 MB"
+            },
+            "32": {
+              "en": "32 MB",
+              "zh-Hans": "32 MB"
+            },
+            "4": {
+              "en": "4 MB",
+              "zh-Hans": "4 MB"
+            },
+            "48": {
+              "en": "48 MB",
+              "zh-Hans": "48 MB"
+            },
+            "512": {
+              "en": "512 MB",
+              "zh-Hans": "512 MB"
+            },
+            "64": {
+              "en": "64 MB",
+              "zh-Hans": "64 MB"
+            },
+            "8": {
+              "en": "8 MB",
+              "zh-Hans": "8 MB"
+            },
+            "96": {
+              "en": "96 MB",
+              "zh-Hans": "96 MB"
+            },
+            "none": {
+              "en": "Disable extended memory (no EMS/XMS)",
+              "zh-Hans": "Disable extended memory (no EMS/XMS)"
+            }
+          },
+          "values": [
+            "none",
+            "4",
+            "8",
+            "16",
+            "24",
+            "32",
+            "48",
+            "64",
+            "96",
+            "128",
+            "224",
+            "256",
+            "512",
+            "1024"
+          ]
+        },
+        {
+          "categoryId": "System",
+          "defaultValue": "auto",
+          "description": {
+            "en": "Emulated CPU type. Auto is the fastest choice.\nGames that require specific CPU type selection:\n386 (prefetch): X-Men: Madness in The Murderworld, Terminator 1, Contra, Fifa International Soccer 1994\n486 (slow): Betrayal in Antara\nPentium (slow): Fifa International Soccer 1994, Windows 95/Windows 3.x games\n\n",
+            "zh-Hans": "模拟的 CPU 型号，Auto 速度最快。部分游戏需要指定型号：386 (prefetch) 适用于《X-Men: Madness in The Murderworld》《终结者》《魂斗罗》；486 (slow) 适用于《Betrayal in Antara》；Pentium (slow) 适用于《FIFA 国际足球 1994》和 Windows 95/3.x。"
+          },
+          "key": "dosbox_pure_cpu_type",
+          "restartRequired": true,
+          "title": {
+            "en": "CPU Type",
+            "zh-Hans": "CPU 型号"
+          },
+          "type": "select",
+          "valueLabels": {
+            "386": {
+              "en": "386 - 386 instruction with fast memory access",
+              "zh-Hans": "386 - 386 instruction with fast memory access"
+            },
+            "386_prefetch": {
+              "en": "386 (prefetch) - With prefetch queue emulation (only on 'auto' and 'normal' core)",
+              "zh-Hans": "386 (prefetch) - With prefetch queue emulation (only on 'auto' and 'normal' core)"
+            },
+            "386_slow": {
+              "en": "386 (slow) - 386 instruction set with memory privilege checks",
+              "zh-Hans": "386 (slow) - 386 instruction set with memory privilege checks"
+            },
+            "486_slow": {
+              "en": "486 (slow) - 486 instruction set with memory privilege checks",
+              "zh-Hans": "486 (slow) - 486 instruction set with memory privilege checks"
+            },
+            "auto": {
+              "en": "Auto - Mixed feature set with maximum performance and compatibility",
+              "zh-Hans": "Auto - Mixed feature set with maximum performance and compatibility"
+            },
+            "pentium_slow": {
+              "en": "Pentium (slow) - 586 instruction set with memory privilege checks",
+              "zh-Hans": "Pentium (slow) - 586 instruction set with memory privilege checks"
+            }
+          },
+          "values": [
+            "auto",
+            "386",
+            "386_slow",
+            "386_prefetch",
+            "486_slow",
+            "pentium_slow"
+          ]
+        },
+        {
+          "categoryId": "System",
+          "defaultValue": "normal",
+          "description": {
+            "en": "Emulation method (DOSBox CPU core) used.",
+            "zh-Hans": "使用的 DOSBox CPU 模拟方式。"
+          },
+          "key": "dosbox_pure_cpu_core",
+          "restartRequired": false,
+          "title": {
+            "en": "CPU Core",
+            "zh-Hans": "CPU 模拟方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "normal": {
+              "en": "Normal (interpreter)",
+              "zh-Hans": "普通（解释执行）"
+            },
+            "simple": {
+              "en": "Simple (interpreter optimized for old real-mode games)",
+              "zh-Hans": "简单（针对早期实模式游戏优化的解释执行）"
+            }
+          },
+          "values": [
+            "normal",
+            "simple"
+          ]
+        },
+        {
+          "categoryId": "System",
+          "defaultValue": "false",
+          "description": {
+            "en": "When running an installed operating system, modifications to the C: drive will be made on the disk image by default.\nSetting it to 'Discard' allows the content to be closed any time without worry of file system or registry corruption.\nWhen using 'Save Difference Per Content' the disk image must never be modified again, otherwise existing differences become unusable.",
+            "zh-Hans": "运行已安装的操作系统时，对 C: 盘的修改默认会写入磁盘镜像。选择「丢弃」可以随时关闭游戏而不用担心文件系统或注册表损坏。"
+          },
+          "key": "dosbox_pure_bootos_ramdisk",
+          "restartRequired": true,
+          "title": {
+            "en": "OS Disk Modifications",
+            "zh-Hans": "操作系统磁盘写入方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "diff": {
+              "en": "Save difference per content",
+              "zh-Hans": "按游戏分别保存差异"
+            },
+            "false": {
+              "en": "Keep (default)",
+              "zh-Hans": "保留（默认）"
+            },
+            "true": {
+              "en": "Discard",
+              "zh-Hans": "丢弃"
+            }
+          },
+          "values": [
+            "false",
+            "true",
+            "diff"
+          ]
+        },
+        {
+          "categoryId": "System",
+          "defaultValue": "1024",
+          "description": {
+            "en": "Controls the amount of free space available on the D: drive when running an installed operating system.\nIf the total size of the D: drive (data + free space) exceeds 2 GB, it can't be used in earlier versions of Windows 95.\nWARNING: Created save files are tied to this setting, so changing this will hide all existing D: drive changes.",
+            "zh-Hans": "运行已安装的操作系统时 D: 盘的可用空间。D: 盘总容量（数据加可用空间）超过 2GB 时，早期版本的 Windows 95 无法使用。注意：存档与该设置绑定，改动后原有存档将无法读取。"
+          },
+          "key": "dosbox_pure_bootos_dfreespace",
+          "restartRequired": true,
+          "title": {
+            "en": "Free Space on D: in OS",
+            "zh-Hans": "操作系统中 D: 盘可用空间"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1024": {
+              "en": "1GB (default)",
+              "zh-Hans": "1GB（默认）"
+            },
+            "2048": {
+              "en": "2GB",
+              "zh-Hans": "2GB"
+            },
+            "4096": {
+              "en": "4GB",
+              "zh-Hans": "4GB"
+            },
+            "8192": {
+              "en": "8GB",
+              "zh-Hans": "8GB"
+            },
+            "discard": {
+              "en": "Discard changes to D:",
+              "zh-Hans": "丢弃对 D: 盘的修改"
+            },
+            "hide": {
+              "en": "Disable the D: hard disk (CD-ROM only)",
+              "zh-Hans": "禁用 D: 硬盘（仅使用光驱）"
+            }
+          },
+          "values": [
+            "1024",
+            "2048",
+            "4096",
+            "8192",
+            "discard",
+            "hide"
+          ]
+        },
+        {
+          "categoryId": "System",
+          "defaultValue": "false",
+          "description": {
+            "en": "The normal core can be more stable when running an installed operating system.\nThis can be toggled on and off to navigate around crashes.\n\n",
+            "zh-Hans": "运行已安装的操作系统时，普通模拟方式更稳定。遇到崩溃时可以开关这个选项绕过。"
+          },
+          "key": "dosbox_pure_bootos_forcenormal",
+          "restartRequired": false,
+          "title": {
+            "en": "Force Normal Core in OS",
+            "zh-Hans": "操作系统中强制使用普通模拟"
+          },
+          "type": "select",
+          "valueLabels": {
+            "false": {
+              "en": "Off (default)",
+              "zh-Hans": "关（默认）"
+            },
+            "true": {
+              "en": "On",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "false",
+            "true"
+          ]
+        }
+      ],
+      "title": {
+        "en": "System",
+        "zh-Hans": "系统"
+      }
+    },
+    {
+      "description": {
+        "en": "MIDI, SoundBlaster and other audio settings.",
+        "zh-Hans": "MIDI、SoundBlaster 等音频设置。"
+      },
+      "id": "Audio",
+      "options": [
+        {
+          "categoryId": "Audio",
+          "defaultValue": "48000",
+          "description": {
+            "en": "Sample rate of the core's audio output. The default is fine in most cases.",
+            "zh-Hans": "核心输出音频的采样率，一般保持默认即可。"
+          },
+          "key": "dosbox_pure_audiorate",
+          "restartRequired": true,
+          "title": {
+            "en": "Audio Sample Rate",
+            "zh-Hans": "音频采样率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "11025": {
+              "en": "11025 Hz",
+              "zh-Hans": "11025 Hz"
+            },
+            "16000": {
+              "en": "16000 Hz",
+              "zh-Hans": "16000 Hz"
+            },
+            "22050": {
+              "en": "22050 Hz",
+              "zh-Hans": "22050 Hz"
+            },
+            "32000": {
+              "en": "32000 Hz",
+              "zh-Hans": "32000 Hz"
+            },
+            "44100": {
+              "en": "44100 Hz",
+              "zh-Hans": "44100 Hz"
+            },
+            "48000": {
+              "en": "48000 Hz",
+              "zh-Hans": "48000 Hz"
+            },
+            "49716": {
+              "en": "49716 Hz",
+              "zh-Hans": "49716 Hz"
+            },
+            "8000": {
+              "en": "8000 Hz",
+              "zh-Hans": "8000 Hz"
+            }
+          },
+          "values": [
+            "48000",
+            "44100",
+            "32000",
+            "22050",
+            "16000",
+            "11025",
+            "8000",
+            "49716"
+          ]
+        },
+        {
+          "categoryId": "Audio",
+          "defaultValue": "A220 I7 D1 H5",
+          "description": {
+            "en": "Set the address, interrupt, low 8-bit and high 16-bit DMA.",
+            "zh-Hans": "设置 SoundBlaster 的地址、中断号，以及 8 位和 16 位 DMA 通道。"
+          },
+          "key": "dosbox_pure_sblaster_conf",
+          "restartRequired": false,
+          "title": {
+            "en": "SoundBlaster Settings",
+            "zh-Hans": "SoundBlaster 端口设置"
+          },
+          "type": "select",
+          "valueLabels": {
+            "A220 I5 D1 H5": {
+              "en": "Port 0x220, IRQ 5, 8-Bit DMA 1, 16-bit DMA 5",
+              "zh-Hans": "Port 0x220, IRQ 5, 8-Bit DMA 1, 16-bit DMA 5"
+            },
+            "A220 I7 D1 H5": {
+              "en": "Port 0x220, IRQ 7, 8-Bit DMA 1, 16-bit DMA 5",
+              "zh-Hans": "Port 0x220, IRQ 7, 8-Bit DMA 1, 16-bit DMA 5"
+            },
+            "A240 I10 D3 H7": {
+              "en": "Port 0x240, IRQ 10, 8-Bit DMA 3, 16-bit DMA 7",
+              "zh-Hans": "Port 0x240, IRQ 10, 8-Bit DMA 3, 16-bit DMA 7"
+            },
+            "A240 I2 D3 H7": {
+              "en": "Port 0x240, IRQ 2, 8-Bit DMA 3, 16-bit DMA 7",
+              "zh-Hans": "Port 0x240, IRQ 2, 8-Bit DMA 3, 16-bit DMA 7"
+            },
+            "A240 I5 D1 H5": {
+              "en": "Port 0x240, IRQ 5, 8-Bit DMA 1, 16-bit DMA 5",
+              "zh-Hans": "Port 0x240, IRQ 5, 8-Bit DMA 1, 16-bit DMA 5"
+            },
+            "A240 I5 D3 H5": {
+              "en": "Port 0x240, IRQ 5, 8-Bit DMA 3, 16-bit DMA 5",
+              "zh-Hans": "Port 0x240, IRQ 5, 8-Bit DMA 3, 16-bit DMA 5"
+            },
+            "A240 I7 D1 H5": {
+              "en": "Port 0x240, IRQ 7, 8-Bit DMA 1, 16-bit DMA 5",
+              "zh-Hans": "Port 0x240, IRQ 7, 8-Bit DMA 1, 16-bit DMA 5"
+            },
+            "A240 I7 D3 H7": {
+              "en": "Port 0x240, IRQ 7, 8-Bit DMA 3, 16-bit DMA 7",
+              "zh-Hans": "Port 0x240, IRQ 7, 8-Bit DMA 3, 16-bit DMA 7"
+            },
+            "A280 I10 D0 H6": {
+              "en": "Port 0x280, IRQ 10, 8-Bit DMA 0, 16-bit DMA 6",
+              "zh-Hans": "Port 0x280, IRQ 10, 8-Bit DMA 0, 16-bit DMA 6"
+            },
+            "A280 I5 D1 H5": {
+              "en": "Port 0x280, IRQ 5, 8-Bit DMA 1, 16-bit DMA 5",
+              "zh-Hans": "Port 0x280, IRQ 5, 8-Bit DMA 1, 16-bit DMA 5"
+            }
+          },
+          "values": [
+            "A220 I7 D1 H5",
+            "A220 I5 D1 H5",
+            "A240 I7 D1 H5",
+            "A240 I7 D3 H7",
+            "A240 I2 D3 H7",
+            "A240 I5 D3 H5",
+            "A240 I5 D1 H5",
+            "A240 I10 D3 H7",
+            "A280 I10 D0 H6",
+            "A280 I5 D1 H5"
+          ]
+        },
+        {
+          "categoryId": "Audio",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Select the .SF2 SoundFont or .ROM file used for MIDI output. Add the file to the core's BIOS files to make it selectable here.",
+            "zh-Hans": "选择 MIDI 输出使用的 .SF2 音色库或 .ROM 文件。把音色库文件添加到核心 BIOS 中即可在这里选择。"
+          },
+          "key": "dosbox_pure_midi",
+          "restartRequired": false,
+          "title": {
+            "en": "MIDI Output",
+            "zh-Hans": "MIDI 输出"
+          },
+          "type": "select",
+          "valueLabels": {
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "frontend": {
+              "en": "Frontend MIDI driver",
+              "zh-Hans": "前端 MIDI 驱动"
+            }
+          },
+          "values": [
+            "disabled",
+            "frontend"
+          ]
+        },
+        {
+          "categoryId": "Audio",
+          "defaultValue": "sb16",
+          "description": {
+            "en": "Type of emulated SoundBlaster card.",
+            "zh-Hans": "模拟的 SoundBlaster 声卡型号。"
+          },
+          "key": "dosbox_pure_sblaster_type",
+          "restartRequired": false,
+          "title": {
+            "en": "SoundBlaster Type",
+            "zh-Hans": "SoundBlaster 型号"
+          },
+          "type": "select",
+          "valueLabels": {
+            "gb": {
+              "en": "GameBlaster",
+              "zh-Hans": "GameBlaster"
+            },
+            "none": {
+              "en": "none",
+              "zh-Hans": "none"
+            },
+            "sb1": {
+              "en": "SoundBlaster 1.0",
+              "zh-Hans": "SoundBlaster 1.0"
+            },
+            "sb16": {
+              "en": "SoundBlaster 16 (default)",
+              "zh-Hans": "SoundBlaster 16 (default)"
+            },
+            "sb2": {
+              "en": "SoundBlaster 2.0",
+              "zh-Hans": "SoundBlaster 2.0"
+            },
+            "sbpro1": {
+              "en": "SoundBlaster Pro",
+              "zh-Hans": "SoundBlaster Pro"
+            },
+            "sbpro2": {
+              "en": "SoundBlaster Pro 2",
+              "zh-Hans": "SoundBlaster Pro 2"
+            }
+          },
+          "values": [
+            "sb16",
+            "sbpro2",
+            "sbpro1",
+            "sb2",
+            "sb1",
+            "gb",
+            "none"
+          ]
+        },
+        {
+          "categoryId": "Audio",
+          "defaultValue": "auto",
+          "description": {
+            "en": "The SoundBlaster emulated FM synth mode. All modes are Adlib compatible except CMS.",
+            "zh-Hans": "模拟的 FM 合成器模式。除 CMS 外都兼容 Adlib。"
+          },
+          "key": "dosbox_pure_sblaster_adlib_mode",
+          "restartRequired": false,
+          "title": {
+            "en": "SoundBlaster Adlib/FM Mode",
+            "zh-Hans": "SoundBlaster FM 合成模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Auto (select based on the SoundBlaster type) (default)",
+              "zh-Hans": "Auto (select based on the SoundBlaster type) (default)"
+            },
+            "cms": {
+              "en": "CMS (Creative Music System / GameBlaster)",
+              "zh-Hans": "CMS (Creative Music System / GameBlaster)"
+            },
+            "dualopl2": {
+              "en": "Dual OPL-2 (Dual OPL-2 used by SoundBlaster Pro 1.0 for stereo sound)",
+              "zh-Hans": "Dual OPL-2 (Dual OPL-2 used by SoundBlaster Pro 1.0 for stereo sound)"
+            },
+            "none": {
+              "en": "OFF",
+              "zh-Hans": "OFF"
+            },
+            "opl2": {
+              "en": "OPL-2 (AdLib / OPL-2 / Yamaha 3812)",
+              "zh-Hans": "OPL-2 (AdLib / OPL-2 / Yamaha 3812)"
+            },
+            "opl3": {
+              "en": "OPL-3 (AdLib / OPL-3 / Yamaha YMF262)",
+              "zh-Hans": "OPL-3 (AdLib / OPL-3 / Yamaha YMF262)"
+            },
+            "opl3gold": {
+              "en": "OPL-3 Gold (AdLib Gold / OPL-3 / Yamaha YMF262)",
+              "zh-Hans": "OPL-3 Gold (AdLib Gold / OPL-3 / Yamaha YMF262)"
+            }
+          },
+          "values": [
+            "auto",
+            "cms",
+            "opl2",
+            "dualopl2",
+            "opl3",
+            "opl3gold",
+            "none"
+          ]
+        },
+        {
+          "categoryId": "Audio",
+          "defaultValue": "default",
+          "description": {
+            "en": "Provider for the Adlib emulation. Default has good quality and low performance requirements.",
+            "zh-Hans": "Adlib 模拟使用的实现。默认实现音质不错且性能开销低。"
+          },
+          "key": "dosbox_pure_sblaster_adlib_emu",
+          "restartRequired": false,
+          "title": {
+            "en": "Adlib Provider",
+            "zh-Hans": "Adlib 模拟器"
+          },
+          "type": "select",
+          "valueLabels": {
+            "default": {
+              "en": "Default",
+              "zh-Hans": "默认"
+            },
+            "nuked": {
+              "en": "High quality Nuked OPL3",
+              "zh-Hans": "高音质 Nuked OPL3"
+            }
+          },
+          "values": [
+            "default",
+            "nuked"
+          ]
+        },
+        {
+          "categoryId": "Audio",
+          "defaultValue": "false",
+          "description": {
+            "en": "Enable Gravis Ultrasound emulation. Settings are fixed at port 0x240, IRQ 5, DMA 3.\nIf the ULTRADIR variable needs to be different than the default 'C:\\ULTRASND' you need to issue 'SET ULTRADIR=...' in the command line or in a batch file.",
+            "zh-Hans": "启用 Gravis Ultrasound 声卡模拟，参数固定为端口 0x240、IRQ 5、DMA 3。如果 ULTRADIR 变量需要不同于默认的 C:\\ULTRASND，需要在命令行或批处理里执行 SET ULTRADIR=...。"
+          },
+          "key": "dosbox_pure_gus",
+          "restartRequired": true,
+          "title": {
+            "en": "Enable Gravis Ultrasound",
+            "zh-Hans": "启用 Gravis Ultrasound"
+          },
+          "type": "select",
+          "valueLabels": {
+            "false": {
+              "en": "Off (default)",
+              "zh-Hans": "关（默认）"
+            },
+            "true": {
+              "en": "On",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "false",
+            "true"
+          ]
+        },
+        {
+          "categoryId": "Audio",
+          "defaultValue": "auto",
+          "description": {
+            "en": "Enable Tandy Sound Device emulation even when running without Tandy Graphics Adapter emulation.",
+            "zh-Hans": "即使没有模拟 Tandy 显卡，也启用 Tandy 音频设备模拟。"
+          },
+          "key": "dosbox_pure_tandysound",
+          "restartRequired": true,
+          "title": {
+            "en": "Enable Tandy Sound Device",
+            "zh-Hans": "启用 Tandy 音频设备"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Off (default)",
+              "zh-Hans": "关（默认）"
+            },
+            "on": {
+              "en": "On",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "auto",
+            "on"
+          ]
+        },
+        {
+          "categoryId": "Audio",
+          "defaultValue": "false",
+          "description": {
+            "en": "Swap the left and the right audio channel.\n\n",
+            "zh-Hans": "交换左右两个音频声道。"
+          },
+          "key": "dosbox_pure_swapstereo",
+          "restartRequired": false,
+          "title": {
+            "en": "Swap Stereo Channels",
+            "zh-Hans": "交换左右声道"
+          },
+          "type": "select",
+          "valueLabels": {
+            "false": {
+              "en": "Off (default)",
+              "zh-Hans": "关（默认）"
+            },
+            "true": {
+              "en": "On",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "false",
+            "true"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Audio",
+        "zh-Hans": "音频"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "DOSBox-pure",
+    "coreVersion": "0.9.9",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

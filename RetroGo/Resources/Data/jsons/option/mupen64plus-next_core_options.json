@@ -1,0 +1,5103 @@
+{
+  "coreId": "mupen64plus-next",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Graphics plugin, CPU emulation and compatibility settings.",
+        "zh-Hans": "图形插件、CPU 模拟与兼容性设置。"
+      },
+      "id": "general",
+      "options": [
+        {
+          "categoryId": "general",
+          "defaultValue": "gliden64",
+          "description": {
+            "en": "Select a RDP Plugin, use Angrylion (if available) for best compability, GLideN64 for Performance",
+            "zh-Hans": "GLideN64 性能最好，ParaLLEl-RDP 精度高且支持提高分辨率，Angrylion 最准确但最耗性能。"
+          },
+          "key": "mupen64plus-rdp-plugin",
+          "restartRequired": true,
+          "title": {
+            "en": "RDP Plugin",
+            "zh-Hans": "图形插件"
+          },
+          "type": "select",
+          "valueLabels": {
+            "angrylion": {
+              "en": "Angrylion",
+              "zh-Hans": "Angrylion"
+            },
+            "gliden64": {
+              "en": "GLideN64",
+              "zh-Hans": "GLideN64"
+            },
+            "parallel": {
+              "en": "ParaLLEl-RDP",
+              "zh-Hans": "ParaLLEl-RDP"
+            }
+          },
+          "values": [
+            "angrylion",
+            "parallel",
+            "gliden64"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "cached_interpreter",
+          "description": {
+            "en": "Select the R4300 CPU Backend, use Interpreter for best compability",
+            "zh-Hans": "「缓存解释执行」速度更快，「纯解释执行」兼容性最好。"
+          },
+          "key": "mupen64plus-cpucore",
+          "restartRequired": true,
+          "title": {
+            "en": "CPU Core",
+            "zh-Hans": "CPU 模拟方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "cached_interpreter": {
+              "en": "Cached Interpreter",
+              "zh-Hans": "缓存解释执行"
+            },
+            "pure_interpreter": {
+              "en": "Pure Interpreter",
+              "zh-Hans": "纯解释执行"
+            }
+          },
+          "values": [
+            "pure_interpreter",
+            "cached_interpreter"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "hle",
+          "description": {
+            "en": "Select a RSP Plugin, use HLE for best performance, ParaLLEl for best LLE Performance and CXD4 as LLE fallback",
+            "zh-Hans": "HLE 速度最快，ParaLLEl 是精度更高的选择，CXD4 为备用方案。"
+          },
+          "key": "mupen64plus-rsp-plugin",
+          "restartRequired": true,
+          "title": {
+            "en": "RSP Plugin",
+            "zh-Hans": "RSP 插件"
+          },
+          "type": "select",
+          "valueLabels": {
+            "cxd4": {
+              "en": "CXD4",
+              "zh-Hans": "CXD4"
+            },
+            "hle": {
+              "en": "HLE",
+              "zh-Hans": "HLE"
+            },
+            "parallel": {
+              "en": "ParaLLEl",
+              "zh-Hans": "ParaLLEl"
+            }
+          },
+          "values": [
+            "cxd4",
+            "parallel",
+            "hle"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "False",
+          "description": {
+            "en": "Enable Frame duplication to improve smoothing on low-end. Different from frameskip.",
+            "zh-Hans": "重复输出上一帧让画面更顺滑，和跳帧不是一回事。"
+          },
+          "key": "mupen64plus-FrameDuping",
+          "restartRequired": true,
+          "title": {
+            "en": "Frame Duplication",
+            "zh-Hans": "重复帧"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Original",
+          "description": {
+            "en": "Fullspeed will enforce Count per Op 1 and FBEmu settings, this will break some games!",
+            "zh-Hans": "「全速」会强制修改部分底层参数，可能导致部分游戏出错。"
+          },
+          "key": "mupen64plus-Framerate",
+          "restartRequired": true,
+          "title": {
+            "en": "Framerate",
+            "zh-Hans": "帧率模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Fullspeed": {
+              "en": "Fullspeed",
+              "zh-Hans": "全速"
+            },
+            "Original": {
+              "en": "Original",
+              "zh-Hans": "原始"
+            }
+          },
+          "values": [
+            "Original",
+            "Fullspeed"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "Select a VI Refresh clock, Auto does not impact behaviour, other values override CountPerScanline.",
+            "zh-Hans": "覆盖每条扫描线的计数值。「自动」不改变行为。"
+          },
+          "key": "mupen64plus-virefresh",
+          "restartRequired": true,
+          "title": {
+            "en": "VI Refresh (Overclock)",
+            "zh-Hans": "VI 刷新率（超频）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1500": {
+              "en": "1500",
+              "zh-Hans": "1500"
+            },
+            "2200": {
+              "en": "2200",
+              "zh-Hans": "2200"
+            },
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            }
+          },
+          "values": [
+            "Auto",
+            "1500",
+            "2200"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "False",
+          "description": {
+            "en": "Force disable Expansion Pak (might improve performance for some games while reducing emulation accuracy, will break games that require it).",
+            "zh-Hans": "强制关闭 N64 扩展内存包。部分游戏性能会变好，但需要扩展内存的游戏将无法运行。"
+          },
+          "key": "mupen64plus-ForceDisableExtraMem",
+          "restartRequired": true,
+          "title": {
+            "en": "Disable Expansion Pak",
+            "zh-Hans": "禁用扩展内存包"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "False",
+          "description": {
+            "en": "(HACK) Ignore emulated TLB Exceptions, this might fix some broken romhacks. This option might be removed in the future.",
+            "zh-Hans": "忽略模拟的 TLB 异常，可能修复部分改版游戏。属于临时兼容手段。"
+          },
+          "key": "mupen64plus-IgnoreTLBExceptions",
+          "restartRequired": true,
+          "title": {
+            "en": "Ignore TLB Exceptions",
+            "zh-Hans": "忽略 TLB 异常"
+          },
+          "type": "select",
+          "valueLabels": {
+            "AlwaysIgnoreTLB": {
+              "en": "Always ignore",
+              "zh-Hans": "始终忽略"
+            },
+            "False": {
+              "en": "Don't ignore",
+              "zh-Hans": "不忽略"
+            },
+            "OnlyNotEnabled": {
+              "en": "Ignore when TLB is unused",
+              "zh-Hans": "未使用 TLB 时忽略"
+            }
+          },
+          "values": [
+            "False",
+            "OnlyNotEnabled",
+            "AlwaysIgnoreTLB"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "0",
+          "description": {
+            "en": "Count per Op is used to approximate the Counter reg, 0 will use the embedded Database (or default to 2). Changing this will break stuff!",
+            "zh-Hans": "用于近似计数寄存器，0 表示使用内置数据库。改动可能导致游戏出错。"
+          },
+          "key": "mupen64plus-CountPerOp",
+          "restartRequired": true,
+          "title": {
+            "en": "Count Per Op",
+            "zh-Hans": "每指令计数"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Auto (built-in database)",
+              "zh-Hans": "自动（内置数据库）"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "0",
+          "description": {
+            "en": "Denominator for Count per Op (allowing sub-1 Count per Op in practice). Changing this can break stuff!",
+            "zh-Hans": "「每指令计数」的分母，可实现小于 1 的计数。改动可能导致游戏出错。"
+          },
+          "key": "mupen64plus-CountPerOpDenomPot",
+          "restartRequired": true,
+          "title": {
+            "en": "Count Per Op Divider (Overclock)",
+            "zh-Hans": "每指令计数分母（超频）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "title": {
+        "en": "General",
+        "zh-Hans": "通用"
+      }
+    },
+    {
+      "description": {
+        "en": "Controller paks, C buttons and analog stick settings.",
+        "zh-Hans": "手柄扩展包、C 键与摇杆设置。"
+      },
+      "id": "input",
+      "options": [
+        {
+          "categoryId": "input",
+          "defaultValue": "15",
+          "description": {
+            "en": "Size of the non responsive area around an analog stick.",
+            "zh-Hans": "摇杆中心附近不响应的范围，可消除摇杆漂移。"
+          },
+          "key": "mupen64plus-astick-deadzone",
+          "restartRequired": false,
+          "title": {
+            "en": "Analog Deadzone",
+            "zh-Hans": "摇杆死区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            }
+          },
+          "values": [
+            "0",
+            "5",
+            "10",
+            "15",
+            "20",
+            "25",
+            "30"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "100",
+          "description": {
+            "en": "Adjust how far the stick needs to be moved to reach its max value.",
+            "zh-Hans": "摇杆推到多远算作满量程。数值越大越灵敏。"
+          },
+          "key": "mupen64plus-astick-sensitivity",
+          "restartRequired": false,
+          "title": {
+            "en": "Analog Sensitivity",
+            "zh-Hans": "摇杆灵敏度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "100": {
+              "en": "100",
+              "zh-Hans": "100"
+            },
+            "105": {
+              "en": "105",
+              "zh-Hans": "105"
+            },
+            "110": {
+              "en": "110",
+              "zh-Hans": "110"
+            },
+            "115": {
+              "en": "115",
+              "zh-Hans": "115"
+            },
+            "120": {
+              "en": "120",
+              "zh-Hans": "120"
+            },
+            "125": {
+              "en": "125",
+              "zh-Hans": "125"
+            },
+            "130": {
+              "en": "130",
+              "zh-Hans": "130"
+            },
+            "135": {
+              "en": "135",
+              "zh-Hans": "135"
+            },
+            "140": {
+              "en": "140",
+              "zh-Hans": "140"
+            },
+            "145": {
+              "en": "145",
+              "zh-Hans": "145"
+            },
+            "150": {
+              "en": "150",
+              "zh-Hans": "150"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "55": {
+              "en": "55",
+              "zh-Hans": "55"
+            },
+            "60": {
+              "en": "60",
+              "zh-Hans": "60"
+            },
+            "65": {
+              "en": "65",
+              "zh-Hans": "65"
+            },
+            "70": {
+              "en": "70",
+              "zh-Hans": "70"
+            },
+            "75": {
+              "en": "75",
+              "zh-Hans": "75"
+            },
+            "80": {
+              "en": "80",
+              "zh-Hans": "80"
+            },
+            "85": {
+              "en": "85",
+              "zh-Hans": "85"
+            },
+            "90": {
+              "en": "90",
+              "zh-Hans": "90"
+            },
+            "95": {
+              "en": "95",
+              "zh-Hans": "95"
+            }
+          },
+          "values": [
+            "50",
+            "55",
+            "60",
+            "65",
+            "70",
+            "75",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100",
+            "105",
+            "110",
+            "115",
+            "120",
+            "125",
+            "130",
+            "135",
+            "140",
+            "145",
+            "150"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "C1",
+          "description": {
+            "en": "Select Right C Button mapping.",
+            "zh-Hans": "「右 C 键」实际发送哪个 C 键。"
+          },
+          "key": "mupen64plus-r-cbutton",
+          "restartRequired": false,
+          "title": {
+            "en": "Right C Button",
+            "zh-Hans": "右 C 键"
+          },
+          "type": "select",
+          "valueLabels": {
+            "C1": {
+              "en": "C1",
+              "zh-Hans": "C1"
+            },
+            "C2": {
+              "en": "C2",
+              "zh-Hans": "C2"
+            },
+            "C3": {
+              "en": "C3",
+              "zh-Hans": "C3"
+            },
+            "C4": {
+              "en": "C4",
+              "zh-Hans": "C4"
+            }
+          },
+          "values": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "C2",
+          "description": {
+            "en": "Select Left C Button mapping.",
+            "zh-Hans": "「左 C 键」实际发送哪个 C 键。"
+          },
+          "key": "mupen64plus-l-cbutton",
+          "restartRequired": false,
+          "title": {
+            "en": "Left C Button",
+            "zh-Hans": "左 C 键"
+          },
+          "type": "select",
+          "valueLabels": {
+            "C1": {
+              "en": "C1",
+              "zh-Hans": "C1"
+            },
+            "C2": {
+              "en": "C2",
+              "zh-Hans": "C2"
+            },
+            "C3": {
+              "en": "C3",
+              "zh-Hans": "C3"
+            },
+            "C4": {
+              "en": "C4",
+              "zh-Hans": "C4"
+            }
+          },
+          "values": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "C3",
+          "description": {
+            "en": "Select Down C Button mapping.",
+            "zh-Hans": "「下 C 键」实际发送哪个 C 键。"
+          },
+          "key": "mupen64plus-d-cbutton",
+          "restartRequired": false,
+          "title": {
+            "en": "Down C Button",
+            "zh-Hans": "下 C 键"
+          },
+          "type": "select",
+          "valueLabels": {
+            "C1": {
+              "en": "C1",
+              "zh-Hans": "C1"
+            },
+            "C2": {
+              "en": "C2",
+              "zh-Hans": "C2"
+            },
+            "C3": {
+              "en": "C3",
+              "zh-Hans": "C3"
+            },
+            "C4": {
+              "en": "C4",
+              "zh-Hans": "C4"
+            }
+          },
+          "values": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "C4",
+          "description": {
+            "en": "Select Up C Button mapping.",
+            "zh-Hans": "「上 C 键」实际发送哪个 C 键。"
+          },
+          "key": "mupen64plus-u-cbutton",
+          "restartRequired": false,
+          "title": {
+            "en": "Up C Button",
+            "zh-Hans": "上 C 键"
+          },
+          "type": "select",
+          "valueLabels": {
+            "C1": {
+              "en": "C1",
+              "zh-Hans": "C1"
+            },
+            "C2": {
+              "en": "C2",
+              "zh-Hans": "C2"
+            },
+            "C3": {
+              "en": "C3",
+              "zh-Hans": "C3"
+            },
+            "C4": {
+              "en": "C4",
+              "zh-Hans": "C4"
+            }
+          },
+          "values": [
+            "C1",
+            "C2",
+            "C3",
+            "C4"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "False",
+          "description": {
+            "en": "Use an alternate control scheme, useful for some 3rdparty controllers.",
+            "zh-Hans": "使用另一套 C 键映射方案，部分第三方手柄需要。"
+          },
+          "key": "mupen64plus-alt-map",
+          "restartRequired": false,
+          "title": {
+            "en": "Independent C-Button Controls",
+            "zh-Hans": "独立 C 键布局"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "memory",
+          "description": {
+            "en": "Select Player 1 Controller Pak.",
+            "zh-Hans": "玩家 1 手柄上插入的扩展包。「记忆卡」用于游戏内存档，「震动包」提供震动，「传输包」用于读取 GB 卡带。"
+          },
+          "key": "mupen64plus-pak1",
+          "restartRequired": false,
+          "title": {
+            "en": "Player 1 Pak",
+            "zh-Hans": "玩家 1 扩展包"
+          },
+          "type": "select",
+          "valueLabels": {
+            "memory": {
+              "en": "Memory Pak",
+              "zh-Hans": "记忆卡"
+            },
+            "none": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "rumble": {
+              "en": "Rumble Pak",
+              "zh-Hans": "震动包"
+            },
+            "transfer": {
+              "en": "Transfer Pak",
+              "zh-Hans": "传输包"
+            }
+          },
+          "values": [
+            "none",
+            "memory",
+            "rumble",
+            "transfer"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "none",
+          "description": {
+            "en": "Select Player 2 Controller Pak.",
+            "zh-Hans": "玩家 2 手柄上插入的扩展包。「记忆卡」用于游戏内存档，「震动包」提供震动，「传输包」用于读取 GB 卡带。"
+          },
+          "key": "mupen64plus-pak2",
+          "restartRequired": false,
+          "title": {
+            "en": "Player 2 Pak",
+            "zh-Hans": "玩家 2 扩展包"
+          },
+          "type": "select",
+          "valueLabels": {
+            "memory": {
+              "en": "Memory Pak",
+              "zh-Hans": "记忆卡"
+            },
+            "none": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "rumble": {
+              "en": "Rumble Pak",
+              "zh-Hans": "震动包"
+            },
+            "transfer": {
+              "en": "Transfer Pak",
+              "zh-Hans": "传输包"
+            }
+          },
+          "values": [
+            "none",
+            "memory",
+            "rumble",
+            "transfer"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "none",
+          "description": {
+            "en": "Select Player 3 Controller Pak.",
+            "zh-Hans": "玩家 3 手柄上插入的扩展包。「记忆卡」用于游戏内存档，「震动包」提供震动，「传输包」用于读取 GB 卡带。"
+          },
+          "key": "mupen64plus-pak3",
+          "restartRequired": false,
+          "title": {
+            "en": "Player 3 Pak",
+            "zh-Hans": "玩家 3 扩展包"
+          },
+          "type": "select",
+          "valueLabels": {
+            "memory": {
+              "en": "Memory Pak",
+              "zh-Hans": "记忆卡"
+            },
+            "none": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "rumble": {
+              "en": "Rumble Pak",
+              "zh-Hans": "震动包"
+            },
+            "transfer": {
+              "en": "Transfer Pak",
+              "zh-Hans": "传输包"
+            }
+          },
+          "values": [
+            "none",
+            "memory",
+            "rumble",
+            "transfer"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "none",
+          "description": {
+            "en": "Select Player 4 Controller Pak.",
+            "zh-Hans": "玩家 4 手柄上插入的扩展包。「记忆卡」用于游戏内存档，「震动包」提供震动，「传输包」用于读取 GB 卡带。"
+          },
+          "key": "mupen64plus-pak4",
+          "restartRequired": false,
+          "title": {
+            "en": "Player 4 Pak",
+            "zh-Hans": "玩家 4 扩展包"
+          },
+          "type": "select",
+          "valueLabels": {
+            "memory": {
+              "en": "Memory Pak",
+              "zh-Hans": "记忆卡"
+            },
+            "none": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "rumble": {
+              "en": "Rumble Pak",
+              "zh-Hans": "震动包"
+            },
+            "transfer": {
+              "en": "Transfer Pak",
+              "zh-Hans": "传输包"
+            }
+          },
+          "values": [
+            "none",
+            "memory",
+            "rumble",
+            "transfer"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Controller & Paks",
+        "zh-Hans": "手柄与扩展包"
+      }
+    },
+    {
+      "description": {
+        "en": "Settings for the GLideN64 graphics plugin.",
+        "zh-Hans": "GLideN64 图形插件的设置。"
+      },
+      "id": "gliden64",
+      "options": [
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "640x480",
+          "description": {
+            "en": "Select Render Viewport dimensions (4:3).",
+            "zh-Hans": "以 4:3 比例渲染时的内部分辨率。分辨率越高越清晰，也越耗性能。"
+          },
+          "key": "mupen64plus-43screensize",
+          "restartRequired": true,
+          "title": {
+            "en": "4:3 Resolution",
+            "zh-Hans": "4:3 渲染分辨率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1280x960": {
+              "en": "1280x960",
+              "zh-Hans": "1280x960"
+            },
+            "1440x1080": {
+              "en": "1440x1080",
+              "zh-Hans": "1440x1080"
+            },
+            "1600x1200": {
+              "en": "1600x1200",
+              "zh-Hans": "1600x1200"
+            },
+            "1920x1440": {
+              "en": "1920x1440",
+              "zh-Hans": "1920x1440"
+            },
+            "2240x1680": {
+              "en": "2240x1680",
+              "zh-Hans": "2240x1680"
+            },
+            "2560x1920": {
+              "en": "2560x1920",
+              "zh-Hans": "2560x1920"
+            },
+            "2880x2160": {
+              "en": "2880x2160",
+              "zh-Hans": "2880x2160"
+            },
+            "3200x2400": {
+              "en": "3200x2400",
+              "zh-Hans": "3200x2400"
+            },
+            "320x240": {
+              "en": "320x240",
+              "zh-Hans": "320x240"
+            },
+            "3520x2640": {
+              "en": "3520x2640",
+              "zh-Hans": "3520x2640"
+            },
+            "3840x2880": {
+              "en": "3840x2880",
+              "zh-Hans": "3840x2880"
+            },
+            "640x480": {
+              "en": "640x480",
+              "zh-Hans": "640x480"
+            },
+            "960x720": {
+              "en": "960x720",
+              "zh-Hans": "960x720"
+            }
+          },
+          "values": [
+            "320x240",
+            "640x480",
+            "960x720",
+            "1280x960",
+            "1440x1080",
+            "1600x1200",
+            "1920x1440",
+            "2240x1680",
+            "2560x1920",
+            "2880x2160",
+            "3200x2400",
+            "3520x2640",
+            "3840x2880"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "960x540",
+          "description": {
+            "en": "Select Render Viewport dimensions for wider resolutions.",
+            "zh-Hans": "以宽屏比例渲染时的内部分辨率。"
+          },
+          "key": "mupen64plus-169screensize",
+          "restartRequired": true,
+          "title": {
+            "en": "Wide Resolution",
+            "zh-Hans": "宽屏渲染分辨率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "10240x4320": {
+              "en": "10240x4320 (64:27)",
+              "zh-Hans": "10240x4320 (64:27)"
+            },
+            "1280x720": {
+              "en": "1280x720 (16:9)",
+              "zh-Hans": "1280x720 (16:9)"
+            },
+            "1366x768": {
+              "en": "1366x768 (16:9)",
+              "zh-Hans": "1366x768 (16:9)"
+            },
+            "1706x720": {
+              "en": "1706x720 (64:27)",
+              "zh-Hans": "1706x720 (64:27)"
+            },
+            "1920x1080": {
+              "en": "1920x1080 (16:9)",
+              "zh-Hans": "1920x1080 (16:9)"
+            },
+            "1920x810": {
+              "en": "1920x810 (64:27)",
+              "zh-Hans": "1920x810 (64:27)"
+            },
+            "2560x1080": {
+              "en": "2560x1080 (64:27)",
+              "zh-Hans": "2560x1080 (64:27)"
+            },
+            "2560x1440": {
+              "en": "2560x1440 (16:9)",
+              "zh-Hans": "2560x1440 (16:9)"
+            },
+            "3414x1440": {
+              "en": "3414x1440 (64:27)",
+              "zh-Hans": "3414x1440 (64:27)"
+            },
+            "3840x2160": {
+              "en": "3840x2160 (16:9)",
+              "zh-Hans": "3840x2160 (16:9)"
+            },
+            "4096x2160": {
+              "en": "4096x2160 (17:9)",
+              "zh-Hans": "4096x2160 (17:9)"
+            },
+            "5120x1440": {
+              "en": "5120x1440 (32:9)",
+              "zh-Hans": "5120x1440 (32:9)"
+            },
+            "5120x2160": {
+              "en": "5120x2160 (64:27)",
+              "zh-Hans": "5120x2160 (64:27)"
+            },
+            "640x360": {
+              "en": "640x360 (16:9)",
+              "zh-Hans": "640x360 (16:9)"
+            },
+            "7680x2160": {
+              "en": "7680x2160 (32:9)",
+              "zh-Hans": "7680x2160 (32:9)"
+            },
+            "7680x3240": {
+              "en": "7680x3240 (64:27)",
+              "zh-Hans": "7680x3240 (64:27)"
+            },
+            "7680x4320": {
+              "en": "7680x4320 (16:9)",
+              "zh-Hans": "7680x4320 (16:9)"
+            },
+            "960x540": {
+              "en": "960x540 (16:9)",
+              "zh-Hans": "960x540 (16:9)"
+            }
+          },
+          "values": [
+            "640x360",
+            "960x540",
+            "1280x720",
+            "1706x720",
+            "1366x768",
+            "1920x810",
+            "1920x1080",
+            "2560x1080",
+            "2560x1440",
+            "3414x1440",
+            "3840x2160",
+            "4096x2160",
+            "5120x1440",
+            "5120x2160",
+            "7680x3240",
+            "7680x4320",
+            "7680x2160",
+            "10240x4320"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "4:3",
+          "description": {
+            "en": "Select the aspect ratio. 'adjusted' means essentially Widescreen hacks.",
+            "zh-Hans": "「原始」为 N64 的 4:3；「宽屏（拉伸）」直接拉伸画面；「宽屏（校正）」扩展可视范围，相当于宽屏补丁，部分游戏会出现画面问题。"
+          },
+          "key": "mupen64plus-aspect",
+          "restartRequired": true,
+          "title": {
+            "en": "Aspect Ratio",
+            "zh-Hans": "画面比例"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16:9": {
+              "en": "Wide (Stretched)",
+              "zh-Hans": "宽屏（拉伸）"
+            },
+            "16:9 adjusted": {
+              "en": "Wide (Adjusted)",
+              "zh-Hans": "宽屏（校正）"
+            },
+            "4:3": {
+              "en": "Original (4:3)",
+              "zh-Hans": "原始 4:3"
+            }
+          },
+          "values": [
+            "4:3",
+            "16:9",
+            "16:9 adjusted"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "0",
+          "description": {
+            "en": "Render at N times the native resolution.",
+            "zh-Hans": "以 N64 原生分辨率的 N 倍渲染。开启后会忽略上面的分辨率设置。"
+          },
+          "key": "mupen64plus-EnableNativeResFactor",
+          "restartRequired": true,
+          "title": {
+            "en": "Native Resolution Factor",
+            "zh-Hans": "原生分辨率倍数"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "1": {
+              "en": "1x",
+              "zh-Hans": "1x"
+            },
+            "2": {
+              "en": "2x",
+              "zh-Hans": "2x"
+            },
+            "3": {
+              "en": "3x",
+              "zh-Hans": "3x"
+            },
+            "4": {
+              "en": "4x",
+              "zh-Hans": "4x"
+            },
+            "5": {
+              "en": "5x",
+              "zh-Hans": "5x"
+            },
+            "6": {
+              "en": "6x",
+              "zh-Hans": "6x"
+            },
+            "7": {
+              "en": "7x",
+              "zh-Hans": "7x"
+            },
+            "8": {
+              "en": "8x",
+              "zh-Hans": "8x"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Use the Threaded Renderer, improves performance but increases input lag.",
+            "zh-Hans": "在独立线程上渲染，性能更好，但输入延迟会增加。"
+          },
+          "key": "mupen64plus-ThreadedRenderer",
+          "restartRequired": true,
+          "title": {
+            "en": "Threaded Renderer",
+            "zh-Hans": "多线程渲染"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "standard",
+          "description": {
+            "en": "Select a Bilinear filtering method, 3point is the original system specific way.",
+            "zh-Hans": "纹理过滤方式。3point 是 N64 原生的做法，standard 更平滑。"
+          },
+          "key": "mupen64plus-BilinearMode",
+          "restartRequired": true,
+          "title": {
+            "en": "Bilinear Filtering Mode",
+            "zh-Hans": "双线性过滤方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "3point": {
+              "en": "3point",
+              "zh-Hans": "3point"
+            },
+            "standard": {
+              "en": "standard",
+              "zh-Hans": "standard"
+            }
+          },
+          "values": [
+            "3point",
+            "standard"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "True",
+          "description": {
+            "en": "Hybrid integer scaling filter, this can be slow with low-end GPUs.",
+            "zh-Hans": "整数缩放时额外做一次平滑处理，低端 GPU 上较慢。"
+          },
+          "key": "mupen64plus-HybridFilter",
+          "restartRequired": true,
+          "title": {
+            "en": "Hybrid Filter",
+            "zh-Hans": "混合缩放过滤"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Applies dithering pattern to output image.",
+            "zh-Hans": "对输出画面应用抖动处理，模拟 N64 的颗粒感。"
+          },
+          "key": "mupen64plus-DitheringPattern",
+          "restartRequired": true,
+          "title": {
+            "en": "Dithering",
+            "zh-Hans": "抖动"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Dither with color quantization.",
+            "zh-Hans": "抖动时同时降低色彩精度。"
+          },
+          "key": "mupen64plus-DitheringQuantization",
+          "restartRequired": true,
+          "title": {
+            "en": "Dithering Quantization",
+            "zh-Hans": "抖动色彩量化"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Dithering mode for image in RDRAM.",
+            "zh-Hans": "对写入显存的图像使用的抖动算法。"
+          },
+          "key": "mupen64plus-RDRAMImageDitheringMode",
+          "restartRequired": true,
+          "title": {
+            "en": "Image Dithering Mode",
+            "zh-Hans": "显存图像抖动方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Bayer": {
+              "en": "Bayer",
+              "zh-Hans": "Bayer"
+            },
+            "BlueNoise": {
+              "en": "Blue Noise",
+              "zh-Hans": "Blue Noise"
+            },
+            "False": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "MagicSquare": {
+              "en": "Magic Square",
+              "zh-Hans": "Magic Square"
+            }
+          },
+          "values": [
+            "False",
+            "Bayer",
+            "MagicSquare",
+            "BlueNoise"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "0",
+          "description": {
+            "en": "Anti-Aliasing level (0 = disabled).",
+            "zh-Hans": "多重采样抗锯齿等级，0 为关闭。数值越高边缘越平滑，也越耗性能。"
+          },
+          "key": "mupen64plus-MultiSampling",
+          "restartRequired": true,
+          "title": {
+            "en": "MSAA Level",
+            "zh-Hans": "MSAA 抗锯齿"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "2",
+            "4",
+            "8",
+            "16"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "0",
+          "description": {
+            "en": "Fast Approximate Anti-Aliasing shader, moderately blur textures (0 = disabled).",
+            "zh-Hans": "快速近似抗锯齿，开启后画面稍微发糊。"
+          },
+          "key": "mupen64plus-FXAA",
+          "restartRequired": true,
+          "title": {
+            "en": "FXAA",
+            "zh-Hans": "FXAA 抗锯齿"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "1": {
+              "en": "On",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "0",
+            "1"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "True",
+          "description": {
+            "en": "Calculate per-pixel Level Of Details to select texture mip levels and blend them with each other using LOD fraction.",
+            "zh-Hans": "逐像素计算细节层级并混合纹理层，部分游戏的远景效果需要它。"
+          },
+          "key": "mupen64plus-EnableLODEmulation",
+          "restartRequired": true,
+          "title": {
+            "en": "LOD Emulation",
+            "zh-Hans": "LOD 模拟"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "True",
+          "description": {
+            "en": "Frame/depth buffer emulation. Disabling it can shorten input lag for particular games, but also break some special effects.",
+            "zh-Hans": "模拟帧缓冲和深度缓冲。关闭可降低输入延迟，但会破坏部分特效。"
+          },
+          "key": "mupen64plus-EnableFBEmulation",
+          "restartRequired": true,
+          "title": {
+            "en": "Framebuffer Emulation",
+            "zh-Hans": "帧缓冲模拟"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Copy auxiliary buffers to RDRAM (fixes some Game artifacts like Paper Mario Intro).",
+            "zh-Hans": "把辅助缓冲写回显存，可修复部分画面问题，例如《纸片马力欧》开场。"
+          },
+          "key": "mupen64plus-EnableCopyAuxToRDRAM",
+          "restartRequired": true,
+          "title": {
+            "en": "Copy Auxiliary Buffers to RDRAM",
+            "zh-Hans": "辅助缓冲写回显存"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "Async",
+          "description": {
+            "en": "Color buffer copy to RDRAM (Off will trade compatibility for Performance).",
+            "zh-Hans": "把颜色缓冲写回显存。关闭性能更好，但兼容性变差。"
+          },
+          "key": "mupen64plus-EnableCopyColorToRDRAM",
+          "restartRequired": true,
+          "title": {
+            "en": "Color Buffer to RDRAM",
+            "zh-Hans": "颜色缓冲写回显存"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Async": {
+              "en": "Double Buffer",
+              "zh-Hans": "双缓冲"
+            },
+            "Off": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "Sync": {
+              "en": "Sync",
+              "zh-Hans": "同步"
+            },
+            "TripleBuffer": {
+              "en": "Triple Buffer",
+              "zh-Hans": "三缓冲"
+            }
+          },
+          "values": [
+            "Off",
+            "Sync",
+            "Async",
+            "TripleBuffer"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Enable color buffer copy from RDRAM.",
+            "zh-Hans": "从显存读回颜色缓冲，少数游戏需要。"
+          },
+          "key": "mupen64plus-EnableCopyColorFromRDRAM",
+          "restartRequired": true,
+          "title": {
+            "en": "Copy Color Buffer from RDRAM",
+            "zh-Hans": "从显存读回颜色缓冲"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "Software",
+          "description": {
+            "en": "Depth buffer copy to RDRAM (Off will trade compatibility for Performance).",
+            "zh-Hans": "把深度缓冲写回显存。关闭性能更好，但兼容性变差。"
+          },
+          "key": "mupen64plus-EnableCopyDepthToRDRAM",
+          "restartRequired": true,
+          "title": {
+            "en": "Depth Buffer to RDRAM",
+            "zh-Hans": "深度缓冲写回显存"
+          },
+          "type": "select",
+          "valueLabels": {
+            "FromMem": {
+              "en": "From Memory",
+              "zh-Hans": "从显存"
+            },
+            "Off": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "Software": {
+              "en": "Software",
+              "zh-Hans": "软件"
+            }
+          },
+          "values": [
+            "Off",
+            "Software",
+            "FromMem"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "OnePiece",
+          "description": {
+            "en": "Render backgrounds mode (HLE only). One piece (fast), Stripped (precise).",
+            "zh-Hans": "背景图的渲染方式（仅 HLE）。「整块」更快，「分条」更精确。"
+          },
+          "key": "mupen64plus-BackgroundMode",
+          "restartRequired": true,
+          "title": {
+            "en": "Background Mode",
+            "zh-Hans": "背景渲染方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "OnePiece": {
+              "en": "One Piece (fast)",
+              "zh-Hans": "整块（快）"
+            },
+            "Stripped": {
+              "en": "Stripped (precise)",
+              "zh-Hans": "分条（精确）"
+            }
+          },
+          "values": [
+            "Stripped",
+            "OnePiece"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Standard per-vertex lighting when disabled. Slightly different rendering.",
+            "zh-Hans": "使用逐像素光照代替逐顶点光照，画面略有不同。"
+          },
+          "key": "mupen64plus-EnableHWLighting",
+          "restartRequired": true,
+          "title": {
+            "en": "Hardware Per-Pixel Lighting",
+            "zh-Hans": "逐像素光照"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "Off",
+          "description": {
+            "en": "Make texrect coordinates continuous to avoid black lines between them.",
+            "zh-Hans": "让相邻纹理矩形的坐标连续，避免出现黑色接缝。"
+          },
+          "key": "mupen64plus-CorrectTexrectCoords",
+          "restartRequired": true,
+          "title": {
+            "en": "Continuous Texrect Coords",
+            "zh-Hans": "连续纹理矩形坐标"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "Force": {
+              "en": "Force",
+              "zh-Hans": "强制"
+            },
+            "Off": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "Off",
+            "Auto",
+            "Force"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Enables inaccurate texture coordinate calculations. This can improve performance and texture pack compatibity at the cost of accuracy.",
+            "zh-Hans": "使用精度较低的纹理坐标计算，性能更好，也更兼容高清材质包，但准确度下降。"
+          },
+          "key": "mupen64plus-EnableInaccurateTextureCoordinates",
+          "restartRequired": true,
+          "title": {
+            "en": "Inaccurate Texture Coordinates",
+            "zh-Hans": "非精确纹理坐标"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Bound texture rectangle texture coordinates to the values they take in native resolutions. It prevents garbage due to fetching out of texture bounds, but can result in hard edges.",
+            "zh-Hans": "把纹理坐标限制在原生分辨率下的范围内，可避免越界产生的花屏，但边缘会变硬。"
+          },
+          "key": "mupen64plus-EnableTexCoordBounds",
+          "restartRequired": true,
+          "title": {
+            "en": "Native-Res Texture Coordinate Bounds",
+            "zh-Hans": "限制纹理坐标范围"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Render 2D texrects in native resolution to fix misalignment between parts of 2D image (example: Mario Kart driver selection portraits).",
+            "zh-Hans": "以原生分辨率绘制 2D 贴图，修复 2D 画面的拼接错位，例如《马里奥赛车》的角色头像。"
+          },
+          "key": "mupen64plus-EnableNativeResTexrects",
+          "restartRequired": true,
+          "title": {
+            "en": "Native-Res 2D Texrects",
+            "zh-Hans": "原生分辨率 2D 贴图"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "Optimized": {
+              "en": "Optimized",
+              "zh-Hans": "已优化"
+            },
+            "Unoptimized": {
+              "en": "Unoptimized",
+              "zh-Hans": "未优化"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Unoptimized",
+            "Optimized"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "True",
+          "description": {
+            "en": "Do not use shaders to emulate N64 blending modes. Works faster on slow GPU. Can cause glitches.",
+            "zh-Hans": "不用着色器模拟 N64 的混合模式，低端 GPU 上更快，可能出现画面问题。"
+          },
+          "key": "mupen64plus-EnableLegacyBlending",
+          "restartRequired": true,
+          "title": {
+            "en": "Less Accurate Blending",
+            "zh-Hans": "简化混合模式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Enable writing of fragment depth. Some mobile GPUs do not support it, thus it's optional. Leave enabled.",
+            "zh-Hans": "允许着色器写入片元深度。部分移动 GPU 不支持，因此可关闭。"
+          },
+          "key": "mupen64plus-EnableFragmentDepthWrite",
+          "restartRequired": true,
+          "title": {
+            "en": "GPU Shader Depth Write",
+            "zh-Hans": "着色器写入深度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "True",
+          "description": {
+            "en": "Save texture cache to hard disk.",
+            "zh-Hans": "把纹理缓存保存到磁盘，加快再次加载。"
+          },
+          "key": "mupen64plus-EnableTextureCache",
+          "restartRequired": true,
+          "title": {
+            "en": "Cache Textures",
+            "zh-Hans": "缓存纹理"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "Enabled",
+          "description": {
+            "en": "Crop black borders from the overscan region around the screen.",
+            "zh-Hans": "裁掉画面边缘的黑边。"
+          },
+          "key": "mupen64plus-EnableOverscan",
+          "restartRequired": true,
+          "title": {
+            "en": "Overscan",
+            "zh-Hans": "过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "Enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Enabled"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "0",
+          "description": {
+            "en": "Overscan Top Offset.",
+            "zh-Hans": "裁掉画面顶部多少像素。"
+          },
+          "key": "mupen64plus-OverscanTop",
+          "restartRequired": true,
+          "title": {
+            "en": "Overscan Offset (Top)",
+            "zh-Hans": "过扫描裁切（顶部）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "41": {
+              "en": "41",
+              "zh-Hans": "41"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "43": {
+              "en": "43",
+              "zh-Hans": "43"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "47": {
+              "en": "47",
+              "zh-Hans": "47"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "49": {
+              "en": "49",
+              "zh-Hans": "49"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-EnableOverscan": [
+                "Enabled"
+              ],
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "0",
+          "description": {
+            "en": "Overscan Left Offset.",
+            "zh-Hans": "裁掉画面左侧多少像素。"
+          },
+          "key": "mupen64plus-OverscanLeft",
+          "restartRequired": true,
+          "title": {
+            "en": "Overscan Offset (Left)",
+            "zh-Hans": "过扫描裁切（左侧）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "41": {
+              "en": "41",
+              "zh-Hans": "41"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "43": {
+              "en": "43",
+              "zh-Hans": "43"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "47": {
+              "en": "47",
+              "zh-Hans": "47"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "49": {
+              "en": "49",
+              "zh-Hans": "49"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-EnableOverscan": [
+                "Enabled"
+              ],
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "0",
+          "description": {
+            "en": "Overscan Right Offset.",
+            "zh-Hans": "裁掉画面右侧多少像素。"
+          },
+          "key": "mupen64plus-OverscanRight",
+          "restartRequired": true,
+          "title": {
+            "en": "Overscan Offset (Right)",
+            "zh-Hans": "过扫描裁切（右侧）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "41": {
+              "en": "41",
+              "zh-Hans": "41"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "43": {
+              "en": "43",
+              "zh-Hans": "43"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "47": {
+              "en": "47",
+              "zh-Hans": "47"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "49": {
+              "en": "49",
+              "zh-Hans": "49"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-EnableOverscan": [
+                "Enabled"
+              ],
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "0",
+          "description": {
+            "en": "Overscan Bottom Offset.",
+            "zh-Hans": "裁掉画面底部多少像素。"
+          },
+          "key": "mupen64plus-OverscanBottom",
+          "restartRequired": true,
+          "title": {
+            "en": "Overscan Offset (Bottom)",
+            "zh-Hans": "过扫描裁切（底部）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "41": {
+              "en": "41",
+              "zh-Hans": "41"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "43": {
+              "en": "43",
+              "zh-Hans": "43"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "47": {
+              "en": "47",
+              "zh-Hans": "47"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "49": {
+              "en": "49",
+              "zh-Hans": "49"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-EnableOverscan": [
+                "Enabled"
+              ],
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "0",
+          "description": {
+            "en": "Limit High-Res textures size in VRAM (in MB, 0 = no limit).",
+            "zh-Hans": "高清材质占用显存的上限，单位 MB，0 为不限制。"
+          },
+          "key": "mupen64plus-MaxHiResTxVramLimit",
+          "restartRequired": true,
+          "title": {
+            "en": "Max High-Res VRAM Limit",
+            "zh-Hans": "高清材质显存上限"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "No limit",
+              "zh-Hans": "不限制"
+            },
+            "1000": {
+              "en": "1000",
+              "zh-Hans": "1000"
+            },
+            "1500": {
+              "en": "1500",
+              "zh-Hans": "1500"
+            },
+            "2000": {
+              "en": "2000",
+              "zh-Hans": "2000"
+            },
+            "2500": {
+              "en": "2500",
+              "zh-Hans": "2500"
+            },
+            "3000": {
+              "en": "3000",
+              "zh-Hans": "3000"
+            },
+            "3500": {
+              "en": "3500",
+              "zh-Hans": "3500"
+            },
+            "4000": {
+              "en": "4000",
+              "zh-Hans": "4000"
+            },
+            "500": {
+              "en": "500",
+              "zh-Hans": "500"
+            }
+          },
+          "values": [
+            "0",
+            "500",
+            "1000",
+            "1500",
+            "2000",
+            "2500",
+            "3000",
+            "3500",
+            "4000"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ],
+              "mupen64plus-txHiresEnable": [
+                "True"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "8000",
+          "description": {
+            "en": "Set Max texture cache size (in elements). Reduce it if you experience black textures leading to a crash.",
+            "zh-Hans": "纹理缓存的条目上限。出现黑色纹理或崩溃时可以调小。"
+          },
+          "key": "mupen64plus-MaxTxCacheSize",
+          "restartRequired": true,
+          "title": {
+            "en": "Max Texture Cache Size",
+            "zh-Hans": "纹理缓存上限"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1500": {
+              "en": "1500",
+              "zh-Hans": "1500"
+            },
+            "4000": {
+              "en": "4000",
+              "zh-Hans": "4000"
+            },
+            "8000": {
+              "en": "8000",
+              "zh-Hans": "8000"
+            }
+          },
+          "values": [
+            "1500",
+            "4000",
+            "8000"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "None",
+          "description": {
+            "en": "Select Texture Filtering mode.",
+            "zh-Hans": "纹理过滤方式，Smooth 系列更平滑，Sharp 系列更锐利。"
+          },
+          "key": "mupen64plus-txFilterMode",
+          "restartRequired": true,
+          "title": {
+            "en": "Texture Filter",
+            "zh-Hans": "纹理过滤"
+          },
+          "type": "select",
+          "valueLabels": {
+            "None": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "Sharp filtering 1": {
+              "en": "Sharp filtering 1",
+              "zh-Hans": "Sharp filtering 1"
+            },
+            "Sharp filtering 2": {
+              "en": "Sharp filtering 2",
+              "zh-Hans": "Sharp filtering 2"
+            },
+            "Smooth filtering 1": {
+              "en": "Smooth filtering 1",
+              "zh-Hans": "Smooth filtering 1"
+            },
+            "Smooth filtering 2": {
+              "en": "Smooth filtering 2",
+              "zh-Hans": "Smooth filtering 2"
+            },
+            "Smooth filtering 3": {
+              "en": "Smooth filtering 3",
+              "zh-Hans": "Smooth filtering 3"
+            },
+            "Smooth filtering 4": {
+              "en": "Smooth filtering 4",
+              "zh-Hans": "Smooth filtering 4"
+            }
+          },
+          "values": [
+            "None",
+            "Smooth filtering 1",
+            "Smooth filtering 2",
+            "Smooth filtering 3",
+            "Smooth filtering 4",
+            "Sharp filtering 1",
+            "Sharp filtering 2"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "None",
+          "description": {
+            "en": "Various Texture Filters ('As-Is' will just cache).",
+            "zh-Hans": "纹理放大算法。「As Is」只做缓存，不改变画面。"
+          },
+          "key": "mupen64plus-txEnhancementMode",
+          "restartRequired": true,
+          "title": {
+            "en": "Texture Enhancement",
+            "zh-Hans": "纹理增强"
+          },
+          "type": "select",
+          "valueLabels": {
+            "2xBRZ": {
+              "en": "2xBRZ",
+              "zh-Hans": "2xBRZ"
+            },
+            "3xBRZ": {
+              "en": "3xBRZ",
+              "zh-Hans": "3xBRZ"
+            },
+            "4xBRZ": {
+              "en": "4xBRZ",
+              "zh-Hans": "4xBRZ"
+            },
+            "5xBRZ": {
+              "en": "5xBRZ",
+              "zh-Hans": "5xBRZ"
+            },
+            "6xBRZ": {
+              "en": "6xBRZ",
+              "zh-Hans": "6xBRZ"
+            },
+            "As Is": {
+              "en": "As Is",
+              "zh-Hans": "As Is"
+            },
+            "HQ2X": {
+              "en": "HQ2X",
+              "zh-Hans": "HQ2X"
+            },
+            "HQ2XS": {
+              "en": "HQ2XS",
+              "zh-Hans": "HQ2XS"
+            },
+            "HQ4X": {
+              "en": "HQ4X",
+              "zh-Hans": "HQ4X"
+            },
+            "LQ2X": {
+              "en": "LQ2X",
+              "zh-Hans": "LQ2X"
+            },
+            "LQ2XS": {
+              "en": "LQ2XS",
+              "zh-Hans": "LQ2XS"
+            },
+            "None": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "X2": {
+              "en": "X2",
+              "zh-Hans": "X2"
+            },
+            "X2SAI": {
+              "en": "X2SAI",
+              "zh-Hans": "X2SAI"
+            }
+          },
+          "values": [
+            "None",
+            "As Is",
+            "X2",
+            "X2SAI",
+            "HQ2X",
+            "HQ2XS",
+            "LQ2X",
+            "LQ2XS",
+            "HQ4X",
+            "2xBRZ",
+            "3xBRZ",
+            "4xBRZ",
+            "5xBRZ",
+            "6xBRZ"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "True",
+          "description": {
+            "en": "Ignore filtering for Background Textures.",
+            "zh-Hans": "对背景纹理跳过过滤处理，避免背景变糊。"
+          },
+          "key": "mupen64plus-txFilterIgnoreBG",
+          "restartRequired": true,
+          "title": {
+            "en": "Don't Filter Background Textures",
+            "zh-Hans": "背景纹理不过滤"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ],
+              "mupen64plus-txFilterMode": [
+                "Smooth filtering 1",
+                "Smooth filtering 2",
+                "Smooth filtering 3",
+                "Smooth filtering 4",
+                "Sharp filtering 1",
+                "Sharp filtering 2"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Enable High-Res Texture packs if available.",
+            "zh-Hans": "加载高清材质包，需要先把材质包放进核心 BIOS 目录。"
+          },
+          "key": "mupen64plus-txHiresEnable",
+          "restartRequired": true,
+          "title": {
+            "en": "Use High-Res Textures",
+            "zh-Hans": "使用高清材质包"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "True",
+          "description": {
+            "en": "Compress created texture caches.",
+            "zh-Hans": "压缩生成的材质缓存，省空间但加载略慢。"
+          },
+          "key": "mupen64plus-txCacheCompression",
+          "restartRequired": true,
+          "title": {
+            "en": "Compress Texture Cache",
+            "zh-Hans": "压缩材质缓存"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "This should be enabled unless it's a old RICE Texture pack.",
+            "zh-Hans": "除非使用的是旧版 RICE 材质包，否则建议开启。"
+          },
+          "key": "mupen64plus-txHiresFullAlphaChannel",
+          "restartRequired": true,
+          "title": {
+            "en": "High-Res Full Alpha Channel",
+            "zh-Hans": "高清材质完整透明通道"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ],
+              "mupen64plus-txHiresEnable": [
+                "True"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Use in addition to Texture cache, will use lazy loading and trade memory consumption against loading speeds.",
+            "zh-Hans": "配合纹理缓存使用，改为延迟加载，省内存但加载变慢。"
+          },
+          "key": "mupen64plus-EnableEnhancedTextureStorage",
+          "restartRequired": true,
+          "title": {
+            "en": "Enhanced Texture Storage",
+            "zh-Hans": "增强纹理存储"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Use an alternative method for High-Res paletted textures CRC calculations.",
+            "zh-Hans": "对高清调色板纹理使用另一种校验算法，部分材质包需要。"
+          },
+          "key": "mupen64plus-EnableHiResAltCRC",
+          "restartRequired": true,
+          "title": {
+            "en": "Alternative High-Res Checksums",
+            "zh-Hans": "高清材质备用校验"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ],
+              "mupen64plus-txHiresEnable": [
+                "True"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "False",
+          "description": {
+            "en": "Use in addition to High-Res textures, will use lazy loading and trade memory consumption against loading speeds.",
+            "zh-Hans": "配合高清材质使用，改为延迟加载，省内存但加载变慢。"
+          },
+          "key": "mupen64plus-EnableEnhancedHighResStorage",
+          "restartRequired": true,
+          "title": {
+            "en": "Enhanced High-Res Storage",
+            "zh-Hans": "增强高清材质存储"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ],
+              "mupen64plus-txHiresEnable": [
+                "True"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "gliden64",
+          "defaultValue": "late",
+          "description": {
+            "en": "Specifies INI Settings behaviour. This should really only contain essential options. Changing this can and will break ROM's, if the correct options aren't set manually. Some options may only be set via INI (fbInfoDisabled).",
+            "zh-Hans": "GLideN64 自带的逐游戏配置与核心选项冲突时以谁为准。改动后如果没有手动设好对应选项，可能导致游戏出错。"
+          },
+          "key": "mupen64plus-GLideN64IniBehaviour",
+          "restartRequired": true,
+          "title": {
+            "en": "INI Behaviour",
+            "zh-Hans": "INI 设置优先级"
+          },
+          "type": "select",
+          "valueLabels": {
+            "disabled": {
+              "en": "Disable INI",
+              "zh-Hans": "禁用 INI"
+            },
+            "early": {
+              "en": "Prioritize core options",
+              "zh-Hans": "以核心选项为准"
+            },
+            "late": {
+              "en": "Prioritize INI",
+              "zh-Hans": "以 INI 为准"
+            }
+          },
+          "values": [
+            "late",
+            "early",
+            "disabled"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "gliden64"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "GLideN64",
+        "zh-Hans": "GLideN64"
+      }
+    },
+    {
+      "description": {
+        "en": "Settings for the ParaLLEl-RDP graphics plugin.",
+        "zh-Hans": "ParaLLEl-RDP 图形插件的设置。"
+      },
+      "id": "parallel_rdp",
+      "options": [
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "True",
+          "description": {
+            "en": "Enable full accuracy for CPU accessed frame buffers.",
+            "zh-Hans": "CPU 读取帧缓冲时保持完全精确。"
+          },
+          "key": "mupen64plus-parallel-rdp-synchronous",
+          "restartRequired": false,
+          "title": {
+            "en": "Synchronous RDP",
+            "zh-Hans": "同步 RDP"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "0",
+          "description": {
+            "en": "Crop pixels around edge of screen.",
+            "zh-Hans": "裁掉画面边缘的像素。"
+          },
+          "key": "mupen64plus-parallel-rdp-overscan",
+          "restartRequired": false,
+          "title": {
+            "en": "Crop Overscan",
+            "zh-Hans": "过扫描裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "52": {
+              "en": "52",
+              "zh-Hans": "52"
+            },
+            "54": {
+              "en": "54",
+              "zh-Hans": "54"
+            },
+            "56": {
+              "en": "56",
+              "zh-Hans": "56"
+            },
+            "58": {
+              "en": "58",
+              "zh-Hans": "58"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "60": {
+              "en": "60",
+              "zh-Hans": "60"
+            },
+            "62": {
+              "en": "62",
+              "zh-Hans": "62"
+            },
+            "64": {
+              "en": "64",
+              "zh-Hans": "64"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "2",
+            "4",
+            "6",
+            "8",
+            "10",
+            "12",
+            "14",
+            "16",
+            "18",
+            "20",
+            "22",
+            "24",
+            "26",
+            "28",
+            "30",
+            "32",
+            "34",
+            "36",
+            "38",
+            "40",
+            "42",
+            "44",
+            "46",
+            "48",
+            "50",
+            "52",
+            "54",
+            "56",
+            "58",
+            "60",
+            "62",
+            "64"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "True",
+          "description": {
+            "en": "Allow VI divot filter, cleans up stray black pixels.",
+            "zh-Hans": "清除画面上零散的黑点。"
+          },
+          "key": "mupen64plus-parallel-rdp-divot-filter",
+          "restartRequired": false,
+          "title": {
+            "en": "VI Divot Filter",
+            "zh-Hans": "VI 除斑滤镜"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "True",
+          "description": {
+            "en": "Allow VI gamma dither.",
+            "zh-Hans": "启用 VI 的伽马抖动处理。"
+          },
+          "key": "mupen64plus-parallel-rdp-gamma-dither",
+          "restartRequired": false,
+          "title": {
+            "en": "VI Gamma Dither",
+            "zh-Hans": "VI 伽马抖动"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "True",
+          "description": {
+            "en": "Allow VI anti-aliased fetch filter, smooths polygon edges.",
+            "zh-Hans": "启用 VI 抗锯齿，边缘更平滑。"
+          },
+          "key": "mupen64plus-parallel-rdp-vi-aa",
+          "restartRequired": false,
+          "title": {
+            "en": "VI Anti-Aliasing",
+            "zh-Hans": "VI 抗锯齿"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "True",
+          "description": {
+            "en": "Allow VI bilinear scaling on scanout.",
+            "zh-Hans": "输出时使用双线性缩放。"
+          },
+          "key": "mupen64plus-parallel-rdp-vi-bilinear",
+          "restartRequired": false,
+          "title": {
+            "en": "VI Bilinear",
+            "zh-Hans": "VI 双线性缩放"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "True",
+          "description": {
+            "en": "Allow VI de-dither filter, recovers significant color depth.",
+            "zh-Hans": "还原被抖动处理掉的色彩层次。"
+          },
+          "key": "mupen64plus-parallel-rdp-dither-filter",
+          "restartRequired": false,
+          "title": {
+            "en": "VI Dither Filter",
+            "zh-Hans": "VI 去抖动滤镜"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "1x",
+          "description": {
+            "en": "Apply internal upscaling factor.",
+            "zh-Hans": "以 N64 原生分辨率的若干倍渲染，画面更清晰，也更耗性能。"
+          },
+          "key": "mupen64plus-parallel-rdp-upscaling",
+          "restartRequired": true,
+          "title": {
+            "en": "Upscaling Factor",
+            "zh-Hans": "内部分辨率倍数"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1x": {
+              "en": "1x",
+              "zh-Hans": "1x"
+            },
+            "2x": {
+              "en": "2x",
+              "zh-Hans": "2x"
+            },
+            "4x": {
+              "en": "4x",
+              "zh-Hans": "4x"
+            },
+            "8x": {
+              "en": "8x",
+              "zh-Hans": "8x"
+            }
+          },
+          "values": [
+            "1x",
+            "2x",
+            "4x",
+            "8x"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "False",
+          "description": {
+            "en": "Super sample framebuffer effects. May introduce artifacts.",
+            "zh-Hans": "对帧缓冲特效做超采样，可能产生画面异常。"
+          },
+          "key": "mupen64plus-parallel-rdp-super-sampled-read-back",
+          "restartRequired": true,
+          "title": {
+            "en": "SSAA Framebuffer Effects",
+            "zh-Hans": "帧缓冲特效超采样"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "True",
+          "description": {
+            "en": "Dither super sampled framebuffer effects.",
+            "zh-Hans": "对超采样的帧缓冲特效应用抖动。"
+          },
+          "key": "mupen64plus-parallel-rdp-super-sampled-read-back-dither",
+          "restartRequired": true,
+          "title": {
+            "en": "Dither SSAA Framebuffer Effects",
+            "zh-Hans": "帧缓冲特效抖动"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-parallel-rdp-super-sampled-read-back": [
+                "True"
+              ],
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "disable",
+          "description": {
+            "en": "Downscales output after VI, equivalent to SSAA.",
+            "zh-Hans": "输出后再缩小画面，相当于超采样抗锯齿。"
+          },
+          "key": "mupen64plus-parallel-rdp-downscaling",
+          "restartRequired": false,
+          "title": {
+            "en": "Downsampling Factor",
+            "zh-Hans": "降采样倍数"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1/2": {
+              "en": "1/2",
+              "zh-Hans": "1/2"
+            },
+            "1/4": {
+              "en": "1/4",
+              "zh-Hans": "1/4"
+            },
+            "1/8": {
+              "en": "1/8",
+              "zh-Hans": "1/8"
+            },
+            "disable": {
+              "en": "Off",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disable",
+            "1/2",
+            "1/4",
+            "1/8"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "False",
+          "description": {
+            "en": "Use native texture LOD computation when upscaling, effectively a LOD bias.",
+            "zh-Hans": "提高分辨率时仍按原生分辨率计算纹理细节层级。"
+          },
+          "key": "mupen64plus-parallel-rdp-native-texture-lod",
+          "restartRequired": false,
+          "title": {
+            "en": "Native Texture LOD",
+            "zh-Hans": "原生纹理 LOD"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "False",
+            "True"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "True",
+          "description": {
+            "en": "TEX_RECT primitives should generally be rendered at native resolution to avoid seams.",
+            "zh-Hans": "以原生分辨率绘制 2D 贴图，避免出现接缝。"
+          },
+          "key": "mupen64plus-parallel-rdp-native-tex-rect",
+          "restartRequired": false,
+          "title": {
+            "en": "Native-Res TEX_RECT",
+            "zh-Hans": "原生分辨率 2D 贴图"
+          },
+          "type": "select",
+          "valueLabels": {
+            "False": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "True": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "True",
+            "False"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "parallel_rdp",
+          "defaultValue": "Bob",
+          "description": {
+            "en": "Weave should only be used with 1x scaling factor and special CRT shaders.",
+            "zh-Hans": "Weave 只适合 1 倍分辨率并配合 CRT 滤镜使用。"
+          },
+          "key": "mupen64plus-parallel-rdp-deinterlace-method",
+          "restartRequired": false,
+          "title": {
+            "en": "Deinterlacing Method",
+            "zh-Hans": "去隔行方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Bob": {
+              "en": "Bob",
+              "zh-Hans": "Bob"
+            },
+            "Weave": {
+              "en": "Weave",
+              "zh-Hans": "Weave"
+            }
+          },
+          "values": [
+            "Bob",
+            "Weave"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "parallel"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "ParaLLEl-RDP",
+        "zh-Hans": "ParaLLEl-RDP"
+      }
+    },
+    {
+      "description": {
+        "en": "Settings for the Angrylion graphics plugin.",
+        "zh-Hans": "Angrylion 图形插件的设置。"
+      },
+      "id": "angrylion",
+      "options": [
+        {
+          "categoryId": "angrylion",
+          "defaultValue": "Filtered",
+          "description": {
+            "en": "Select VI Overlay filtering. 'Filtered' is the original system rendering.",
+            "zh-Hans": "VI 输出的滤镜方式。「Filtered」是真机的效果，其余几项用于观察渲染过程。"
+          },
+          "key": "mupen64plus-angrylion-vioverlay",
+          "restartRequired": false,
+          "title": {
+            "en": "VI Overlay",
+            "zh-Hans": "VI 输出滤镜"
+          },
+          "type": "select",
+          "valueLabels": {
+            "AA only": {
+              "en": "AA only",
+              "zh-Hans": "AA only"
+            },
+            "AA+Blur": {
+              "en": "AA+Blur",
+              "zh-Hans": "AA+Blur"
+            },
+            "AA+Dedither": {
+              "en": "AA+Dedither",
+              "zh-Hans": "AA+Dedither"
+            },
+            "Coverage": {
+              "en": "Coverage",
+              "zh-Hans": "Coverage"
+            },
+            "Depth": {
+              "en": "Depth",
+              "zh-Hans": "Depth"
+            },
+            "Filtered": {
+              "en": "Filtered (as on hardware)",
+              "zh-Hans": "Filtered（真机效果）"
+            },
+            "Unfiltered": {
+              "en": "Unfiltered",
+              "zh-Hans": "Unfiltered"
+            }
+          },
+          "values": [
+            "Filtered",
+            "AA+Blur",
+            "AA+Dedither",
+            "AA only",
+            "Unfiltered",
+            "Depth",
+            "Coverage"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "angrylion"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "angrylion",
+          "defaultValue": "Low",
+          "description": {
+            "en": "Select Sync level (trades accuracy for performance).",
+            "zh-Hans": "同步级别越高越精确，性能越低。"
+          },
+          "key": "mupen64plus-angrylion-sync",
+          "restartRequired": false,
+          "title": {
+            "en": "Thread Sync Level",
+            "zh-Hans": "线程同步级别"
+          },
+          "type": "select",
+          "valueLabels": {
+            "High": {
+              "en": "High",
+              "zh-Hans": "高"
+            },
+            "Low": {
+              "en": "Low",
+              "zh-Hans": "低"
+            },
+            "Medium": {
+              "en": "Medium",
+              "zh-Hans": "中"
+            }
+          },
+          "values": [
+            "Low",
+            "Medium",
+            "High"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "angrylion"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "angrylion",
+          "defaultValue": "all threads",
+          "description": {
+            "en": "Default 'all threads' is prefered to have it match your Physical CPU Core count. '1' should behave as the original angrylion, possibly fixing some bugs.",
+            "zh-Hans": "渲染使用的线程数。「全部线程」会匹配设备的 CPU 核心数；设为 1 时行为与原版 Angrylion 一致，可能修复个别问题。"
+          },
+          "key": "mupen64plus-angrylion-multithread",
+          "restartRequired": false,
+          "title": {
+            "en": "Multi-Threading",
+            "zh-Hans": "多线程数量"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "41": {
+              "en": "41",
+              "zh-Hans": "41"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "43": {
+              "en": "43",
+              "zh-Hans": "43"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "47": {
+              "en": "47",
+              "zh-Hans": "47"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "49": {
+              "en": "49",
+              "zh-Hans": "49"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "51": {
+              "en": "51",
+              "zh-Hans": "51"
+            },
+            "52": {
+              "en": "52",
+              "zh-Hans": "52"
+            },
+            "53": {
+              "en": "53",
+              "zh-Hans": "53"
+            },
+            "54": {
+              "en": "54",
+              "zh-Hans": "54"
+            },
+            "55": {
+              "en": "55",
+              "zh-Hans": "55"
+            },
+            "56": {
+              "en": "56",
+              "zh-Hans": "56"
+            },
+            "57": {
+              "en": "57",
+              "zh-Hans": "57"
+            },
+            "58": {
+              "en": "58",
+              "zh-Hans": "58"
+            },
+            "59": {
+              "en": "59",
+              "zh-Hans": "59"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "60": {
+              "en": "60",
+              "zh-Hans": "60"
+            },
+            "61": {
+              "en": "61",
+              "zh-Hans": "61"
+            },
+            "62": {
+              "en": "62",
+              "zh-Hans": "62"
+            },
+            "63": {
+              "en": "63",
+              "zh-Hans": "63"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "75": {
+              "en": "75",
+              "zh-Hans": "75"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            },
+            "all threads": {
+              "en": "All threads",
+              "zh-Hans": "全部线程"
+            }
+          },
+          "values": [
+            "all threads",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50",
+            "51",
+            "52",
+            "53",
+            "54",
+            "55",
+            "56",
+            "57",
+            "58",
+            "59",
+            "60",
+            "61",
+            "62",
+            "63",
+            "75"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "angrylion"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "angrylion",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Hide overscan borders.",
+            "zh-Hans": "隐藏画面边缘的过扫描区域。"
+          },
+          "key": "mupen64plus-angrylion-overscan",
+          "restartRequired": false,
+          "title": {
+            "en": "Hide Overscan",
+            "zh-Hans": "隐藏过扫描边框"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ],
+          "visibleWhen": [
+            {
+              "mupen64plus-rdp-plugin": [
+                "angrylion"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Angrylion",
+        "zh-Hans": "Angrylion"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Mupen64Plus-Next",
+    "coreVersion": "1.0",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

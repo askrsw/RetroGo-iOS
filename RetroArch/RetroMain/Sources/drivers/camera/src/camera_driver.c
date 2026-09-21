@@ -27,7 +27,6 @@
 #include "camera_driver.h"
 
 // haharsw-crossed
-// #include "../runloop.h"
 void runloop_msg_queue_push(const char *msg, size_t len, unsigned prio, unsigned duration, bool flush, char *title, enum message_queue_icon icon, enum message_queue_category category);
 
 #if defined(HAVE_FFMPEG) && defined(HAVE_AVFORMAT) && defined(HAVE_AVCODEC) && \

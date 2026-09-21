@@ -64,6 +64,7 @@
 		AB6378A22F7E6394001E1152 /* GameOverlayN64CButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */; };
 		AB6789632FE5278B0015D5E0 /* emu.fceumm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB69E2FE2F4EB4D800C532EE /* RetroRomEmptyTipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB69E2FD2F4EB4D800C532EE /* RetroRomEmptyTipView.swift */; };
+		AB6B76F7305D0A4B0041764D /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = AB6B76F6305D0A4B0041764D /* SQLite */; };
 		AB6F0E772F86682100282818 /* XMLTextRenderKit in Frameworks */ = {isa = PBXBuildFile; productRef = AB6F0E762F86682100282818 /* XMLTextRenderKit */; };
 		AB70DD8E2FBCE9C300277B74 /* OnDemandResourceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB70DD8D2FBCE9C300277B74 /* OnDemandResourceLoader.swift */; };
 		AB70DD922FBCF69200277B74 /* DiscoverPlatformViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB70DD912FBCF69200277B74 /* DiscoverPlatformViewController.swift */; };
@@ -109,6 +110,7 @@
 		AB94AAC92FBDA27D0046B830 /* DiscoverGameHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB94AAC72FBDA27D0046B830 /* DiscoverGameHeaderView.swift */; };
 		AB94AACA2FBDA27D0046B830 /* DiscoverInfoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB94AAC82FBDA27D0046B830 /* DiscoverInfoCell.swift */; };
 		AB94AACC2FBDAF350046B830 /* GameCoverService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB94AACB2FBDAF350046B830 /* GameCoverService.swift */; };
+		AB968587305FC264006D6E14 /* GameCoreOptionValueListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB968586305FC264006D6E14 /* GameCoreOptionValueListViewController.swift */; };
 		AB997ED02F4AEC00009F47AC /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = AB997ECE2F4AEC00009F47AC /* Localizable.stringsdict */; };
 		AB9CDD722F70422B002E6A55 /* GamePageOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9CDD6A2F70422B002E6A55 /* GamePageOverlayView.swift */; };
 		AB9CDD732F70422B002E6A55 /* GamePageOverlayConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9CDD6C2F70422B002E6A55 /* GamePageOverlayConfig.swift */; };
@@ -148,7 +150,6 @@
 		ABDAD2522F3BA9D7004100A9 /* RetroRomGameStateItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD2512F3BA9D7004100A9 /* RetroRomGameStateItem.swift */; };
 		ABDAD2552F3BAA1F004100A9 /* RetroRomFolderImportor.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD2542F3BAA1E004100A9 /* RetroRomFolderImportor.swift */; };
 		ABDAD2572F3BAA3A004100A9 /* RetroRomFileImportor.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD2562F3BAA39004100A9 /* RetroRomFileImportor.swift */; };
-		ABDAD25A2F3BAA8C004100A9 /* SQLite in Frameworks */ = {isa = PBXBuildFile; productRef = ABDAD2592F3BAA8C004100A9 /* SQLite */; };
 		ABDAD25C2F3BAA9B004100A9 /* RetroRomFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD25B2F3BAA99004100A9 /* RetroRomFileManager.swift */; };
 		ABDAD25E2F3BAB67004100A9 /* RetroRomCoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD25D2F3BAB65004100A9 /* RetroRomCoreManager.swift */; };
 		ABDAD2632F3BABB2004100A9 /* RetroRomActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABDAD2622F3BABB1004100A9 /* RetroRomActivityView.swift */; };
@@ -175,6 +176,8 @@
 		ABF60F882FC5F99C006C5B5A /* RetroRomByCoreSectionedDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F872FC5F99C006C5B5A /* RetroRomByCoreSectionedDataSource.swift */; };
 		ABF60F8A2FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F892FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift */; };
 		ABF60F8C2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F8B2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift */; };
+		C01920260919000000000001 /* GameCoreOptionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000003 /* GameCoreOptionCatalog.swift */; };
+		C01920260919000000000002 /* GameCoreOptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000004 /* GameCoreOptionViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -303,6 +306,7 @@
 		AB94AAC72FBDA27D0046B830 /* DiscoverGameHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverGameHeaderView.swift; sourceTree = "<group>"; };
 		AB94AAC82FBDA27D0046B830 /* DiscoverInfoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverInfoCell.swift; sourceTree = "<group>"; };
 		AB94AACB2FBDAF350046B830 /* GameCoverService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoverService.swift; sourceTree = "<group>"; };
+		AB968586305FC264006D6E14 /* GameCoreOptionValueListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionValueListViewController.swift; sourceTree = "<group>"; };
 		AB997ECF2F4AEC00009F47AC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = en; path = en.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		AB997ED12F4AEC06009F47AC /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.stringsdict"; sourceTree = "<group>"; };
 		AB9CDD6A2F70422B002E6A55 /* GamePageOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageOverlayView.swift; sourceTree = "<group>"; };
@@ -382,6 +386,8 @@
 		ABF60F872FC5F99C006C5B5A /* RetroRomByCoreSectionedDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomByCoreSectionedDataSource.swift; sourceTree = "<group>"; };
 		ABF60F892FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomByTagSectionedDataSource.swift; sourceTree = "<group>"; };
 		ABF60F8B2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderUnifiedSubview.swift; sourceTree = "<group>"; };
+		C01920260919000000000003 /* GameCoreOptionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionCatalog.swift; sourceTree = "<group>"; };
+		C01920260919000000000004 /* GameCoreOptionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -389,13 +395,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ABDAD25A2F3BAA8C004100A9 /* SQLite in Frameworks */,
 				AB55BC622F3B587F00569A84 /* Defaults in Frameworks */,
 				AB7720672F3B1B33004F5B75 /* ObjcHelper in Frameworks */,
 				ABDAD2682F3BABF5004100A9 /* SnapKit in Frameworks */,
 				AB7720652F3B1B31004F5B75 /* RACoordinator in Frameworks */,
 				ABDAD2782F3BB429004100A9 /* YYText in Frameworks */,
 				AB6F0E772F86682100282818 /* XMLTextRenderKit in Frameworks */,
+				AB6B76F7305D0A4B0041764D /* SQLite in Frameworks */,
 				ABA8F9682FBDB3CF0002B89D /* Kingfisher in Frameworks */,
 				ABBC8B172F5E5690007E1669 /* MoltenVK.xcframework in Frameworks */,
 			);
@@ -576,6 +582,7 @@
 		AB8016262F9329A60031643C /* ConfigPage */ = {
 			isa = PBXGroup;
 			children = (
+				C01920260919000000000005 /* CoreOption */,
 				AB495F812F9B82CF0092BCDB /* Component */,
 				AB80162D2F9384640031643C /* View */,
 				AB8016282F932DE40031643C /* Model */,
@@ -908,6 +915,16 @@
 			path = DataSource;
 			sourceTree = "<group>";
 		};
+		C01920260919000000000005 /* CoreOption */ = {
+			isa = PBXGroup;
+			children = (
+				C01920260919000000000003 /* GameCoreOptionCatalog.swift */,
+				C01920260919000000000004 /* GameCoreOptionViewController.swift */,
+				AB968586305FC264006D6E14 /* GameCoreOptionValueListViewController.swift */,
+			);
+			path = CoreOption;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -930,11 +947,11 @@
 				AB7720642F3B1B31004F5B75 /* RACoordinator */,
 				AB7720662F3B1B33004F5B75 /* ObjcHelper */,
 				AB55BC612F3B587F00569A84 /* Defaults */,
-				ABDAD2592F3BAA8C004100A9 /* SQLite */,
 				ABDAD2672F3BABF5004100A9 /* SnapKit */,
 				ABDAD2772F3BB429004100A9 /* YYText */,
 				AB6F0E762F86682100282818 /* XMLTextRenderKit */,
 				ABA8F9672FBDB3CF0002B89D /* Kingfisher */,
+				AB6B76F6305D0A4B0041764D /* SQLite */,
 			);
 			productName = RetroGo;
 			productReference = ABD42B502F3A5EFC008B1771 /* RetroGo.app */;
@@ -985,10 +1002,10 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */,
-				ABDAD2582F3BAA8C004100A9 /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 				ABDAD2662F3BABF5004100A9 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				AB6F0E752F86682100282818 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */,
 				AB94AACD2FBDB1990046B830 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				AB6B76F5305D0A4B0041764D /* XCRemoteSwiftPackageReference "SQLite.swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = ABD42B512F3A5EFC008B1771 /* Products */;
@@ -1025,6 +1042,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C01920260919000000000001 /* GameCoreOptionCatalog.swift in Sources */,
+				C01920260919000000000002 /* GameCoreOptionViewController.swift in Sources */,
 				AB94AAC62FBDA2640046B830 /* DiscoverGameDetailViewController.swift in Sources */,
 				AB79E74B2F65CFAA007C480E /* GamePageLoadingView.swift in Sources */,
 				AB6378A22F7E6394001E1152 /* GameOverlayN64CButton.swift in Sources */,
@@ -1101,6 +1120,7 @@
 				AB8905DC2FD34D1700CA9DEC /* GameCheatSession.swift in Sources */,
 				ABAF58812FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift in Sources */,
 				ABDAD2502F3BA9BA004100A9 /* RetroRomFileTag.swift in Sources */,
+				AB968587305FC264006D6E14 /* GameCoreOptionValueListViewController.swift in Sources */,
 				AB495F832F9B94750092BCDB /* GameConfigListItemSelector.swift in Sources */,
 				ABF60F832FC59F08006C5B5A /* RetroRomSectionHeaderView.swift in Sources */,
 				ABDAD2822F3BB558004100A9 /* RetroRomCoreFirmwareFooterView.swift in Sources */,
@@ -1211,7 +1231,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1226,7 +1246,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Local Network Usage";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "RetroGo uses the local network to find nearby players and connect for LAN multiplayer (netplay).";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location Usage";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Photo Library Usage";
 				INFOPLIST_KEY_NSPrincipalClass = RetroGo.MyApplication;
@@ -1242,7 +1262,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.7.1;
+				MARKETING_VERSION = 1.8.0;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1268,7 +1288,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1283,7 +1303,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Local Network Usage";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "RetroGo uses the local network to find nearby players and connect for LAN multiplayer (netplay).";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location Usage";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Photo Library Usage";
 				INFOPLIST_KEY_NSPrincipalClass = RetroGo.MyApplication;
@@ -1299,7 +1319,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.7.1;
+				MARKETING_VERSION = 1.8.0;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1478,6 +1498,14 @@
 				minimumVersion = 9.0.6;
 			};
 		};
+		AB6B76F5305D0A4B0041764D /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stephencelis/SQLite.swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.16.0;
+			};
+		};
 		AB6F0E752F86682100282818 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/askrsw/XMLTextRenderKit.git";
@@ -1492,14 +1520,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 8.9.0;
-			};
-		};
-		ABDAD2582F3BAA8C004100A9 /* XCRemoteSwiftPackageReference "SQLite.swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/stephencelis/SQLite.swift.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.15.5;
 			};
 		};
 		ABDAD2662F3BABF5004100A9 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
@@ -1518,6 +1538,11 @@
 			package = AB55BC602F3B587F00569A84 /* XCRemoteSwiftPackageReference "Defaults" */;
 			productName = Defaults;
 		};
+		AB6B76F6305D0A4B0041764D /* SQLite */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AB6B76F5305D0A4B0041764D /* XCRemoteSwiftPackageReference "SQLite.swift" */;
+			productName = SQLite;
+		};
 		AB6F0E762F86682100282818 /* XMLTextRenderKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AB6F0E752F86682100282818 /* XCRemoteSwiftPackageReference "XMLTextRenderKit" */;
@@ -1535,11 +1560,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AB94AACD2FBDB1990046B830 /* XCRemoteSwiftPackageReference "Kingfisher" */;
 			productName = Kingfisher;
-		};
-		ABDAD2592F3BAA8C004100A9 /* SQLite */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = ABDAD2582F3BAA8C004100A9 /* XCRemoteSwiftPackageReference "SQLite.swift" */;
-			productName = SQLite;
 		};
 		ABDAD2672F3BABF5004100A9 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -24,6 +24,8 @@
 //
 
 #import "RetroArchX.h"
+#import "function/RetroArchX+Config.h"
+#include <core/ra_core_options.h>
 #import "models/EmuCoreInfoItem.h"
 #import "models/EmuInGameMessage.h"
 #import "controllers/RAGameViewController.h"
@@ -39,6 +41,7 @@
 #import <Foundation+Extensions.h>
 #import <CoreFoundation/CoreFoundation.h>
 #import <tasks/task_content.h>
+#include <core/ra_core_options.h>
 
 #define SHOW_CORE_ROM_TYPE_INFO 0
 
@@ -78,6 +81,11 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
         d_emuPrevFrameActions[@"RAInputActionManager.tick"] = ^{
             [[RAInputActionManager shared] tickFrame:YES];
+        };
+
+        // Live core option changes are pushed on the game thread before the frame.
+        d_emuPrevFrameActions[@"RACoreOptions.applyPending"] = ^{
+            ra_core_options_apply_pending();
         };
 
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
@@ -217,6 +225,11 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         [self stopInputDriverOnlyIfNeeded];
     }
 
+    if (![self prepareCoreOptionsForCoreId:core.coreId]) {
+        if (completion) completion(NO);
+        return;
+    }
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         content_ctx_info_t content_info;
         NSString *corePath = core.corePath;
@@ -242,6 +255,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
             load_ret = task_push_start_current_core(&content_info);
         }
 
+        if (!load_ret) ra_core_options_clear();
         dispatch_async(dispatch_get_main_queue(), ^{
             if(load_ret) {
                 d_dummyCoreRunning = NO;
@@ -274,6 +288,8 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     if (d_inputDriverOnlyRunning) {
         [self stopInputDriverOnlyIfNeeded];
     }
+
+    [self clearCoreOptionConfiguration];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         content_ctx_info_t content_info;
@@ -391,6 +407,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     d_gameLogicRuner = nil;
     d_dummyCoreRunning = NO;
     d_inputDriverOnlyRunning = NO;
+    [self clearCoreOptionConfiguration];
     [runningCore cleanupMameSession];
 
     if (isYabause) {

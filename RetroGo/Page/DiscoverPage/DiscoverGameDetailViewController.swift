@@ -209,7 +209,7 @@ final class DiscoverGameDetailViewController: UIViewController {
                     UIAction(
                         title: variant.localizedDisplayNameWithVariantSuffix,
                         state: variant.gameId == self.game.gameId ? .on : .off
-                    ) { [weak self] _ in
+                    ) { [weak self = self] _ in
                         self?.switchToVariant(variant)
                     }
                 }
