@@ -125,7 +125,7 @@ static inline double RASanitizeFastForwardMultiplier(double multiplier) {
     d_pauseCounter = 0;
 
     // @ref: action_ok_close_content in menu_cbs_ok.c
-    BOOL ret = command_event(CMD_EVENT_UNLOAD_CORE, NULL);
+    BOOL ret = retrogo_unload_core_full_stop();
     apple_platform = nil;
     return ret;
 }

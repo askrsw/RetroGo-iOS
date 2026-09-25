@@ -170,6 +170,12 @@ void retro_input_poll_null(void);
 bool drivers_init_input_only(settings_t *settings, bool verbosity_enabled);
 void drivers_deinit_input_only(void);
 
+/* RetroGo: close content as a full stop (no dummy-core re-init of the same core).
+ * Runs CMD_EVENT_UNLOAD_CORE with load_dummy_core=false, then RARCH_CTL_MAIN_DEINIT
+ * (SRAM save, core deinit, driver_uninit, content deinit). Call on the thread that
+ * owns runloop_iterate(). */
+bool retrogo_unload_core_full_stop(void);
+
 RETRO_END_DECLS
 
 #endif

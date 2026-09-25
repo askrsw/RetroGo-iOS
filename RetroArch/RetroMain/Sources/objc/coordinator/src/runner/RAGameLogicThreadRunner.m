@@ -67,6 +67,8 @@ typedef _Atomic double atomic_double;
 @implementation RAGameLogicThreadRunner {
     NSThread *d_thread;
     atomic_bool d_shouldStop;
+    /* Set on the logic thread right after retrogo_unload_core_full_stop(); no frame may run afterwards. */
+    atomic_bool d_coreUnloaded;
     atomic_bool d_paused;
     atomic_bool d_fastForwardEnabled;
     atomic_double d_fastForwardMultiplier;
@@ -117,6 +119,7 @@ typedef _Atomic double atomic_double;
         d_pauseCounter        = 0;
 
         atomic_init(&d_shouldStop, false);
+        atomic_init(&d_coreUnloaded, false);
         atomic_init(&d_paused, false);
         atomic_init(&d_fastForwardEnabled, false);
         atomic_init(&d_fastForwardMultiplier, 1.0);
@@ -176,6 +179,7 @@ typedef _Atomic double atomic_double;
     NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
 
     atomic_store(&d_shouldStop, false);
+    atomic_store(&d_coreUnloaded, false);
     atomic_store(&d_paused, false);
     [d_pauseLock lock];
     d_pauseCounter = 0;
@@ -206,7 +210,14 @@ typedef _Atomic double atomic_double;
     BOOL unloadRet = YES;
     if (d_thread != nil && !d_thread.finished) {
         NSNumber *ret = (NSNumber *)[self performLogicBlockSync:^NSObject * _Nullable{
-            return @(command_event(CMD_EVENT_UNLOAD_CORE, NULL));
+            BOOL unloaded = retrogo_unload_core_full_stop();
+            /*
+             * The full stop deinits the core and frees all drivers (input included), while d_shouldStop is
+             * only set after the main thread observes completion. Mark it here so runThreadLoop never calls
+             * runloop_iterate() again on the unloaded core.
+             */
+            atomic_store(&d_coreUnloaded, true);
+            return @(unloaded);
         } useBlockingSemaphore:NO];
         if(ret != nil) {
             unloadRet = ret.boolValue;
@@ -578,6 +589,9 @@ typedef _Atomic double atomic_double;
              */
             [self updateLogicTiming];
             [self drainPendingCommands];
+            if (atomic_load(&d_coreUnloaded)) {
+                break;
+            }
 
             if (atomic_load(&d_paused)) {
                 uint64_t skip = [self nanosToMach:1000000];

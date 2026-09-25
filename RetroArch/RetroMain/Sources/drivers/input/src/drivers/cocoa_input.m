@@ -504,6 +504,12 @@ static int16_t cocoa_input_state(
 {
    cocoa_input_data_t *apple = (cocoa_input_data_t*)data;
 
+   /* During game teardown the input driver data can be freed while the
+    * logic thread still runs a last retro_run(). Cores that poll the
+    * mouse/pointer every frame (e.g. MAME) would dereference NULL here. */
+   if (!apple)
+      return 0;
+
    switch (device)
    {
       case RETRO_DEVICE_JOYPAD:
