@@ -1,0 +1,207 @@
+{
+    "platform_id": "mame",
+    "version": 1,
+    "portrait_ref_size": { "width": 430, "height": 795 },
+    "landscape_ref_size": { "width": 814, "height": 366 },
+    "portrait_polar_anchor": { "right": 35, "bottom": -30 },
+    "landscape_polar_anchor": { "right": 35, "bottom": -160 },
+    "retroarch_source": "gamepads/Named_Overlays/MAME.cfg",
+    "elements": [
+        {
+            "id": "left-dpad",
+            "type": "directional",
+            "geometry": {
+                "size": { "width": 130, "height": 130 },
+                "plain_portrait_layout": { "left": 25, "bottom": 210 },
+                "plain_landscape_layout": { "left": 22.5, "bottom": 75 }
+            }
+        },
+        {
+            "id": "b",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 165, "bottom": 215 },
+                "plain_landscape_layout": { "right": 165, "bottom": 80 },
+                "polar_portrait_layout": { "theta": -242.5, "radius": 300 },
+                "polar_landscape_layout": { "theta": -242.5, "radius": 300 }
+            },
+            "meta": {
+                "title": "B",
+                "binds": ["B"],
+                "is_native": true
+            },
+            "four_button_geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 95, "bottom": 195 },
+                "plain_landscape_layout": { "right": 95, "bottom": 60 }
+            }
+        },
+        {
+            "id": "a",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 95, "bottom": 240 },
+                "plain_landscape_layout": { "right": 95, "bottom": 105 },
+                "polar_portrait_layout": { "theta": -255, "radius": 300 },
+                "polar_landscape_layout": { "theta": -255, "radius": 300 }
+            },
+            "meta": {
+                "title": "A",
+                "binds": ["A"],
+                "is_native": true
+            },
+            "four_button_geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 40, "bottom": 250 },
+                "plain_landscape_layout": { "right": 40, "bottom": 115 }
+            }
+        },
+        {
+            "id": "r",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 25, "bottom": 255 },
+                "plain_landscape_layout": { "right": 25, "bottom": 120 },
+                "polar_portrait_layout": { "theta": -267.5, "radius": 300 },
+                "polar_landscape_layout": { "theta": -267.5, "radius": 300 }
+            },
+            "meta": {
+                "title": "R",
+                "binds": ["R1"],
+                "six_button_only": true,
+                "is_native": true
+            }
+        },
+        {
+            "id": "y",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 180, "bottom": 285 },
+                "plain_landscape_layout": { "right": 180, "bottom": 150 },
+                "polar_portrait_layout": { "theta": -244, "radius": 365 },
+                "polar_landscape_layout": { "theta": -244, "radius": 365 }
+            },
+            "meta": {
+                "title": "Y",
+                "binds": ["Y"],
+                "is_native": true
+            },
+            "four_button_geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 150, "bottom": 250 },
+                "plain_landscape_layout": { "right": 150, "bottom": 115 }
+            }
+        },
+        {
+            "id": "x",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 110, "bottom": 310 },
+                "plain_landscape_layout": { "right": 110, "bottom": 175 },
+                "polar_portrait_layout": { "theta": -255, "radius": 365 },
+                "polar_landscape_layout": { "theta": -255, "radius": 365 }
+            },
+            "meta": {
+                "title": "X",
+                "binds": ["X"],
+                "is_native": true
+            },
+            "four_button_geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 95, "bottom": 305 },
+                "plain_landscape_layout": { "right": 95, "bottom": 170 }
+            }
+        },
+        {
+            "id": "l",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 50, "height": 50 },
+                "plain_portrait_layout": { "right": 40, "bottom": 325 },
+                "plain_landscape_layout": { "right": 40, "bottom": 190 },
+                "polar_portrait_layout": { "theta": -266, "radius": 365 },
+                "polar_landscape_layout": { "theta": -266, "radius": 365 }
+            },
+            "meta": {
+                "title": "L",
+                "binds": ["L1"],
+                "six_button_only": true,
+                "is_native": true
+            }
+        },
+        {
+            "id": "select",
+            "type": "button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 30, "height": 30 },
+                "plain_portrait_layout": { "right": 120, "bottom": 395 },
+                "plain_landscape_layout": { "right": 120, "bottom": 260 }
+            },
+            "meta": {
+                "title": "$",
+                "binds": ["SELECT"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "start",
+            "type": "button",
+            "geometry": {
+                "shape": "capsule",
+                "size": { "width": 70, "height": 25 },
+                "plain_portrait_layout": { "right": 25, "bottom": 397.5 },
+                "plain_landscape_layout": { "right": 25, "bottom": 262.5 }
+            },
+            "meta": {
+                "title": "START",
+                "binds": ["START"],
+                "is_native": true
+            }
+        },
+        {
+            "id": "arcade-layout",
+            "type": "arcade-layout-button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "right": 105, "bottom": 140 },
+                "plain_landscape_layout": { "right": 105, "bottom": 30 }
+            }
+        },
+        {
+            "id": "fast",
+            "type": "fast-button",
+            "geometry": {
+                "shape": "circle",
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "right": 65, "bottom": 140 },
+                "plain_landscape_layout": { "right": 65, "bottom": 30 }
+            }
+        },
+        {
+            "id": "overlay-collapse",
+            "type": "overlay-collapse",
+            "geometry": {
+                "size": { "width": 20, "height": 20 },
+                "plain_portrait_layout": { "right": 25, "bottom": 140 },
+                "plain_landscape_layout": { "right": 25, "bottom": 30 }
+            }
+        }
+    ]
+}

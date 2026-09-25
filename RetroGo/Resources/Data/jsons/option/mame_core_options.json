@@ -1,0 +1,1107 @@
+{
+  "coreId": "mame",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Internal MAME processing settings.",
+        "zh-Hans": "MAME 内部运行设置。"
+      },
+      "id": "system",
+      "options": [
+        {
+          "categoryId": "system",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Allow MAME to use worker threads for internal tasks. This is separate from RetroGo's independent game logic thread. Keep enabled unless troubleshooting performance or stability.",
+            "zh-Hans": "允许 MAME 使用工作线程处理内部任务。此设置与 RetroGo 的「游戏逻辑独立线程」不同，通常保持开启；排查性能或稳定性问题时可尝试关闭。"
+          },
+          "key": "mame_thread_mode",
+          "restartRequired": true,
+          "title": {
+            "en": "MAME Internal Multithreading",
+            "zh-Hans": "MAME 内部多线程"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "System",
+        "zh-Hans": "系统"
+      }
+    },
+    {
+      "description": {
+        "en": "Screen orientation and software rendering resolution.",
+        "zh-Hans": "画面方向与软件渲染分辨率。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "libretro",
+          "description": {
+            "en": "Choose how to orient games designed for a rotated display, such as 1941. Automatic lets RetroGo apply the rotation reported by the core; MAME rotates inside the core. Left and right modes rotate the display for a physically rotated screen, not the controls.",
+            "zh-Hans": "选择竖向显示游戏（如《1941》）的画面旋转方式。「自动」由 RetroGo 按核心提供的方向旋转；「MAME 内部旋转」由核心处理。向左或向右旋转用于配合转动设备观看，不会调整方向键映射。"
+          },
+          "key": "mame_rotation_mode",
+          "restartRequired": true,
+          "title": {
+            "en": "Screen Rotation",
+            "zh-Hans": "画面旋转方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "internal": {
+              "en": "MAME Rotation",
+              "zh-Hans": "MAME 内部旋转"
+            },
+            "libretro": {
+              "en": "Automatic",
+              "zh-Hans": "自动"
+            },
+            "none": {
+              "en": "No Rotation",
+              "zh-Hans": "不旋转"
+            },
+            "tate-rol": {
+              "en": "Rotate Left",
+              "zh-Hans": "向左旋转"
+            },
+            "tate-ror": {
+              "en": "Rotate Right",
+              "zh-Hans": "向右旋转"
+            }
+          },
+          "values": [
+            "libretro",
+            "internal",
+            "tate-rol",
+            "tate-ror",
+            "none"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Render to a fixed resolution instead of the size chosen by the game. This scales the original graphics and does not add detail to arcade sprites. Higher resolutions increase processing cost; leaving this off preserves the game's native rendering size.",
+            "zh-Hans": "使用固定分辨率代替游戏自动确定的渲染尺寸。这会缩放原有画面，不会增加街机精灵图像的细节。更高分辨率会增加运算开销；通常关闭即可保留游戏的原生渲染尺寸。"
+          },
+          "key": "mame_alternate_renderer",
+          "restartRequired": true,
+          "title": {
+            "en": "Custom Render Resolution",
+            "zh-Hans": "自定义渲染分辨率"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "640x480",
+          "description": {
+            "en": "Output size used when Custom Render Resolution is enabled. Match the game's aspect ratio to avoid stretching. Larger sizes cost more processing time and memory.",
+            "zh-Hans": "开启「自定义渲染分辨率」时使用的输出尺寸。请匹配游戏的画面比例，避免拉伸；更大的尺寸会增加运算和内存开销。"
+          },
+          "key": "mame_altres",
+          "restartRequired": true,
+          "title": {
+            "en": "Render Resolution",
+            "zh-Hans": "渲染分辨率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1024x576": {
+              "en": "1024x576",
+              "zh-Hans": "1024x576"
+            },
+            "1024x768": {
+              "en": "1024x768",
+              "zh-Hans": "1024x768"
+            },
+            "1280x720": {
+              "en": "1280x720",
+              "zh-Hans": "1280x720"
+            },
+            "1280x960": {
+              "en": "1280x960",
+              "zh-Hans": "1280x960"
+            },
+            "1440x1080": {
+              "en": "1440x1080",
+              "zh-Hans": "1440x1080"
+            },
+            "1600x1200": {
+              "en": "1600x1200",
+              "zh-Hans": "1600x1200"
+            },
+            "1600x900": {
+              "en": "1600x900",
+              "zh-Hans": "1600x900"
+            },
+            "1920x1080": {
+              "en": "1920x1080",
+              "zh-Hans": "1920x1080"
+            },
+            "1920x1440": {
+              "en": "1920x1440",
+              "zh-Hans": "1920x1440"
+            },
+            "2560x1440": {
+              "en": "2560x1440",
+              "zh-Hans": "2560x1440"
+            },
+            "2880x2160": {
+              "en": "2880x2160",
+              "zh-Hans": "2880x2160"
+            },
+            "3840x2160": {
+              "en": "3840x2160",
+              "zh-Hans": "3840x2160"
+            },
+            "640x360": {
+              "en": "640x360",
+              "zh-Hans": "640x360"
+            },
+            "640x480": {
+              "en": "640x480",
+              "zh-Hans": "640x480"
+            },
+            "800x450": {
+              "en": "800x450",
+              "zh-Hans": "800x450"
+            },
+            "800x600": {
+              "en": "800x600",
+              "zh-Hans": "800x600"
+            },
+            "960x540": {
+              "en": "960x540",
+              "zh-Hans": "960x540"
+            },
+            "960x720": {
+              "en": "960x720",
+              "zh-Hans": "960x720"
+            }
+          },
+          "values": [
+            "640x480",
+            "640x360",
+            "800x600",
+            "800x450",
+            "960x720",
+            "960x540",
+            "1024x768",
+            "1024x576",
+            "1280x960",
+            "1280x720",
+            "1600x1200",
+            "1600x900",
+            "1440x1080",
+            "1920x1080",
+            "1920x1440",
+            "2560x1440",
+            "2880x2160",
+            "3840x2160"
+          ],
+          "visibleWhen": [
+            {
+              "mame_alternate_renderer": [
+                "enabled"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "画面"
+      }
+    },
+    {
+      "description": {
+        "en": "How MAME interprets controller input. These settings do not change the on-screen controls.",
+        "zh-Hans": "调整 MAME 对手柄输入的处理，不改变屏幕按键布局。"
+      },
+      "id": "input",
+      "options": [
+        {
+          "categoryId": "input",
+          "defaultValue": "0.15",
+          "description": {
+            "en": "Ignore small analog stick movements near the center when MAME processes analog input. Increase this if a physical stick drifts. It does not change RetroGo's on-screen digital joystick.",
+            "zh-Hans": "MAME 处理模拟输入时忽略摇杆中心附近的小幅移动。物理手柄摇杆漂移时可适当调高；不改变 RetroGo 屏幕数字摇杆的死区。"
+          },
+          "key": "mame_joystick_deadzone",
+          "restartRequired": true,
+          "title": {
+            "en": "Controller Stick Deadzone",
+            "zh-Hans": "手柄摇杆死区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0.00": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "0.05": {
+              "en": "5%",
+              "zh-Hans": "5%"
+            },
+            "0.10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "0.15": {
+              "en": "15%",
+              "zh-Hans": "15%"
+            },
+            "0.20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "0.25": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "0.30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "0.35": {
+              "en": "35%",
+              "zh-Hans": "35%"
+            },
+            "0.40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "0.45": {
+              "en": "45%",
+              "zh-Hans": "45%"
+            },
+            "0.50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "0.55": {
+              "en": "55%",
+              "zh-Hans": "55%"
+            },
+            "0.60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "0.65": {
+              "en": "65%",
+              "zh-Hans": "65%"
+            },
+            "0.70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "0.75": {
+              "en": "75%",
+              "zh-Hans": "75%"
+            },
+            "0.80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "0.85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "0.90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "0.95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            },
+            "1.00": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            }
+          },
+          "values": [
+            "0.00",
+            "0.05",
+            "0.10",
+            "0.15",
+            "0.20",
+            "0.25",
+            "0.30",
+            "0.35",
+            "0.40",
+            "0.45",
+            "0.50",
+            "0.55",
+            "0.60",
+            "0.65",
+            "0.70",
+            "0.75",
+            "0.80",
+            "0.85",
+            "0.90",
+            "0.95",
+            "1.00"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "0.85",
+          "description": {
+            "en": "Stick travel at which MAME treats analog input as fully deflected. Lower values reach maximum input sooner. It does not change RetroGo's on-screen digital joystick.",
+            "zh-Hans": "MAME 将模拟摇杆视为完全推到底时所需的偏移比例。调低后，较小的推杆幅度即可达到最大输入；不改变 RetroGo 屏幕数字摇杆的响应。"
+          },
+          "key": "mame_joystick_saturation",
+          "restartRequired": true,
+          "title": {
+            "en": "Controller Stick Full-Scale Point",
+            "zh-Hans": "手柄摇杆满幅位置"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0.05": {
+              "en": "5%",
+              "zh-Hans": "5%"
+            },
+            "0.10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "0.15": {
+              "en": "15%",
+              "zh-Hans": "15%"
+            },
+            "0.20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "0.25": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "0.30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "0.35": {
+              "en": "35%",
+              "zh-Hans": "35%"
+            },
+            "0.40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "0.45": {
+              "en": "45%",
+              "zh-Hans": "45%"
+            },
+            "0.50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "0.55": {
+              "en": "55%",
+              "zh-Hans": "55%"
+            },
+            "0.60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "0.65": {
+              "en": "65%",
+              "zh-Hans": "65%"
+            },
+            "0.70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "0.75": {
+              "en": "75%",
+              "zh-Hans": "75%"
+            },
+            "0.80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "0.85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "0.90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "0.95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            },
+            "1.00": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            }
+          },
+          "values": [
+            "0.05",
+            "0.10",
+            "0.15",
+            "0.20",
+            "0.25",
+            "0.30",
+            "0.35",
+            "0.40",
+            "0.45",
+            "0.50",
+            "0.55",
+            "0.60",
+            "0.65",
+            "0.70",
+            "0.75",
+            "0.80",
+            "0.85",
+            "0.90",
+            "0.95",
+            "1.00"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "0.30",
+          "description": {
+            "en": "Analog stick movement required for MAME to register a digital direction. Lower values respond to smaller movements. This applies to analog input reaching MAME, not directions already converted by RetroGo.",
+            "zh-Hans": "MAME 将模拟摇杆移动判定为数字方向时所需的偏移比例。调低后更容易触发方向。仅作用于传入 MAME 的模拟输入，不影响已经由 RetroGo 转换好的方向输入。"
+          },
+          "key": "mame_joystick_threshold",
+          "restartRequired": true,
+          "title": {
+            "en": "Controller Stick Direction Threshold",
+            "zh-Hans": "手柄摇杆方向阈值"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0.05": {
+              "en": "5%",
+              "zh-Hans": "5%"
+            },
+            "0.10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "0.15": {
+              "en": "15%",
+              "zh-Hans": "15%"
+            },
+            "0.20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "0.25": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "0.30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "0.35": {
+              "en": "35%",
+              "zh-Hans": "35%"
+            },
+            "0.40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "0.45": {
+              "en": "45%",
+              "zh-Hans": "45%"
+            },
+            "0.50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "0.55": {
+              "en": "55%",
+              "zh-Hans": "55%"
+            },
+            "0.60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "0.65": {
+              "en": "65%",
+              "zh-Hans": "65%"
+            },
+            "0.70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "0.75": {
+              "en": "75%",
+              "zh-Hans": "75%"
+            },
+            "0.80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "0.85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "0.90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "0.95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            },
+            "1.00": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            }
+          },
+          "values": [
+            "0.05",
+            "0.10",
+            "0.15",
+            "0.20",
+            "0.25",
+            "0.30",
+            "0.35",
+            "0.40",
+            "0.45",
+            "0.50",
+            "0.55",
+            "0.60",
+            "0.65",
+            "0.70",
+            "0.75",
+            "0.80",
+            "0.85",
+            "0.90",
+            "0.95",
+            "1.00"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Limit joystick direction mapping for games that use only up, down, left and right. Strict mode requires a more definite movement toward the next direction before switching. Keep off for eight-way action and fighting games. This is unrelated to the overlay's four/six action-button layout.",
+            "zh-Hans": "为只使用上、下、左、右的游戏限制摇杆方向映射。「严格四方向」需要更明确地推向下一个方向才切换。八方向动作和格斗游戏应保持关闭。此设置与屏幕动作键的四键／六键布局无关。"
+          },
+          "key": "mame_mame_4way_enable",
+          "restartRequired": true,
+          "title": {
+            "en": "Four-Way Joystick Mapping",
+            "zh-Hans": "四方向摇杆映射"
+          },
+          "type": "select",
+          "valueLabels": {
+            "4way": {
+              "en": "Four-Way",
+              "zh-Hans": "四方向"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关闭"
+            },
+            "strict": {
+              "en": "Strict Four-Way",
+              "zh-Hans": "严格四方向"
+            }
+          },
+          "values": [
+            "disabled",
+            "4way",
+            "strict"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Input",
+        "zh-Hans": "输入"
+      }
+    },
+    {
+      "description": {
+        "en": "Adjust emulated hardware timing for individual games.",
+        "zh-Hans": "按游戏调整模拟硬件的运行速度。"
+      },
+      "id": "hacks",
+      "options": [
+        {
+          "categoryId": "hacks",
+          "defaultValue": "default",
+          "description": {
+            "en": "Adjust the main emulated CPU's clock rate as a percentage of the original hardware. Increasing it may reduce in-game slowdown but raises device load and can alter game behavior. Lowering it may cause slowdown. This is not fast-forward; use the original speed for normal play.",
+            "zh-Hans": "以原机时钟频率的百分比调整主模拟 CPU。调高可能减轻游戏原有的掉速，但会增加设备负担，也可能改变游戏行为；调低可能造成掉速。此设置不是快进，正常游玩建议使用原速。"
+          },
+          "key": "mame_cpu_overclock",
+          "restartRequired": false,
+          "title": {
+            "en": "Emulated CPU Speed",
+            "zh-Hans": "模拟 CPU 速度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "100": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "105": {
+              "en": "105%",
+              "zh-Hans": "105%"
+            },
+            "110": {
+              "en": "110%",
+              "zh-Hans": "110%"
+            },
+            "115": {
+              "en": "115%",
+              "zh-Hans": "115%"
+            },
+            "120": {
+              "en": "120%",
+              "zh-Hans": "120%"
+            },
+            "125": {
+              "en": "125%",
+              "zh-Hans": "125%"
+            },
+            "130": {
+              "en": "130%",
+              "zh-Hans": "130%"
+            },
+            "135": {
+              "en": "135%",
+              "zh-Hans": "135%"
+            },
+            "140": {
+              "en": "140%",
+              "zh-Hans": "140%"
+            },
+            "145": {
+              "en": "145%",
+              "zh-Hans": "145%"
+            },
+            "150": {
+              "en": "150%",
+              "zh-Hans": "150%"
+            },
+            "155": {
+              "en": "155%",
+              "zh-Hans": "155%"
+            },
+            "160": {
+              "en": "160%",
+              "zh-Hans": "160%"
+            },
+            "165": {
+              "en": "165%",
+              "zh-Hans": "165%"
+            },
+            "170": {
+              "en": "170%",
+              "zh-Hans": "170%"
+            },
+            "175": {
+              "en": "175%",
+              "zh-Hans": "175%"
+            },
+            "180": {
+              "en": "180%",
+              "zh-Hans": "180%"
+            },
+            "185": {
+              "en": "185%",
+              "zh-Hans": "185%"
+            },
+            "190": {
+              "en": "190%",
+              "zh-Hans": "190%"
+            },
+            "195": {
+              "en": "195%",
+              "zh-Hans": "195%"
+            },
+            "200": {
+              "en": "200%",
+              "zh-Hans": "200%"
+            },
+            "205": {
+              "en": "205%",
+              "zh-Hans": "205%"
+            },
+            "210": {
+              "en": "210%",
+              "zh-Hans": "210%"
+            },
+            "215": {
+              "en": "215%",
+              "zh-Hans": "215%"
+            },
+            "220": {
+              "en": "220%",
+              "zh-Hans": "220%"
+            },
+            "225": {
+              "en": "225%",
+              "zh-Hans": "225%"
+            },
+            "230": {
+              "en": "230%",
+              "zh-Hans": "230%"
+            },
+            "235": {
+              "en": "235%",
+              "zh-Hans": "235%"
+            },
+            "240": {
+              "en": "240%",
+              "zh-Hans": "240%"
+            },
+            "245": {
+              "en": "245%",
+              "zh-Hans": "245%"
+            },
+            "25": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "250": {
+              "en": "250%",
+              "zh-Hans": "250%"
+            },
+            "255": {
+              "en": "255%",
+              "zh-Hans": "255%"
+            },
+            "26": {
+              "en": "26%",
+              "zh-Hans": "26%"
+            },
+            "260": {
+              "en": "260%",
+              "zh-Hans": "260%"
+            },
+            "265": {
+              "en": "265%",
+              "zh-Hans": "265%"
+            },
+            "27": {
+              "en": "27%",
+              "zh-Hans": "27%"
+            },
+            "270": {
+              "en": "270%",
+              "zh-Hans": "270%"
+            },
+            "275": {
+              "en": "275%",
+              "zh-Hans": "275%"
+            },
+            "28": {
+              "en": "28%",
+              "zh-Hans": "28%"
+            },
+            "280": {
+              "en": "280%",
+              "zh-Hans": "280%"
+            },
+            "285": {
+              "en": "285%",
+              "zh-Hans": "285%"
+            },
+            "29": {
+              "en": "29%",
+              "zh-Hans": "29%"
+            },
+            "290": {
+              "en": "290%",
+              "zh-Hans": "290%"
+            },
+            "295": {
+              "en": "295%",
+              "zh-Hans": "295%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "300": {
+              "en": "300%",
+              "zh-Hans": "300%"
+            },
+            "31": {
+              "en": "31%",
+              "zh-Hans": "31%"
+            },
+            "32": {
+              "en": "32%",
+              "zh-Hans": "32%"
+            },
+            "33": {
+              "en": "33%",
+              "zh-Hans": "33%"
+            },
+            "34": {
+              "en": "34%",
+              "zh-Hans": "34%"
+            },
+            "35": {
+              "en": "35%",
+              "zh-Hans": "35%"
+            },
+            "36": {
+              "en": "36%",
+              "zh-Hans": "36%"
+            },
+            "37": {
+              "en": "37%",
+              "zh-Hans": "37%"
+            },
+            "38": {
+              "en": "38%",
+              "zh-Hans": "38%"
+            },
+            "39": {
+              "en": "39%",
+              "zh-Hans": "39%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "41": {
+              "en": "41%",
+              "zh-Hans": "41%"
+            },
+            "42": {
+              "en": "42%",
+              "zh-Hans": "42%"
+            },
+            "43": {
+              "en": "43%",
+              "zh-Hans": "43%"
+            },
+            "44": {
+              "en": "44%",
+              "zh-Hans": "44%"
+            },
+            "45": {
+              "en": "45%",
+              "zh-Hans": "45%"
+            },
+            "46": {
+              "en": "46%",
+              "zh-Hans": "46%"
+            },
+            "47": {
+              "en": "47%",
+              "zh-Hans": "47%"
+            },
+            "48": {
+              "en": "48%",
+              "zh-Hans": "48%"
+            },
+            "49": {
+              "en": "49%",
+              "zh-Hans": "49%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "51": {
+              "en": "51%",
+              "zh-Hans": "51%"
+            },
+            "52": {
+              "en": "52%",
+              "zh-Hans": "52%"
+            },
+            "53": {
+              "en": "53%",
+              "zh-Hans": "53%"
+            },
+            "54": {
+              "en": "54%",
+              "zh-Hans": "54%"
+            },
+            "55": {
+              "en": "55%",
+              "zh-Hans": "55%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "65": {
+              "en": "65%",
+              "zh-Hans": "65%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "75": {
+              "en": "75%",
+              "zh-Hans": "75%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            },
+            "default": {
+              "en": "Original (100%)",
+              "zh-Hans": "原速（100%）"
+            }
+          },
+          "values": [
+            "default",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50",
+            "51",
+            "52",
+            "53",
+            "54",
+            "55",
+            "60",
+            "65",
+            "70",
+            "75",
+            "80",
+            "85",
+            "90",
+            "95",
+            "100",
+            "105",
+            "110",
+            "115",
+            "120",
+            "125",
+            "130",
+            "135",
+            "140",
+            "145",
+            "150",
+            "155",
+            "160",
+            "165",
+            "170",
+            "175",
+            "180",
+            "185",
+            "190",
+            "195",
+            "200",
+            "205",
+            "210",
+            "215",
+            "220",
+            "225",
+            "230",
+            "235",
+            "240",
+            "245",
+            "250",
+            "255",
+            "260",
+            "265",
+            "270",
+            "275",
+            "280",
+            "285",
+            "290",
+            "295",
+            "300"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Emulation",
+        "zh-Hans": "模拟"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "MAME",
+    "coreVersion": "0.278-pgm",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

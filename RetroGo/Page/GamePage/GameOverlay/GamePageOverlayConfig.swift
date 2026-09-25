@@ -39,22 +39,26 @@ struct GamePageOverlayElement: Codable, Equatable {
     let id: String
     let type: GamePageOverlayElementType
     let geometry: GamePageOverlayGeometry
+    let fourButtonGeometry: GamePageOverlayGeometry?
     let meta: [String: JSONValue]?
 
     private enum CodingKeys: String, CodingKey {
         case id
         case type
         case geometry
+        case fourButtonGeometry
         case meta
     }
 
     init(id: String,
          type: GamePageOverlayElementType,
          geometry: GamePageOverlayGeometry,
+         fourButtonGeometry: GamePageOverlayGeometry? = nil,
          meta: [String: JSONValue]? = nil) {
         self.id = id
         self.type = type
         self.geometry = geometry
+        self.fourButtonGeometry = fourButtonGeometry
         self.meta = meta
     }
 
@@ -63,6 +67,7 @@ struct GamePageOverlayElement: Codable, Equatable {
         id = try container.decode(String.self, forKey: .id)
         type = try container.decode(GamePageOverlayElementType.self, forKey: .type)
         geometry = try container.decode(GamePageOverlayGeometry.self, forKey: .geometry)
+        fourButtonGeometry = try container.decodeIfPresent(GamePageOverlayGeometry.self, forKey: .fourButtonGeometry)
         meta = try container.decodeIfPresent([String: JSONValue].self, forKey: .meta)
     }
 
@@ -71,6 +76,7 @@ struct GamePageOverlayElement: Codable, Equatable {
         try container.encode(id, forKey: .id)
         try container.encode(type, forKey: .type)
         try container.encode(geometry, forKey: .geometry)
+        try container.encodeIfPresent(fourButtonGeometry, forKey: .fourButtonGeometry)
         try container.encodeIfPresent(meta, forKey: .meta)
     }
 }
@@ -88,6 +94,7 @@ enum GamePageOverlayElementType: String, Codable {
     case overlayCollapse = "overlay-collapse"
     case n64CButton = "n64-c-button"
     case ndsLayoutButton = "nds-layout-button"
+    case arcadeLayoutButton = "arcade-layout-button"
 }
 
 struct GamePageOverlayGeometry: Codable, Equatable {
@@ -221,6 +228,16 @@ struct GamePageOverlayAction: Codable, Hashable, Equatable {
 }
 
 extension GamePageOverlayElement {
+    var isSixButtonOnly: Bool {
+        guard case .bool(let value) = meta?["six_button_only"] else { return false }
+        return value
+    }
+
+    func arcadeLayoutElement(fourButtons: Bool) -> Self {
+        guard fourButtons, let fourButtonGeometry else { return self }
+        return Self(id: id, type: type, geometry: fourButtonGeometry, meta: meta)
+    }
+
     var isHidden: Bool {
         guard let v = meta?["is_hidden"], case .bool(let b) = v else {
             return false
@@ -321,6 +338,7 @@ extension GamePageOverlayConfig {
         case ps = "ps"
         case psp = "psp"
         case genesis = "genesis"
+        case mame = "mame"
     }
 
     static func loadOverlayConfig(_ name: String?) -> Self {

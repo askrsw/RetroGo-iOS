@@ -47,11 +47,14 @@ final class GameOverlayCollapseButton: SKNode, GameOverlayElementLayout {
         isHidden = element.isHidden
         isUserInteractionEnabled = true
 
-        ringNode.strokeColor = theme.primaryColor(alpha: theme.normalContentAlpha)
+        ringNode.strokeColor = theme.primaryColor
+        ringNode.lineWidth = 2
         ringNode.fillColor = .clear
         addChild(ringNode)
 
-        chevronNode.strokeColor = theme.primaryColor(alpha: 0.9)
+        chevronNode.strokeColor = theme.primaryColor
+        chevronNode.alpha = theme.normalContentAlpha
+        chevronNode.zPosition = 1
         chevronNode.lineCap = .round
         chevronNode.lineJoin = .round
         chevronNode.fillColor = .clear
@@ -70,7 +73,6 @@ final class GameOverlayCollapseButton: SKNode, GameOverlayElementLayout {
             let radius = size * 0.5
 
             ringNode.path = CGPath(ellipseIn: CGRect(x: -radius, y: -radius, width: size, height: size), transform: nil)
-            ringNode.lineWidth = max(2.0, size * 0.06)
             chevronNode.lineWidth = max(2.0, size * 0.08)
             chevronRadius = radius
             updateChevronPath(radius)
@@ -111,8 +113,12 @@ final class GameOverlayCollapseButton: SKNode, GameOverlayElementLayout {
 
 extension GameOverlayCollapseButton {
     private func setPressed(_ pressed: Bool) {
-        let targetScale: CGFloat = pressed ? 0.85 : 1.0
-        setScale(targetScale)
+        ringNode.fillColor = pressed ? theme.primaryColor(alpha: theme.emphasizedPressedFillAlpha) : .clear
+        chevronNode.alpha = pressed ? theme.pressedContentAlpha : theme.normalContentAlpha
+        chevronNode.removeAction(forKey: "touch-scale")
+        let action = SKAction.scale(to: pressed ? 1.12 : 1.0, duration: 0.10)
+        action.timingMode = .easeOut
+        chevronNode.run(action, withKey: "touch-scale")
     }
 
     private func updateChevronPath(_ radius: CGFloat) {

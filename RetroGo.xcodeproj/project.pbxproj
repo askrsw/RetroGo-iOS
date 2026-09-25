@@ -61,6 +61,7 @@
 		AB55BC8A2F3BA0B500569A84 /* RetroRomFolderItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC892F3BA0B400569A84 /* RetroRomFolderItem.swift */; };
 		AB5D01822F813F8000C7081D /* RetroRomImportGroupBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5D01812F813F8000C7081D /* RetroRomImportGroupBuilder.swift */; };
 		AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */; };
+		AC2309260000000000000001 /* GameOverlayArcadeLayoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC2309260000000000000002 /* GameOverlayArcadeLayoutButton.swift */; };
 		AB6378A22F7E6394001E1152 /* GameOverlayN64CButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */; };
 		AB6789632FE5278B0015D5E0 /* emu.fceumm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB69E2FE2F4EB4D800C532EE /* RetroRomEmptyTipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB69E2FD2F4EB4D800C532EE /* RetroRomEmptyTipView.swift */; };
@@ -178,6 +179,7 @@
 		ABF60F8C2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F8B2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift */; };
 		C01920260919000000000001 /* GameCoreOptionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000003 /* GameCoreOptionCatalog.swift */; };
 		C01920260919000000000002 /* GameCoreOptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000004 /* GameCoreOptionViewController.swift */; };
+		C02120260921000000000001 /* emu.mame.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C02120260921000000000002 /* emu.mame.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -188,6 +190,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				ABB50EE62FE81D6D001B3042 /* emu.picodrive.framework in CopyFiles */,
+				C02120260921000000000001 /* emu.mame.framework in CopyFiles */,
 				AB6789632FE5278B0015D5E0 /* emu.fceumm.framework in CopyFiles */,
 				AB11A55F2F9941BF00C32E39 /* emu.dosbox-pure.framework in CopyFiles */,
 				AB11A5612F9941BF00C32E39 /* emu.gambatte.framework in CopyFiles */,
@@ -259,6 +262,7 @@
 		AB55BC892F3BA0B400569A84 /* RetroRomFolderItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderItem.swift; sourceTree = "<group>"; };
 		AB5D01812F813F8000C7081D /* RetroRomImportGroupBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomImportGroupBuilder.swift; sourceTree = "<group>"; };
 		AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayNDSLayoutButton.swift; sourceTree = "<group>"; };
+		AC2309260000000000000002 /* GameOverlayArcadeLayoutButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayArcadeLayoutButton.swift; sourceTree = "<group>"; };
 		AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayN64CButton.swift; sourceTree = "<group>"; };
 		AB69E2FD2F4EB4D800C532EE /* RetroRomEmptyTipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomEmptyTipView.swift; sourceTree = "<group>"; };
 		AB70DD8D2FBCE9C300277B74 /* OnDemandResourceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDemandResourceLoader.swift; sourceTree = "<group>"; };
@@ -388,6 +392,7 @@
 		ABF60F8B2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderUnifiedSubview.swift; sourceTree = "<group>"; };
 		C01920260919000000000003 /* GameCoreOptionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionCatalog.swift; sourceTree = "<group>"; };
 		C01920260919000000000004 /* GameCoreOptionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionViewController.swift; sourceTree = "<group>"; };
+		C02120260921000000000002 /* emu.mame.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.mame.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -632,6 +637,7 @@
 			isa = PBXGroup;
 			children = (
 				ABB50EE42FE81CD5001B3042 /* emu.picodrive.framework */,
+				C02120260921000000000002 /* emu.mame.framework */,
 				ABBC8AC12F5E5504007E1669 /* emu.dosbox-pure.framework */,
 				ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */,
 				ABBC8AC32F5E5504007E1669 /* emu.gambatte.framework */,
@@ -732,6 +738,7 @@
 				AB3D70402F7D503D0008A6AA /* GameOverlayDirectionalControl.swift */,
 				AB3D70472F7D876A0008A6AA /* GameOverlayCollapseButton.swift */,
 				AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */,
+				AC2309260000000000000002 /* GameOverlayArcadeLayoutButton.swift */,
 				AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */,
 				AB3D70372F7D49F70008A6AA /* GamePageOverlayScene.swift */,
 				AB9CDD6A2F70422B002E6A55 /* GamePageOverlayView.swift */,
@@ -1174,6 +1181,7 @@
 				ABB6F6EA2FC0D73600A13412 /* RetroRomFileBrowserConfigMenu.swift in Sources */,
 				AB4DCCDE2FA2F0A0004691BD /* GameOverlayTheme.swift in Sources */,
 				AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */,
+				AC2309260000000000000001 /* GameOverlayArcadeLayoutButton.swift in Sources */,
 				AB55BC7C2F3B8BC400569A84 /* GamePageViewController.swift in Sources */,
 				ABCAFE010000000000000002 /* GameToolbarAction.swift in Sources */,
 				ABCAFE010000000000000011 /* GameNetplayViewController.swift in Sources */,

@@ -226,6 +226,13 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
         emit(touching)
     }
 
+    // A layout change can hide or move a held button before its touch ends.
+    func cancelActiveInput() {
+        isTouching = false
+        resetTurboState(preservingTrackingTouch: false)
+        touchStartedWithTurboEnabled = false
+    }
+
     private func resetTurboState(preservingTrackingTouch: Bool) {
         if !preservingTrackingTouch {
             trackingTouch = nil
