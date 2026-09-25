@@ -81,6 +81,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)getSourceURL;
 
 - (BOOL)extractPPSSPPAssets;
+
+/// Debug helper: writes the MAME -listxml inventory of the drivers compiled into this core to `path`.
+/// Only valid for the MAME core; call off the main thread and never while a game is running.
+- (BOOL)exportMameListXMLToPath:(NSString *)path error:(NSError * _Nullable * _Nullable)error;
 @end
 
 NS_ASSUME_NONNULL_END

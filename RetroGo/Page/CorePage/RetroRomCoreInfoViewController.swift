@@ -67,6 +67,10 @@ final class RetroRomCoreInfoViewController: UIViewController {
             navigationItem.leftBarButtonItem?.tintColor = .label
         }
 
+#if DEBUG
+        configureMameListXMLExportButton()
+#endif
+
         _ = collectionView
         applySnapshot()
     }
@@ -309,6 +313,73 @@ extension RetroRomCoreInfoViewController {
         dismiss(animated: true)
     }
 }
+
+#if DEBUG
+// MARK: - Debug: MAME listxml export
+
+extension RetroRomCoreInfoViewController {
+    private func configureMameListXMLExportButton() {
+        let ra = RetroArchX.shared()
+        let gameRunning = ra.currentCoreItem != nil && !ra.dummyCoreRunning
+        guard coreInfoItem.coreId == "mame", !gameRunning else { return }
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain, target: self, action: #selector(exportMameListXMLAction))
+    }
+
+    @objc
+    private func exportMameListXMLAction() {
+        let ra = RetroArchX.shared()
+        guard ra.currentCoreItem == nil || ra.dummyCoreRunning else {
+            showMameListXMLResult(title: "Export unavailable", message: "Close the running game first.")
+            return
+        }
+        guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        let url = documents.appendingPathComponent("mame-listxml-\(formatter.string(from: Date())).xml")
+
+        navigationItem.rightBarButtonItem?.isEnabled = false
+        let indicator = UIActivityIndicatorView(style: .medium)
+        indicator.startAnimating()
+        let exportButton = navigationItem.rightBarButtonItem
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: indicator)
+
+        let coreInfoItem = self.coreInfoItem
+        DispatchQueue.global(qos: .userInitiated).async {
+            let start = CFAbsoluteTimeGetCurrent()
+            var exportError: NSError?
+            let ok: Bool
+            do {
+                try coreInfoItem.exportMameListXML(toPath: url.path)
+                ok = true
+            } catch {
+                exportError = error as NSError
+                ok = false
+            }
+            let seconds = CFAbsoluteTimeGetCurrent() - start
+            let bytes = (try? FileManager.default.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.int64Value ?? 0
+            print("[MameListXML] ok=\(ok) seconds=\(String(format: "%.2f", seconds)) bytes=\(bytes) path=\(url.path)")
+
+            DispatchQueue.main.async { [weak self = self] in
+                guard let self else { return }
+                exportButton?.isEnabled = true
+                self.navigationItem.rightBarButtonItem = exportButton
+                let size = ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+                let message = ok
+                    ? "\(url.lastPathComponent)\n\(size), \(String(format: "%.2f", seconds)) s"
+                    : (exportError?.localizedDescription ?? "Unknown error")
+                self.showMameListXMLResult(title: ok ? "MAME listxml exported" : "Export failed", message: message)
+            }
+        }
+    }
+
+    private func showMameListXMLResult(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+}
+#endif // DEBUG
 
 extension RetroRomCoreInfoViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {

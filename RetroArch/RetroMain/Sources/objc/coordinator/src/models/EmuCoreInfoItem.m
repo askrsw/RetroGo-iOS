@@ -25,6 +25,7 @@
 
 #import "EmuCoreInfoItem.h"
 #import "EmuCoreFirmware.h"
+#import <dlfcn.h>
 
 #include <utils/configuration.h>
 #include <file/archive_file.h>
@@ -518,6 +519,56 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
         }
         return YES;
     }
+}
+
+- (BOOL)exportMameListXMLToPath:(NSString *)path error:(NSError * _Nullable * _Nullable)error {
+    void (^fail)(NSString *) = ^(NSString *message) {
+        if (error) {
+            *error = [NSError errorWithDomain:@"RetroGo.MameListXML" code:-1 userInfo:@{NSLocalizedDescriptionKey: message}];
+        }
+        NSLog(@"[MameListXML] %@", message);
+    };
+
+    if (![_coreId isEqualToString:@"mame"] || path.length == 0) {
+        fail(@"Not the MAME core or empty output path");
+        return NO;
+    }
+
+    // corePath may point at the framework bundle or directly at its executable.
+    NSString *binaryPath = self.corePath;
+    if ([binaryPath.pathExtension isEqualToString:@"framework"]) {
+        NSString *executable = [NSBundle bundleWithPath:binaryPath].executablePath;
+        binaryPath = executable ?: [binaryPath stringByAppendingPathComponent:binaryPath.lastPathComponent.stringByDeletingPathExtension];
+    }
+
+    // Same image RetroArch loads for games; dlopen/dlclose only adjust its reference count.
+    // Callers must make sure no game is running.
+    void *handle = dlopen(binaryPath.fileSystemRepresentation, RTLD_NOW | RTLD_LOCAL);
+    if (handle == NULL) {
+        const char *reason = dlerror();
+        fail([NSString stringWithFormat:@"dlopen failed: %s", reason ? reason : "unknown"]);
+        return NO;
+    }
+
+    typedef bool (*write_listxml_fn)(const char *path);
+    write_listxml_fn writeListXML = (write_listxml_fn)dlsym(handle, "retrogo_mame_write_listxml");
+    if (writeListXML == NULL) {
+        fail(@"retrogo_mame_write_listxml not exported by this MAME build");
+        dlclose(handle);
+        return NO;
+    }
+
+    NSDate *start = [NSDate date];
+    BOOL written = writeListXML(path.fileSystemRepresentation);
+    dlclose(handle);
+    if (!written) {
+        fail([NSString stringWithFormat:@"retrogo_mame_write_listxml failed for %@", path]);
+        return NO;
+    }
+
+    NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil];
+    NSLog(@"[MameListXML] Wrote %llu bytes to %@ in %.1fs", [attributes fileSize], path, -[start timeIntervalSinceNow]);
+    return YES;
 }
 
 #pragma mark - Utils
