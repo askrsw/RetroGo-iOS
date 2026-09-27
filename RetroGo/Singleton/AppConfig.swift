@@ -75,6 +75,16 @@ final class AppConfig {
         }
     }()
 
+    /// MAME cheat XMLs imported from Pugsy's cheat.7z (see MameCheatLibrary).
+    private(set) lazy var mameCheatDatabasePath = { () -> String in
+        let folder = FileManager.default.applicationSupportFolder + "/data/database/"
+        if FileManager.default.createDirectoryIfNotExists(atPath: folder) {
+            return folder + "mame_cheat.db"
+        } else {
+            fatalError()
+        }
+    }()
+
     /// Originals of MAME sets replaced by a repair, kept until the user clears them.
     private(set) lazy var mameRepairBackupFolder = { () -> String in
         let folder = FileManager.default.applicationSupportFolder + "/data/romset_backup/"

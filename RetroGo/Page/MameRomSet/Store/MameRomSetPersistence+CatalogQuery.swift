@@ -78,6 +78,21 @@ extension MameRomSetPersistence {
         return nil
     }
 
+    /// Every runnable game set (no BIOS/device sets) with its parent, if it is a clone.
+    func gameSets() -> [(name: String, cloneOf: String?)] {
+        guard let db else { return [] }
+        do {
+            let sql = "SELECT name, cloneof FROM machine WHERE is_bios = 0 AND is_device = 0 AND runnable = 1"
+            return try db.prepare(sql).compactMap { row in
+                guard let name = row[0] as? String else { return nil }
+                return (name, row[1] as? String)
+            }
+        } catch {
+            NSLog("[MameRomSet] Failed to list game sets: %@", "\(error)")
+            return []
+        }
+    }
+
     /// Sets that list a file with this CRC and size, and whether the file is merged
     /// (stored in the parent/BIOS zip) for that set.
     func machinesContaining(_ key: MameRomKey) -> [(machine: String, merged: Bool)] {

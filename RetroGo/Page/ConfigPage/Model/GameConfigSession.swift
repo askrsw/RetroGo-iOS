@@ -97,6 +97,11 @@ final class GameConfigSession {
                 // core defaults, not old .opt files or a previous game's values.
                 NSLog("[CoreOptions] Failed to resolve launch options for %@: %@", core.coreId, String(describing: error))
             }
+            // MAME's own cheat engine loads <cheatpath>/<set>.xml; it only runs with this on.
+            // Hidden from the option page: RetroGo owns cheats (see MameCheatLibrary).
+            if core.coreId == MameImportScreener.mameCoreId {
+                config.coreOptions?["mame_cheats_enable"] = "enabled"
+            }
         }
         RetroArchX.shared().config(config)
 

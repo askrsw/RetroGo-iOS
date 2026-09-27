@@ -322,7 +322,14 @@ extension RetroRomCoreInfoViewController {
     private func configureMameHealthButton() {
         guard coreInfoItem.coreId == MameImportScreener.mameCoreId else { return }
         let button = UIBarButtonItem(image: UIImage(systemName: "stethoscope"), style: .plain, target: self, action: #selector(mameHealthAction))
-        navigationItem.rightBarButtonItems = (navigationItem.rightBarButtonItems ?? []) + [button]
+        let cheats = UIBarButtonItem(image: UIImage(systemName: "star.circle"), style: .plain, target: self, action: #selector(mameCheatLibraryAction))
+        navigationItem.rightBarButtonItems = (navigationItem.rightBarButtonItems ?? []) + [button, cheats]
+    }
+
+    @objc
+    private func mameCheatLibraryAction() {
+        Vibration.selection.vibrate()
+        MameCheatLibraryViewController.show(from: self)
     }
 
     @objc

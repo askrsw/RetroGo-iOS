@@ -50,6 +50,9 @@ final class GamePageViewController: RAGameViewController {
     /// nil when launched without a `RetroRomFileItem` (the document-browser path),
     /// since cheats are keyed by the rom item — cheats are unavailable then.
     let cheatSession: GameCheatSession?
+    /// MAME runs its own cheat engine instead of RetroArch's; nil for other cores and
+    /// launches without a rom item.
+    let mameCheatSession: MameCheatSession?
 
     private(set) var startDate: Date?
 
@@ -62,6 +65,7 @@ final class GamePageViewController: RAGameViewController {
         self.startTime = Date()
         self.configSession = GameConfigSession(scope: .core, core: core, game: nil)
         self.cheatSession = nil
+        self.mameCheatSession = nil
         super.init(core: core)
         Self.instance = self
 
@@ -81,11 +85,17 @@ final class GamePageViewController: RAGameViewController {
         self.romUrl    = URL(fileURLWithPath: romItem.entryPath!)
         self.startTime = Date()
         self.configSession = configSession
-        self.cheatSession = GameCheatSession(
-            game: romItem,
-            core: core,
-            autoEnableCheatsOnLaunch: configSession.getAutoEnableCheats()
-        )
+        if core.coreId == MameImportScreener.mameCoreId {
+            self.cheatSession = nil
+            self.mameCheatSession = MameCheatSession(game: romItem, core: core)
+        } else {
+            self.cheatSession = GameCheatSession(
+                game: romItem,
+                core: core,
+                autoEnableCheatsOnLaunch: configSession.getAutoEnableCheats()
+            )
+            self.mameCheatSession = nil
+        }
         super.init(core: core)
         Self.instance = self
 
@@ -167,6 +177,7 @@ final class GamePageViewController: RAGameViewController {
             // load system-template states too; otherwise the toolbar badge and
             // enabled template cheats only become correct after opening the cheat page.
             cheatSession?.reloadTemplateItems {}
+            mameCheatSession?.gameDidStart()
 
             if core.coreId == "dosbox-pure" {
                 self.useRetroArchOverlay = true
