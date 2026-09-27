@@ -684,8 +684,10 @@ extension GamePageToolbarView {
             return
         }
 
-        guard let romPath = RetroArchX.shared().getCurrentRomPath(),
-              let sha256 = FileManager.default.sha256ForFile(atPath: romPath) else {
+        // Same identity the states are saved under (romItem.sha256); hashing the running
+        // file differs for multi-file games and for MAME sets rebuilt by a repair.
+        guard let sha256 = holder?.romItem?.sha256
+                ?? RetroArchX.shared().getCurrentRomPath().flatMap({ FileManager.default.sha256ForFile(atPath: $0) }) else {
             return
         }
 
@@ -731,8 +733,8 @@ extension GamePageToolbarView {
 
         guard
             let currentCoreItem = RetroArchX.shared().currentCoreItem,
-            let romPath = RetroArchX.shared().getCurrentRomPath(),
-            let sha256 = FileManager.default.sha256ForFile(atPath: romPath) else {
+            let sha256 = holder?.romItem?.sha256
+                ?? RetroArchX.shared().getCurrentRomPath().flatMap({ FileManager.default.sha256ForFile(atPath: $0) }) else {
             return
         }
 
