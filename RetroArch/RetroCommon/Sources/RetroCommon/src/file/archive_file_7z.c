@@ -323,14 +323,16 @@ static int sevenzip_stream_decompress_data_to_file_iterate(
          (struct sevenzip_context_t*)context;
 
    SRes res                = SZ_ERROR_FAIL;
-   size_t output_size      = 0;
    size_t offset           = 0;
    size_t outSizeProcessed = 0;
 
+   /* RetroGo: the cached block size must persist next to the cached block
+    * (output/block_index). With a local zero, a second file from an already
+    * decoded solid block fails SzArEx_Extract's bounds check. */
    res = SzArEx_Extract(&sevenzip_context->db,
          &sevenzip_context->lookStream.vt, sevenzip_context->decompress_index,
          &sevenzip_context->block_index, &sevenzip_context->output,
-         &output_size, &offset, &outSizeProcessed,
+         &sevenzip_context->temp_size, &offset, &outSizeProcessed,
          &sevenzip_context->allocImp, &sevenzip_context->allocTempImp);
 
    if (res != SZ_OK)
