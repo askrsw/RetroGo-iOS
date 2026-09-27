@@ -112,8 +112,8 @@ final class MameCheatListViewController: UIViewController {
     }
 
     @objc private func stateDidChange() {
-        tableView.reloadData()
-        updateRestoreHeader()
+        // The session rebuilds its entries when the library is imported mid-game.
+        reload()
     }
 
     private func reload() {
@@ -147,21 +147,33 @@ final class MameCheatListViewController: UIViewController {
         stack.spacing = 8
         let header = UIView()
         header.addSubview(stack)
+        // Bottom/trailing give way while the header has no size yet (sized in sizeRestoreHeader).
         stack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(16)
-            make.bottom.equalToSuperview().offset(-4)
-            make.leading.trailing.equalTo(header.layoutMarginsGuide)
+            make.bottom.equalToSuperview().offset(-4).priority(.high)
+            make.leading.equalTo(header.layoutMarginsGuide)
+            make.trailing.equalTo(header.layoutMarginsGuide).priority(.high)
         }
         header.preservesSuperviewLayoutMargins = true
-        let width = tableView.bounds.width > 0 ? tableView.bounds.width : view.bounds.width
-        header.frame = CGRect(x: 0, y: 0, width: width, height: 1)
-        header.setNeedsLayout()
-        header.layoutIfNeeded()
+        tableView.tableHeaderView = header
+        sizeRestoreHeader()
+    }
+
+    /// Table headers are laid out by frame: fit the height to the current table width.
+    private func sizeRestoreHeader() {
+        guard let header = tableView.tableHeaderView, tableView.bounds.width > 0 else { return }
+        let width = tableView.bounds.width
         let height = header.systemLayoutSizeFitting(CGSize(width: width, height: UIView.layoutFittingCompressedSize.height),
                                                     withHorizontalFittingPriority: .required,
                                                     verticalFittingPriority: .fittingSizeLevel).height
-        header.frame.size.height = height
+        guard header.frame.width != width || header.frame.height != height else { return }
+        header.frame = CGRect(x: 0, y: 0, width: width, height: height)
         tableView.tableHeaderView = header
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        sizeRestoreHeader()
     }
 
     private func restoreAction() {
@@ -244,11 +256,14 @@ final class MameCheatListViewController: UIViewController {
             let button = UIButton(configuration: config, primaryAction: UIAction { [weak self] _ in self?.libraryAction() })
             stack.addArrangedSubview(button)
         }
+        // The table sizes its background view later; start at its size and keep the margins
+        // breakable so a zero-size first pass does not conflict.
+        emptyView.frame = tableView.bounds
         emptyView.addSubview(stack)
         stack.snp.makeConstraints { make in
             make.center.equalToSuperview()
-            make.leading.greaterThanOrEqualToSuperview().offset(32)
-            make.trailing.lessThanOrEqualToSuperview().offset(-32)
+            make.leading.greaterThanOrEqualToSuperview().offset(32).priority(.high)
+            make.trailing.lessThanOrEqualToSuperview().offset(-32).priority(.high)
         }
         tableView.backgroundView = emptyView
     }
@@ -263,8 +278,8 @@ final class MameCheatListViewController: UIViewController {
     @objc private func libraryAction() {
         Vibration.selection.vibrate()
         MameCheatLibraryViewController.show(from: self) { [weak self] in
-            // The imported cheats load with the next launch of the game.
-            self?.showMessage(Bundle.localizedString(forKey: "mame_cheat_restart_game"))
+            // Loaded into the running game on its next frame (after the list closes).
+            self?.session.reloadFromLibrary()
         }
     }
 

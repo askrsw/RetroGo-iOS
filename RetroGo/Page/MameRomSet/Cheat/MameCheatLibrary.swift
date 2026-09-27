@@ -30,9 +30,9 @@ import RACoordinator
 
 /// Cheat XMLs for the sets of the MAME core, imported from Pugsy's cheat.7z by the user.
 ///
-/// MAME's own cheat engine runs them: before a launch the file of the running set (or of
-/// its parent) is written to `<MAME system folder>/mame/cheat/<staged name>.xml`, the only
-/// name the engine looks for. The engine does not fall back to parent sets on its own.
+/// MAME's own cheat engine runs them. The launch records which set is about to run; once
+/// the machine runs, `MameCheatSession` hands the set's XML (or its parent's: the engine
+/// does not fall back to parent sets on its own) to the core in memory.
 final class MameCheatLibrary {
     static let shared = MameCheatLibrary()
 
@@ -64,23 +64,18 @@ final class MameCheatLibrary {
         let importedAt: Date?
     }
 
-    /// The cheat file written for the game about to run.
-    struct SessionFile {
+    /// The set of the game about to run, recorded by the launch check.
+    struct Launch {
         let romKey: String
-        /// Name MAME runs the game under, and so the XML's file name.
-        let runName: String
-        /// Set whose XML was used: the game's own set or its parent.
-        let fileName: String
-        let xml: Data
+        let setName: String
     }
 
     private static let schemaVersion: Int64 = 1
-    private static let sessionFileKey = "MameCheatLibrary.sessionFilePath"
 
     private let lock = NSLock()
     private var db: Connection?
-    /// Set on the main thread by `prepareSession`, read by the game page it launches.
-    private(set) var sessionFile: SessionFile?
+    /// Set on the main thread by `prepareLaunch`, taken by the game page it launches.
+    private var pendingLaunch: Launch?
 
     private init() {
         db = Self.open(path: AppConfig.shared.mameCheatDatabasePath)
@@ -230,47 +225,23 @@ final class MameCheatLibrary {
         return nil
     }
 
-    // MARK: - Session file
+    // MARK: - Launch
 
-    /// Writes the cheat file for the game about to launch, or removes the previous one when
-    /// the set has none. `runName` is the name MAME runs it under (the staged set name, or
-    /// the archive name); `setName` is the recognized set. Main thread.
-    func prepareSession(romKey: String, runName: String, setName: String, core: EmuCoreInfoItem) {
+    /// Records the recognized set of the game about to launch. Main thread.
+    func prepareLaunch(romKey: String, setName: String) {
         dispatchPrecondition(condition: .onQueue(.main))
-        removeSessionFile()
-        guard let file = cheatFile(forSet: setName), let directory = Self.cheatDirectory(core: core) else { return }
-        let path = (directory as NSString).appendingPathComponent("\(runName).xml")
-        do {
-            try file.xml.write(to: URL(fileURLWithPath: path), options: .atomic)
-            UserDefaults.standard.set(path, forKey: Self.sessionFileKey)
-            sessionFile = SessionFile(romKey: romKey, runName: runName, fileName: file.fileName, xml: file.xml)
-            NSLog("[MameCheat] %@ uses %@.xml as %@.xml", setName, file.fileName, runName)
-        } catch {
-            NSLog("[MameCheat] Failed to write %@: %@", path, error.localizedDescription)
-        }
+        pendingLaunch = Launch(romKey: romKey, setName: setName)
     }
 
-    /// Takes the session file prepared for `romKey`; a stale one from another game is dropped.
-    func takeSessionFile(romKey: String) -> SessionFile? {
-        defer { sessionFile = nil }
-        guard let sessionFile, sessionFile.romKey == romKey else { return nil }
-        return sessionFile
+    /// Takes the launch recorded for `romKey`; a stale one from another game is dropped.
+    func takeLaunch(romKey: String) -> Launch? {
+        defer { pendingLaunch = nil }
+        guard let pendingLaunch, pendingLaunch.romKey == romKey else { return nil }
+        return pendingLaunch
     }
 
-    /// Deletes the file written for the last session, including one left by a crash.
-    func removeSessionFile() {
-        sessionFile = nil
-        guard let path = UserDefaults.standard.string(forKey: Self.sessionFileKey) else { return }
-        try? FileManager.default.removeItem(atPath: path)
-        UserDefaults.standard.removeObject(forKey: Self.sessionFileKey)
-    }
-
-    /// `-cheatpath` of the MAME core: `<system folder>/mame/cheat`.
-    static func cheatDirectory(core: EmuCoreInfoItem) -> String? {
-        guard let system = core.systemDirectoryPath() else { return nil }
-        let directory = (system as NSString).appendingPathComponent("mame/cheat")
-        guard FileManager.default.createDirectoryIfNotExists(atPath: directory) else { return nil }
-        return directory
+    func cancelLaunch() {
+        pendingLaunch = nil
     }
 
     // MARK: - Database

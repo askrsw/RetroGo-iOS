@@ -35,6 +35,9 @@ typedef const char *(*mame_cheat_desc_fn)(int);
 typedef bool (*mame_cheat_bool_fn)(int);
 typedef bool (*mame_cheat_set_enabled_fn)(int, bool);
 typedef bool (*mame_cheat_set_parameter_fn)(int, int);
+typedef void (*mame_cheat_set_xml_fn)(const char *, size_t);
+typedef bool (*mame_cheat_reload_fn)(void);
+typedef unsigned (*mame_cheat_generation_fn)(void);
 
 @interface RAMameCheatEntry ()
 @property(nonatomic, assign, readwrite) NSInteger index;
@@ -62,6 +65,9 @@ typedef bool (*mame_cheat_set_parameter_fn)(int, int);
     mame_cheat_set_enabled_fn _setEnabled;
     mame_cheat_set_parameter_fn _setParameter;
     mame_cheat_bool_fn _activate;
+    mame_cheat_set_xml_fn _setXML;
+    mame_cheat_reload_fn _reload;
+    mame_cheat_generation_fn _loadGeneration;
 }
 
 + (nullable instancetype)engineForLoadedCore {
@@ -91,10 +97,14 @@ typedef bool (*mame_cheat_set_parameter_fn)(int, int);
     engine->_setEnabled = (mame_cheat_set_enabled_fn)dlsym(handle, "retrogo_mame_cheat_set_enabled");
     engine->_setParameter = (mame_cheat_set_parameter_fn)dlsym(handle, "retrogo_mame_cheat_set_parameter");
     engine->_activate = (mame_cheat_bool_fn)dlsym(handle, "retrogo_mame_cheat_activate");
+    engine->_setXML = (mame_cheat_set_xml_fn)dlsym(handle, "retrogo_mame_cheat_set_xml");
+    engine->_reload = (mame_cheat_reload_fn)dlsym(handle, "retrogo_mame_cheat_reload");
+    engine->_loadGeneration = (mame_cheat_generation_fn)dlsym(handle, "retrogo_mame_cheat_load_generation");
     dlclose(handle);
 
     if (!engine->_count || !engine->_kind || !engine->_desc || !engine->_isEnabled || !engine->_parameterPosition
-        || !engine->_setEnabled || !engine->_setParameter || !engine->_activate) {
+        || !engine->_setEnabled || !engine->_setParameter || !engine->_activate || !engine->_setXML || !engine->_reload
+        || !engine->_loadGeneration) {
         NSLog(@"[MameCheat] Loaded core lacks the retrogo_mame_cheat_* exports: %@", path);
         return nil;
     }
@@ -131,6 +141,18 @@ typedef bool (*mame_cheat_set_parameter_fn)(int, int);
 
 - (BOOL)activateAtIndex:(NSInteger)index {
     return _activate((int)index);
+}
+
+- (void)setCheatXML:(nullable NSData *)xml {
+    _setXML(xml.length ? (const char *)xml.bytes : NULL, xml.length);
+}
+
+- (BOOL)reload {
+    return _reload();
+}
+
+- (NSUInteger)loadGeneration {
+    return _loadGeneration();
 }
 
 @end

@@ -52,7 +52,8 @@ typedef NS_ENUM(NSInteger, RAMameCheatKind) {
 @end
 
 /// Talks to the MAME core's own cheat engine through the `retrogo_mame_cheat_*` exports.
-/// Cheats are loaded by MAME from `<cheatpath>/<set>.xml` when the machine starts.
+/// Cheats come from the XML handed over with `setCheatXML:` (MAME's `<cheatpath>/<set>.xml`
+/// only when none is set) and load when the machine starts or on `reload`.
 /// Changes are queued inside the core and applied at the start of the next frame on the
 /// emulation thread, so reading back right after a change still returns the old state.
 @interface RAMameCheatEngine : NSObject
@@ -72,6 +73,16 @@ typedef NS_ENUM(NSInteger, RAMameCheatKind) {
 - (BOOL)setParameterPosition:(NSInteger)position atIndex:(NSInteger)index;
 /// Runs a one-shot entry, or applies a one-shot parameter entry at its current position.
 - (BOOL)activateAtIndex:(NSInteger)index;
+
+/// Cheat XML used from the next `reload` (or machine start) on; nil clears it. The core keeps
+/// it for the whole process, so clear it when the game ends.
+- (void)setCheatXML:(nullable NSData *)xml;
+/// Reloads the cheats of the running machine at the start of the next frame; every entry is
+/// off again and pending changes are dropped. NO when no machine runs.
+- (BOOL)reload;
+/// Increases each time the core (re)loaded its cheat list; when it passes the value read
+/// before `reload`, the new cheats are in.
+@property(nonatomic, assign, readonly) NSUInteger loadGeneration;
 
 @end
 

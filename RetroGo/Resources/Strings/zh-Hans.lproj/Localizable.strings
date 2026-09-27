@@ -717,7 +717,6 @@
 "mame_cheat_import_error_empty" = "没有找到街机金手指，请选择 Pugsy MAME 金手指合集中的 cheat.7z。";
 "mame_cheat_guide_body" = "街机金手指使用 Pugsy 的 MAME 金手指合集。请到 mamecheat.co.uk 下载，然后导入其中的 cheat.7z。";
 "mame_cheat_none_for_game" = "金手指库中没有这个游戏的金手指。";
-"mame_cheat_restart_game" = "金手指已导入，重新启动游戏后生效。";
 "mame_cheat_run" = "执行";
 "mame_cheat_off" = "关闭";
 "mame_cheat_choose_run" = "选择后执行";

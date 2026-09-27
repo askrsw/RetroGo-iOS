@@ -887,8 +887,8 @@ extension GamePageToolbarView {
         // Drop the engine's cheat list so it never leaks into the next game. The
         // Swift/SQLite library is untouched; cheats are re-pushed on next launch.
         RetroArchX.shared().clearCheats()
-        // MAME read its cheat file at start; the next launch writes its own.
-        MameCheatLibrary.shared.removeSessionFile()
+        // The MAME core keeps the handed-over cheat XML for the whole process.
+        holder?.mameCheatSession?.endSession()
 
         if AppSettings.shared.autoSaveLoadState {
             let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: holder?.romItem)

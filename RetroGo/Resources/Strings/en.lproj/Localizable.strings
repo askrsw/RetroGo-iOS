@@ -715,7 +715,6 @@
 "mame_cheat_import_error_empty" = "No arcade cheats were found. Choose the cheat.7z from Pugsy's MAME cheat collection.";
 "mame_cheat_guide_body" = "Arcade cheats use Pugsy's MAME cheat collection. Download it from mamecheat.co.uk, then import the cheat.7z inside.";
 "mame_cheat_none_for_game" = "The cheat collection has no cheats for this game.";
-"mame_cheat_restart_game" = "Cheats are imported. Restart the game to load them.";
 "mame_cheat_run" = "Run";
 "mame_cheat_off" = "Off";
 "mame_cheat_choose_run" = "Choose to Run";

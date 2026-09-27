@@ -29,18 +29,18 @@ import RACoordinator
 
 /// Cheats of one MAME game run, executed by MAME's own cheat engine.
 ///
-/// The XML was written before launch (`MameCheatLibrary.prepareSession`); MAME loads it
-/// when the machine starts, with every entry off. Like standalone MAME, cheats also stay off
-/// until the player turns them on: most write memory every frame, and doing that from the
-/// first frame breaks boot self-tests (NeoGeo stops at "WORK RAM ERROR" when a weapon cheat
-/// writes into the RAM it is testing). MAME has no "boot finished" signal, and even a loaded
-/// auto-save may have been taken during the self-test, so cheats that were on last time are
-/// never switched on by themselves: the toolbar shows a restore dot and the player restores
-/// them from the list once the game runs. A reset reboots the machine, so it turns the
-/// cheats off and offers them for restore again.
-/// Once the engine reports its entries, each index is checked against the XML description
-/// (an entry the engine rejects is skipped, which would shift the ones after it). Changes
-/// made while the game is paused are queued in the core and take effect on the next frame.
+/// The launch check records the running set (`MameCheatLibrary.prepareLaunch`). Once the
+/// machine runs, the set's XML is handed to the core in memory and reloaded; MAME then has
+/// every entry off. Like standalone MAME, cheats stay off until the player turns them on:
+/// most write memory every frame, and doing that from the first frame breaks boot self-tests
+/// (NeoGeo stops at "WORK RAM ERROR" when a weapon cheat writes into the RAM it is testing).
+/// MAME has no "boot finished" signal, and even a loaded auto-save may have been taken during
+/// the self-test, so cheats that were on last time are never switched on by themselves: the
+/// toolbar shows a restore dot and the player restores them from the list once the game runs.
+/// A reset reboots the machine, so it turns the cheats off and offers them for restore again.
+/// After each load, every index is checked against the XML description (an entry the engine
+/// rejects is skipped, which would shift the ones after it). Changes made while the game is
+/// paused are queued in the core and take effect on the next frame.
 final class MameCheatSession {
     struct Entry {
         let definition: MameCheatDefinition
@@ -56,20 +56,22 @@ final class MameCheatSession {
 
     let game: RetroRomFileItem
     let core: EmuCoreInfoItem
+    /// Recognized set of this run; nil when the launch did not go through the MAME check.
+    let setName: String?
     /// Name of the cheat file in use (the set's own or its parent's); nil without cheats.
-    let fileName: String?
-    private(set) var entries: [Entry]
+    private(set) var fileName: String?
+    private(set) var entries: [Entry] = []
+    private var xml: Data?
 
     private var engine: RAMameCheatEngine?
     private var pollTimer: Timer?
-    private var pollAttempts = 0
 
     /// Netplay is lockstep-deterministic and cannot sync cheats: while a session runs every
     /// cheat is off in memory and in the engine. SQLite keeps the user's choices, and the
     /// ones that were on come back when the session ends.
     private var netplaySuspended = false
     private var suspendedIndices: Set<Int> = []
-    /// Cheats that were on last time (or before a reset) and are waiting to be restored.
+    /// Cheats that were on last time (or before a reset/reload) and are waiting to be restored.
     private var restorableIndices: [Int] = []
 
     /// Runtime paths may run outside the purchase UI flow, so use the cached
@@ -81,14 +83,33 @@ final class MameCheatSession {
     init(game: RetroRomFileItem, core: EmuCoreInfoItem) {
         self.game = game
         self.core = core
-
-        let file = MameCheatLibrary.shared.takeSessionFile(romKey: game.key)
-        let definitions = file.flatMap { MameCheatDefinition.parse($0.xml) } ?? []
-        fileName = definitions.isEmpty ? nil : file?.fileName
+        setName = MameCheatLibrary.shared.takeLaunch(romKey: game.key)?.setName
 
         if !Self.canEnableCheats {
             Self.deleteEnabledStates(romKey: game.key)
         }
+        loadFromLibrary()
+
+        NotificationCenter.default.addObserver(self, selector: #selector(netplayStateDidChange),
+                                               name: .netplayStateChanged, object: nil)
+        if RANetplayCoordinator.shared.isNetplayEnabled {
+            suspendForNetplay()
+        }
+    }
+
+    deinit {
+        pollTimer?.invalidate()
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    /// Reads the set's XML from the library and rebuilds the entries, all off, with the saved
+    /// parameter values; the ones that were on become restorable.
+    private func loadFromLibrary() {
+        let file = setName.flatMap { MameCheatLibrary.shared.cheatFile(forSet: $0) }
+        let definitions = file.flatMap { MameCheatDefinition.parse($0.xml) } ?? []
+        fileName = definitions.isEmpty ? nil : file?.fileName
+        xml = definitions.isEmpty ? nil : file?.xml
+
         let states = Self.loadStates(romKey: game.key)
         entries = definitions.map { definition in
             var entry = Entry(definition: definition, enabled: false, position: -1, available: true)
@@ -105,17 +126,6 @@ final class MameCheatSession {
             default: return nil
             }
         }
-
-        NotificationCenter.default.addObserver(self, selector: #selector(netplayStateDidChange),
-                                               name: .netplayStateChanged, object: nil)
-        if RANetplayCoordinator.shared.isNetplayEnabled {
-            suspendForNetplay()
-        }
-    }
-
-    deinit {
-        pollTimer?.invalidate()
-        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - State
@@ -132,30 +142,79 @@ final class MameCheatSession {
 
     // MARK: - Engine
 
-    /// Cheats from last time that the list can offer to restore; 0 until the machine runs.
+    /// Cheats from last time that the list can offer to restore; 0 until the cheats are loaded.
     var restorableCount: Int {
         guard engine != nil, Self.canEnableCheats, !netplaySuspended else { return 0 }
         return restorableIndices.filter { index in entries.contains { $0.index == index && !$0.enabled && $0.available } }.count
     }
 
-    /// Call once the core started (after the auto-save state was loaded). Waits for the
-    /// machine to run, then checks the engine's entries against the XML.
+    /// Call once the core started. Waits for the machine to run, then hands this game's XML
+    /// to the core (or clears the previous game's) and loads it.
     func gameDidStart() {
-        guard hasCheatFile else { return }
+        startLoading()
+    }
+
+    /// Call when the game closes, while the core is still loaded: the core keeps the XML for
+    /// the whole process.
+    func endSession() {
         pollTimer?.invalidate()
-        pollAttempts = 0
+        pollTimer = nil
+        (engine ?? RAMameCheatEngine.forLoadedCore())?.setCheatXML(nil)
+        engine = nil
+    }
+
+    /// The library was imported or replaced while the game runs: load the set's cheats now.
+    /// Cheats that were on go off (the engine reloads every entry) and become restorable.
+    func reloadFromLibrary() {
+        let active = entries.filter { $0.enabled && ($0.kind == .onOff || $0.kind == .parameter) }
+        for entry in active {
+            _ = Self.upsertState(romKey: game.key, entry: entry)
+        }
+        suspendedIndices = []
+        loadFromLibrary()
+        engine = nil
+        NotificationCenter.default.post(name: .gameCheatStateChanged, object: nil)
+        startLoading()
+    }
+
+    private enum LoadPhase {
+        case waitingForMachine
+        /// The reload runs on the next frame, which may be long after this (the game is
+        /// paused while the cheat list is open); the load generation tells when it ran.
+        case waitingForCheats(RAMameCheatEngine, generation: UInt)
+    }
+
+    private func startLoading() {
+        pollTimer?.invalidate()
+        var phase = LoadPhase.waitingForMachine
+        var attempts = 0
         pollTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] timer in
             guard let self else { timer.invalidate(); return }
-            self.pollAttempts += 1
-            if self.attachEngine() || self.pollAttempts >= 240 {
+            attempts += 1
+            switch phase {
+            case .waitingForMachine:
+                guard let engine = RAMameCheatEngine.forLoadedCore(), engine.count >= 0 else {
+                    if attempts >= 240 { timer.invalidate(); self.pollTimer = nil }
+                    return
+                }
+                engine.setCheatXML(self.xml)
+                let generation = engine.loadGeneration
+                guard self.xml != nil, engine.reload() else {
+                    timer.invalidate()
+                    self.pollTimer = nil
+                    return
+                }
+                phase = .waitingForCheats(engine, generation: generation)
+            case .waitingForCheats(let engine, let generation):
+                guard engine.loadGeneration != generation else { return }
                 timer.invalidate()
                 self.pollTimer = nil
+                self.attach(engine)
             }
         }
     }
 
-    private func attachEngine() -> Bool {
-        guard let engine = RAMameCheatEngine.forLoadedCore(), engine.count >= 0 else { return false }
+    private func attach(_ engine: RAMameCheatEngine) {
         let running = engine.entries()
         if running.count != entries.count {
             NSLog("[MameCheat] Engine has %d entries, %@.xml has %d", running.count, fileName ?? "-", entries.count)
@@ -168,11 +227,11 @@ final class MameCheatSession {
             }
         }
         self.engine = engine
+        NSLog("[MameCheat] Loaded %d cheats of %@.xml for %@", running.count, fileName ?? "-", setName ?? "-")
         for entry in entries where entry.enabled && entry.available {
             push(entry)
         }
         NotificationCenter.default.post(name: .gameCheatStateChanged, object: nil)
-        return true
     }
 
     /// Switches on the cheats that were on last time (or before a reset).
@@ -270,6 +329,7 @@ final class MameCheatSession {
     func setEnabled(_ enabled: Bool, index: Int) -> Bool {
         guard canChange(enabling: enabled), let i = entries.firstIndex(where: { $0.index == index }),
               entries[i].kind == .onOff || (entries[i].kind == .parameter && !enabled) else { return false }
+        if enabled { discardRestorable(except: index) }
         entries[i].enabled = enabled
         return commit(i)
     }
@@ -279,6 +339,7 @@ final class MameCheatSession {
     func setPosition(_ position: Int, index: Int) -> Bool {
         guard canChange(enabling: true), let i = entries.firstIndex(where: { $0.index == index }),
               entries[i].kind == .parameter else { return false }
+        discardRestorable(except: index)
         entries[i].enabled = true
         entries[i].position = position
         return commit(i)
@@ -289,6 +350,7 @@ final class MameCheatSession {
     func activate(index: Int, position: Int? = nil) -> Bool {
         guard canChange(enabling: true), let i = entries.firstIndex(where: { $0.index == index }),
               entries[i].available else { return false }
+        discardRestorable(except: index)
         switch entries[i].kind {
         case .oneShot:
             engine?.activate(at: index)
@@ -303,6 +365,19 @@ final class MameCheatSession {
         }
         NSLog("[MameCheat] Activated %d (%@)%@", index, entries[i].definition.desc, engine == nil ? " before the engine was ready" : "")
         return engine != nil
+    }
+
+    /// The player picked cheats by hand, so last time's are not offered any more; they are
+    /// saved as off so the next launch offers what this run actually used.
+    private func discardRestorable(except index: Int) {
+        guard !restorableIndices.isEmpty else { return }
+        for restorable in restorableIndices where restorable != index {
+            if let entry = entries.first(where: { $0.index == restorable && !$0.enabled }) {
+                _ = Self.upsertState(romKey: game.key, entry: entry)
+            }
+        }
+        restorableIndices = []
+        NotificationCenter.default.post(name: .gameCheatStateChanged, object: nil)
     }
 
     private func canChange(enabling: Bool) -> Bool {

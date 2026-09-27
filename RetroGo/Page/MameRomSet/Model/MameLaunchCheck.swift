@@ -59,7 +59,7 @@ enum MameLaunchCheck {
                     checking = false
                     // Unrecognized archive: MAME runs it under its own file name.
                     let name = (archiveFileName as NSString).deletingPathExtension
-                    MameCheatLibrary.shared.prepareSession(romKey: romgameKey, runName: name, setName: name, core: core)
+                    MameCheatLibrary.shared.prepareLaunch(romKey: romgameKey, setName: name)
                     launch()
                     return
                 }
@@ -70,11 +70,7 @@ enum MameLaunchCheck {
                     DispatchQueue.main.async {
                         checking = false
                         prepareSession(audit, sources: sources, extracted: extracted, core: core)
-                        MameCheatLibrary.shared.prepareSession(
-                            romKey: romgameKey,
-                            runName: audit.gameStagedName ?? (archiveFileName as NSString).deletingPathExtension,
-                            setName: audit.machine.name,
-                            core: core)
+                        MameCheatLibrary.shared.prepareLaunch(romKey: romgameKey, setName: audit.machine.name)
                         guard audit.needsAttention else {
                             launch()
                             return
@@ -82,7 +78,7 @@ enum MameLaunchCheck {
                         present(audit, gameName: game.itemName, launch: launch) {
                             core.pendingMameSessionLinks = nil
                             core.pendingMameSessionGameName = nil
-                            MameCheatLibrary.shared.removeSessionFile()
+                            MameCheatLibrary.shared.cancelLaunch()
                         }
                     }
                 }
