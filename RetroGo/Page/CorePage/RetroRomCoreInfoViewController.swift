@@ -67,6 +67,7 @@ final class RetroRomCoreInfoViewController: UIViewController {
             navigationItem.leftBarButtonItem?.tintColor = .label
         }
 
+        configureMameHealthButton()
 #if DEBUG
         configureMameListXMLExportButton()
 #endif
@@ -204,6 +205,7 @@ extension RetroRomCoreInfoViewController {
         firmwareItems.removeAll(where: { $0 == item })
 
         coreInfoItem.deleteFirmware(firmware)
+        MameRomSetPersistence.shared.deleteArchive(owner: .bios(fileName: firmware.name))
 
         var snapshot = dataSource.snapshot()
         snapshot.deleteItems([item])
@@ -314,6 +316,22 @@ extension RetroRomCoreInfoViewController {
     }
 }
 
+// MARK: - MAME health report
+
+extension RetroRomCoreInfoViewController {
+    private func configureMameHealthButton() {
+        guard coreInfoItem.coreId == MameImportScreener.mameCoreId else { return }
+        let button = UIBarButtonItem(image: UIImage(systemName: "stethoscope"), style: .plain, target: self, action: #selector(mameHealthAction))
+        navigationItem.rightBarButtonItems = (navigationItem.rightBarButtonItems ?? []) + [button]
+    }
+
+    @objc
+    private func mameHealthAction() {
+        Vibration.selection.vibrate()
+        MameHealthReportViewController.show(from: self)
+    }
+}
+
 #if DEBUG
 // MARK: - Debug: MAME listxml export
 
@@ -322,7 +340,15 @@ extension RetroRomCoreInfoViewController {
         let ra = RetroArchX.shared()
         let gameRunning = ra.currentCoreItem != nil && !ra.dummyCoreRunning
         guard coreInfoItem.coreId == "mame", !gameRunning else { return }
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain, target: self, action: #selector(exportMameListXMLAction))
+        // Appended after the health report button; the export swaps only this last item.
+        let exportButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down"), style: .plain, target: self, action: #selector(exportMameListXMLAction))
+        navigationItem.rightBarButtonItems = (navigationItem.rightBarButtonItems ?? []) + [exportButton]
+    }
+
+    private func replaceLastRightBarButton(with item: UIBarButtonItem?) {
+        guard let item, var items = navigationItem.rightBarButtonItems, !items.isEmpty else { return }
+        items[items.count - 1] = item
+        navigationItem.rightBarButtonItems = items
     }
 
     @objc
@@ -338,11 +364,11 @@ extension RetroRomCoreInfoViewController {
         formatter.dateFormat = "yyyyMMdd-HHmmss"
         let url = documents.appendingPathComponent("mame-listxml-\(formatter.string(from: Date())).xml")
 
-        navigationItem.rightBarButtonItem?.isEnabled = false
+        let exportButton = navigationItem.rightBarButtonItems?.last
+        exportButton?.isEnabled = false
         let indicator = UIActivityIndicatorView(style: .medium)
         indicator.startAnimating()
-        let exportButton = navigationItem.rightBarButtonItem
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: indicator)
+        replaceLastRightBarButton(with: UIBarButtonItem(customView: indicator))
 
         let coreInfoItem = self.coreInfoItem
         DispatchQueue.global(qos: .userInitiated).async {
@@ -363,7 +389,7 @@ extension RetroRomCoreInfoViewController {
             DispatchQueue.main.async { [weak self = self] in
                 guard let self else { return }
                 exportButton?.isEnabled = true
-                self.navigationItem.rightBarButtonItem = exportButton
+                self.replaceLastRightBarButton(with: exportButton)
                 let size = ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
                 let message = ok
                     ? "\(url.lastPathComponent)\n\(size), \(String(format: "%.2f", seconds)) s"
@@ -415,6 +441,8 @@ extension RetroRomCoreInfoViewController: UIDocumentPickerDelegate {
         indicatorView.activeMessage(title, title: title)
 
         if let firmware = coreInfoItem.importFirmwareFile(url) {
+            // Replaced by hand: the romset index no longer describes this file.
+            MameRomSetPersistence.shared.deleteArchive(owner: .bios(fileName: firmware.name))
             var snapshot = dataSource.snapshot()
             let fileName = url.lastPathComponent
             if let item = firmwareItems.first(where: { item in
@@ -452,7 +480,11 @@ extension RetroRomCoreInfoViewController: UIDocumentPickerDelegate {
 
         let match = coreInfoItem.coreId != "mame"
         let messageFormat = Bundle.localizedString(forKey: "coreinfo_firmware_matching_file")
+        let isMame = coreInfoItem.coreId == "mame"
         coreInfoItem.scanFirmwareFolder(url, match: match, processing: { fileName in
+            if isMame {
+                MameRomSetPersistence.shared.deleteArchive(owner: .bios(fileName: fileName))
+            }
             let message = String(format: messageFormat, fileName)
             indicatorView.activeMessage(message, title: title)
         }, errorHandler: { error in

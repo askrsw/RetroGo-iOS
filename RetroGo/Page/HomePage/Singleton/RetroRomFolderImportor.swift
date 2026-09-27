@@ -67,6 +67,14 @@ final class RetroRomFolderImportor: Thread {
     private var rootKey: String?
     private var flattenRootFolder = false
     private var incompleteGroups: [RetroRomImportGroupBuilder.IncompleteGroup] = []
+    /// Recognized MAME games by group entry path / item key, and BIOS files routed to the MAME BIOS folder.
+    private var mameMatches: [String: MameArchiveMatch] = [:]
+    private var mameMatchesByKey: [String: MameArchiveMatch] = [:]
+    /// Source entry path of each pending target, for messages about replaced duplicates.
+    private var pendingEntryPaths: [String: String] = [:]
+    /// Library games to replace with a more complete copy found in this import.
+    private var mameReplacements: [MameImportScreener.Replacement] = []
+    private var mameBiosResults: [MameBiosInstallResult] = []
 
     private let startDate: Date = Date()
     private var success = false
@@ -101,13 +109,22 @@ final class RetroRomFolderImportor: Thread {
         do {
             let sourceFiles = try collectSourceFiles()
             let analysis = try groupBuilder.analyzeGroups(from: sourceFiles)
-            let groups = filterImportableGroups(analysis.groups)
+            var groups = filterImportableGroups(analysis.groups)
             incompleteGroups = filterIncompleteGroups(analysis.incompleteGroups)
             if !handleIncompleteGroups(incompleteGroups) {
                 let title = Bundle.localizedString(forKey: "info")
                 let message = Bundle.localizedString(forKey: "homepage_import_cancelled")
                 indicatorView.infoMessage(message, title: title, canDismiss: true)
                 return
+            }
+            // BIOS/device archives leave the group list here, before folder layout is decided.
+            if let screener = MameImportScreener.make(for: groups) {
+                let screened = screener.screen(groups, fileMap: analysis.map) { [unowned self] fileName in
+                    showGroupProgress(fileName)
+                }
+                groups = screened.groups
+                mameMatches = screened.gameMatches
+                mameBiosResults = screened.biosResults
             }
             let effectiveSourceFiles = sourceFilesForGroups(groups, fileMap: analysis.map)
             let absorbedDirectories = determineAbsorbedDirectories(groups: groups, sourceFiles: effectiveSourceFiles)
@@ -305,6 +322,15 @@ extension RetroRomFolderImportor {
             showGroupProgress(group.entryPath)
             do {
                 if let target = try makeGroupedFileItem(group: group, fileMap: fileMap, absorbedDirectory: absorbedDirectories[group.entryPath]) {
+                    if let choice = offerMameReplacement(at: target) {
+                        if choice == .cancel {
+                            let title = Bundle.localizedString(forKey: "info")
+                            let message = Bundle.localizedString(forKey: "homepage_import_cancelled")
+                            indicatorView.infoMessage(message, title: title, canDismiss: true)
+                            return false
+                        }
+                        continue
+                    }
                     if checkFileExists(target) {
                         procSemphore.wait()
                         if conflictPolicy == .cancel {
@@ -420,10 +446,75 @@ extension RetroRomFolderImportor {
         )
 
         let targetPath = targetFilePath(for: item, parentRelativeDirectory: parentRelativeDirectory)
+        // Absorbed folders can collapse onto the same Library path, e.g. two game folders
+        // that each hold only kabukikl.zip once their neogeo.zip went to the BIOS folder.
+        // Identical content is imported once. Of two different copies of the same MAME
+        // set, the one holding more of the set's own files wins; otherwise the first one
+        // stays. Either way the import no longer fails when the second copy hits the first.
+        if let pending = fileItems[targetPath] {
+            if pending.sha256 == item.sha256 {
+                NSLog("[Import] Duplicate of %@ at %@ imported once", targetPath, group.entryPath)
+                return nil
+            }
+            let newMatch = group.type == .single ? mameMatches[group.entryPath] : nil
+            guard let newMatch, let pendingMatch = mameMatchesByKey[pending.key],
+                  newMatch.machine.name == pendingMatch.machine.name,
+                  MameImportScreener.ownFileCount(newMatch) > MameImportScreener.ownFileCount(pendingMatch) else {
+                reportSkippedDuplicate(entryPath: group.entryPath, targetPath: targetPath)
+                return nil
+            }
+            // The new copy is more complete: drop the pending one and register this one.
+            reportSkippedDuplicate(entryPath: pendingEntryPaths[targetPath] ?? pending.rawName, targetPath: targetPath)
+            mameMatchesByKey.removeValue(forKey: pending.key)
+            removePendingFile(at: targetPath)
+        }
+
+        if group.type == .single, let match = mameMatches[group.entryPath] {
+            MameImportScreener.prepare(item, with: match)
+            mameMatchesByKey[key] = match
+        }
+
         fileItems[targetPath] = item
         fileItemPaths.append(targetPath)
+        pendingEntryPaths[targetPath] = group.entryPath
         fileCopyPlans[targetPath] = makeCopyPlan(for: item, group: group, targetPath: targetPath, sourceBaseDirectory: sourceBaseDirectory)
         return targetPath
+    }
+
+    /// When the file at `target` already exists as a less complete copy of the same MAME
+    /// set, asks whether to replace it. Nil when the regular conflict check applies.
+    /// Replace and skip both take the file out of this import.
+    private func offerMameReplacement(at target: String) -> MameImportScreener.ConflictChoice? {
+        guard let item = fileItems[target], let match = mameMatchesByKey[item.key],
+              FileManager.default.fileExists(atPath: destinationRootPath + target),
+              let existingKey = MameImportScreener.replacementTarget(parentKey: item.parent, rawName: item.rawName, match: match),
+              let source = fileCopyPlans[target]?.first?.source else {
+            return nil
+        }
+        var choice = MameImportScreener.ConflictChoice.skip
+        MameImportScreener.promptReplacement(gameName: item.itemName) { [unowned self] selected in
+            choice = selected
+            self.procSemphore.signal()
+        }
+        procSemphore.wait()
+
+        if choice == .replace {
+            mameReplacements.append(MameImportScreener.Replacement(romgameKey: existingKey,
+                                                                   source: rootUrl.appendingPathComponent(source), match: match))
+        } else if choice == .skip {
+            skipedFiles.append(target)
+        }
+        mameMatchesByKey.removeValue(forKey: item.key)
+        removePendingFile(at: target)
+        return choice
+    }
+
+    private func reportSkippedDuplicate(entryPath: String, targetPath: String) {
+        NSLog("[Import] %@ skipped: another copy imports to %@", entryPath, targetPath)
+        skipedFiles.append(entryPath)
+        let formatter = Bundle.localizedString(forKey: "homepage_import_file_skipped")
+        let message = String(format: formatter, "\(rootUrl.lastPathComponent)/\(entryPath)")
+        indicatorView.infoMessage(message, title: Bundle.localizedString(forKey: "info"), canDismiss: false)
     }
 
     private func requiredFolderDirectories(groups: [RetroRomImportGroupBuilder.Group], absorbedDirectories: [String: String]) -> Set<String> {
@@ -636,14 +727,18 @@ extension RetroRomFolderImportor {
             for folder in reusedFolders {
                 folder.updateSubItemKeys()
             }
+            MameImportScreener.recordImportedGames(files.compactMap { file in
+                mameMatchesByKey[file.key].map { (file.key, $0) }
+            })
+            let replaced = MameImportScreener.performReplacements(mameReplacements)
             if importedCount == 0 {
-                let message = Bundle.localizedString(forKey: "homepage_import_finished")
+                let message = MameImportScreener.message(MameImportScreener.message(Bundle.localizedString(forKey: "homepage_import_finished"), appending: mameBiosResults), replaced: replaced)
                 let title = Bundle.localizedString(forKey: "info")
                 indicatorView.infoMessage(message, title: title, canDismiss: true)
             } else {
                 success = true
                 let format = Bundle.localizedString(forKey: "homepage_import_completed")
-                let message = NSString.localizedStringWithFormat(format as NSString, importedCount) as String
+                let message = MameImportScreener.message(MameImportScreener.message(NSString.localizedStringWithFormat(format as NSString, importedCount) as String, appending: mameBiosResults), replaced: replaced)
                 let title = Bundle.localizedString(forKey: "homepage_import_success")
                 indicatorView.successMessage(message, title: title, canDismiss: true)
             }

@@ -292,6 +292,13 @@ extension RetroArchX {
     }
 
     static func playGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
+        // MAME sets are checked for missing files first; other cores launch directly.
+        MameLaunchCheck.run(game: romItem, core: core) {
+            presentGame(romItem: romItem, core: core)
+        }
+    }
+
+    private static func presentGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
         guard let currentViewController = UIViewController.currentActive() else {
             return
         }

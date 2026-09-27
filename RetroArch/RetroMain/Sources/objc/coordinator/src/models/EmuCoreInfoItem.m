@@ -311,14 +311,20 @@ NS_ASSUME_NONNULL_BEGIN
         }
     }
 
-    if(array.count == 0) {
+    // Taken once: a later launch of another game must not inherit these links.
+    NSDictionary<NSString *, NSString *> *links = self.pendingMameSessionLinks;
+    NSString *gameName = self.pendingMameSessionGameName;
+    self.pendingMameSessionLinks = nil;
+    self.pendingMameSessionGameName = nil;
+
+    if(array.count == 0 && links.count == 0 && gameName.length == 0) {
         return romPath;
     }
 
     NSURL *romUrl = [NSURL fileURLWithPath:romPath];
 
     NSError *error = nil;
-    NSURL *result = [self prepareMameStagingDirectoryForGame:romUrl biosFiles:[array copy] error:&error];
+    NSURL *result = [self prepareMameStagingDirectoryForGame:romUrl stagedName:gameName biosFiles:[array copy] links:links error:&error];
 
     if(error == nil) {
         return result.path;
@@ -593,7 +599,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
     }
 }
 
-- (NSURL *)prepareMameStagingDirectoryForGame:(NSURL *)gameURL biosFiles:(NSArray<NSURL *> *)biosFiles error:(NSError **)error {
+- (NSURL *)prepareMameStagingDirectoryForGame:(NSURL *)gameURL stagedName:(nullable NSString *)stagedName biosFiles:(NSArray<NSURL *> *)biosFiles links:(nullable NSDictionary<NSString *, NSString *> *)links error:(NSError **)error {
     NSFileManager *manager = [NSFileManager defaultManager];
 
     // 1. 在临时目录创建一个专门的文件夹，例如 tmp/MameSession
@@ -607,7 +613,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
     [manager createDirectoryAtURL:stagingDir withIntermediateDirectories:YES attributes:nil error:error];
 
     // 3. 将目标游戏 ROM 硬链接到该目录
-    NSURL *stagedGameURL = [stagingDir URLByAppendingPathComponent:gameURL.lastPathComponent];
+    NSURL *stagedGameURL = [stagingDir URLByAppendingPathComponent:stagedName.length > 0 ? stagedName : gameURL.lastPathComponent];
     // 注意：linkItemAtURL 创建的是硬链接
     if (![manager linkItemAtURL:gameURL toURL:stagedGameURL error:error]) {
         NSLog(@"Failed to link game ROM: %@", *error);
@@ -626,6 +632,23 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
         // 忽略错误（比如文件已存在），继续链接下一个
         [manager linkItemAtURL:biosFile toURL:destination error:nil];
     }
+
+    // 5. Archives found elsewhere in the Library (e.g. the parent set), under the set name MAME looks for.
+    //    A BIOS file or the game itself already staged under that name wins.
+    [links enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSString *sourcePath, BOOL *stop) {
+        NSURL *destination = [stagingDir URLByAppendingPathComponent:name];
+        if ([manager fileExistsAtPath:destination.path]) {
+            return;
+        }
+        // Loose files go into a folder named after their set.
+        [manager createDirectoryAtURL:destination.URLByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:nil];
+        NSError *linkError = nil;
+        if ([manager linkItemAtURL:[NSURL fileURLWithPath:sourcePath] toURL:destination error:&linkError]) {
+            NSLog(@"[MameSession] Linked %@ from %@", name, sourcePath);
+        } else {
+            NSLog(@"[MameSession] Failed to link %@: %@", name, linkError.localizedDescription);
+        }
+    }];
 
     NSLog(@"MAME Staging complete at: %@", stagingDir.path);
 

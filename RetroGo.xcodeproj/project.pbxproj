@@ -7,6 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AB19A0302FE9000000A1B2C3 /* MameSetRepairer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0312FE9000000A1B2C3 /* MameSetRepairer.swift */; };
+		AB19A02A2FE9000000A1B2C3 /* MameHealthReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A02B2FE9000000A1B2C3 /* MameHealthReport.swift */; };
+		AB19A02C2FE9000000A1B2C3 /* MameHealthReportViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A02D2FE9000000A1B2C3 /* MameHealthReportViewController.swift */; };
+		AB19A0282FE9000000A1B2C3 /* MameLibraryScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0292FE9000000A1B2C3 /* MameLibraryScanner.swift */; };
+		AB19A0222FE9000000A1B2C3 /* MameBiosFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0232FE9000000A1B2C3 /* MameBiosFolder.swift */; };
+		AB19A0242FE9000000A1B2C3 /* MameSetAuditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0252FE9000000A1B2C3 /* MameSetAuditor.swift */; };
+		AB19A0262FE9000000A1B2C3 /* MameLaunchCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0272FE9000000A1B2C3 /* MameLaunchCheck.swift */; };
+		AB19A0182FE9000000A1B2C3 /* MameRomSetPersistence+CatalogQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0192FE9000000A1B2C3 /* MameRomSetPersistence+CatalogQuery.swift */; };
+		AB19A01A2FE9000000A1B2C3 /* MameRomSetPersistence+Index.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A01B2FE9000000A1B2C3 /* MameRomSetPersistence+Index.swift */; };
+		AB19A01C2FE9000000A1B2C3 /* MameArchiveIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A01D2FE9000000A1B2C3 /* MameArchiveIdentifier.swift */; };
+		AB19A01E2FE9000000A1B2C3 /* MameBiosInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A01F2FE9000000A1B2C3 /* MameBiosInstaller.swift */; };
+		AB19A0202FE9000000A1B2C3 /* MameImportScreener.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0212FE9000000A1B2C3 /* MameImportScreener.swift */; };
+		AB19A0102FE9000000A1B2C3 /* MameRomSetPersistence+Catalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0112FE9000000A1B2C3 /* MameRomSetPersistence+Catalog.swift */; };
+		AB19A0122FE9000000A1B2C3 /* MameCatalogMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0132FE9000000A1B2C3 /* MameCatalogMachine.swift */; };
+		AB19A0142FE9000000A1B2C3 /* MameListXMLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0152FE9000000A1B2C3 /* MameListXMLParser.swift */; };
+		AB19A0162FE9000000A1B2C3 /* MameCatalogBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0172FE9000000A1B2C3 /* MameCatalogBuilder.swift */; };
+		AB19A0012FE9000000A1B2C3 /* MameRomSetPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB19A0022FE9000000A1B2C3 /* MameRomSetPersistence.swift */; };
 		AB0A1DD52FB71C7800503077 /* GamePauseCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */; };
 		AB0AF4BD2FD9B74400257A18 /* ODRResourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */; };
 		AB0AF4BF2FD9BA1700257A18 /* cheat.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = AB0AF4BE2FD9BA1700257A18 /* cheat.sqlite */; settings = {ASSET_TAGS = ("cheat-db", ); }; };
@@ -222,6 +239,23 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AB19A0312FE9000000A1B2C3 /* MameSetRepairer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameSetRepairer.swift; sourceTree = "<group>"; };
+		AB19A02B2FE9000000A1B2C3 /* MameHealthReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameHealthReport.swift; sourceTree = "<group>"; };
+		AB19A02D2FE9000000A1B2C3 /* MameHealthReportViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameHealthReportViewController.swift; sourceTree = "<group>"; };
+		AB19A0292FE9000000A1B2C3 /* MameLibraryScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameLibraryScanner.swift; sourceTree = "<group>"; };
+		AB19A0232FE9000000A1B2C3 /* MameBiosFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameBiosFolder.swift; sourceTree = "<group>"; };
+		AB19A0252FE9000000A1B2C3 /* MameSetAuditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameSetAuditor.swift; sourceTree = "<group>"; };
+		AB19A0272FE9000000A1B2C3 /* MameLaunchCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameLaunchCheck.swift; sourceTree = "<group>"; };
+		AB19A0192FE9000000A1B2C3 /* MameRomSetPersistence+CatalogQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MameRomSetPersistence+CatalogQuery.swift"; sourceTree = "<group>"; };
+		AB19A01B2FE9000000A1B2C3 /* MameRomSetPersistence+Index.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MameRomSetPersistence+Index.swift"; sourceTree = "<group>"; };
+		AB19A01D2FE9000000A1B2C3 /* MameArchiveIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameArchiveIdentifier.swift; sourceTree = "<group>"; };
+		AB19A01F2FE9000000A1B2C3 /* MameBiosInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameBiosInstaller.swift; sourceTree = "<group>"; };
+		AB19A0212FE9000000A1B2C3 /* MameImportScreener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameImportScreener.swift; sourceTree = "<group>"; };
+		AB19A0112FE9000000A1B2C3 /* MameRomSetPersistence+Catalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MameRomSetPersistence+Catalog.swift"; sourceTree = "<group>"; };
+		AB19A0132FE9000000A1B2C3 /* MameCatalogMachine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameCatalogMachine.swift; sourceTree = "<group>"; };
+		AB19A0152FE9000000A1B2C3 /* MameListXMLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameListXMLParser.swift; sourceTree = "<group>"; };
+		AB19A0172FE9000000A1B2C3 /* MameCatalogBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameCatalogBuilder.swift; sourceTree = "<group>"; };
+		AB19A0022FE9000000A1B2C3 /* MameRomSetPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameRomSetPersistence.swift; sourceTree = "<group>"; };
 		AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePauseCoordinator.swift; sourceTree = "<group>"; };
 		AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ODRResourceViewController.swift; sourceTree = "<group>"; };
 		AB0AF4BE2FD9BA1700257A18 /* cheat.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = cheat.sqlite; sourceTree = "<group>"; };
@@ -415,6 +449,54 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AB19A02E2FE9000000A1B2C3 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				AB19A02D2FE9000000A1B2C3 /* MameHealthReportViewController.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		AB19A0052FE9000000A1B2C3 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				AB19A0132FE9000000A1B2C3 /* MameCatalogMachine.swift */,
+				AB19A0152FE9000000A1B2C3 /* MameListXMLParser.swift */,
+				AB19A0172FE9000000A1B2C3 /* MameCatalogBuilder.swift */,
+				AB19A01D2FE9000000A1B2C3 /* MameArchiveIdentifier.swift */,
+				AB19A01F2FE9000000A1B2C3 /* MameBiosInstaller.swift */,
+				AB19A0212FE9000000A1B2C3 /* MameImportScreener.swift */,
+				AB19A0232FE9000000A1B2C3 /* MameBiosFolder.swift */,
+				AB19A0252FE9000000A1B2C3 /* MameSetAuditor.swift */,
+				AB19A0272FE9000000A1B2C3 /* MameLaunchCheck.swift */,
+				AB19A0292FE9000000A1B2C3 /* MameLibraryScanner.swift */,
+				AB19A02B2FE9000000A1B2C3 /* MameHealthReport.swift */,
+				AB19A0312FE9000000A1B2C3 /* MameSetRepairer.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		AB19A0032FE9000000A1B2C3 /* MameRomSet */ = {
+			isa = PBXGroup;
+			children = (
+				AB19A0052FE9000000A1B2C3 /* Model */,
+				AB19A0042FE9000000A1B2C3 /* Store */,
+				AB19A02E2FE9000000A1B2C3 /* View */,
+			);
+			path = MameRomSet;
+			sourceTree = "<group>";
+		};
+		AB19A0042FE9000000A1B2C3 /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				AB19A0022FE9000000A1B2C3 /* MameRomSetPersistence.swift */,
+				AB19A0112FE9000000A1B2C3 /* MameRomSetPersistence+Catalog.swift */,
+				AB19A0192FE9000000A1B2C3 /* MameRomSetPersistence+CatalogQuery.swift */,
+				AB19A01B2FE9000000A1B2C3 /* MameRomSetPersistence+Index.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
 		AB495F812F9B82CF0092BCDB /* Component */ = {
 			isa = PBXGroup;
 			children = (
@@ -472,6 +554,7 @@
 				AB8016262F9329A60031643C /* ConfigPage */,
 				ABDAD27F2F3BB543004100A9 /* CorePage */,
 				AB7C0A012FD000000031AAAA /* Common */,
+				AB19A0032FE9000000A1B2C3 /* MameRomSet */,
 			);
 			path = Page;
 			sourceTree = "<group>";
@@ -1111,6 +1194,23 @@
 				AB462F122F9286A7006ABEDD /* RetroRomPersistence+v3.swift in Sources */,
 				ABDAD2522F3BA9D7004100A9 /* RetroRomGameStateItem.swift in Sources */,
 				AB7C3A702F80049C004C872A /* RetroRomPersistence.swift in Sources */,
+				AB19A0012FE9000000A1B2C3 /* MameRomSetPersistence.swift in Sources */,
+				AB19A0102FE9000000A1B2C3 /* MameRomSetPersistence+Catalog.swift in Sources */,
+				AB19A0122FE9000000A1B2C3 /* MameCatalogMachine.swift in Sources */,
+				AB19A0142FE9000000A1B2C3 /* MameListXMLParser.swift in Sources */,
+				AB19A0162FE9000000A1B2C3 /* MameCatalogBuilder.swift in Sources */,
+				AB19A0182FE9000000A1B2C3 /* MameRomSetPersistence+CatalogQuery.swift in Sources */,
+				AB19A01A2FE9000000A1B2C3 /* MameRomSetPersistence+Index.swift in Sources */,
+				AB19A01C2FE9000000A1B2C3 /* MameArchiveIdentifier.swift in Sources */,
+				AB19A01E2FE9000000A1B2C3 /* MameBiosInstaller.swift in Sources */,
+				AB19A0202FE9000000A1B2C3 /* MameImportScreener.swift in Sources */,
+				AB19A0222FE9000000A1B2C3 /* MameBiosFolder.swift in Sources */,
+				AB19A0242FE9000000A1B2C3 /* MameSetAuditor.swift in Sources */,
+				AB19A0262FE9000000A1B2C3 /* MameLaunchCheck.swift in Sources */,
+				AB19A0282FE9000000A1B2C3 /* MameLibraryScanner.swift in Sources */,
+				AB19A02A2FE9000000A1B2C3 /* MameHealthReport.swift in Sources */,
+				AB19A0302FE9000000A1B2C3 /* MameSetRepairer.swift in Sources */,
+				AB19A02C2FE9000000A1B2C3 /* MameHealthReportViewController.swift in Sources */,
 				AB495F802F9B6D0F0092BCDB /* GameConfigEntry.swift in Sources */,
 				AB8905E22FD34D3A00CA9DEC /* GameCheatEditViewController.swift in Sources */,
 				ABDAD2AD2F3BBBF8004100A9 /* GamePageInGameInfoView.swift in Sources */,

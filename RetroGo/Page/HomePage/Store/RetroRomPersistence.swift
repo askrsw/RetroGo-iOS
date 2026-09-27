@@ -506,6 +506,34 @@ final class RetroRomPersistence {
         }
     }
 
+    /// Points a single-file game at a replaced physical file (e.g. a rebuilt MAME set).
+    /// Only the file-level facts change; the game's own sha256/crc32 stay, because save
+    /// states, thumbnails and cover lookups are keyed by them.
+    func replaceSingleFile(key: String, oldRawName: String, newRawName: String,
+                           sha256: String, crc32: String?, fileSize: Int) -> Bool {
+        do {
+            let db = Self.sqlite
+            try db.transaction {
+                let file = Self.romGameFileTable.filter(Self.key == key && Self.rawName == oldRawName)
+                let changed = try db.run(file.update(
+                    Self.rawName <- newRawName,
+                    Self.sha256 <- sha256,
+                    Self.crc32 <- crc32,
+                    Self.fileSize <- fileSize
+                ))
+                guard changed == 1 else {
+                    throw NSError(domain: "RetroRomError", code: 10, userInfo: [NSLocalizedDescriptionKey: "No file row for \(key)/\(oldRawName)"])
+                }
+                try db.run(Self.romGameTable.filter(Self.key == key).update(Self.entryFileKey <- newRawName))
+            }
+            return true
+        } catch {
+            // No fatalError here: the caller rolls the file move back.
+            print("Failed to replace file of \(key): \(error)")
+            return false
+        }
+    }
+
     func updateShowName(_ name: String, key: String, isFolder: Bool) -> Bool {
         do {
             let db = Self.sqlite

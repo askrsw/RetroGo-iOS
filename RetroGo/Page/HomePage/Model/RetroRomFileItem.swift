@@ -98,7 +98,7 @@ final class RetroRomFileSubItem {
 }
 
 final class RetroRomFileItem: RetroRomBaseItem {
-    let fileSize: Int
+    private(set) var fileSize: Int
     let sha256: String?
     private(set) var crc32: String?
     private(set) var lastPlayAt: Date?
@@ -117,6 +117,16 @@ final class RetroRomFileItem: RetroRomBaseItem {
         self.fileGroupType = fileGroupType
         self.subItems = subItems
         super.init(key: key, rawName: rawName, showName: showName, parent: parent, createAt: createAt, updateAt: updateAt, preferCore: preferCore, preferIcon: preferIcon)
+    }
+
+    /// Mirrors `RetroRomPersistence.replaceSingleFile` in memory, so views holding this
+    /// item launch the new file right away. The game-level sha256/crc32 stay unchanged.
+    func applyReplacedSingleFile(rawName newName: String, sha256: String, crc32: String?, fileSize newSize: Int) {
+        guard fileGroupType == .single else { return }
+        fileSize = newSize
+        subItems = [RetroRomFileSubItem(key: key, rawName: newName, fileRole: .entry, sha256: sha256,
+                                        crc32: crc32, fileSize: newSize, sortIndex: 0)]
+        updateRawNameAfterFileReplacement(newName)
     }
 
     override var lastPlayDate: Date? {

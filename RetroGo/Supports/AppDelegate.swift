@@ -46,6 +46,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         let _ = AppStorePurchaseManager.shared
         let _ = RetroArchX.shared()
+        let _ = MameRomSetPersistence.shared
         let _ = OnDemandResourceLoader.shared
 
         configNavigationBarAppearance()

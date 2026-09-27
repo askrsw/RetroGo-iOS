@@ -545,7 +545,19 @@ private extension RetroRomFolderHostViewController {
         let arrangeSection = UIMenu(options: .displayInline,
                                     children: [sortSubmenu])
 
-        return UIMenu(title: "", children: [createSection, arrangeSection])
+        var sections = [createSection, arrangeSection]
+        // Only once the Library has recognized arcade games.
+        if MameRomSetPersistence.shared.hasIndexedGames() {
+            let healthAction = UIAction(title: Bundle.localizedString(forKey: "mame_health_title"),
+                                        image: UIImage(systemName: "stethoscope")) { [weak self] _ in
+                guard let self else { return }
+                Vibration.selection.vibrate()
+                MameHealthReportViewController.show(from: self)
+            }
+            sections.append(UIMenu(options: .displayInline, children: [healthAction]))
+        }
+
+        return UIMenu(title: "", children: sections)
     }
 }
 
