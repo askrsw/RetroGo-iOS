@@ -1,7 +1,7 @@
 {
     "desc": {
-        "en": "A reduced MAME 0.278 core for Capcom CPS1/CPS2, SNK Neo Geo and IGS PGM arcade games. Other arcade systems are not included. Use ROM sets compatible with MAME 0.278; some games also require a parent set, BIOS or key files. Compatibility and save state support vary by game.",
-        "zh": "基于 MAME 0.278 的精简街机核心，包含 Capcom CPS1/CPS2、SNK Neo Geo 和 IGS PGM，不包含其他街机系统。请使用与 MAME 0.278 兼容的 ROM；部分游戏还需要主 ROM、BIOS 或密钥文件。具体兼容性和即时存档支持因游戏而异。"
+        "en": "An arcade core based on MAME 0.289, covering more than 4,000 arcade games (over 11,000 ROM sets), including Capcom CPS1/CPS2, SNK Neo Geo, IGS PGM/PGM2, Cave (including CV1000), Sega NAOMI/Atomiswave, Konami, Taito, Toaplan and more. Gambling machines, PC-based arcade hardware, home consoles and computers are not included. Use ROM sets for MAME 0.289; some games also need a parent set, BIOS, key or EEPROM files. Compatibility, speed and save state support vary by game.",
+        "zh": "基于 MAME 0.289 的街机核心，收录 4000 多款街机游戏（1 万 1 千多个 ROM set），包括 Capcom CPS1/CPS2、SNK Neo Geo、IGS PGM/PGM2、Cave（含 CV1000）、Sega NAOMI/Atomiswave，以及 Konami、Taito、东亚企划等厂商的机板。不包含博彩机、基于 PC 的街机，以及家用主机和电脑。请使用与 MAME 0.289 对应的 ROM；部分游戏还需要主 ROM、BIOS、密钥或 EEPROM 文件。兼容性、运行速度和即时存档支持因游戏而异。"
     },
     "licenses": [
         {

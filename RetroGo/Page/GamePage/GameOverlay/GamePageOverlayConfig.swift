@@ -32,6 +32,9 @@ struct GamePageOverlayConfig: Codable, Equatable {
     let landscapeRefSize: GamePageOverlaySize
     let portraitPolarAnchor: GamePageOverlayInsets
     let landscapePolarAnchor: GamePageOverlayInsets
+    /// Polar anchors for the arcade four-button layout; fall back to the regular anchors.
+    let fourButtonPortraitPolarAnchor: GamePageOverlayInsets?
+    let fourButtonLandscapePolarAnchor: GamePageOverlayInsets?
     let elements: [GamePageOverlayElement]
 }
 

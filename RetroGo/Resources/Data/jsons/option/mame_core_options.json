@@ -1096,7 +1096,7 @@
   "schemaVersion": 1,
   "source": {
     "coreName": "MAME",
-    "coreVersion": "0.278-pgm",
+    "coreVersion": "0.289-arcade",
     "generator": "RetroGo runtime export (core_option_manager)",
     "languages": [
       "en",

@@ -53,7 +53,7 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     private var n64CButton: GameOverlayN64CButton?
     private var ndsLayoutButton: GameOverlayNDSLayoutButton?
     private var arcadeLayoutButton: GameOverlayArcadeLayoutButton?
-    private var usesFourButtonLayout = false
+    private(set) var usesFourButtonLayout = false
     private var emuFrameActionToken: String?
 
     private struct CollapseVisualState {

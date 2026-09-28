@@ -49,7 +49,7 @@ enum MameListXMLParserError: LocalizedError {
 /// take over 10 s on an iPhone 15 Pro Max. Here element names are compared as C
 /// strings and Swift strings are created only for the attributes actually read.
 final class MameListXMLParser {
-    /// `build` attribute of the root `<mame>` element, e.g. "0.278 (d6423328d57)".
+    /// `build` attribute of the root `<mame>` element, e.g. "0.289 (9069f39340f)".
     /// Available once the first machine has been delivered.
     private(set) var build: String?
 

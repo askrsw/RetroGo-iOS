@@ -105,7 +105,7 @@ final class OnDemandResourceLoader: NSObject {
             id: "mamecheat-i18n", odrTag: "mame-cheat-i18n",
             bundleResource: "mame_cheat_i18n", bundleExtension: "sqlite",
             installedFileName: "mame_cheat_i18n.sqlite",
-            approxByteSize: 1_421_312, bundledVersion: 2,
+            approxByteSize: 1_437_696, bundledVersion: 3,
             isRequired: true,   // required: tiny; translations of the user-imported arcade cheats
             titleKey: "odr_mame_cheat_i18n_title", descKey: "odr_mame_cheat_i18n_desc"),
     ]
