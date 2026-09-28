@@ -182,9 +182,10 @@ final class MameCheatListViewController: UIViewController {
         session.restoreLastCheats()
     }
 
-    /// A run of text entries titles the section that follows it (its first line) and adds
-    /// the other lines as notes; blank entries only start a new section. Trailing text
-    /// (e.g. "no cheats because the game did not work") becomes notes of the last section.
+    /// A run of text entries starts a new section: a single line is its title, several lines
+    /// are one sentence split over entries, shown as a note (joined with spaces, the key its
+    /// translation is stored under). Blank entries only start a new section. Trailing text
+    /// (e.g. "no cheats because the game did not work") becomes a note of the last section.
     private static func makeSections(_ entries: [MameCheatSession.Entry]) -> [Section] {
         var sections: [Section] = []
         var current = Section()
@@ -205,19 +206,20 @@ final class MameCheatListViewController: UIViewController {
             }
             if !pendingText.isEmpty {
                 flush()
-                current.title = pendingText.first
-                current.notes = Array(pendingText.dropFirst())
+                if pendingText.count == 1 {
+                    current.title = pendingText[0]
+                } else {
+                    current.notes = [pendingText.joined(separator: " ")]
+                }
                 pendingText = []
             }
             current.rows.append(entry.index)
         }
         if !pendingText.isEmpty {
-            if current.rows.isEmpty && current.notes.isEmpty {
-                current.notes = pendingText
-            } else {
+            if !current.rows.isEmpty || !current.notes.isEmpty {
                 flush()
-                current.notes = pendingText
             }
+            current.notes = [pendingText.joined(separator: " ")]
         }
         flush()
         return sections
@@ -315,7 +317,8 @@ final class MameCheatListViewController: UIViewController {
         guard allowEnabling() else { return }
         Vibration.selection.vibrate()
         if session.activate(index: entry.index) {
-            AppToastManager.shared.toast(String(format: Bundle.localizedString(forKey: "mame_cheat_activated"), entry.definition.desc),
+            AppToastManager.shared.toast(String(format: Bundle.localizedString(forKey: "mame_cheat_activated"),
+                                                MameCheatTexts.shared.localized(entry.definition.desc)),
                                          context: .game, level: .info)
         }
     }
@@ -350,9 +353,13 @@ extension MameCheatListViewController: UITableViewDataSource, UITableViewDelegat
         let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
         guard let entry = entry(at: indexPath) else { return cell }
         var content = UIListContentConfiguration.subtitleCell()
-        content.text = entry.definition.desc
-        content.secondaryText = entry.definition.comment
+        content.text = MameCheatTexts.shared.localized(entry.definition.desc)
+        content.secondaryText = entry.definition.comment.map { MameCheatTexts.shared.localized($0) }
         content.secondaryTextProperties.color = .secondaryLabel
+        // Room between the name and its hint, and around both, so long hints do not crowd the row.
+        content.textToSecondaryTextVerticalPadding = 6
+        content.directionalLayoutMargins.top = 12
+        content.directionalLayoutMargins.bottom = 12
         content.textProperties.color = entry.available ? .label : .tertiaryLabel
         cell.selectionStyle = .none
 
@@ -378,11 +385,11 @@ extension MameCheatListViewController: UITableViewDataSource, UITableViewDelegat
             cell.accessoryView = button
         case .parameter, .oneShotParameter:
             var value = UIListContentConfiguration.valueCell()
-            value.text = entry.definition.desc
+            value.text = MameCheatTexts.shared.localized(entry.definition.desc)
             value.textProperties.color = content.textProperties.color
             if entry.kind == .parameter {
                 value.secondaryText = entry.enabled && entry.position >= 0
-                    ? entry.definition.parameter?.title(at: entry.position)
+                    ? entry.definition.parameter.map { MameCheatTexts.shared.localized($0.title(at: entry.position)) }
                     : Bundle.localizedString(forKey: "mame_cheat_off")
             } else {
                 value.secondaryText = Bundle.localizedString(forKey: "mame_cheat_choose_run")
@@ -400,12 +407,12 @@ extension MameCheatListViewController: UITableViewDataSource, UITableViewDelegat
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard let title = sections[section].title else { return nil }
         let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
-        header?.text = title
+        header?.text = MameCheatTexts.shared.localized(title)
         return header
     }
 
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        var lines = sections[section].notes
+        var lines = sections[section].notes.map { MameCheatTexts.shared.localized($0) }
         if section == sections.count - 1 {
             lines.append(String(format: Bundle.localizedString(forKey: "mame_cheat_credit"), MameCheatLibrary.sourceName,
                                 MameCheatLibrary.sourceURL.host ?? ""))
@@ -451,7 +458,7 @@ private final class MameCheatParameterViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = entry.definition.desc
+        navigationItem.title = MameCheatTexts.shared.localized(entry.definition.desc)
         tableView.tintColor = .mainColor
     }
 
@@ -470,7 +477,9 @@ private final class MameCheatParameterViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "value") ?? UITableViewCell(style: .default, reuseIdentifier: "value")
         var content = UIListContentConfiguration.cell()
         let position = offersOff ? indexPath.row - 1 : indexPath.row
-        content.text = position < 0 ? Bundle.localizedString(forKey: "mame_cheat_off") : parameter.title(at: position)
+        content.text = position < 0
+            ? Bundle.localizedString(forKey: "mame_cheat_off")
+            : MameCheatTexts.shared.localized(parameter.title(at: position))
         cell.contentConfiguration = content
         let isOff = entry.kind == .parameter && !entry.enabled
         cell.accessoryType = (position < 0 ? isOff : (!isOff && selected == position)) ? .checkmark : .none

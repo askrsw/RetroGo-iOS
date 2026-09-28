@@ -726,3 +726,9 @@
 "mame_cheat_last_used" = "上次使用";
 "mame_cheat_restore_last" = "恢复上次的金手指（%d 条）";
 "mame_cheat_restore_note" = "街机每次开机时金手指都会关闭。请等 MAME 完成开机自检、游戏运行起来后再恢复。自检期间开启金手指可能导致游戏无法启动。";
+"odr_mame_cheat_i18n_title" = "街机金手指译文";
+"odr_mame_cheat_i18n_desc" = "导入的街机金手指的中文名称与说明。";
+"mame_health_name_section" = "游戏库名称";
+"mame_health_name_english" = "英文名（MAME）";
+"mame_health_name_chinese" = "中文名";
+"mame_health_name_footer" = "选择这个游戏在游戏库中显示的名称。";

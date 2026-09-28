@@ -123,7 +123,8 @@ final class MameImportScreener {
 
     /// Applies the recognized set to an item that has not been stored yet.
     static func prepare(_ item: RetroRomFileItem, with match: MameArchiveMatch) {
-        item.prepareForImport(showName: match.machine.description ?? item.showName, preferCore: mameCoreId)
+        item.prepareForImport(showName: MameGameNameLocalizer.shared.displayName(for: match.machine) ?? item.showName,
+                              preferCore: mameCoreId)
     }
 
     /// How many of the set's own required files the archive holds; compares two copies

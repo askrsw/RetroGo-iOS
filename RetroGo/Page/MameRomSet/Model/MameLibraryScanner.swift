@@ -110,7 +110,7 @@ enum MameLibraryScanner {
         let mameCore = RetroArchX.shared().allCores.first { $0.coreId == MameImportScreener.mameCoreId }
         for game in games {
             guard let item = RetroRomFileManager.shared.fileItem(key: game.key) else { continue }
-            if item.showName == nil, let name = game.match.machine.description {
+            if item.showName == nil, let name = MameGameNameLocalizer.shared.displayName(for: game.match.machine) {
                 _ = item.updateShowName(name)
             }
             if item.inheritedPreferCore == nil, let mameCore {

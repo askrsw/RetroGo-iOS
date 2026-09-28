@@ -128,6 +128,9 @@ final class MameHealthReportViewController: UIViewController {
         detail.onRepaired = { [weak self] in
             self?.reload()
         }
+        detail.onRenamed = { [weak self] in
+            self?.reload()
+        }
         navigationController?.pushViewController(detail, animated: true)
     }
 
@@ -383,14 +386,19 @@ extension MameHealthReportViewController: UITableViewDataSource, UITableViewDele
 // MARK: - Detail
 
 /// What one game needs and how its session will be assembled, with a repair action
-/// when the archive can be rebuilt as a complete `<set>.zip`.
+/// when the archive can be rebuilt as a complete `<set>.zip`. The first section offers the
+/// set's English (MAME) and Chinese names as the Library name, since the file name tells
+/// little and may be in either language.
 final class MameHealthDetailViewController: UITableViewController {
     private let game: MameHealthReport.Game
     private var sections: [(title: String, rows: [(String, String?)])] = []
+    /// English/Chinese names of the set; empty when neither is known.
+    private var nameOptions: [(label: String, name: String)] = []
     /// Non-nil once computed and the archive would change; adds the repair row.
     private var repairPlan: MameSetRepairer.Plan?
 
     var onRepaired: (() -> Void)?
+    var onRenamed: (() -> Void)?
 
     init(game: MameHealthReport.Game) {
         self.game = game
@@ -408,6 +416,7 @@ final class MameHealthDetailViewController: UITableViewController {
         tableView.register(RGSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: RGSectionHeaderView.className)
         tableView.register(RGSectionFooterView.self, forHeaderFooterViewReuseIdentifier: RGSectionFooterView.className)
         sections = makeSections()
+        nameOptions = makeNameOptions()
 
         let key = game.key
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -426,8 +435,44 @@ final class MameHealthDetailViewController: UITableViewController {
         }
     }
 
+    // Sections: [names] + `sections` + [repair]
+    private var nameSection: Int? {
+        nameOptions.isEmpty ? nil : 0
+    }
+
+    private var sectionOffset: Int {
+        nameSection == nil ? 0 : 1
+    }
+
     private var repairSection: Int? {
-        repairPlan == nil ? nil : sections.count
+        repairPlan == nil ? nil : sectionOffset + sections.count
+    }
+
+    private func makeNameOptions() -> [(label: String, name: String)] {
+        let machine = game.audit.machine
+        var options: [(label: String, name: String)] = []
+        if let english = machine.description {
+            options.append((Bundle.localizedString(forKey: "mame_health_name_english"), english))
+        }
+        if let chinese = MameGameNameLocalizer.shared.chineseName(for: machine), chinese != machine.description {
+            options.append((Bundle.localizedString(forKey: "mame_health_name_chinese"), chinese))
+        }
+        return options
+    }
+
+    private var currentName: String {
+        RetroRomFileManager.shared.fileItem(key: game.key)?.itemName ?? game.name
+    }
+
+    private func rename(to name: String) {
+        guard name != currentName, let item = RetroRomFileManager.shared.fileItem(key: game.key) else { return }
+        Vibration.selection.vibrate()
+        guard item.updateShowName(name) else { return }
+        navigationItem.title = name
+        if let nameSection {
+            tableView.reloadSections(IndexSet(integer: nameSection), with: .none)
+        }
+        onRenamed?()
     }
 
     private func confirmRepair(_ plan: MameSetRepairer.Plan) {
@@ -525,32 +570,44 @@ final class MameHealthDetailViewController: UITableViewController {
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        sections.count + (repairPlan == nil ? 0 : 1)
+        sectionOffset + sections.count + (repairPlan == nil ? 0 : 1)
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        section == repairSection ? 1 : sections[section].rows.count
+        if section == nameSection { return nameOptions.count }
+        return section == repairSection ? 1 : sections[section - sectionOffset].rows.count
     }
 
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard section != repairSection else { return nil }
         let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
             ?? RGSectionHeaderView(reuseIdentifier: RGSectionHeaderView.className)
-        view.text = sections[section].title
+        view.text = section == nameSection
+            ? Bundle.localizedString(forKey: "mame_health_name_section")
+            : sections[section - sectionOffset].title
         return view
     }
 
     override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        guard section == repairSection else { return nil }
+        let text: String
+        if section == repairSection {
+            text = Bundle.localizedString(forKey: "mame_repair_footer")
+        } else if section == nameSection {
+            text = Bundle.localizedString(forKey: "mame_health_name_footer")
+        } else {
+            return nil
+        }
         let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionFooterView.className) as? RGSectionFooterView
             ?? RGSectionFooterView(reuseIdentifier: RGSectionFooterView.className)
-        view.text = Bundle.localizedString(forKey: "mame_repair_footer")
+        view.text = text
         return view
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        if indexPath.section == repairSection, let repairPlan {
+        if indexPath.section == nameSection {
+            rename(to: nameOptions[indexPath.row].name)
+        } else if indexPath.section == repairSection, let repairPlan {
             confirmRepair(repairPlan)
         }
     }
@@ -564,8 +621,21 @@ final class MameHealthDetailViewController: UITableViewController {
             cell.imageView?.tintColor = .mainColor
             return cell
         }
-        let row = sections[indexPath.section].rows[indexPath.row]
-        let cell = UITableViewCell(style: indexPath.section == 0 ? .value1 : .subtitle, reuseIdentifier: nil)
+        if indexPath.section == nameSection {
+            let option = nameOptions[indexPath.row]
+            let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
+            cell.textLabel?.text = option.name
+            cell.textLabel?.numberOfLines = 0
+            cell.detailTextLabel?.text = option.label
+            cell.detailTextLabel?.textColor = .secondaryLabel
+            let isCurrent = option.name == currentName
+            cell.accessoryType = isCurrent ? .checkmark : .none
+            cell.selectionStyle = isCurrent ? .none : .default
+            return cell
+        }
+        let section = indexPath.section - sectionOffset
+        let row = sections[section].rows[indexPath.row]
+        let cell = UITableViewCell(style: section == 0 ? .value1 : .subtitle, reuseIdentifier: nil)
         cell.selectionStyle = .none
         cell.textLabel?.text = row.0
         cell.textLabel?.numberOfLines = 0
