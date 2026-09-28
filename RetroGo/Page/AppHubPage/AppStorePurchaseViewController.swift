@@ -963,6 +963,7 @@ private final class BenefitSectionView: UIStackView {
         addArrangedSubview(benefitsStack)
 
         let benefits: [(String, UIColor)] = [
+            (Bundle.localizedString(forKey: "iap_probenefit_arcade"), UIColor(hex: 0xE67E22, alpha: 1.0)),
             (Bundle.localizedString(forKey: "iap_probenefit_cheats"), .cheatIconColor),
             (Bundle.localizedString(forKey: "iap_probenefit1"), UIColor(hex: 0x2ECC71, alpha: 1.0)),
             (Bundle.localizedString(forKey: "iap_probenefit2"), UIColor(hex: 0xF1C40F, alpha: 1.0)),

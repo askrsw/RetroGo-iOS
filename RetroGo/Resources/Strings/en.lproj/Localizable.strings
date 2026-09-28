@@ -349,6 +349,7 @@
 "iap_yearly_trial_desc" = "%@ · then billed yearly";
 "iap_loading" = "Loading...";
 "iap_probenefits" = "Pro Benefits";
+"iap_probenefit_arcade" = "Unlimited arcade play (MAME) — free users get 10 minutes a day.";
 "iap_probenefit_cheats" = "Enable cheat codes and built-in cheat templates.";
 "iap_probenefit1" = "Unlimited fast-forward controls.";
 "iap_probenefit2" = "Unlimited manual save slots per game.";
@@ -412,6 +413,10 @@
 "progate_manual_save_slot_locked" = "Unlimited manual save slots are a Pro feature.";
 "progate_controller_mapping_locked" = "Advanced controller button mapping is a Pro feature.";
 "progate_advanced_configuration_locked" = "Advanced core and game settings are Pro features.";
+"progate_mame_daily_limit_reached" = "Today's 10 minutes of free arcade play are used up. Unlock RetroGo Pro for unlimited arcade play, or come back tomorrow.";
+"progate_mame_free_time_left_format" = "Free arcade play left today: %d min";
+"progate_mame_free_time_ending" = "Less than 1 minute of free arcade play left today.";
+"progate_mame_quit_game" = "Quit Game";
 
 // MARK: - Game Discover Page
 

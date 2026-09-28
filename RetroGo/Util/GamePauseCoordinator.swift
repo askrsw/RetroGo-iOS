@@ -73,6 +73,11 @@ final class GamePauseCoordinator {
 
     private init() {}
 
+    /// True while any UI lease keeps the game paused.
+    var isHoldingPause: Bool {
+        !activeLeaseIDs.isEmpty
+    }
+
     func acquire(reason: String) -> Lease? {
         guard shouldPauseGameLoop else { return nil }
 

@@ -291,13 +291,14 @@ final class MameCheatListViewController: UIViewController {
         (presentedViewController ?? self).present(alert, animated: true)
     }
 
-    /// Netplay and Pro checks before anything is switched on or run.
+    /// Netplay check before anything is switched on or run. Running MAME itself is
+    /// the Pro gate (see `MameFreePlayQuota`), so its cheats need no separate one.
     fileprivate func allowEnabling() -> Bool {
         if RANetplayCoordinator.shared.isNetplayEnabled {
             showMessage(Bundle.localizedString(forKey: "netplay_cheat_blocked"))
             return false
         }
-        return AppStoreProFeatureGate.shared.requirePro(feature: .cheats, presentation: .alert, from: self, toastContext: .game)
+        return true
     }
 
     fileprivate func entry(at indexPath: IndexPath) -> MameCheatSession.Entry? {

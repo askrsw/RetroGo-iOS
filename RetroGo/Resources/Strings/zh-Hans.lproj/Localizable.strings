@@ -351,6 +351,7 @@
 "iap_yearly_trial_desc" = "%@ · 之后按年计费";
 "iap_loading" = "加载中...";
 "iap_probenefits" = "Pro 权益";
+"iap_probenefit_arcade" = "不限时畅玩街机（MAME），免费用户每天 10 分钟。";
 "iap_probenefit_cheats" = "启用金手指与系统金手指模板。";
 "iap_probenefit1" = "无限制快进控制。";
 "iap_probenefit2" = "每个游戏支持无限手动存档位。";
@@ -414,6 +415,10 @@
 "progate_manual_save_slot_locked" = "无限手动存档位是 Pro 功能。";
 "progate_controller_mapping_locked" = "高级物理手柄按键映射是 Pro 功能。";
 "progate_advanced_configuration_locked" = "核心与游戏的高级配置是 Pro 功能。";
+"progate_mame_daily_limit_reached" = "今天 10 分钟的免费街机时间已用完。解锁 RetroGo Pro 即可不限时畅玩街机，或明天再来。";
+"progate_mame_free_time_left_format" = "今日免费街机时间剩余 %d 分钟";
+"progate_mame_free_time_ending" = "今日免费街机时间剩余不足 1 分钟。";
+"progate_mame_quit_game" = "退出游戏";
 
 // MARK: - Game Discover Page
 

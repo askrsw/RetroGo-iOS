@@ -881,7 +881,7 @@ extension GamePageToolbarView {
     }
 
     @objc
-    private func closeAction() {
+    func closeAction() {
         Vibration.selection.vibrate()
 
         // Drop the engine's cheat list so it never leaks into the next game. The

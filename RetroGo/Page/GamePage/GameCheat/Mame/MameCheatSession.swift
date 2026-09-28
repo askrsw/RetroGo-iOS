@@ -74,20 +74,11 @@ final class MameCheatSession {
     /// Cheats that were on last time (or before a reset/reload) and are waiting to be restored.
     private var restorableIndices: [Int] = []
 
-    /// Runtime paths may run outside the purchase UI flow, so use the cached
-    /// entitlement snapshot here. The UI gate still presents the paywall.
-    private static var canEnableCheats: Bool {
-        AppStorePurchaseManager.hasLocallyValidCachedProEntitlement
-    }
-
     init(game: RetroRomFileItem, core: EmuCoreInfoItem) {
         self.game = game
         self.core = core
         setName = MameCheatLibrary.shared.takeLaunch(romKey: game.key)?.setName
 
-        if !Self.canEnableCheats {
-            Self.deleteEnabledStates(romKey: game.key)
-        }
         loadFromLibrary()
 
         NotificationCenter.default.addObserver(self, selector: #selector(netplayStateDidChange),
@@ -144,7 +135,7 @@ final class MameCheatSession {
 
     /// Cheats from last time that the list can offer to restore; 0 until the cheats are loaded.
     var restorableCount: Int {
-        guard engine != nil, Self.canEnableCheats, !netplaySuspended else { return 0 }
+        guard engine != nil, !netplaySuspended else { return 0 }
         return restorableIndices.filter { index in entries.contains { $0.index == index && !$0.enabled && $0.available } }.count
     }
 
@@ -296,12 +287,9 @@ final class MameCheatSession {
         netplaySuspended = false
         let indices = suspendedIndices
         suspendedIndices = []
-        // Pro can lapse during a session; never resurrect enabled cheats without it.
-        if Self.canEnableCheats {
-            for i in entries.indices where indices.contains(entries[i].index) {
-                entries[i].enabled = true
-                push(entries[i])
-            }
+        for i in entries.indices where indices.contains(entries[i].index) {
+            entries[i].enabled = true
+            push(entries[i])
         }
         NotificationCenter.default.post(name: .gameCheatStateChanged, object: nil)
     }
@@ -383,8 +371,7 @@ final class MameCheatSession {
     private func canChange(enabling: Bool) -> Bool {
         guard enabling else { return true }
         // Cheats would desync netplay peers.
-        if RANetplayCoordinator.shared.isNetplayEnabled { return false }
-        return Self.canEnableCheats
+        return !RANetplayCoordinator.shared.isNetplayEnabled
     }
 
     private func commit(_ i: Int) -> Bool {
@@ -435,15 +422,6 @@ final class MameCheatSession {
         } catch {
             NSLog("[MameCheat] Failed to save state: %@", "\(error)")
             return false
-        }
-    }
-
-    /// Pro lapsed: no enabled state may survive into a game.
-    private static func deleteEnabledStates(romKey: String) {
-        do {
-            try RetroRomPersistence.sqlite.run(stateTable.filter(self.romKey == romKey && enabled == true).delete())
-        } catch {
-            NSLog("[MameCheat] Failed to clear enabled states: %@", "\(error)")
         }
     }
 }
