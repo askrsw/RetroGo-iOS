@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.9.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.9.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>September 30, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.9.0" style="number">
+            <p-item>Added the <b>MAME arcade core</b> (MAME 0.289), covering <b>Neo Geo, CPS1/CPS2/CPS3, PGM, Cave, NAOMI, Atomiswave</b> and many more arcade boards — <b>most classic arcade games</b>, over 4,000 in all, not counting the different versions of the same game. Arcade games also support <b>local network play</b>, so you can fight in The King of Fighters or team up in Metal Slug on two devices.</p-item>
+            <p-item>Added <b>arcade set management</b>: arcade games are recognized on import and named with their official titles (<b>Chinese titles</b> when the app is in Chinese); BIOS files such as neogeo.zip go straight to the BIOS folder and are merged with any copy already there; before a game starts, missing files are checked and files from its parent set are linked in automatically.</p-item>
+            <p-item>Added the <b>Arcade Library Health</b> report on the MAME core page: see which games are complete and which files are missing, <b>repair</b> one game or all of them, with the original files backed up first. A game's detail page also lets you choose its English or Chinese name for the Library.</p-item>
+            <p-item>Added <b>arcade cheats</b>: import Pugsy's MAME Cheat Collection and most arcade games get cheats — switches, value choices such as weapon or starting stage, and one-tap actions, all with <b>Chinese translations</b>. Until a collection is imported, the cheat page shows a <b>step-by-step guide</b> with screenshots, and you can import the downloaded zip right from the guide without unzipping it.</p-item>
+            <p-item>Added <b>on-screen layouts made for arcade games</b>: <b>six buttons</b> by default, matching arcade fighting games, with a button to switch to a <b>four-button</b> layout during play, plus core options for MAME.</p-item>
+            <p-item>Closing a game is now more thorough and stable, and save-state lists that were sometimes incomplete now show every state.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.8.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.8.0</p-title>
         <p-paragraph fontsize="13">
