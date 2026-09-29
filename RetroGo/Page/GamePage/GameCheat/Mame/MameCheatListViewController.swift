@@ -27,6 +27,7 @@ import UIKit
 import SnapKit
 import ObjcHelper
 import RACoordinator
+import XMLTextRenderKit
 
 /// In-game list of a MAME game's cheats (Pugsy's collection, run by MAME's engine).
 /// Text entries of the XML become section titles and notes; the rest are switches,
@@ -43,6 +44,8 @@ final class MameCheatListViewController: UIViewController {
     private var gamePauseLease: GamePauseCoordinator.Lease?
     private lazy var tableView = configUI()
     private let emptyView = UIView(frame: .zero)
+    /// The import guide, shown in place of the list until a cheat collection is imported.
+    private var guideView: XMLTextRenderView?
 
     init(session: MameCheatSession) {
         self.session = session
@@ -76,6 +79,7 @@ final class MameCheatListViewController: UIViewController {
 
         _ = tableView
         NotificationCenter.default.addObserver(self, selector: #selector(stateDidChange), name: .gameCheatStateChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(libraryDidChange), name: .mameCheatLibraryDidChange, object: nil)
         reload()
     }
 
@@ -227,12 +231,14 @@ final class MameCheatListViewController: UIViewController {
 
     private func updateEmptyState() {
         emptyView.subviews.forEach { $0.removeFromSuperview() }
+        let imported = MameCheatLibrary.shared.isImported
+        updateGuide(visible: !imported)
+        guard imported else {
+            tableView.backgroundView = nil
+            return
+        }
         let text: String
-        var showsImport = false
-        if !MameCheatLibrary.shared.isImported {
-            text = Bundle.localizedString(forKey: "mame_cheat_guide_body")
-            showsImport = true
-        } else if !session.hasCheatFile {
+        if !session.hasCheatFile {
             text = Bundle.localizedString(forKey: "mame_cheat_none_for_game")
         } else if session.entries.isEmpty {
             text = Bundle.localizedString(forKey: "mame_cheat_none_for_game")
@@ -251,13 +257,6 @@ final class MameCheatListViewController: UIViewController {
         stack.axis = .vertical
         stack.spacing = 16
         stack.alignment = .center
-        if showsImport {
-            var config = UIButton.Configuration.filled()
-            config.title = Bundle.localizedString(forKey: "mame_cheat_import_action")
-            config.cornerStyle = .capsule
-            let button = UIButton(configuration: config, primaryAction: UIAction { [weak self] _ in self?.libraryAction() })
-            stack.addArrangedSubview(button)
-        }
         // The table sizes its background view later; start at its size and keep the margins
         // breakable so a zero-size first pass does not conflict.
         emptyView.frame = tableView.bounds
@@ -270,6 +269,40 @@ final class MameCheatListViewController: UIViewController {
         tableView.backgroundView = emptyView
     }
 
+    /// The step-by-step import guide fills the page until a collection is imported; its
+    /// "import" command opens the file picker right here.
+    private func updateGuide(visible: Bool) {
+        guard visible else {
+            guideView?.removeFromSuperview()
+            guideView = nil
+            tableView.isHidden = false
+            return
+        }
+        tableView.isHidden = true
+        guard guideView == nil, let url = MameCheatLibraryViewController.guideURL,
+              let xml = try? String(contentsOf: url, encoding: .utf8) else { return }
+        let guide = XMLTextRenderView(frame: .zero)
+        view.addSubview(guide)
+        guide.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
+        let config = XMLRenderConfig()
+        config.mainColor = .mainColor
+        guide.render(xmlContent: xml, config: config, commandHandlers: [
+            MameCheatLibraryViewController.importCommand: { [weak self] in
+                guard let self else { return }
+                Vibration.selection.vibrate()
+                MameCheatImporter.pickAndImport(from: self)
+            }
+        ], imageInteractionHandler: { [weak self] tap in
+            self?.present(MameGuideImageViewController(image: tap.image), animated: true)
+        }, usesDynamicType: true)
+        guideView = guide
+    }
+
+    /// A collection was imported (or deleted): load it into the running game right away.
+    @objc private func libraryDidChange() {
+        session.reloadFromLibrary()
+    }
+
     // MARK: - Actions
 
     @objc private func closeAction() {
@@ -279,10 +312,8 @@ final class MameCheatListViewController: UIViewController {
 
     @objc private func libraryAction() {
         Vibration.selection.vibrate()
-        MameCheatLibraryViewController.show(from: self) { [weak self] in
-            // Loaded into the running game on its next frame (after the list closes).
-            self?.session.reloadFromLibrary()
-        }
+        // Imports reach this list through .mameCheatLibraryDidChange.
+        MameCheatLibraryViewController.show(from: self)
     }
 
     private func showMessage(_ message: String) {

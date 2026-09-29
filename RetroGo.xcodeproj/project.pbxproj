@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AB2F5C11C0DC1EE1557FA9CF /* mame_cheat_i18n.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = AB2F6A69E2A6008DDE97DB10 /* mame_cheat_i18n.sqlite */; settings = {ASSET_TAGS = ("mame-cheat-i18n", ); }; };
-		AB2E7E143CA6CD5397F2CE38 /* MameCheatTexts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2E039F1D6369D09F6EC688 /* MameCheatTexts.swift */; };
-		AB2DBDFC781583F3EABCB0A2 /* MameGameNameLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2DF9FB03F29ED480AF4BC5 /* MameGameNameLocalizer.swift */; };
 		AB0A1DD52FB71C7800503077 /* GamePauseCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */; };
 		AB0AF4BD2FD9B74400257A18 /* ODRResourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */; };
 		AB0AF4BF2FD9BA1700257A18 /* cheat.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = AB0AF4BE2FD9BA1700257A18 /* cheat.sqlite */; settings = {ASSET_TAGS = ("cheat-db", ); }; };
@@ -52,8 +49,11 @@
 		AB2CC16E6B788A3F13425E40 /* MameCheatDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2C1EF083C1CFD26575E0DE /* MameCheatDefinition.swift */; };
 		AB2CEB5B5E02F2A4E604B28B /* MameCheatLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2C0E34EF14E8654F612713 /* MameCheatLibrary.swift */; };
 		AB2CEBA0D8D18388F8A56549 /* MameCheatListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2C055A34283EA05508F3CD /* MameCheatListViewController.swift */; };
-		AB38A1F02FC0000000000001 /* MameFreePlayQuota.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38A1F12FC0000000000001 /* MameFreePlayQuota.swift */; };
+		AB2DBDFC781583F3EABCB0A2 /* MameGameNameLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2DF9FB03F29ED480AF4BC5 /* MameGameNameLocalizer.swift */; };
+		AB2E7E143CA6CD5397F2CE38 /* MameCheatTexts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2E039F1D6369D09F6EC688 /* MameCheatTexts.swift */; };
+		AB2F5C11C0DC1EE1557FA9CF /* mame_cheat_i18n.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = AB2F6A69E2A6008DDE97DB10 /* mame_cheat_i18n.sqlite */; settings = {ASSET_TAGS = ("mame-cheat-i18n", ); }; };
 		AB38A12E2FB519D4009E3915 /* AppStoreProFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38A12D2FB519D4009E3915 /* AppStoreProFeatureGate.swift */; };
+		AB38A1F02FC0000000000001 /* MameFreePlayQuota.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38A1F12FC0000000000001 /* MameFreePlayQuota.swift */; };
 		AB3D70382F7D49F70008A6AA /* GamePageOverlayScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D70372F7D49F70008A6AA /* GamePageOverlayScene.swift */; };
 		AB3D703C2F7D4FEA0008A6AA /* GameOverlayDirectionPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D703B2F7D4FEA0008A6AA /* GameOverlayDirectionPad.swift */; };
 		AB3D703E2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB3D703D2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift */; };
@@ -249,9 +249,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AB2F6A69E2A6008DDE97DB10 /* mame_cheat_i18n.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = mame_cheat_i18n.sqlite; sourceTree = "<group>"; };
-		AB2E039F1D6369D09F6EC688 /* MameCheatTexts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameCheatTexts.swift; sourceTree = "<group>"; };
-		AB2DF9FB03F29ED480AF4BC5 /* MameGameNameLocalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameGameNameLocalizer.swift; sourceTree = "<group>"; };
 		AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePauseCoordinator.swift; sourceTree = "<group>"; };
 		AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ODRResourceViewController.swift; sourceTree = "<group>"; };
 		AB0AF4BE2FD9BA1700257A18 /* cheat.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = cheat.sqlite; sourceTree = "<group>"; };
@@ -281,8 +278,11 @@
 		AB2C1EF083C1CFD26575E0DE /* MameCheatDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameCheatDefinition.swift; sourceTree = "<group>"; };
 		AB2C60DE96C515967468427C /* MameCheatSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameCheatSession.swift; sourceTree = "<group>"; };
 		AB2CCAC3FEC52086E7E512E5 /* MameCheatLibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameCheatLibraryViewController.swift; sourceTree = "<group>"; };
-		AB38A1F12FC0000000000001 /* MameFreePlayQuota.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameFreePlayQuota.swift; sourceTree = "<group>"; };
+		AB2DF9FB03F29ED480AF4BC5 /* MameGameNameLocalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameGameNameLocalizer.swift; sourceTree = "<group>"; };
+		AB2E039F1D6369D09F6EC688 /* MameCheatTexts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameCheatTexts.swift; sourceTree = "<group>"; };
+		AB2F6A69E2A6008DDE97DB10 /* mame_cheat_i18n.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = mame_cheat_i18n.sqlite; sourceTree = "<group>"; };
 		AB38A12D2FB519D4009E3915 /* AppStoreProFeatureGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreProFeatureGate.swift; sourceTree = "<group>"; };
+		AB38A1F12FC0000000000001 /* MameFreePlayQuota.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameFreePlayQuota.swift; sourceTree = "<group>"; };
 		AB3D70372F7D49F70008A6AA /* GamePageOverlayScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageOverlayScene.swift; sourceTree = "<group>"; };
 		AB3D703B2F7D4FEA0008A6AA /* GameOverlayDirectionPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayDirectionPad.swift; sourceTree = "<group>"; };
 		AB3D703D2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayDpadStickSwitch.swift; sourceTree = "<group>"; };
@@ -1676,7 +1676,7 @@
 			repositoryURL = "https://github.com/askrsw/XMLTextRenderKit.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.4.0;
+				minimumVersion = 1.5.0;
 			};
 		};
 		AB94AACD2FBDB1990046B830 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {

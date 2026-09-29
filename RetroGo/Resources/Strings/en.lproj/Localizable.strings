@@ -705,9 +705,9 @@
 "mame_cheat_library_not_imported" = "Not Imported";
 "mame_cheat_library_source_file" = "Imported From";
 "mame_cheat_library_imported_at" = "Imported";
-"mame_cheat_library_footer" = "Arcade cheats come from %1$@. Download the latest release from %2$@, unzip it, and import the cheat.7z inside. Only cheats for games this MAME core can run are kept.";
-"mame_cheat_import_action" = "Import cheat.7z";
-"mame_cheat_reimport_action" = "Import a Newer cheat.7z";
+"mame_cheat_library_footer" = "Arcade cheats come from %1$@.\n1. Download the latest cheat collection from %2$@.\n2. No need to unzip it.\n3. Tap Import Cheat Collection and choose the downloaded zip (cheat.7z works too).\nOnly cheats for games this MAME core can run are kept.";
+"mame_cheat_import_action" = "Import Cheat Collection";
+"mame_cheat_reimport_action" = "Import a Newer Collection";
 "mame_cheat_download_action" = "Download from mamecheat.co.uk";
 "mame_cheat_delete_title" = "Delete Cheat Collection";
 "mame_cheat_delete_message" = "Arcade games will have no cheats until you import cheat.7z again. Cheats you turned on are remembered.";
@@ -717,8 +717,7 @@
 "mame_cheat_import_saving" = "Saving…";
 "mame_cheat_import_done" = "Imported cheats for %d games.";
 "mame_cheat_import_error_catalog" = "The arcade game list is not ready. Try again after the MAME core has finished setting up.";
-"mame_cheat_import_error_empty" = "No arcade cheats were found. Choose the cheat.7z from Pugsy's MAME cheat collection.";
-"mame_cheat_guide_body" = "Arcade cheats use Pugsy's MAME cheat collection. Download it from mamecheat.co.uk, then import the cheat.7z inside.";
+"mame_cheat_import_error_empty" = "No arcade cheats were found. Choose the zip downloaded from mamecheat.co.uk, or the cheat.7z inside it.";
 "mame_cheat_none_for_game" = "The cheat collection has no cheats for this game.";
 "mame_cheat_run" = "Run";
 "mame_cheat_off" = "Off";
@@ -735,3 +734,9 @@
 "mame_health_name_english" = "English (MAME)";
 "mame_health_name_chinese" = "Chinese";
 "mame_health_name_footer" = "Choose the name this game shows in your Library.";
+"mame_cheat_library_release" = "Collection Release";
+"mame_cheat_library_notes" = "Credits & Notes";
+"mame_import_cheats_done" = "%1$@ is Pugsy's MAME cheat collection. It was imported as the arcade cheat library (%2$d games) instead of into your Library.";
+"mame_import_cheats_failed" = "%1$@ is Pugsy's MAME cheat collection, but importing its cheats failed: %2$@";
+"mame_cheat_guide_title" = "Get Arcade Cheats";
+"mame_cheat_guide_action" = "How to Get the Cheat Collection";

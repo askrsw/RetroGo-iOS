@@ -707,9 +707,9 @@
 "mame_cheat_library_not_imported" = "未导入";
 "mame_cheat_library_source_file" = "来源文件";
 "mame_cheat_library_imported_at" = "导入时间";
-"mame_cheat_library_footer" = "街机金手指来自 %1$@。请到 %2$@ 下载最新版本，解压后导入其中的 cheat.7z。只会保留本 MAME 核心能运行的游戏的金手指。";
-"mame_cheat_import_action" = "导入 cheat.7z";
-"mame_cheat_reimport_action" = "导入更新的 cheat.7z";
+"mame_cheat_library_footer" = "街机金手指来自 %1$@。\n1. 前往 %2$@ 下载最新的金手指合集；\n2. 下载后无需解压；\n3. 点“导入金手指合集”，选择下载的 zip（也可以选择其中的 cheat.7z）。\n只会保留本 MAME 核心能运行的游戏的金手指。";
+"mame_cheat_import_action" = "导入金手指合集";
+"mame_cheat_reimport_action" = "导入更新的合集";
 "mame_cheat_download_action" = "前往 mamecheat.co.uk 下载";
 "mame_cheat_delete_title" = "删除金手指库";
 "mame_cheat_delete_message" = "删除后街机游戏将没有金手指，直到再次导入 cheat.7z。已开启的金手指会被记住。";
@@ -719,8 +719,7 @@
 "mame_cheat_import_saving" = "正在保存…";
 "mame_cheat_import_done" = "已导入 %d 个游戏的金手指。";
 "mame_cheat_import_error_catalog" = "街机游戏清单尚未准备好，请等 MAME 核心初始化完成后再试。";
-"mame_cheat_import_error_empty" = "没有找到街机金手指，请选择 Pugsy MAME 金手指合集中的 cheat.7z。";
-"mame_cheat_guide_body" = "街机金手指使用 Pugsy 的 MAME 金手指合集。请到 mamecheat.co.uk 下载，然后导入其中的 cheat.7z。";
+"mame_cheat_import_error_empty" = "没有找到街机金手指，请选择从 mamecheat.co.uk 下载的 zip，或其中的 cheat.7z。";
 "mame_cheat_none_for_game" = "金手指库中没有这个游戏的金手指。";
 "mame_cheat_run" = "执行";
 "mame_cheat_off" = "关闭";
@@ -737,3 +736,9 @@
 "mame_health_name_english" = "英文名（MAME）";
 "mame_health_name_chinese" = "中文名";
 "mame_health_name_footer" = "选择这个游戏在游戏库中显示的名称。";
+"mame_cheat_library_release" = "合集版本";
+"mame_cheat_library_notes" = "致谢与说明";
+"mame_import_cheats_done" = "%1$@ 是 Pugsy 的 MAME 金手指合集，已导入为街机金手指库（%2$d 个游戏），没有加入游戏库。";
+"mame_import_cheats_failed" = "%1$@ 是 Pugsy 的 MAME 金手指合集，但导入金手指失败：%2$@";
+"mame_cheat_guide_title" = "获取街机金手指";
+"mame_cheat_guide_action" = "如何获取金手指合集";

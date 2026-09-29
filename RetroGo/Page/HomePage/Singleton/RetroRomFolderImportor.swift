@@ -75,6 +75,7 @@ final class RetroRomFolderImportor: Thread {
     /// Library games to replace with a more complete copy found in this import.
     private var mameReplacements: [MameImportScreener.Replacement] = []
     private var mameBiosResults: [MameBiosInstallResult] = []
+    private var mameCheatNotice: String?
 
     private let startDate: Date = Date()
     private var success = false
@@ -125,6 +126,7 @@ final class RetroRomFolderImportor: Thread {
                 groups = screened.groups
                 mameMatches = screened.gameMatches
                 mameBiosResults = screened.biosResults
+                mameCheatNotice = screened.cheatNotice
             }
             let effectiveSourceFiles = sourceFilesForGroups(groups, fileMap: analysis.map)
             let absorbedDirectories = determineAbsorbedDirectories(groups: groups, sourceFiles: effectiveSourceFiles)
@@ -732,13 +734,13 @@ extension RetroRomFolderImportor {
             })
             let replaced = MameImportScreener.performReplacements(mameReplacements)
             if importedCount == 0 {
-                let message = MameImportScreener.message(MameImportScreener.message(Bundle.localizedString(forKey: "homepage_import_finished"), appending: mameBiosResults), replaced: replaced)
+                let message = MameImportScreener.message(MameImportScreener.message(Bundle.localizedString(forKey: "homepage_import_finished"), appending: mameBiosResults, cheatNotice: mameCheatNotice), replaced: replaced)
                 let title = Bundle.localizedString(forKey: "info")
                 indicatorView.infoMessage(message, title: title, canDismiss: true)
             } else {
                 success = true
                 let format = Bundle.localizedString(forKey: "homepage_import_completed")
-                let message = MameImportScreener.message(MameImportScreener.message(NSString.localizedStringWithFormat(format as NSString, importedCount) as String, appending: mameBiosResults), replaced: replaced)
+                let message = MameImportScreener.message(MameImportScreener.message(NSString.localizedStringWithFormat(format as NSString, importedCount) as String, appending: mameBiosResults, cheatNotice: mameCheatNotice), replaced: replaced)
                 let title = Bundle.localizedString(forKey: "homepage_import_success")
                 indicatorView.successMessage(message, title: title, canDismiss: true)
             }

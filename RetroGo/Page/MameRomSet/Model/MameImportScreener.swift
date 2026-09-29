@@ -34,6 +34,8 @@ import RACoordinator
 ///   BIOS folder and reported in the import result.
 /// - Recognized games are imported as usual, with the set's official name as display
 ///   name and MAME as preferred core; once stored, they are added to the romset index.
+/// - Pugsy's cheat collection (cheat.7z or the release zip) never enters the Library either;
+///   it replaces the MAME cheat library and is reported in the import result.
 /// - Anything unrecognized, or everything when the catalog is unavailable, is imported
 ///   exactly as before.
 final class MameImportScreener {
@@ -43,6 +45,8 @@ final class MameImportScreener {
         /// Recognized games, keyed by group entry path.
         var gameMatches: [String: MameArchiveMatch] = [:]
         var biosResults: [MameBiosInstallResult] = []
+        /// Outcome of a cheat collection found among the files.
+        var cheatNotice: String?
     }
 
     static let mameCoreId = "mame"
@@ -95,6 +99,12 @@ final class MameImportScreener {
             }
 
             let path = source.url.path(percentEncoded: false)
+            if MameCheatLibrary.isCollectionFileName(fileName),
+               let names = try? RAArchiveReader.entriesOfArchive(atPath: path).map(\.name),
+               MameCheatLibrary.layout(ofEntries: names) != nil {
+                result.cheatNotice = Self.importCheats(at: source.url, fileName: fileName, progress: progress)
+                continue
+            }
             guard let match = MameArchiveIdentifier.identify(archiveAtPath: path, fileName: fileName) else {
                 result.groups.append(group)
                 continue
@@ -270,6 +280,25 @@ final class MameImportScreener {
     static func message(_ message: String, appending results: [MameBiosInstallResult]) -> String {
         guard let notice = noticeText(results) else { return message }
         return message + "\n\n" + notice
+    }
+
+    /// Appends the BIOS and cheat collection notices, if any, to an import result message.
+    static func message(_ message: String, appending results: [MameBiosInstallResult], cheatNotice: String?) -> String {
+        let text = self.message(message, appending: results)
+        guard let cheatNotice else { return text }
+        return text + "\n\n" + cheatNotice
+    }
+
+    private static func importCheats(at url: URL, fileName: String, progress: (String) -> Void) -> String {
+        do {
+            let info = try MameCheatLibrary.shared.importCollection(at: url) { message in
+                progress("\(fileName): \(message)")
+            }
+            return String(format: Bundle.localizedString(forKey: "mame_import_cheats_done"), fileName, info.setCount)
+        } catch {
+            NSLog("[MameImport] Cheat collection %@ failed: %@", fileName, error.localizedDescription)
+            return String(format: Bundle.localizedString(forKey: "mame_import_cheats_failed"), fileName, error.localizedDescription)
+        }
     }
 
     private static func isCandidate(_ group: RetroRomImportGroupBuilder.Group) -> Bool {

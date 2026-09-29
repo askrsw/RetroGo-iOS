@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<p-contents>
+    <p-section id="guide_intro" toppadding="5" bottompadding="5">
+        <p-paragraph>
+            <b>街机金手指功能依赖 Pugsy 的 MAME 金手指合集（cheat.7z）</b>，导入之后才能使用。这份合集由 Pugsy 和众多玩家整理维护，RetroGo 不内置，请按下面的步骤下载并导入，整个过程只需要一两分钟。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="guide_step_1" toppadding="10" bottompadding="5">
+        <p-title level="3" underline="false">第 1 步：打开下载页</p-title>
+        <p-paragraph>
+            用 Safari 打开 <a href="https://www.mamecheat.co.uk">mamecheat.co.uk</a>，点顶部的 <b>MAME Cheat Files</b>，再点列表<b>最上面</b>的一项，例如 <b>XML Cheat Collection for MAME 0.279</b>。
+        </p-paragraph>
+        <p-images layout="figure" max-width="360" toppadding="4" bottompadding="10">
+            <p-image type="assets" src="Fig_import_mame_cheat_01" />
+        </p-images>
+    </p-section>
+
+    <p-section id="guide_step_2" toppadding="10" bottompadding="5">
+        <p-title level="3" underline="false">第 2 步：下载合集</p-title>
+        <p-paragraph>
+            在弹出的提示中点 <b>Download</b>。下载的是一个 zip 文件（例如 <b>cheat0279.zip</b>），<b>不需要解压</b>。
+        </p-paragraph>
+        <p-images layout="figure" max-width="360" toppadding="4" bottompadding="10">
+            <p-image type="assets" src="Fig_import_mame_cheat_02" />
+        </p-images>
+    </p-section>
+
+    <p-section id="guide_step_3" toppadding="10" bottompadding="5">
+        <p-title level="3" underline="false">第 3 步：回到 RetroGo 导入</p-title>
+        <p-paragraph>
+            回到 RetroGo，点<b><command key="importCollection">导入金手指合集</command></b>。在文件选择器中打开 <b>iCloud 云盘 › 下载</b>，选择刚下载的 zip。
+        </p-paragraph>
+        <p-images layout="figure" max-width="360" toppadding="4" bottompadding="10">
+            <p-image type="assets" src="Fig_import_mame_cheat_03" />
+        </p-images>
+        <p-paragraph fontsize="14">
+            找不到文件？如果没有开启 iCloud 云盘，文件会在<b>我的 iPhone › 下载</b>；也可以在文件选择器的<b>最近使用</b>中找，刚下载的文件一般排在最前面。
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="guide_done" toppadding="10" bottompadding="15">
+        <p-title level="3" underline="false">导入完成</p-title>
+        <p-paragraph>
+            导入后，街机游戏的金手指页就会列出对应的金手指，名称和说明会以中文显示。以后合集发布新版本时，按同样的步骤重新导入即可。
+        </p-paragraph>
+        <p-footer toppadding="10">
+            金手指由 Pugsy 及其贡献者制作，出处与致谢名单可以在金手指库页面的“致谢与说明”中查看。RetroGo 与 mamecheat.co.uk 无关联。
+        </p-footer>
+    </p-section>
+</p-contents>
