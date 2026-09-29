@@ -537,8 +537,9 @@ static dylib_t load_dynamic_core(const char *path, char *s,
 
    /* Can't lookup symbols in itself on UWP */
 #if !(defined(__WINRT__) || defined(WINAPI_FAMILY) && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-#ifndef DEBUG
-    // haharsw - commented out this check because it is not needed anymore
+#if 0
+    // haharsw - disabled in all configs: cores are always dynamic frameworks, and a core
+    // that cannot be unloaded (e.g. MAME) keeps retro_init visible, failing the next load
    if (dylib_proc(NULL, "retro_init"))
    {
       /* Try to verify that -lretro was not linked in from other modules
