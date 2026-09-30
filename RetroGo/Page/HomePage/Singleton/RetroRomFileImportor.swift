@@ -46,6 +46,12 @@ final class RetroRomFileImportor: Thread {
     private var sourceFiles: [RetroRomImportGroupBuilder.SourceFile] = []
     private var sourceFileMap: [String: RetroRomImportGroupBuilder.SourceFile] = [:]
     private var fileItems: [RetroRomFileItem] = []
+    /// Recognized MAME games by item raw name, and BIOS files routed to the MAME BIOS folder.
+    private var mameMatches: [String: MameArchiveMatch] = [:]
+    private var mameBiosResults: [MameBiosInstallResult] = []
+    private var mameCheatNotice: String?
+    /// Library games to replace with a more complete copy found in this import.
+    private var mameReplacements: [MameImportScreener.Replacement] = []
 
     private let startDate: Date = Date()
     private var success = false
@@ -107,12 +113,38 @@ extension RetroRomFileImportor {
                 return false
             }
 
-            fileItems = try builder.buildFileItems(groups: analysis.groups, map: analysis.map, parent: rootParent) {
+            var groups = analysis.groups
+            if let screener = MameImportScreener.make(for: groups) {
+                let screened = screener.screen(groups, fileMap: analysis.map) { fileName in
+                    let formatter = Bundle.localizedString(forKey: "homepage_import_file_checking")
+                    indicatorView.activeMessage(String(format: formatter, fileName), title: Bundle.localizedString(forKey: "homepage_import_importing"))
+                }
+                groups = screened.groups
+                mameMatches = screened.gameMatches
+                mameBiosResults = screened.biosResults
+                mameCheatNotice = screened.cheatNotice
+            }
+
+            fileItems = try builder.buildFileItems(groups: groups, map: analysis.map, parent: rootParent) {
                 RetroRomPersistence.shared.getUniqueKey()
+            }
+            for item in fileItems where item.fileGroupType == .single {
+                if let match = mameMatches[item.rawName] {
+                    MameImportScreener.prepare(item, with: match)
+                }
             }
 
             var filteredItems: [RetroRomFileItem] = []
             for item in fileItems {
+                if let choice = offerMameReplacement(for: item) {
+                    if choice == .cancel {
+                        let title = Bundle.localizedString(forKey: "info")
+                        let message = Bundle.localizedString(forKey: "homepage_import_cancelled")
+                        indicatorView.infoMessage(message, title: title, canDismiss: true)
+                        return false
+                    }
+                    continue
+                }
                 if checkFileExists(item) {
                     procSemphore.wait()
                     if conflictPolicy == .cancel {
@@ -170,13 +202,17 @@ extension RetroRomFileImportor {
             let importedCount = fileItems.count
             let fileKeys = fileItems.map({ $0.key })
             RetroRomFileManager.shared.folderItem(key: rootParent)?.addSubItemKeys(newFolderKeys: [], newFileKeys: fileKeys)
+            MameImportScreener.recordImportedGames(fileItems.compactMap { item in
+                item.fileGroupType == .single ? mameMatches[item.rawName].map { (item.key, $0) } : nil
+            })
+            let replaced = MameImportScreener.performReplacements(mameReplacements)
             if importedCount == 0 {
-                let message = Bundle.localizedString(forKey: "homepage_import_finished")
+                let message = MameImportScreener.message(MameImportScreener.message(Bundle.localizedString(forKey: "homepage_import_finished"), appending: mameBiosResults, cheatNotice: mameCheatNotice), replaced: replaced)
                 let title = Bundle.localizedString(forKey: "info")
                 indicatorView.infoMessage(message, title: title, canDismiss: true)
             } else {
                 success = true
-                let message = Bundle.localizedString(forKey: "homepage_import_completed", count: importedCount)
+                let message = MameImportScreener.message(MameImportScreener.message(Bundle.localizedString(forKey: "homepage_import_completed", count: importedCount), appending: mameBiosResults, cheatNotice: mameCheatNotice), replaced: replaced)
                 let title = Bundle.localizedString(forKey: "homepage_import_success")
                 indicatorView.successMessage(message, title: title, canDismiss: true)
             }
@@ -261,6 +297,27 @@ extension RetroRomFileImportor {
             }
         }
         try FileManager.default.copyItem(atPath: source.url.path(percentEncoded: false), toPath: destinationPath)
+    }
+
+    /// When `item` already exists as a less complete copy of the same MAME set, asks
+    /// whether to replace it. Nil when the regular conflict check applies.
+    private func offerMameReplacement(for item: RetroRomFileItem) -> MameImportScreener.ConflictChoice? {
+        guard item.fileGroupType == .single, let match = mameMatches[item.rawName],
+              FileManager.default.fileExists(atPath: destinationRootPath + item.rawName),
+              let existingKey = MameImportScreener.replacementTarget(parentKey: rootParent, rawName: item.rawName, match: match),
+              let source = sourceFileMap[item.rawName] else {
+            return nil
+        }
+        var choice = MameImportScreener.ConflictChoice.skip
+        MameImportScreener.promptReplacement(gameName: item.itemName) { [unowned self] selected in
+            choice = selected
+            self.procSemphore.signal()
+        }
+        procSemphore.wait()
+        if choice == .replace {
+            mameReplacements.append(MameImportScreener.Replacement(romgameKey: existingKey, source: source.url, match: match))
+        }
+        return choice
     }
 
     private func handleIncompleteGroups(_ incompleteGroups: [RetroRomImportGroupBuilder.IncompleteGroup]) -> Bool {

@@ -1,6 +1,6 @@
 //
 //  RANetplayCoordinator.m
-//  RetroMain
+//  RetroGo
 //
 //  Created by haharsw on 2026/6/17.
 //  Copyright © 2026 haharsw. All rights reserved.

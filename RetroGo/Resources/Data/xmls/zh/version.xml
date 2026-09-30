@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.9.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.9.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 9 月 30 日</i>。
+        </p-paragraph>
+        <p-list id="v1.9.0" style="number">
+            <p-item>新增 <b>MAME 街机核心</b>（MAME 0.289），支持 <b>NeoGeo、CPS1/CPS2/CPS3、PGM、Cave、NAOMI、Atomiswave</b> 等众多街机平台，涵盖<b>绝大多数经典街机游戏</b>，共 4000 多款（不含同一游戏的不同版本）。街机游戏同样支持<b>局域网联机</b>，拳皇对战、合金弹头双打都可以在两台设备上进行。</p-item>
+            <p-item>新增<b>街机游戏整理</b>：导入时自动识别街机游戏，按官方名称命名，中文环境下显示<b>中文游戏名</b>；BIOS 文件（如 neogeo.zip）自动放入 BIOS 目录，已有的会自动合并补全；启动前检查缺失的文件，并自动关联主版本（parent）的文件。</p-item>
+            <p-item>新增<b>街机游戏库检查</b>：在 MAME 核心页查看每个游戏是否完整、缺少哪些文件，可<b>一键修复</b>或批量修复，修复前的原文件会自动备份；详情页还可以切换游戏在游戏库中显示中文名或英文名。</p-item>
+            <p-item>新增<b>街机金手指</b>：导入 Pugsy 的 MAME 金手指合集后，绝大多数街机游戏都有金手指可用，支持开关、选择数值（如选武器、选关卡）和一键执行，名称与说明均已<b>翻译成中文</b>。没有导入合集时，金手指页会直接显示<b>图文教程</b>，按步骤下载后在教程中即可一键导入，无需解压。</p-item>
+            <p-item>为街机配置了<b>专用屏幕按键布局</b>：默认<b>六键</b>，与街机格斗游戏的按键一致，也可以在游戏中一键切换为<b>四键</b>布局；同时提供 MAME 的核心选项设置。</p-item>
+            <p-item>优化关闭游戏的流程，退出更彻底、更稳定；修复部分情况下即时存档列表显示不完整的问题。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.8.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.8.0</p-title>
         <p-paragraph fontsize="13">

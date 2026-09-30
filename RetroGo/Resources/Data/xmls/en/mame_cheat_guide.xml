@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<p-contents>
+    <p-section id="guide_intro" toppadding="5" bottompadding="5">
+        <p-paragraph>
+            <b>Arcade cheats need Pugsy's MAME Cheat Collection (cheat.7z)</b> and work once it is imported. The collection is kept up by Pugsy and many contributors and isn't included with RetroGo, so download and import it with the steps below. It only takes a minute or two.
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="guide_step_1" toppadding="10" bottompadding="5">
+        <p-title level="3" underline="false">Step 1: Open the Download Page</p-title>
+        <p-paragraph>
+            In Safari, open <a href="https://www.mamecheat.co.uk">mamecheat.co.uk</a>, tap <b>MAME Cheat Files</b> at the top, then tap the <b>first</b> item in the list, such as <b>XML Cheat Collection for MAME 0.279</b>.
+        </p-paragraph>
+        <p-images layout="figure" max-width="360" toppadding="4" bottompadding="10">
+            <p-image type="assets" src="Fig_import_mame_cheat_01" />
+        </p-images>
+    </p-section>
+
+    <p-section id="guide_step_2" toppadding="10" bottompadding="5">
+        <p-title level="3" underline="false">Step 2: Download the Collection</p-title>
+        <p-paragraph>
+            Tap <b>Download</b> when asked. You get a zip file (for example <b>cheat0279.zip</b>). <b>No need to unzip it.</b>
+        </p-paragraph>
+        <p-images layout="figure" max-width="360" toppadding="4" bottompadding="10">
+            <p-image type="assets" src="Fig_import_mame_cheat_02" />
+        </p-images>
+    </p-section>
+
+    <p-section id="guide_step_3" toppadding="10" bottompadding="5">
+        <p-title level="3" underline="false">Step 3: Import It in RetroGo</p-title>
+        <p-paragraph>
+            Back in RetroGo, tap <b><command key="importCollection">Import Cheat Collection</command></b>. In the file picker, open <b>iCloud Drive › Downloads</b> and choose the zip you just downloaded.
+        </p-paragraph>
+        <p-images layout="figure" max-width="360" toppadding="4" bottompadding="10">
+            <p-image type="assets" src="Fig_import_mame_cheat_03" />
+        </p-images>
+        <p-paragraph fontsize="14">
+            Can't find it? Without iCloud Drive, the file is in <b>On My iPhone › Downloads</b>. You can also look in <b>Recents</b> in the file picker, where a new download is usually at the top.
+        </p-paragraph>
+    </p-section>
+
+    <p-section id="guide_done" toppadding="10" bottompadding="15">
+        <p-title level="3" underline="false">All Set</p-title>
+        <p-paragraph>
+            Once imported, the cheat list of each arcade game shows its cheats. When a new release of the collection comes out, import it again the same way.
+        </p-paragraph>
+        <p-footer toppadding="10">
+            Cheats are made by Pugsy and the collection's contributors; see Credits &amp; Notes on the Arcade Cheats page. RetroGo is not affiliated with mamecheat.co.uk.
+        </p-footer>
+    </p-section>
+</p-contents>

@@ -1,7 +1,7 @@
 {
     "desc": {
-        "en": "'MAME - Current' is compatible with the latest MAME ROM sets. MAME is the most compatible emulator in the world, and it can run almost any game from any platform (though running console games through this core requires additional steps). Its high compatibility makes it a good option for most users. If you cannot run this core full speed, the year-stamped forks are faster at the cost of reduced accuracy, but FBNeo is typically a better choice for speed vs accuracy, as long as it supports the game(s) in question.",
-        "zh": "[MAME - Current] 核心兼容最新的 MAME ROM 套件。MAME 是世界上兼容性最强的模拟器，几乎可以运行任何平台上的任何游戏（尽管通过此核心运行家用机游戏需要额外步骤）。出色的兼容性使其成为大多数用户的首选。如果该核心无法全速运行，您可以尝试以年份命名的旧版分支（速度更快但精度较低）；但在追求速度与精度的平衡时，只要游戏受支持，FBNeo 通常是更好的选择。"
+        "en": "An arcade core based on MAME 0.289, covering more than 4,000 arcade games (over 11,000 ROM sets), including Capcom CPS1/CPS2, SNK Neo Geo, IGS PGM/PGM2, Cave (including CV1000), Sega NAOMI/Atomiswave, Konami, Taito, Toaplan and more. Gambling machines, PC-based arcade hardware, home consoles and computers are not included. Use ROM sets for MAME 0.289; some games also need a parent set, BIOS, key or EEPROM files. Compatibility, speed and save state support vary by game.",
+        "zh": "基于 MAME 0.289 的街机核心，收录 4000 多款街机游戏（1 万 1 千多个 ROM set），包括 Capcom CPS1/CPS2、SNK Neo Geo、IGS PGM/PGM2、Cave（含 CV1000）、Sega NAOMI/Atomiswave，以及 Konami、Taito、东亚企划等厂商的机板。不包含博彩机、基于 PC 的街机，以及家用主机和电脑。请使用与 MAME 0.289 对应的 ROM；部分游戏还需要主 ROM、BIOS、密钥或 EEPROM 文件。兼容性、运行速度和即时存档支持因游戏而异。"
     },
     "licenses": [
         {
@@ -13,5 +13,9 @@
             "file_name": "gpl-2.0.txt"
         }
     ],
-    "src_url": "https://github.com/libretro/mame"
+    "src_url": "https://github.com/libretro/mame",
+    "supports_analog": false,
+    "overlay": "mame",
+    "supports_logic_thread": true,
+    "allows_default_trubo_xy_hijack": false
 }

@@ -50,11 +50,18 @@ final class GamePageViewController: RAGameViewController {
     /// nil when launched without a `RetroRomFileItem` (the document-browser path),
     /// since cheats are keyed by the rom item — cheats are unavailable then.
     let cheatSession: GameCheatSession?
+    /// MAME runs its own cheat engine instead of RetroArch's; nil for other cores and
+    /// launches without a rom item.
+    let mameCheatSession: MameCheatSession?
 
     private(set) var startDate: Date?
 
     private var myLoadingView: GamePageLoadingView?
     private var loaded = false
+
+    private var mameQuotaTimer: Timer?
+    private weak var mameQuotaAlert: UIAlertController?
+    private var mameQuotaWarned = false
 
     init(romUrl: URL?, core: EmuCoreInfoItem) {
         self.romItem   = nil
@@ -62,6 +69,7 @@ final class GamePageViewController: RAGameViewController {
         self.startTime = Date()
         self.configSession = GameConfigSession(scope: .core, core: core, game: nil)
         self.cheatSession = nil
+        self.mameCheatSession = nil
         super.init(core: core)
         Self.instance = self
 
@@ -81,11 +89,17 @@ final class GamePageViewController: RAGameViewController {
         self.romUrl    = URL(fileURLWithPath: romItem.entryPath!)
         self.startTime = Date()
         self.configSession = configSession
-        self.cheatSession = GameCheatSession(
-            game: romItem,
-            core: core,
-            autoEnableCheatsOnLaunch: configSession.getAutoEnableCheats()
-        )
+        if core.coreId == MameImportScreener.mameCoreId {
+            self.cheatSession = nil
+            self.mameCheatSession = MameCheatSession(game: romItem, core: core)
+        } else {
+            self.cheatSession = GameCheatSession(
+                game: romItem,
+                core: core,
+                autoEnableCheatsOnLaunch: configSession.getAutoEnableCheats()
+            )
+            self.mameCheatSession = nil
+        }
         super.init(core: core)
         Self.instance = self
 
@@ -106,6 +120,7 @@ final class GamePageViewController: RAGameViewController {
     }
 
     deinit {
+        mameQuotaTimer?.invalidate()
         NotificationCenter.default.removeObserver(self)
         self.romUrl?.stopAccessingSecurityScopedResource()
 
@@ -167,6 +182,11 @@ final class GamePageViewController: RAGameViewController {
             // load system-template states too; otherwise the toolbar badge and
             // enabled template cheats only become correct after opening the cheat page.
             cheatSession?.reloadTemplateItems {}
+            mameCheatSession?.gameDidStart()
+
+            if success {
+                startMameQuotaTimerIfNeeded()
+            }
 
             if core.coreId == "dosbox-pure" {
                 self.useRetroArchOverlay = true
@@ -277,12 +297,97 @@ extension GamePageViewController {
     }
 }
 
+// MARK: - MAME free play allowance
+
+extension GamePageViewController {
+    private static let mameQuotaTick: TimeInterval = 1
+    private static let mameQuotaWarning: TimeInterval = 60
+
+    private func startMameQuotaTimerIfNeeded() {
+        guard MameFreePlayQuota.isMame(core), !MameFreePlayQuota.isUnlimited else { return }
+
+        let minutes = Int((MameFreePlayQuota.remainingToday / 60).rounded(.up))
+        let formatter = Bundle.localizedString(forKey: "progate_mame_free_time_left_format")
+        AppToastManager.shared.toast(String(format: formatter, minutes), context: .game, level: .info)
+
+        mameQuotaTimer?.invalidate()
+        mameQuotaTimer = Timer.scheduledTimer(withTimeInterval: Self.mameQuotaTick, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.mameQuotaTimerFired()
+            }
+        }
+    }
+
+    private func mameQuotaTimerFired() {
+        guard Self.instance == self, view.window != nil else { return }
+
+        if MameFreePlayQuota.isUnlimited {
+            mameQuotaTimer?.invalidate()
+            mameQuotaTimer = nil
+            return
+        }
+
+        if MameFreePlayQuota.isExhausted {
+            // Re-shown whenever nothing else is on screen, e.g. after the purchase
+            // page closes without a purchase.
+            if presentedViewController == nil {
+                presentMameQuotaReached()
+            }
+            return
+        }
+
+        // Only count time the game actually runs.
+        guard UIApplication.shared.applicationState == .active,
+              !GamePauseCoordinator.shared.isHoldingPause else { return }
+
+        MameFreePlayQuota.consume(Self.mameQuotaTick)
+
+        let remaining = MameFreePlayQuota.remainingToday
+        if remaining <= 0 {
+            presentMameQuotaReached()
+        } else if remaining <= Self.mameQuotaWarning, !mameQuotaWarned {
+            mameQuotaWarned = true
+            AppToastManager.shared.toast(Bundle.localizedString(forKey: "progate_mame_free_time_ending"), context: .game, level: .info)
+        }
+    }
+
+    private func presentMameQuotaReached() {
+        guard mameQuotaAlert == nil, presentedViewController == nil else { return }
+
+        let alert = UIAlertController.gamePausedAlert(
+            title: Bundle.localizedString(forKey: "progate_alert_title"),
+            message: Bundle.localizedString(forKey: "progate_mame_daily_limit_reached")
+        )
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_unlock_pro"), style: .default) { [weak self, weak alert] _ in
+            // Hold the dismissed alert strongly: nothing else keeps it alive past the
+            // yield, and its pause lease would leak with it, freezing the game.
+            guard let alert else { return }
+            Task { @MainActor [weak self] in
+                await Task.yield()
+                // The purchase page takes its own pause lease before this one goes.
+                AppStoreProFeatureGate.shared.presentPurchasePage(from: self)
+                alert.releaseGamePauseIfNeeded()
+            }
+        })
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_mame_quit_game"), style: .cancel) { [weak self, weak alert] _ in
+            alert?.releaseGamePauseIfNeeded()
+            self?.mameQuotaTimer?.invalidate()
+            self?.mameQuotaTimer = nil
+            self?.myToolbarView.closeAction()
+        })
+
+        mameQuotaAlert = alert
+        present(alert, animated: true)
+    }
+}
+
 private enum GameLaunchBackgroundPreparation {
     static let queue = DispatchQueue(label: "com.retrogo.game-launch.preparation", qos: .utility)
 }
 
 extension RetroArchX {
     static func playGame(romUrl: URL?, core: EmuCoreInfoItem) {
+        guard MainActor.assumeIsolated({ MameFreePlayQuota.allowLaunch(core: core) }) else { return }
         guard let currentViewController = UIViewController.currentActive() else {
             return
         }
@@ -292,6 +397,14 @@ extension RetroArchX {
     }
 
     static func playGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
+        guard MainActor.assumeIsolated({ MameFreePlayQuota.allowLaunch(core: core) }) else { return }
+        // MAME sets are checked for missing files first; other cores launch directly.
+        MameLaunchCheck.run(game: romItem, core: core) {
+            presentGame(romItem: romItem, core: core)
+        }
+    }
+
+    private static func presentGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
         guard let currentViewController = UIViewController.currentActive() else {
             return
         }

@@ -126,7 +126,8 @@ final class GamePageToolbarView: UIView {
         savestateSupported = RetroArchX.shared().isCurrentCoreSupportsSavestate()
         // Cheats need both engine support AND a cheat session (the rom-item-keyed
         // store); the document-browser launch path has no session.
-        cheatSupported = (holder?.cheatSession != nil) && RetroArchX.shared().cheatSupported
+        cheatSupported = holder?.mameCheatSession != nil
+            || ((holder?.cheatSession != nil) && RetroArchX.shared().cheatSupported)
         netplaySupported = RetroArchX.shared().currentCoreItem?.supportsNetplay ?? false
         rebuildToolbar()
     }
@@ -354,19 +355,27 @@ extension GamePageToolbarView {
 extension GamePageToolbarView {
     /// Whether any cheat is currently enabled for this game.
     private func cheatHasActive() -> Bool {
-        holder?.cheatSession?.hasActiveCheat ?? false
+        holder?.cheatSession?.hasActiveCheat ?? holder?.mameCheatSession?.hasActiveCheat ?? false
     }
 
-    /// Adds a small green dot at the top-trailing corner of the cheat bar button,
-    /// shown only while a cheat is active. Recreated whenever the bar rebuilds.
+    /// Green while a cheat is on; orange when MAME cheats from last time wait to be restored
+    /// (they never come back on their own, see MameCheatSession); nil = no dot.
+    private func cheatBadgeColor() -> UIColor? {
+        if cheatHasActive() { return .systemGreen }
+        if (holder?.mameCheatSession?.restorableCount ?? 0) > 0 { return .systemOrange }
+        return nil
+    }
+
+    /// Adds a small dot at the top-trailing corner of the cheat bar button (see
+    /// `cheatBadgeColor`). Recreated whenever the bar rebuilds.
     private func addCheatBadge(to button: UIButton) {
         let dot = UIView()
-        dot.backgroundColor = .systemGreen
+        dot.backgroundColor = cheatBadgeColor() ?? .systemGreen
         dot.layer.cornerRadius = Self.cheatBadgeSize / 2
         dot.layer.borderColor = UIColor.black.withAlphaComponent(0.35).cgColor
         dot.layer.borderWidth = 0.5
         dot.isUserInteractionEnabled = false
-        dot.isHidden = !cheatHasActive()
+        dot.isHidden = cheatBadgeColor() == nil
         button.addSubview(dot)
         dot.snp.makeConstraints { make in
             make.width.height.equalTo(Self.cheatBadgeSize)
@@ -380,7 +389,9 @@ extension GamePageToolbarView {
 
     @objc
     private func cheatStateDidChange() {
-        cheatBadgeView?.isHidden = !cheatHasActive()
+        let color = cheatBadgeColor()
+        cheatBadgeView?.isHidden = color == nil
+        if let color { cheatBadgeView?.backgroundColor = color }
     }
 }
 
@@ -684,8 +695,10 @@ extension GamePageToolbarView {
             return
         }
 
-        guard let romPath = RetroArchX.shared().getCurrentRomPath(),
-              let sha256 = FileManager.default.sha256ForFile(atPath: romPath) else {
+        // Same identity the states are saved under (romItem.sha256); hashing the running
+        // file differs for multi-file games and for MAME sets rebuilt by a repair.
+        guard let sha256 = holder?.romItem?.sha256
+                ?? RetroArchX.shared().getCurrentRomPath().flatMap({ FileManager.default.sha256ForFile(atPath: $0) }) else {
             return
         }
 
@@ -731,8 +744,8 @@ extension GamePageToolbarView {
 
         guard
             let currentCoreItem = RetroArchX.shared().currentCoreItem,
-            let romPath = RetroArchX.shared().getCurrentRomPath(),
-            let sha256 = FileManager.default.sha256ForFile(atPath: romPath) else {
+            let sha256 = holder?.romItem?.sha256
+                ?? RetroArchX.shared().getCurrentRomPath().flatMap({ FileManager.default.sha256ForFile(atPath: $0) }) else {
             return
         }
 
@@ -829,6 +842,8 @@ extension GamePageToolbarView {
     private func restartAction() {
         Vibration.selection.vibrate()
 
+        // MAME cheats rewrite memory every frame; left on, they break the boot self-test.
+        holder?.mameCheatSession?.prepareForReset()
         RetroArchX.shared().reset()
     }
 
@@ -845,6 +860,11 @@ extension GamePageToolbarView {
     private func cheatAction() {
         Vibration.selection.vibrate()
 
+        if let mameSession = holder?.mameCheatSession {
+            let controller = MameCheatListViewController(session: mameSession)
+            holder?.present(UINavigationController(rootViewController: controller), animated: true)
+            return
+        }
         guard let session = holder?.cheatSession else { return }
 
         let controller = GameCheatListViewController(session: session, showClose: true)
@@ -861,12 +881,14 @@ extension GamePageToolbarView {
     }
 
     @objc
-    private func closeAction() {
+    func closeAction() {
         Vibration.selection.vibrate()
 
         // Drop the engine's cheat list so it never leaks into the next game. The
         // Swift/SQLite library is untouched; cheats are re-pushed on next launch.
         RetroArchX.shared().clearCheats()
+        // The MAME core keeps the handed-over cheat XML for the whole process.
+        holder?.mameCheatSession?.endSession()
 
         if AppSettings.shared.autoSaveLoadState {
             let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: holder?.romItem)

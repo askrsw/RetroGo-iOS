@@ -38,6 +38,7 @@ struct GameOverlayLayoutResolver {
     private(set) var scaleFactor: CGFloat = 1.0
     private(set) var contentOffset: CGPoint = .zero
     private(set) var polarAnchor: CGPoint = .zero
+    private(set) var fourButtonPolarAnchor: CGPoint = .zero
 
     init(config: GamePageOverlayConfig) {
         self.config = config
@@ -48,10 +49,12 @@ struct GameOverlayLayoutResolver {
         self.contentOffset = contentOffset
         self.mode = size.width < size.height ? .portrait : .landscape
         self.scaleFactor = resolveScaleFactor()
-        self.polarAnchor = resolvePolarAnchor()
+        self.polarAnchor = resolvePolarAnchor(mode == .portrait ? config.portraitPolarAnchor : config.landscapePolarAnchor)
+        let fourButtonInsets = mode == .portrait ? config.fourButtonPortraitPolarAnchor : config.fourButtonLandscapePolarAnchor
+        self.fourButtonPolarAnchor = fourButtonInsets.map(resolvePolarAnchor) ?? polarAnchor
     }
 
-    func resolveRect(_ element: GamePageOverlayElement, usePolarLayout: Bool) -> CGRect {
+    func resolveRect(_ element: GamePageOverlayElement, usePolarLayout: Bool, fourButtonLayout: Bool = false) -> CGRect {
         let elementSize = element.geometry.size
         let scaledSize = CGSize(
             width: CGFloat(elementSize.width) * scaleFactor,
@@ -59,7 +62,8 @@ struct GameOverlayLayoutResolver {
         )
 
         if usePolarLayout, let polar = polarLayout(for: element) {
-            return resolvePolarRect(size: scaledSize, polar: polar)
+            return resolvePolarRect(size: scaledSize, polar: polar,
+                                    anchor: fourButtonLayout ? fourButtonPolarAnchor : polarAnchor)
         }
 
         return resolvePlainRect(size: scaledSize, insets: plainLayout(for: element))
@@ -81,13 +85,13 @@ struct GameOverlayLayoutResolver {
 }
 
 private extension GameOverlayLayoutResolver {
-    func resolvePolarRect(size: CGSize, polar: GamePageOverlayPolar) -> CGRect {
+    func resolvePolarRect(size: CGSize, polar: GamePageOverlayPolar, anchor: CGPoint) -> CGRect {
         let theta = polar.theta * Double.pi / 180.0
         let radius = polar.radius * Double(scaleFactor)
 
         let center = CGPoint(
-            x: polarAnchor.x + cos(theta) * radius,
-            y: polarAnchor.y + sin(theta) * radius
+            x: anchor.x + cos(theta) * radius,
+            y: anchor.y + sin(theta) * radius
         )
 
         let origin = CGPoint(
@@ -132,8 +136,7 @@ private extension GameOverlayLayoutResolver {
         return CGRect(origin: scaledOrigin, size: size)
     }
 
-    func resolvePolarAnchor() -> CGPoint {
-        let insets = mode == .portrait ? config.portraitPolarAnchor : config.landscapePolarAnchor
+    func resolvePolarAnchor(_ insets: GamePageOverlayInsets) -> CGPoint {
         let scaledInsets = scale(insets)
 
         let x: CGFloat
@@ -195,6 +198,12 @@ private extension GameOverlayLayoutResolver {
 protocol GameOverlaySceneLayouting: AnyObject {
     var overlayLayoutResolver: GameOverlayLayoutResolver { get set }
     var usePolarLayout: Bool { get }
+    /// Arcade four-button layout: polar elements use the config's four-button anchor.
+    var usesFourButtonLayout: Bool { get }
+}
+
+extension GameOverlaySceneLayouting {
+    var usesFourButtonLayout: Bool { false }
 }
 
 extension GameOverlaySceneLayouting where Self: SKScene {
@@ -206,7 +215,7 @@ extension GameOverlaySceneLayouting where Self: SKScene {
     }
 
     func resolveOverlayRect(_ element: GamePageOverlayElement) -> CGRect {
-        overlayLayoutResolver.resolveRect(element, usePolarLayout: usePolarLayout)
+        overlayLayoutResolver.resolveRect(element, usePolarLayout: usePolarLayout, fourButtonLayout: usesFourButtonLayout)
     }
 
     func resolveOverlayRotation(_ element: GamePageOverlayElement, rotatesWithPolarLayout: Bool) -> CGFloat {

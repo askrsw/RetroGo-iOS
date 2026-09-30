@@ -1,6 +1,6 @@
 //
 //  RAInputBindingProfile.h
-//  RetroMain
+//  RetroGo
 //
 //  Created by haharsw on 2026/5/5.
 //  Copyright © 2026 haharsw. All rights reserved.

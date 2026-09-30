@@ -52,6 +52,8 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     private var fastButton: GameOverLayFastButton?
     private var n64CButton: GameOverlayN64CButton?
     private var ndsLayoutButton: GameOverlayNDSLayoutButton?
+    private var arcadeLayoutButton: GameOverlayArcadeLayoutButton?
+    private(set) var usesFourButtonLayout = false
     private var emuFrameActionToken: String?
 
     private struct CollapseVisualState {
@@ -166,18 +168,19 @@ extension GamePageOverlayScene {
         }
 
         let shouldUpdatePosition = !(overlayCollapsed ?? false)
-        let nodes: [GameOverlayElementLayout] = [directionalControl, dpad, stick, ndsLayoutButton, n64CButton, fastButton].compactMap({ $0 }) + actionButtons
+        let nodes: [GameOverlayElementLayout] = [directionalControl, dpad, stick, ndsLayoutButton, n64CButton, fastButton, arcadeLayoutButton].compactMap({ $0 }) + actionButtons
         layout(nodes: nodes, shouldUpdatePosition: shouldUpdatePosition, basePostion: basePostion)
     }
 
     private func layout(nodes: [GameOverlayElementLayout], shouldUpdatePosition: Bool, basePostion: CGPoint?) {
         for node in nodes {
-            let rect = resolveOverlayRect(node.element)
+            let element = node.element.arcadeLayoutElement(fourButtons: usesFourButtonLayout)
+            let rect = resolveOverlayRect(element)
             let newPosition = node.updateRect(rect, shouldUpdatePosition: shouldUpdatePosition)
 
             // Only button-like nodes use polar layout; other overlay elements keep zero rotation.
             let rotatesWithPolarLayout = node is GameOverlayActionButton || node is GameOverLayFastButton
-            node.zRotation = resolveOverlayRotation(node.element, rotatesWithPolarLayout: rotatesWithPolarLayout)
+            node.zRotation = resolveOverlayRotation(element, rotatesWithPolarLayout: rotatesWithPolarLayout)
 
             if !shouldUpdatePosition, let basePostion {
                 node.position = basePostion
@@ -209,6 +212,8 @@ extension GamePageOverlayScene {
             return makeN64CButtonNode(element: element)
         case .ndsLayoutButton:
             return makeNDSLayoutButtonNode(element: element)
+        case .arcadeLayoutButton:
+            return makeArcadeLayoutButtonNode(element: element)
         }
     }
 
@@ -311,6 +316,23 @@ extension GamePageOverlayScene {
             RetroArchX.shared().send(code, down: down)
         }
         self.ndsLayoutButton = node
+        return node
+    }
+
+    private func makeArcadeLayoutButtonNode(element: GamePageOverlayElement) -> SKNode {
+        let node = GameOverlayArcadeLayoutButton(element: element, theme: theme) { [weak self] in
+            guard let self, !self.isAnimatingCollapse, self.overlayCollapsed != true else { return }
+            self.usesFourButtonLayout.toggle()
+            for button in self.actionButtons {
+                guard button.element.fourButtonGeometry != nil || button.element.isSixButtonOnly else { continue }
+                button.cancelActiveInput()
+                button.isHidden = button.element.isHidden || (self.usesFourButtonLayout && button.element.isSixButtonOnly)
+            }
+            self.arcadeLayoutButton?.applyFourButtonLayout(self.usesFourButtonLayout)
+            self.layoutNodes()
+        }
+        node.applyFourButtonLayout(usesFourButtonLayout)
+        self.arcadeLayoutButton = node
         return node
     }
 

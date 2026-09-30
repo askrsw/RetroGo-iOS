@@ -78,6 +78,7 @@ extension EmuCoreInfoItem {
         case "vbam": return .gba
         case "picodrive": return .md
         case "yabause": return .saturn
+        case "mame": return .mame
         default:
             return nil
         }

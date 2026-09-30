@@ -60,7 +60,8 @@ final class RGSectionHeaderView: UITableViewHeaderFooterView {
         contentView.backgroundColor = .clear
 
         label.font = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .semibold)
-        label.textColor = .label
+        // Same tone as the system section titles of inset-grouped tables.
+        label.textColor = .secondaryLabel
         label.numberOfLines = 0
 
         contentView.addSubview(label)

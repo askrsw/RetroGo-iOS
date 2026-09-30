@@ -1,6 +1,6 @@
 //
 //  RetroArchX+Cheat.m
-//  RetroMain
+//  RetroGo
 //
 //  Created by haharsw on 2026/6/6.
 //  Copyright © 2026 haharsw. All rights reserved.
@@ -93,6 +93,16 @@
     }
 }
 
+// Engine pushes are only meaningful while a game loop is live. Without a runner
+// the game is either still loading (content load frees and rebuilds the global
+// cheat list on a background queue) or already stopped (the list was cleared on
+// close). `currentCoreItem` alone is not enough: RARCH_PATH_CORE outlives the
+// game, so a late push (e.g. an async template fetch) would otherwise mutate
+// `cheat_manager_state` inline on the main thread, racing the next game's load.
+- (BOOL)ra_canPushCheats {
+    return self.currentCoreItem != nil && self.gameLogicRunner != nil;
+}
+
 - (NSArray<RACheatItem *> *)currentCheats {
     NSMutableArray<RACheatItem *> *result = [NSMutableArray array];
     unsigned count = cheat_manager_get_size();
@@ -127,7 +137,7 @@
 }
 
 - (BOOL)setCheats:(NSArray<RACheatItem *> *)items apply:(BOOL)apply {
-    if (self.currentCoreItem == nil) {
+    if (![self ra_canPushCheats]) {
         return NO;
     }
     __block BOOL ok = NO;
@@ -207,7 +217,7 @@
 }
 
 - (BOOL)setCheatEnabled:(BOOL)enabled atIndex:(NSUInteger)index {
-    if (self.currentCoreItem == nil) {
+    if (![self ra_canPushCheats]) {
         return NO;
     }
     __block BOOL ok = NO;
@@ -224,7 +234,7 @@
 }
 
 - (void)applyCheats {
-    if (self.currentCoreItem == nil) {
+    if (![self ra_canPushCheats]) {
         return;
     }
     [self ra_performCheatMutation:^{

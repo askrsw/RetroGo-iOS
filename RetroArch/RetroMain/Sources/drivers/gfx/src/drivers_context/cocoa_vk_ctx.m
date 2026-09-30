@@ -313,6 +313,11 @@ static void *cocoa_vk_gfx_ctx_init(void *video_driver)
       return NULL;
 
    [apple_platform setViewType:APPLE_VIEW_TYPE_VULKAN];
+   /* MoltenVK defaults to info level and dumps its extension/GPU report on
+    * every instance creation. Keep warnings and errors only; an explicit
+    * value (e.g. from the Xcode scheme) still wins. Must be set before the
+    * first vkCreateInstance, since MoltenVK reads its config once. */
+   setenv("MVK_CONFIG_LOG_LEVEL", "2", 0);
    if (!vulkan_context_init(&cocoa_ctx->vk, VULKAN_WSI_MVK_IOS))
    {
       free(cocoa_ctx);

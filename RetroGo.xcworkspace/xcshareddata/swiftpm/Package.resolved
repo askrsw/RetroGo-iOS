@@ -1,5 +1,5 @@
 {
-  "originHash" : "d9410a229388f5ce9b61a0662ef11d9e5a9b10d84ecb690c553883d764943d09",
+  "originHash" : "8aaccd8ba570b1c4cb3c5bc2a98cbd417a924ba23165926c2ada0cd05f0df90a",
   "pins" : [
     {
       "identity" : "defaults",
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/askrsw/XMLTextRenderKit.git",
       "state" : {
-        "revision" : "ea7bcdcb88d79a9bdfc312e6791dfc09dce471e4",
-        "version" : "1.4.0"
+        "revision" : "7a99f395a7996c3f64cb27c7929091cced76c26b",
+        "version" : "1.5.0"
       }
     }
   ],

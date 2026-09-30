@@ -85,6 +85,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)getSourceURL;
 
 - (BOOL)extractPPSSPPAssets;
+
+/// Debug helper: writes the MAME -listxml inventory of the drivers compiled into this core to `path`.
+/// Only valid for the MAME core; call off the main thread and never while a game is running.
+/// Extra archives linked into the next MAME session, keyed by the name MAME looks
+/// for (e.g. "kof2001.zip" -> path of the parent set elsewhere in the Library, or
+/// "sfa3u/sfa3u.03c" -> a file extracted for the set's loose-file folder).
+/// Consumed and cleared when the session directory is prepared.
+@property(nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *pendingMameSessionLinks;
+/// Name the game archive gets in the next MAME session, e.g. "sfa3u.zip" for a renamed
+/// user file; MAME picks the set from this name. Consumed with the links.
+@property(nonatomic, copy, nullable) NSString *pendingMameSessionGameName;
+- (BOOL)exportMameListXMLToPath:(NSString *)path error:(NSError * _Nullable * _Nullable)error;
 @end
 
 NS_ASSUME_NONNULL_END

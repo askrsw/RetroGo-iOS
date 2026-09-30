@@ -1871,6 +1871,18 @@ void drivers_deinit_input_only(void)
    memset(&input_st->analog_requested, 0, sizeof(input_st->analog_requested));
 }
 
+bool retrogo_unload_core_full_stop(void)
+{
+   /* Upstream CMD_EVENT_UNLOAD_CORE (load_dummy_core=true) runs task_push_start_dummy_core()
+    * before path_clear(RARCH_PATH_CORE), so content_load() re-inits the SAME core
+    * (MAME even boots an empty machine). RetroGo exit is a full stop: skip the dummy
+    * start and do the MAIN_DEINIT that content_load() would have done, without re-init. */
+   bool load_dummy_core = false;
+   bool ret             = command_event(CMD_EVENT_UNLOAD_CORE, &load_dummy_core);
+   retroarch_ctl(RARCH_CTL_MAIN_DEINIT, NULL);
+   return ret;
+}
+
 static void retroarch_deinit_drivers(struct retro_callbacks *cbs)
 {
    input_driver_state_t *input_st  = input_state_get_ptr();

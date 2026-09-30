@@ -34,7 +34,7 @@ final class RetroRomPersistence {
     }
 
     var currentVersion: Int {
-        7
+        8
     }
 
     // MARK: - Rom File and Rom Folder Stuff
@@ -503,6 +503,34 @@ final class RetroRomPersistence {
         #else
             return false
         #endif
+        }
+    }
+
+    /// Points a single-file game at a replaced physical file (e.g. a rebuilt MAME set).
+    /// Only the file-level facts change; the game's own sha256/crc32 stay, because save
+    /// states, thumbnails and cover lookups are keyed by them.
+    func replaceSingleFile(key: String, oldRawName: String, newRawName: String,
+                           sha256: String, crc32: String?, fileSize: Int) -> Bool {
+        do {
+            let db = Self.sqlite
+            try db.transaction {
+                let file = Self.romGameFileTable.filter(Self.key == key && Self.rawName == oldRawName)
+                let changed = try db.run(file.update(
+                    Self.rawName <- newRawName,
+                    Self.sha256 <- sha256,
+                    Self.crc32 <- crc32,
+                    Self.fileSize <- fileSize
+                ))
+                guard changed == 1 else {
+                    throw NSError(domain: "RetroRomError", code: 10, userInfo: [NSLocalizedDescriptionKey: "No file row for \(key)/\(oldRawName)"])
+                }
+                try db.run(Self.romGameTable.filter(Self.key == key).update(Self.entryFileKey <- newRawName))
+            }
+            return true
+        } catch {
+            // No fatalError here: the caller rolls the file move back.
+            print("Failed to replace file of \(key): \(error)")
+            return false
         }
     }
 
@@ -1159,7 +1187,7 @@ extension RetroRomPersistence {
 
             switch version {
                 case 0:
-                    try databaseV7(db: db)
+                    try databaseV8(db: db)
                     return true
                 case 1:
                     try migrationV1ToV2(db: db)
@@ -1168,6 +1196,7 @@ extension RetroRomPersistence {
                     try migrationV4ToV5(db: db)
                     try migrationV5ToV6(db: db)
                     try migrationV6ToV7(db: db)
+                    try migrationV7ToV8(db: db)
                     return true
                 case 2:
                     try migrationV2ToV3(db: db)
@@ -1175,24 +1204,32 @@ extension RetroRomPersistence {
                     try migrationV4ToV5(db: db)
                     try migrationV5ToV6(db: db)
                     try migrationV6ToV7(db: db)
+                    try migrationV7ToV8(db: db)
                     return true
                 case 3:
                     try migrationV3ToV4(db: db)
                     try migrationV4ToV5(db: db)
                     try migrationV5ToV6(db: db)
                     try migrationV6ToV7(db: db)
+                    try migrationV7ToV8(db: db)
                     return true
                 case 4:
                     try migrationV4ToV5(db: db)
                     try migrationV5ToV6(db: db)
                     try migrationV6ToV7(db: db)
+                    try migrationV7ToV8(db: db)
                     return true
                 case 5:
                     try migrationV5ToV6(db: db)
                     try migrationV6ToV7(db: db)
+                    try migrationV7ToV8(db: db)
                     return true
                 case 6:
                     try migrationV6ToV7(db: db)
+                    try migrationV7ToV8(db: db)
+                    return true
+                case 7:
+                    try migrationV7ToV8(db: db)
                     return true
                 default:
                     return true

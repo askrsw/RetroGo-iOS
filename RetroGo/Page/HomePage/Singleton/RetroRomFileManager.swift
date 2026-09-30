@@ -530,6 +530,7 @@ final class RetroRomFileManager {
     func deleteFileItem(_ key: String) -> Bool {
         if RetroRomPersistence.shared.deleteFileItem(key) {
             fileItemCache.removeValue(forKey: key)
+            MameRomSetPersistence.shared.deleteArchive(owner: .game(romgameKey: key))
             return true
         } else {
             return false

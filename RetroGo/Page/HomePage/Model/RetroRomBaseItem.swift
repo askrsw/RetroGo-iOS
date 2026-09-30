@@ -148,6 +148,20 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
         getDateSimpleString(createAt)
     }
 
+    /// Follows a physical file that was replaced and renamed on disk (e.g. a repaired
+    /// MAME set); roms.db must already hold the new name.
+    func updateRawNameAfterFileReplacement(_ name: String) {
+        rawName = name
+        pulseText = !pulseText
+    }
+
+    /// Sets metadata on an item that is still being imported and not yet stored;
+    /// stored items go through `updateShowName` / `assignCore` instead.
+    func prepareForImport(showName: String?, preferCore: String?) {
+        self.showName = showName
+        self.preferCore = preferCore
+    }
+
     func updateShowName(_ name: String) -> Bool {
         if RetroRomPersistence.shared.updateShowName(name, key: key, isFolder: isFolder) {
             showName = name
