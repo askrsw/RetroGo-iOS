@@ -102,6 +102,11 @@ final class GameConfigSession {
             if core.coreId == MameImportScreener.mameCoreId {
                 config.coreOptions?["mame_cheats_enable"] = "enabled"
             }
+        } else if let core {
+            // No bundled catalog yet: still launch from the core's own defaults,
+            // so values RetroArch flushed to .opt files on earlier runs never apply.
+            config.coreOptionsCoreId = core.coreId
+            config.coreOptions = [:]
         }
         RetroArchX.shared().config(config)
 

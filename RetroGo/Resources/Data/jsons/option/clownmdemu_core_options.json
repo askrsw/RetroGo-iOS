@@ -1,0 +1,357 @@
+{
+  "coreId": "clownmdemu",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Region, TV standard, controller protocol and Mega-CD features.",
+        "zh-Hans": "地区、电视制式、手柄协议与 Mega-CD 功能。"
+      },
+      "id": "console",
+      "options": [
+        {
+          "categoryId": "console",
+          "defaultValue": "auto",
+          "description": {
+            "en": "Which television standard the console outputs. Auto uses 50Hz PAL for Europe-only games and 60Hz NTSC for everything else, based on the region in the cartridge header.",
+            "zh-Hans": "主机输出的电视制式。自动模式会读取卡带头中的地区：仅限欧版的游戏使用 50Hz PAL，其余使用 60Hz NTSC。"
+          },
+          "key": "clownmdemu_tv_standard",
+          "restartRequired": true,
+          "title": {
+            "en": "TV Standard",
+            "zh-Hans": "电视制式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "ntsc": {
+              "en": "NTSC (59.94Hz)",
+              "zh-Hans": "NTSC（59.94Hz）"
+            },
+            "pal": {
+              "en": "PAL (50Hz)",
+              "zh-Hans": "PAL（50Hz）"
+            }
+          },
+          "values": [
+            "auto",
+            "pal",
+            "ntsc"
+          ]
+        },
+        {
+          "categoryId": "console",
+          "defaultValue": "auto",
+          "description": {
+            "en": "Which region the console is from. Some games refuse to run on the wrong region and only show a warning screen. Auto picks Japan for Japan-only games and International for everything else, based on the cartridge header.",
+            "zh-Hans": "模拟主机的地区。部分游戏在地区不符时只显示警告画面而无法运行。自动模式会读取卡带头：仅限日版的游戏使用日版主机，其余使用海外版。"
+          },
+          "key": "clownmdemu_overseas_region",
+          "restartRequired": true,
+          "title": {
+            "en": "Region",
+            "zh-Hans": "地区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "elsewhere": {
+              "en": "International",
+              "zh-Hans": "海外版"
+            },
+            "japan": {
+              "en": "Japan",
+              "zh-Hans": "日版"
+            }
+          },
+          "values": [
+            "auto",
+            "elsewhere",
+            "japan"
+          ]
+        },
+        {
+          "categoryId": "console",
+          "defaultValue": "standard",
+          "description": {
+            "en": "How the console reads the controllers. Standard supports 2 players; Multi (Sega Team Player) and Extra (EA 4 Way Play) add more players, but only games made for that adaptor support them.",
+            "zh-Hans": "主机读取手柄的方式。标准模式支持 2 人；多人（世嘉 Team Player）与扩展（EA 4 Way Play）可支持更多玩家，但仅适用于专门支持该适配器的游戏。"
+          },
+          "key": "clownmdemu_input_protocol",
+          "restartRequired": true,
+          "title": {
+            "en": "Input Protocol",
+            "zh-Hans": "输入协议"
+          },
+          "type": "select",
+          "valueLabels": {
+            "ea": {
+              "en": "Extra (4 Players Maximum)",
+              "zh-Hans": "扩展（最多 4 人）"
+            },
+            "sega": {
+              "en": "Multi (8 Players Maximum)",
+              "zh-Hans": "多人（最多 8 人）"
+            },
+            "standard": {
+              "en": "Standard (2 Players Maximum)",
+              "zh-Hans": "标准（最多 2 人）"
+            }
+          },
+          "values": [
+            "standard",
+            "sega",
+            "ea"
+          ]
+        },
+        {
+          "categoryId": "console",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Lets cartridge games use Mega-CD features such as CD music. This may break some games.",
+            "zh-Hans": "允许卡带游戏使用 Mega-CD 的功能（如 CD 音乐）。可能导致部分游戏出错。"
+          },
+          "key": "clownmdemu_cd_addon",
+          "restartRequired": true,
+          "title": {
+            "en": "Mega-CD Add-on",
+            "zh-Hans": "Mega-CD 扩展"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Console",
+        "zh-Hans": "主机"
+      }
+    },
+    {
+      "description": {
+        "en": "Interlaced display and widescreen hack.",
+        "zh-Hans": "隔行显示与宽屏修改。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Shows games that use Interlace Mode 2 for split-screen (such as Sonic 2's two-player mode) at full height instead of squashed.",
+            "zh-Hans": "使用隔行模式 2 做分屏的游戏（如《索尼克 2》双人模式）以完整高度显示，不再被压扁。"
+          },
+          "key": "clownmdemu_tall_interlace_mode_2",
+          "restartRequired": false,
+          "title": {
+            "en": "Tall Interlace Mode 2",
+            "zh-Hans": "隔行模式 2 全高显示"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "0",
+          "description": {
+            "en": "Widens the display by drawing extra columns at both sides. Works well with some games and badly with others.",
+            "zh-Hans": "在画面两侧多绘制若干列，使画面变宽。部分游戏效果很好，部分游戏会出现显示错误。"
+          },
+          "key": "clownmdemu_widescreen_tiles",
+          "restartRequired": true,
+          "title": {
+            "en": "Widescreen Hack",
+            "zh-Hans": "宽屏修改"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "1": {
+              "en": "2 Extra Columns",
+              "zh-Hans": "增加 2 列"
+            },
+            "10": {
+              "en": "20 Extra Columns",
+              "zh-Hans": "增加 20 列"
+            },
+            "11": {
+              "en": "22 Extra Columns",
+              "zh-Hans": "增加 22 列"
+            },
+            "12": {
+              "en": "24 Extra Columns",
+              "zh-Hans": "增加 24 列"
+            },
+            "2": {
+              "en": "4 Extra Columns",
+              "zh-Hans": "增加 4 列"
+            },
+            "3": {
+              "en": "6 Extra Columns",
+              "zh-Hans": "增加 6 列"
+            },
+            "4": {
+              "en": "8 Extra Columns",
+              "zh-Hans": "增加 8 列"
+            },
+            "5": {
+              "en": "10 Extra Columns",
+              "zh-Hans": "增加 10 列"
+            },
+            "6": {
+              "en": "12 Extra Columns",
+              "zh-Hans": "增加 12 列"
+            },
+            "7": {
+              "en": "14 Extra Columns",
+              "zh-Hans": "增加 14 列"
+            },
+            "8": {
+              "en": "16 Extra Columns",
+              "zh-Hans": "增加 16 列"
+            },
+            "9": {
+              "en": "18 Extra Columns",
+              "zh-Hans": "增加 18 列"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Filtering and analog distortion of the sound output.",
+        "zh-Hans": "声音输出的滤波与模拟失真。"
+      },
+      "id": "audio",
+      "options": [
+        {
+          "categoryId": "audio",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Softens high frequencies like a real Mega Drive. When off, treble sounds louder than on the original hardware.",
+            "zh-Hans": "像真实的 Mega Drive 一样柔化高频。关闭后高音会比原机更刺耳。"
+          },
+          "key": "clownmdemu_lowpass_filter",
+          "restartRequired": false,
+          "title": {
+            "en": "Low-Pass Filter",
+            "zh-Hans": "低通滤波"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Emulates the \"ladder effect\" of early Mega Drive models. When off, some quiet sounds become inaudible.",
+            "zh-Hans": "模拟早期 Mega Drive 的“阶梯效应”。关闭后部分较轻的声音会听不到。"
+          },
+          "key": "clownmdemu_ladder_effect",
+          "restartRequired": false,
+          "title": {
+            "en": "Low-Volume Distortion",
+            "zh-Hans": "低音量失真"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Audio",
+        "zh-Hans": "音频"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "ClownMDEmu",
+    "coreVersion": "v1.6.12",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en"
+    ]
+  },
+  "version": 1
+}

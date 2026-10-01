@@ -1,0 +1,17 @@
+{
+    "desc": {
+        "en": "A port of Gearsystem, a highly accurate Sega 8-bit emulator by Ignacio Sanchez, to libretro. It runs Master System / Mark III, Game Gear and SG-1000 games, and faithfully emulates the hardware, including undocumented features of the Z80 CPU.",
+        "zh": "[Gearsystem] 是由 Ignacio Sanchez 开发的高精度世嘉 8 位主机模拟器 Gearsystem 的 Libretro 移植版。它可以运行 Master System / Mark III、Game Gear 与 SG-1000 游戏，忠实还原硬件特性，包括 Z80 处理器的未公开功能。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv3",
+            "file_name": "gpl-3.0.txt"
+        }
+    ],
+    "src_url": "https://github.com/drhelius/Gearsystem",
+    "supports_analog": false,
+    "overlay": "sms",
+    "supports_logic_thread": true,
+    "allows_default_turbo_xy_hijack": true
+}

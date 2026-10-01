@@ -13,5 +13,5 @@
     "supports_analog": false,
     "overlay": "nes",
     "supports_logic_thread": true,
-    "allows_default_trubo_xy_hijack": true
+    "allows_default_turbo_xy_hijack": true
 }

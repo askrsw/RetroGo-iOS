@@ -151,7 +151,6 @@
 		ABAF58812FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABAF58802FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift */; };
 		ABB2F0772FB09F95006A40C0 /* AppStorePurchaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB2F0762FB09F95006A40C0 /* AppStorePurchaseViewController.swift */; };
 		ABB34DCA2F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = ABB34DC92F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy */; };
-		ABB50EE62FE81D6D001B3042 /* emu.picodrive.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABB50EE42FE81CD5001B3042 /* emu.picodrive.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ABB6F6E42FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB6F6E32FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift */; };
 		ABB6F6E62FC0257D00A13412 /* RAPlatformItem+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB6F6E52FC0257D00A13412 /* RAPlatformItem+Extension.swift */; };
 		ABB6F6E82FC0C58D00A13412 /* AppWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB6F6E72FC0C58D00A13412 /* AppWelcomeViewController.swift */; };
@@ -203,6 +202,8 @@
 		ABF60F882FC5F99C006C5B5A /* RetroRomByCoreSectionedDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F872FC5F99C006C5B5A /* RetroRomByCoreSectionedDataSource.swift */; };
 		ABF60F8A2FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F892FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift */; };
 		ABF60F8C2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F8B2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift */; };
+		AC10C1D22FF0A00000C1D001 /* emu.clownmdemu.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AC10C1D12FF0A00000C1D001 /* emu.clownmdemu.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AC10C1D42FF0A00000C1D001 /* emu.gearsystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AC10C1D32FF0A00000C1D001 /* emu.gearsystem.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AC2309260000000000000001 /* GameOverlayArcadeLayoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC2309260000000000000002 /* GameOverlayArcadeLayoutButton.swift */; };
 		C01920260919000000000001 /* GameCoreOptionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000003 /* GameCoreOptionCatalog.swift */; };
 		C01920260919000000000002 /* GameCoreOptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000004 /* GameCoreOptionViewController.swift */; };
@@ -216,7 +217,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				ABB50EE62FE81D6D001B3042 /* emu.picodrive.framework in CopyFiles */,
+				AC10C1D22FF0A00000C1D001 /* emu.clownmdemu.framework in CopyFiles */,
+				AC10C1D42FF0A00000C1D001 /* emu.gearsystem.framework in CopyFiles */,
 				C02120260921000000000001 /* emu.mame.framework in CopyFiles */,
 				AB6789632FE5278B0015D5E0 /* emu.fceumm.framework in CopyFiles */,
 				AB11A55F2F9941BF00C32E39 /* emu.dosbox-pure.framework in CopyFiles */,
@@ -377,7 +379,6 @@
 		ABAF58802FDE000000E8E870 /* GameCheatTemplateAutoBinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCheatTemplateAutoBinder.swift; sourceTree = "<group>"; };
 		ABB2F0762FB09F95006A40C0 /* AppStorePurchaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorePurchaseViewController.swift; sourceTree = "<group>"; };
 		ABB34DC92F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		ABB50EE42FE81CD5001B3042 /* emu.picodrive.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.picodrive.framework; sourceTree = "<group>"; };
 		ABB6F6E32FC00BF800A13412 /* EmuCoreInfoItem+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EmuCoreInfoItem+Extension.swift"; sourceTree = "<group>"; };
 		ABB6F6E52FC0257D00A13412 /* RAPlatformItem+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RAPlatformItem+Extension.swift"; sourceTree = "<group>"; };
 		ABB6F6E72FC0C58D00A13412 /* AppWelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppWelcomeViewController.swift; sourceTree = "<group>"; };
@@ -443,6 +444,8 @@
 		ABF60F872FC5F99C006C5B5A /* RetroRomByCoreSectionedDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomByCoreSectionedDataSource.swift; sourceTree = "<group>"; };
 		ABF60F892FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomByTagSectionedDataSource.swift; sourceTree = "<group>"; };
 		ABF60F8B2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderUnifiedSubview.swift; sourceTree = "<group>"; };
+		AC10C1D12FF0A00000C1D001 /* emu.clownmdemu.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.clownmdemu.framework; sourceTree = "<group>"; };
+		AC10C1D32FF0A00000C1D001 /* emu.gearsystem.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.gearsystem.framework; sourceTree = "<group>"; };
 		AC2309260000000000000002 /* GameOverlayArcadeLayoutButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayArcadeLayoutButton.swift; sourceTree = "<group>"; };
 		C01920260919000000000003 /* GameCoreOptionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionCatalog.swift; sourceTree = "<group>"; };
 		C01920260919000000000004 /* GameCoreOptionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionViewController.swift; sourceTree = "<group>"; };
@@ -763,7 +766,8 @@
 		AB88FDE52F5DEB7100F16548 /* Cores */ = {
 			isa = PBXGroup;
 			children = (
-				ABB50EE42FE81CD5001B3042 /* emu.picodrive.framework */,
+				AC10C1D12FF0A00000C1D001 /* emu.clownmdemu.framework */,
+				AC10C1D32FF0A00000C1D001 /* emu.gearsystem.framework */,
 				C02120260921000000000002 /* emu.mame.framework */,
 				ABBC8AC12F5E5504007E1669 /* emu.dosbox-pure.framework */,
 				ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */,

@@ -406,7 +406,7 @@ NS_ASSUME_NONNULL_BEGIN
     if(d_extraInfo == nil) {
         d_extraInfo = [self loadExtraCoreInfo];
     }
-    NSNumber *obj = d_extraInfo[@"allows_default_trubo_xy_hijack"];
+    NSNumber *obj = d_extraInfo[@"allows_default_turbo_xy_hijack"];
     return [obj boolValue];
 }
 

@@ -398,32 +398,47 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Sega - MS/GG/MD/CD/32X (PicoDrive)</string>
+			<string>Sega - MD/CD (ClownMDEmu)</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.haharsw.pudge.picodrive</string>
+			<string>com.haharsw.pudge.clownmdemu</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
 					<string>bin</string>
+					<string>md</string>
 					<string>gen</string>
 					<string>smd</string>
-					<string>md</string>
-					<string>32x</string>
 					<string>cue</string>
 					<string>iso</string>
 					<string>chd</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/x-clownmdemu-rom</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Sega - MS/GG/SG-1000 (Gearsystem)</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.haharsw.pudge.gearsystem</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
 					<string>sms</string>
 					<string>gg</string>
 					<string>sg</string>
-					<string>sc</string>
-					<string>m3u</string>
-					<string>68k</string>
-					<string>sgd</string>
-					<string>pco</string>
+					<string>mv</string>
+					<string>bin</string>
+					<string>rom</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>application/x-picodrive-rom</string>
+				<string>application/x-gearsystem-rom</string>
 			</dict>
 		</dict>
 	</array>
