@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.9.1" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.9.1</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>October 2, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.9.1" style="number">
+            <p-item>Sega <b>Mega Drive / Mega-CD</b> games now run on the <b>ClownMDEmu</b> core and <b>Master System / Game Gear</b> games on the <b>Gearsystem</b> core, which also adds <b>SG-1000</b> support. Both cores are more accurate and support save states, cheats and core options; ClownMDEmu also <b>detects the region</b> from the cartridge, runs .smd files directly and plays Mega-CD games without a BIOS.</p-item>
+            <p-item>Removed the <b>PicoDrive</b> core: its license does not allow use in commercial products, which conflicts with RetroGo's paid features, so it has been replaced by open-source cores whose licenses allow it. <b>32X and Pico</b> games are no longer supported, and save states made with PicoDrive cannot be loaded by the new cores.</p-item>
+            <p-item>Master System and Game Gear use a new <b>two-button on-screen layout</b> matching the 1 and 2 buttons of the original controllers, and Discover no longer lists platforms that no core can run yet.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.9.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.9.0</p-title>
         <p-paragraph fontsize="13">
