@@ -170,9 +170,13 @@ final class DiscoverPlatformViewController: UIViewController {
         }
     }
 
+    // Databases some bundled core can run, from each core.info `database` list.
+    // Platforms whose core was dropped (e.g. 32X, Pico) stay in gamerdb but are hidden.
+    private lazy var runnableDatabases: Set<String> = Set(RetroRomCoreManager.shared.allCores.flatMap { $0.databases ?? [] })
+
     private func reloadPlatforms() {
         // allPlatforms() is synchronous and fast (small result set).
-        platforms = RAGameRDBManager.shared().allPlatforms()
+        platforms = RAGameRDBManager.shared().allPlatforms().filter { runnableDatabases.contains($0.rdbName) }
 
         var snapshot = Snapshot()
         snapshot.appendSections([.main])

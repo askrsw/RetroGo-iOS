@@ -121,10 +121,7 @@ RetroGo/Resources/Data/rdb/
 /Backup/
 /Tools/
 /.claude/
+/.codex/
 
 AGENTS.md
 CLAUDE.md
-
-# Local OpenViking pilot
-/.openviking-pilot/
-/.codex/config.toml

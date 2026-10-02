@@ -341,6 +341,7 @@ extension GamePageOverlayConfig {
         case ps = "ps"
         case psp = "psp"
         case genesis = "genesis"
+        case sms = "sms"
         case mame = "mame"
     }
 

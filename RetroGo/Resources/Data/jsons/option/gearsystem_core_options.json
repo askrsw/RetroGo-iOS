@@ -1,0 +1,494 @@
+{
+  "coreId": "gearsystem",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Console model, region, display and sound.",
+        "zh-Hans": "主机型号、地区、画面与声音。"
+      },
+      "id": "general",
+      "options": [
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "Which console to emulate. Auto picks it from the ROM.",
+            "zh-Hans": "要模拟的主机。自动模式会根据 ROM 判断。"
+          },
+          "key": "gearsystem_system",
+          "restartRequired": true,
+          "title": {
+            "en": "System",
+            "zh-Hans": "主机类型"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "Game Gear": {
+              "en": "Game Gear",
+              "zh-Hans": "Game Gear"
+            },
+            "Master System / Mark III": {
+              "en": "Master System / Mark III",
+              "zh-Hans": "Master System / Mark III"
+            },
+            "SG-1000 / Multivision": {
+              "en": "SG-1000 / Multivision",
+              "zh-Hans": "SG-1000 / Multivision"
+            }
+          },
+          "values": [
+            "Auto",
+            "Master System / Mark III",
+            "Game Gear",
+            "SG-1000 / Multivision"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "Which region the console is from. Some games show different text or refuse to run on the wrong region.",
+            "zh-Hans": "模拟主机的地区。部分游戏在地区不同时文字不同，或在地区不符时无法运行。"
+          },
+          "key": "gearsystem_region",
+          "restartRequired": true,
+          "title": {
+            "en": "Region",
+            "zh-Hans": "地区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "Game Gear Export": {
+              "en": "Game Gear Export",
+              "zh-Hans": "Game Gear 海外版"
+            },
+            "Game Gear International": {
+              "en": "Game Gear International",
+              "zh-Hans": "Game Gear 国际版"
+            },
+            "Game Gear Japan": {
+              "en": "Game Gear Japan",
+              "zh-Hans": "Game Gear 日版"
+            },
+            "Master System Export": {
+              "en": "Master System Export",
+              "zh-Hans": "Master System 海外版"
+            },
+            "Master System Japan": {
+              "en": "Master System Japan",
+              "zh-Hans": "Master System 日版"
+            }
+          },
+          "values": [
+            "Auto",
+            "Master System Japan",
+            "Master System Export",
+            "Game Gear Japan",
+            "Game Gear Export",
+            "Game Gear International"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "The cartridge banking hardware. Leave on Auto unless a game fails to start.",
+            "zh-Hans": "卡带的存储切换硬件。除非游戏无法启动，否则请保持自动。"
+          },
+          "key": "gearsystem_mapper",
+          "restartRequired": true,
+          "title": {
+            "en": "Mapper",
+            "zh-Hans": "卡带映射器"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "Codemasters": {
+              "en": "Codemasters",
+              "zh-Hans": "Codemasters"
+            },
+            "Janggun": {
+              "en": "Janggun",
+              "zh-Hans": "Janggun"
+            },
+            "Korean": {
+              "en": "Korean",
+              "zh-Hans": "韩国卡带"
+            },
+            "MSX": {
+              "en": "MSX",
+              "zh-Hans": "MSX"
+            },
+            "ROM": {
+              "en": "ROM",
+              "zh-Hans": "无映射（ROM）"
+            },
+            "SEGA": {
+              "en": "SEGA",
+              "zh-Hans": "世嘉"
+            },
+            "SG-1000": {
+              "en": "SG-1000",
+              "zh-Hans": "SG-1000"
+            }
+          },
+          "values": [
+            "Auto",
+            "ROM",
+            "SEGA",
+            "Codemasters",
+            "Korean",
+            "MSX",
+            "Janggun",
+            "SG-1000"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "NTSC runs at 60Hz and PAL at 50Hz. Auto follows the selected region.",
+            "zh-Hans": "NTSC 为 60Hz，PAL 为 50Hz。自动模式跟随所选地区。"
+          },
+          "key": "gearsystem_timing",
+          "restartRequired": true,
+          "title": {
+            "en": "Refresh Rate",
+            "zh-Hans": "刷新率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "NTSC (60 Hz)": {
+              "en": "NTSC (60 Hz)",
+              "zh-Hans": "NTSC（60Hz）"
+            },
+            "PAL (50 Hz)": {
+              "en": "PAL (50 Hz)",
+              "zh-Hans": "PAL（50Hz）"
+            }
+          },
+          "values": [
+            "Auto",
+            "NTSC (60 Hz)",
+            "PAL (50 Hz)"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "1:1 PAR",
+          "description": {
+            "en": "1:1 PAR keeps square pixels; the other values stretch the picture to a fixed display ratio.",
+            "zh-Hans": "1:1 PAR 保持方形像素；其他选项会把画面拉伸为固定的显示比例。"
+          },
+          "key": "gearsystem_aspect_ratio",
+          "restartRequired": true,
+          "title": {
+            "en": "Aspect Ratio",
+            "zh-Hans": "画面比例"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16:10 DAR": {
+              "en": "16:10 DAR",
+              "zh-Hans": "16:10"
+            },
+            "16:9 DAR": {
+              "en": "16:9 DAR",
+              "zh-Hans": "16:9"
+            },
+            "1:1 PAR": {
+              "en": "1:1 PAR",
+              "zh-Hans": "1:1 PAR（原始像素）"
+            },
+            "4:3 DAR": {
+              "en": "4:3 DAR",
+              "zh-Hans": "4:3"
+            }
+          },
+          "values": [
+            "1:1 PAR",
+            "4:3 DAR",
+            "16:9 DAR",
+            "16:10 DAR"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Shows the border area around the picture that a TV would normally hide.",
+            "zh-Hans": "显示电视通常会裁掉的画面边框区域。"
+          },
+          "key": "gearsystem_overscan",
+          "restartRequired": true,
+          "title": {
+            "en": "Overscan",
+            "zh-Hans": "过扫描区域"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "Full (284 width)": {
+              "en": "Full (284 width)",
+              "zh-Hans": "全部（宽 284）"
+            },
+            "Full (320 width)": {
+              "en": "Full (320 width)",
+              "zh-Hans": "全部（宽 320）"
+            },
+            "Top+Bottom": {
+              "en": "Top+Bottom",
+              "zh-Hans": "上下边框"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Top+Bottom",
+            "Full (284 width)",
+            "Full (320 width)"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "No",
+          "description": {
+            "en": "Many Master System games leave an 8-pixel blank column on the left edge. Auto hides it only in games that use it.",
+            "zh-Hans": "许多 Master System 游戏在画面左侧留有 8 像素宽的空白列。自动模式只在使用该空白列的游戏中隐藏。"
+          },
+          "key": "gearsystem_hide_left_bar",
+          "restartRequired": true,
+          "title": {
+            "en": "Hide Left Bar (SMS only)",
+            "zh-Hans": "隐藏左侧黑边（仅 SMS）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Always": {
+              "en": "Always",
+              "zh-Hans": "总是"
+            },
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "No": {
+              "en": "No",
+              "zh-Hans": "否"
+            }
+          },
+          "values": [
+            "No",
+            "Auto",
+            "Always"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Boots through the Master System BIOS (bios.sms) to show the startup screen. Save states are unavailable while the BIOS is running.",
+            "zh-Hans": "通过 Master System BIOS（bios.sms）启动，显示开机画面。BIOS 运行期间无法使用即时存档。"
+          },
+          "key": "gearsystem_bios_sms",
+          "restartRequired": true,
+          "title": {
+            "en": "Master System BIOS",
+            "zh-Hans": "Master System BIOS"
+          },
+          "type": "select",
+          "valueFiles": {
+            "Enabled": {
+              "extensions": [
+                "sms",
+                "bin",
+                "rom"
+              ],
+              "fileName": "bios.sms",
+              "restartRequired": true
+            }
+          },
+          "valueLabels": {
+            "Disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "Enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Boots through the Game Gear BIOS (bios.gg) to show the startup screen. Save states are unavailable while the BIOS is running.",
+            "zh-Hans": "通过 Game Gear BIOS（bios.gg）启动，显示开机画面。BIOS 运行期间无法使用即时存档。"
+          },
+          "key": "gearsystem_bios_gg",
+          "restartRequired": true,
+          "title": {
+            "en": "Game Gear BIOS",
+            "zh-Hans": "Game Gear BIOS"
+          },
+          "type": "select",
+          "valueFiles": {
+            "Enabled": {
+              "extensions": [
+                "gg",
+                "bin",
+                "rom"
+              ],
+              "fileName": "bios.gg",
+              "restartRequired": true
+            }
+          },
+          "valueLabels": {
+            "Disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "Enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto",
+          "description": {
+            "en": "Enables the Japanese FM sound unit for games that support it. Turn off to hear the standard PSG soundtrack.",
+            "zh-Hans": "为支持的游戏启用日版 FM 音源扩展。关闭后使用标准 PSG 音乐。"
+          },
+          "key": "gearsystem_ym2413",
+          "restartRequired": true,
+          "title": {
+            "en": "FM Sound (YM2413)",
+            "zh-Hans": "FM 音源（YM2413）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "Disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "Auto",
+            "Disabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Both Eyes / OFF",
+          "description": {
+            "en": "For SegaScope 3-D games: show the picture for one eye only to remove flicker.",
+            "zh-Hans": "用于 SegaScope 3D 游戏：只显示单眼画面以消除闪烁。"
+          },
+          "key": "gearsystem_glasses",
+          "restartRequired": false,
+          "title": {
+            "en": "3D Glasses",
+            "zh-Hans": "3D 眼镜"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Both Eyes / OFF": {
+              "en": "Both Eyes / OFF",
+              "zh-Hans": "双眼 / 关"
+            },
+            "Left Eye": {
+              "en": "Left Eye",
+              "zh-Hans": "左眼"
+            },
+            "Right Eye": {
+              "en": "Right Eye",
+              "zh-Hans": "右眼"
+            }
+          },
+          "values": [
+            "Both Eyes / OFF",
+            "Left Eye",
+            "Right Eye"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "Disabled",
+          "description": {
+            "en": "Allows pressing up and down, or left and right, at the same time. Some games glitch when this happens.",
+            "zh-Hans": "允许同时按下上和下、或左和右。部分游戏在这种情况下会出现异常。"
+          },
+          "key": "gearsystem_up_down_allowed",
+          "restartRequired": false,
+          "title": {
+            "en": "Allow Opposite Directions",
+            "zh-Hans": "允许同时按相反方向"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "Enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "Disabled",
+            "Enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "General",
+        "zh-Hans": "通用"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Gearsystem",
+    "coreVersion": "3.8.3",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en"
+    ]
+  },
+  "version": 1
+}

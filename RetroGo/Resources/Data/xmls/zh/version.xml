@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.9.1" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.9.1</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 10 月 2 日</i>。
+        </p-paragraph>
+        <p-list id="v1.9.1" style="number">
+            <p-item>世嘉 <b>Mega Drive / Mega-CD</b> 改用 <b>ClownMDEmu</b> 核心，<b>Master System / Game Gear</b> 改用 <b>Gearsystem</b> 核心，并新增 <b>SG-1000</b> 游戏支持。两款核心模拟精度更高，均支持即时存档、金手指与核心选项；ClownMDEmu 还会根据卡带<b>自动识别地区</b>，可直接运行 .smd 文件，Mega-CD 游戏无需 BIOS。</p-item>
+            <p-item>移除 <b>PicoDrive</b> 核心：它的授权条款不允许用于商业产品，与 RetroGo 的付费功能冲突，因此改用授权允许的开源核心替代。<b>32X 与 Pico</b> 游戏不再支持，原先用 PicoDrive 保存的即时存档也无法在新核心中读取。</p-item>
+            <p-item>Master System / Game Gear 使用新的<b>双键屏幕按键布局</b>，按键与原机手柄的 1、2 键一致；「发现」页不再显示暂无核心支持的平台。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.9.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.9.0</p-title>
         <p-paragraph fontsize="13">

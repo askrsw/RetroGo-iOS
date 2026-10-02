@@ -1,0 +1,17 @@
+{
+    "desc": {
+        "en": "ClownMDEmu is an accurate Sega Mega Drive / Genesis emulator by Clownacy, written from scratch in portable C. It also runs Mega-CD / Sega CD games with a built-in BIOS replacement, so no BIOS files are needed. It supports 3- and 6-button controllers, save states and cheat codes. It does not emulate the Master System, Game Gear or 32X, and a few games that rely on special cartridge hardware may not run yet.",
+        "zh": "[ClownMDEmu] 是由 Clownacy 用可移植 C 语言从零编写的高精度世嘉 Mega Drive / Genesis 模拟器。它还能运行 Mega-CD / Sega CD 游戏，并内置 BIOS 替代实现，无需额外提供 BIOS 文件。支持 3 键和 6 键手柄、即时存档与金手指。它不模拟 Master System、Game Gear 和 32X，少数依赖特殊卡带硬件的游戏暂时可能无法运行。"
+    },
+    "licenses": [
+        {
+            "show_name": "AGPLv3",
+            "file_name": "agpl-3.0.txt"
+        }
+    ],
+    "src_url": "https://github.com/Clownacy/clownmdemu-libretro",
+    "supports_analog": false,
+    "overlay": "genesis",
+    "supports_logic_thread": true,
+    "allows_default_turbo_xy_hijack": false
+}
