@@ -220,11 +220,6 @@ extension GameStateListViewController {
     private func presentNewSaveAlert() {
         guard case .save(let onSave) = mode else { return }
 
-        if !gameStateItems.isEmpty,
-           !AppStoreProFeatureGate.shared.requirePro(feature: .manualSaveSlot, presentation: .alert) {
-            return
-        }
-
         let title = Bundle.localizedString(forKey: "gamepage_save_state")
         let message = Bundle.localizedString(forKey: "gamepage_input_state_name")
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)

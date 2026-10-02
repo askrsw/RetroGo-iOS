@@ -351,12 +351,8 @@
 "iap_yearly_trial_desc" = "%@ · 之后按年计费";
 "iap_loading" = "加载中...";
 "iap_probenefits" = "Pro 权益";
-"iap_probenefit_arcade" = "不限时畅玩街机（MAME），免费用户每天 10 分钟。";
-"iap_probenefit_cheats" = "启用金手指与系统金手指模板。";
-"iap_probenefit1" = "无限制快进控制。";
-"iap_probenefit2" = "每个游戏支持无限手动存档位。";
-"iap_probenefit3" = "高级物理手柄按键映射。";
-"iap_probenefit4" = "支持核心级与游戏级的细粒度配置。";
+"iap_probenefit_unlimited_play" = "所有平台不限时畅玩，免费用户每个平台每天 10 分钟。";
+"iap_probenefit_all_cores" = "解锁全部模拟器核心，不再只能用各平台的免费核心。";
 "iap_probenefit5" = "支持 RetroGo 持续开发与未来高级功能。";
 "iap_foottiptext" = "确认购买后，Pro 解锁费用将从你的 App Store 账户扣除。月度和年度订阅会自动续订，除非你在当前订阅周期结束前至少 24 小时关闭自动续订。终身解锁为一次性购买，不会自动续订。你可以随时在 App Store 中管理订阅。如有任何问题，请联系我们。";
 "iap_foottipmanage" = "管理订阅";
@@ -407,18 +403,14 @@
 // MARK: - Pro Feature Gate
 
 "progate_alert_title" = "RetroGo Pro";
-"progate_alert_message_format" = "%@\n解锁 RetroGo Pro 后可继续使用。";
 "progate_unlock_pro" = "解锁 Pro";
 "progate_not_now" = "暂不";
-"progate_cheats_locked" = "启用金手指需要 Pro。";
-"progate_fast_forward_locked" = "3x、4x、6x 快进倍率需要 Pro。";
-"progate_manual_save_slot_locked" = "无限手动存档位是 Pro 功能。";
-"progate_controller_mapping_locked" = "高级物理手柄按键映射是 Pro 功能。";
-"progate_advanced_configuration_locked" = "核心与游戏的高级配置是 Pro 功能。";
-"progate_mame_daily_limit_reached" = "今天 10 分钟的免费街机时间已用完。解锁 RetroGo Pro 即可不限时畅玩街机，或明天再来。";
-"progate_mame_free_time_left_format" = "今日免费街机时间剩余 %d 分钟";
-"progate_mame_free_time_ending" = "今日免费街机时间剩余不足 1 分钟。";
-"progate_mame_quit_game" = "退出游戏";
+"progate_daily_limit_reached_format" = "%@ 今天的 10 分钟免费时间已用完。解锁 RetroGo Pro 即可不限时畅玩，或明天再来。";
+"progate_core_requires_pro_format" = "%@ 需要 RetroGo Pro。";
+"progate_core_requires_pro_with_free_format" = "%1$@ 需要 RetroGo Pro。免费用户可以使用 %2$@ 运行这个平台的游戏，每天 10 分钟。";
+"progate_free_time_left_format" = "今日免费游戏时间剩余 %d 分钟";
+"progate_free_time_ending" = "今日免费游戏时间剩余不足 1 分钟。";
+"progate_quit_game" = "退出游戏";
 
 // MARK: - Game Discover Page
 

@@ -59,9 +59,9 @@ final class GamePageViewController: RAGameViewController {
     private var myLoadingView: GamePageLoadingView?
     private var loaded = false
 
-    private var mameQuotaTimer: Timer?
-    private weak var mameQuotaAlert: UIAlertController?
-    private var mameQuotaWarned = false
+    private var freePlayTimer: Timer?
+    private weak var freePlayAlert: UIAlertController?
+    private var freePlayWarned = false
 
     init(romUrl: URL?, core: EmuCoreInfoItem) {
         self.romItem   = nil
@@ -120,7 +120,7 @@ final class GamePageViewController: RAGameViewController {
     }
 
     deinit {
-        mameQuotaTimer?.invalidate()
+        freePlayTimer?.invalidate()
         NotificationCenter.default.removeObserver(self)
         self.romUrl?.stopAccessingSecurityScopedResource()
 
@@ -185,7 +185,7 @@ final class GamePageViewController: RAGameViewController {
             mameCheatSession?.gameDidStart()
 
             if success {
-                startMameQuotaTimerIfNeeded()
+                startFreePlayTimerIfNeeded()
             }
 
             if core.coreId == "dosbox-pure" {
@@ -297,41 +297,41 @@ extension GamePageViewController {
     }
 }
 
-// MARK: - MAME free play allowance
+// MARK: - Free play allowance
 
 extension GamePageViewController {
-    private static let mameQuotaTick: TimeInterval = 1
-    private static let mameQuotaWarning: TimeInterval = 60
+    private static let freePlayTick: TimeInterval = 1
+    private static let freePlayWarning: TimeInterval = 60
 
-    private func startMameQuotaTimerIfNeeded() {
-        guard MameFreePlayQuota.isMame(core), !MameFreePlayQuota.isUnlimited else { return }
+    private func startFreePlayTimerIfNeeded() {
+        guard GameFreePlayQuota.access(for: core) == .limited else { return }
 
-        let minutes = Int((MameFreePlayQuota.remainingToday / 60).rounded(.up))
-        let formatter = Bundle.localizedString(forKey: "progate_mame_free_time_left_format")
+        let minutes = Int((GameFreePlayQuota.remainingToday(for: core) / 60).rounded(.up))
+        let formatter = Bundle.localizedString(forKey: "progate_free_time_left_format")
         AppToastManager.shared.toast(String(format: formatter, minutes), context: .game, level: .info)
 
-        mameQuotaTimer?.invalidate()
-        mameQuotaTimer = Timer.scheduledTimer(withTimeInterval: Self.mameQuotaTick, repeats: true) { [weak self] _ in
+        freePlayTimer?.invalidate()
+        freePlayTimer = Timer.scheduledTimer(withTimeInterval: Self.freePlayTick, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
-                self?.mameQuotaTimerFired()
+                self?.freePlayTimerFired()
             }
         }
     }
 
-    private func mameQuotaTimerFired() {
+    private func freePlayTimerFired() {
         guard Self.instance == self, view.window != nil else { return }
 
-        if MameFreePlayQuota.isUnlimited {
-            mameQuotaTimer?.invalidate()
-            mameQuotaTimer = nil
+        if GameFreePlayQuota.access(for: core) == .unlimited {
+            freePlayTimer?.invalidate()
+            freePlayTimer = nil
             return
         }
 
-        if MameFreePlayQuota.isExhausted {
+        if GameFreePlayQuota.isExhausted(for: core) {
             // Re-shown whenever nothing else is on screen, e.g. after the purchase
             // page closes without a purchase.
             if presentedViewController == nil {
-                presentMameQuotaReached()
+                presentFreePlayLimitReached()
             }
             return
         }
@@ -340,23 +340,23 @@ extension GamePageViewController {
         guard UIApplication.shared.applicationState == .active,
               !GamePauseCoordinator.shared.isHoldingPause else { return }
 
-        MameFreePlayQuota.consume(Self.mameQuotaTick)
+        GameFreePlayQuota.consume(Self.freePlayTick, for: core)
 
-        let remaining = MameFreePlayQuota.remainingToday
+        let remaining = GameFreePlayQuota.remainingToday(for: core)
         if remaining <= 0 {
-            presentMameQuotaReached()
-        } else if remaining <= Self.mameQuotaWarning, !mameQuotaWarned {
-            mameQuotaWarned = true
-            AppToastManager.shared.toast(Bundle.localizedString(forKey: "progate_mame_free_time_ending"), context: .game, level: .info)
+            presentFreePlayLimitReached()
+        } else if remaining <= Self.freePlayWarning, !freePlayWarned {
+            freePlayWarned = true
+            AppToastManager.shared.toast(Bundle.localizedString(forKey: "progate_free_time_ending"), context: .game, level: .info)
         }
     }
 
-    private func presentMameQuotaReached() {
-        guard mameQuotaAlert == nil, presentedViewController == nil else { return }
+    private func presentFreePlayLimitReached() {
+        guard freePlayAlert == nil, presentedViewController == nil else { return }
 
         let alert = UIAlertController.gamePausedAlert(
             title: Bundle.localizedString(forKey: "progate_alert_title"),
-            message: Bundle.localizedString(forKey: "progate_mame_daily_limit_reached")
+            message: GameFreePlayQuota.dailyLimitMessage(for: core)
         )
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_unlock_pro"), style: .default) { [weak self, weak alert] _ in
             // Hold the dismissed alert strongly: nothing else keeps it alive past the
@@ -369,14 +369,14 @@ extension GamePageViewController {
                 alert.releaseGamePauseIfNeeded()
             }
         })
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_mame_quit_game"), style: .cancel) { [weak self, weak alert] _ in
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_quit_game"), style: .cancel) { [weak self, weak alert] _ in
             alert?.releaseGamePauseIfNeeded()
-            self?.mameQuotaTimer?.invalidate()
-            self?.mameQuotaTimer = nil
+            self?.freePlayTimer?.invalidate()
+            self?.freePlayTimer = nil
             self?.myToolbarView.closeAction()
         })
 
-        mameQuotaAlert = alert
+        freePlayAlert = alert
         present(alert, animated: true)
     }
 }
@@ -387,7 +387,7 @@ private enum GameLaunchBackgroundPreparation {
 
 extension RetroArchX {
     static func playGame(romUrl: URL?, core: EmuCoreInfoItem) {
-        guard MainActor.assumeIsolated({ MameFreePlayQuota.allowLaunch(core: core) }) else { return }
+        guard MainActor.assumeIsolated({ GameFreePlayQuota.allowLaunch(core: core) }) else { return }
         guard let currentViewController = UIViewController.currentActive() else {
             return
         }
@@ -397,7 +397,7 @@ extension RetroArchX {
     }
 
     static func playGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
-        guard MainActor.assumeIsolated({ MameFreePlayQuota.allowLaunch(core: core) }) else { return }
+        guard MainActor.assumeIsolated({ GameFreePlayQuota.allowLaunch(core: core) }) else { return }
         // MAME sets are checked for missing files first; other cores launch directly.
         MameLaunchCheck.run(game: romItem, core: core) {
             presentGame(romItem: romItem, core: core)

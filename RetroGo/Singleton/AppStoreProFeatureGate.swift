@@ -26,98 +26,16 @@
 import UIKit
 import ObjcHelper
 
-enum AppStoreProFeature {
-    case cheats
-    case fastForward
-    case manualSaveSlot
-    case controllerMapping
-    case advancedConfiguration
-
-    var lockedMessage: String {
-        switch self {
-        case .cheats:
-            return Bundle.localizedString(forKey: "progate_cheats_locked")
-        case .fastForward:
-            return Bundle.localizedString(forKey: "progate_fast_forward_locked")
-        case .manualSaveSlot:
-            return Bundle.localizedString(forKey: "progate_manual_save_slot_locked")
-        case .controllerMapping:
-            return Bundle.localizedString(forKey: "progate_controller_mapping_locked")
-        case .advancedConfiguration:
-            return Bundle.localizedString(forKey: "progate_advanced_configuration_locked")
-        }
-    }
-}
-
-enum AppStoreProGatePresentation {
-    case silent
-    case toast
-    case alert
-    case purchasePage
-}
-
-enum AppStoreProFeaturePolicy {
-    static let freeFastForwardMultiplier = 2.0
-    static let fastForwardMultiplierEpsilon = 0.01
-
-    static func sanitizedFastForwardMultiplier(_ multiplier: Double) -> Double {
-        guard multiplier.isFinite else { return freeFastForwardMultiplier }
-        return max(1.0, min(multiplier, 6.0))
-    }
-}
-
+/// Pro is sold as unlimited play: every feature is open to everyone, and free
+/// users are only limited in play time (see `GameFreePlayQuota`).
 @MainActor
 final class AppStoreProFeatureGate {
     static let shared = AppStoreProFeatureGate()
 
     private init() { }
 
-    private weak var visibleLockedAlert: UIAlertController?
-
     var isProUnlocked: Bool {
         AppStorePurchaseManager.shared.isProPurchased
-    }
-
-    nonisolated static func effectiveFastForwardMultiplierForRuntime(_ requestedMultiplier: Double, shouldNotify: Bool = true) -> Double {
-        let requested = AppStoreProFeaturePolicy.sanitizedFastForwardMultiplier(requestedMultiplier)
-        let freeLimit = AppStoreProFeaturePolicy.freeFastForwardMultiplier
-        let epsilon = AppStoreProFeaturePolicy.fastForwardMultiplierEpsilon
-
-        guard requested > freeLimit + epsilon else {
-            return requested
-        }
-
-        guard !AppStorePurchaseManager.hasLocallyValidCachedProEntitlement else {
-            return requested
-        }
-
-        if shouldNotify {
-            AppToastManager.shared.toast(AppStoreProFeature.fastForward.lockedMessage, context: .game, level: .info)
-        }
-
-        return freeLimit
-    }
-
-    @discardableResult
-    func requirePro(
-        feature: AppStoreProFeature,
-        presentation: AppStoreProGatePresentation,
-        from viewController: UIViewController? = nil,
-        toastContext: AppToastContext = .ui,
-        allowed: (() -> Void)? = nil
-    ) -> Bool {
-        guard !isProUnlocked else {
-            allowed?()
-            return true
-        }
-
-        handleLockedFeature(
-            feature,
-            presentation: presentation,
-            from: viewController,
-            toastContext: toastContext
-        )
-        return false
     }
 
     func presentPurchasePage(from viewController: UIViewController? = nil) {
@@ -131,71 +49,6 @@ final class AppStoreProFeatureGate {
 }
 
 private extension AppStoreProFeatureGate {
-    func handleLockedFeature(
-        _ feature: AppStoreProFeature,
-        presentation: AppStoreProGatePresentation,
-        from viewController: UIViewController?,
-        toastContext: AppToastContext
-    ) {
-        switch presentation {
-        case .silent:
-            break
-        case .toast:
-            showToast(feature: feature, context: toastContext)
-        case .alert:
-            showAlert(feature: feature, from: viewController)
-        case .purchasePage:
-            presentPurchasePage(from: viewController)
-        }
-    }
-
-    func showToast(feature: AppStoreProFeature, context: AppToastContext) {
-        AppToastManager.shared.toast(feature.lockedMessage, context: context, level: .info)
-    }
-
-    func showAlert(feature: AppStoreProFeature, from viewController: UIViewController?) {
-        if visibleLockedAlert != nil {
-            return
-        }
-
-        guard let presenter = resolvedPresenter(from: viewController) else {
-            showToast(feature: feature, context: .ui)
-            return
-        }
-
-        guard !(presenter is UIAlertController) else {
-            return
-        }
-
-        guard !isPurchasePageVisible(from: presenter) else {
-            return
-        }
-
-        let formatter = Bundle.localizedString(forKey: "progate_alert_message_format")
-        let message = String(format: formatter, feature.lockedMessage)
-        let alert = UIAlertController.gamePausedAlert(
-            title: Bundle.localizedString(forKey: "progate_alert_title"),
-            message: message
-        )
-
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_unlock_pro"), style: .default) { [weak self, weak presenter, weak alert] _ in
-            alert?.releaseGamePauseIfNeeded()
-            Task { @MainActor [weak self, weak presenter] in
-                self?.visibleLockedAlert = nil
-                await Task.yield()
-                self?.presentPurchasePage(from: presenter)
-            }
-        })
-
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_not_now"), style: .cancel) { [weak self, weak alert] _ in
-            alert?.releaseGamePauseIfNeeded()
-            self?.visibleLockedAlert = nil
-        })
-
-        visibleLockedAlert = alert
-        presenter.present(alert, animated: true)
-    }
-
     func resolvedPresenter(from viewController: UIViewController?) -> UIViewController? {
         var current = viewController ?? UIViewController.currentActive()
 

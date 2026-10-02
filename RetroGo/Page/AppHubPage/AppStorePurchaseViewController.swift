@@ -963,12 +963,8 @@ private final class BenefitSectionView: UIStackView {
         addArrangedSubview(benefitsStack)
 
         let benefits: [(String, UIColor)] = [
-            (Bundle.localizedString(forKey: "iap_probenefit_arcade"), UIColor(hex: 0xE67E22, alpha: 1.0)),
-            (Bundle.localizedString(forKey: "iap_probenefit_cheats"), .cheatIconColor),
-            (Bundle.localizedString(forKey: "iap_probenefit1"), UIColor(hex: 0x2ECC71, alpha: 1.0)),
-            (Bundle.localizedString(forKey: "iap_probenefit2"), UIColor(hex: 0xF1C40F, alpha: 1.0)),
-            (Bundle.localizedString(forKey: "iap_probenefit3"), UIColor(hex: 0xE74C3C, alpha: 1.0)),
-            (Bundle.localizedString(forKey: "iap_probenefit4"), UIColor(hex: 0x3498D8, alpha: 1.0)),
+            (Bundle.localizedString(forKey: "iap_probenefit_unlimited_play"), UIColor(hex: 0x2ECC71, alpha: 1.0)),
+            (Bundle.localizedString(forKey: "iap_probenefit_all_cores"), UIColor(hex: 0xE67E22, alpha: 1.0)),
             (Bundle.localizedString(forKey: "iap_probenefit5"), UIColor(hex: 0x9B59B6, alpha: 1.0)),
         ]
         benefits.forEach { benefitsStack.addArrangedSubview(BenefitRowView(text: $0.0, dotColor: $0.1)) }
