@@ -386,6 +386,11 @@
 "iap_lifetime_badge" = "Best";
 "iap_save" = "Save";
 "iap_lifetime_tip" = "One-time";
+"iap_welcome_offer_badge" = "Limited";
+"iap_welcome_offer_saving_format" = "Was %1$@ · Save %2$d%%";
+"iap_welcome_offer_countdown_format" = "⏱ Offer ends in %@";
+"iap_welcome_offer_desc" = "Welcome price for first-time buyers. Same benefits as Lifetime Unlock; it won't come back after the countdown.";
+"iap_welcome_offer_floating_format" = "Welcome offer %@";
 "iap_retrogo_pro_monthly" = "RetroGo Pro Monthly";
 "iap_retrogo_pro_yearly" = "RetroGo Pro Yearly";
 "iap_retrogo_pro_lifetime" = "RetroGo Pro Lifetime";

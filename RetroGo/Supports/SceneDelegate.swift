@@ -48,6 +48,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         window?.rootViewController = controller
         window?.makeKeyAndVisible()
+
+        #if DEBUG
+        AppStoreWelcomeOffer.resetIfRequestedForTesting()
+        #endif
+        if let window {
+            WelcomeOfferFloatingView.install(in: window)
+        }
     }
 
     func switchSystemHomepageController() {

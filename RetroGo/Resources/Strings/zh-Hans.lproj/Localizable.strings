@@ -388,6 +388,11 @@
 "iap_lifetime_badge" = "最超值";
 "iap_save" = "节省";
 "iap_lifetime_tip" = "一次买断";
+"iap_welcome_offer_badge" = "限时优惠";
+"iap_welcome_offer_saving_format" = "原价 %1$@ · 立省 %2$d%%";
+"iap_welcome_offer_countdown_format" = "⏱ 限时优惠 剩余 %@";
+"iap_welcome_offer_desc" = "首购专享价，权益与终身解锁完全相同，倒计时结束后恢复原价且不再提供。";
+"iap_welcome_offer_floating_format" = "首购优惠 %@";
 "iap_retrogo_pro_monthly" = "RetroGo Pro 月度订阅";
 "iap_retrogo_pro_yearly" = "RetroGo Pro 年度订阅";
 "iap_retrogo_pro_lifetime" = "RetroGo Pro 终身解锁";
