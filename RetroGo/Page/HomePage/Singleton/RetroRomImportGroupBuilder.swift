@@ -31,11 +31,15 @@ final class RetroRomImportGroupBuilder {
         let relativePath: String
         let url: URL
         let fileSize: Int
+        /// True for files the builder wrote itself (e.g. a synthesized multi-disc m3u).
+        /// `relativePath` is then virtual: copy from `url`, not from the import source.
+        let isGenerated: Bool
 
-        init(relativePath: String, url: URL, fileSize: Int) {
+        init(relativePath: String, url: URL, fileSize: Int, isGenerated: Bool = false) {
             self.relativePath = RetroRomImportGroupBuilder.normalize(relativePath)
             self.url = url
             self.fileSize = fileSize
+            self.isGenerated = isGenerated
         }
 
         init(relativePath: String, url: URL) throws {
@@ -44,6 +48,7 @@ final class RetroRomImportGroupBuilder {
             self.relativePath = normalizedPath
             self.url = url
             self.fileSize = resources.fileSize ?? 0
+            self.isGenerated = false
         }
 
         func sha256() throws -> String {
@@ -101,9 +106,21 @@ final class RetroRomImportGroupBuilder {
     }
 
     unowned let indicatorView: RetroRomActivityView
+    /// Holds files synthesized during analysis; removed by `cleanupGeneratedFiles()`.
+    private var generatedDirectory: URL?
 
     init(indicatorView: RetroRomActivityView) {
         self.indicatorView = indicatorView
+    }
+
+    deinit {
+        cleanupGeneratedFiles()
+    }
+
+    func cleanupGeneratedFiles() {
+        guard let generatedDirectory else { return }
+        try? FileManager.default.removeItem(at: generatedDirectory)
+        self.generatedDirectory = nil
     }
 
     func buildGroups(from files: [SourceFile]) throws -> [Group] {
@@ -131,7 +148,7 @@ final class RetroRomImportGroupBuilder {
         let incompleteGroups = analysis.incompleteGroups.filter { group in
             selectedSet.contains(group.entryPath)
         }
-        return AnalysisResult(groups: groups, incompleteGroups: incompleteGroups, map: map)
+        return AnalysisResult(groups: groups, incompleteGroups: incompleteGroups, map: analysis.map)
     }
 
     func buildFileItems(groups: [Group], map: [String: SourceFile], parent: String, createAt: Date = Date(), updateAt: Date = Date(), keyProvider: () -> String?) throws -> [RetroRomFileItem] {
@@ -191,7 +208,8 @@ extension RetroRomImportGroupBuilder {
         return map
     }
 
-    func buildAllGroups(fileMap: [String: SourceFile], orderedPaths: [String]) throws -> AnalysisResult {
+    func buildAllGroups(fileMap inputFileMap: [String: SourceFile], orderedPaths: [String]) throws -> AnalysisResult {
+        var fileMap = inputFileMap
         var consumed = Set<String>()
         var groups: [Group] = []
         var incompleteGroups: [IncompleteGroup] = []
@@ -241,6 +259,7 @@ extension RetroRomImportGroupBuilder {
             }
         }
 
+        groups = try mergeMultiDiscGroups(groups, fileMap: &fileMap)
         return AnalysisResult(groups: groups, incompleteGroups: incompleteGroups, map: fileMap)
     }
 
@@ -692,5 +711,192 @@ extension RetroRomImportGroupBuilder {
 
     func showProgress(message: String) {
         indicatorView.activeMessage(message, title: Bundle.localizedString(forKey: "homepage_import_importing"))
+    }
+}
+
+// MARK: - Multi-disc merge
+
+extension RetroRomImportGroupBuilder {
+    /// Single-file disc images that can be one disc of a multi-disc game.
+    private static let singleDiscExtensions: Set<String> = ["chd", "iso", "cso", "pbp"]
+
+    private static let discNumberRegex = try! NSRegularExpression(
+        pattern: #"\(\s*(?:disc|disk|cd)\s*(\d+)(?:\s*of\s*(\d+))?\s*\)"#,
+        options: [.caseInsensitive]
+    )
+
+    struct DiscTag {
+        let title: String
+        let number: Int
+        let total: Int?
+    }
+
+    /// Parses "(Disc N)", "(Disk N)", "(CD N)" or "(Disc N of M)" from a file name.
+    /// Returns nil unless the name carries exactly one such tag.
+    static func discTag(forFileName fileName: String) -> DiscTag? {
+        let baseName = (fileName as NSString).deletingPathExtension
+        let range = NSRange(baseName.startIndex..., in: baseName)
+        let matches = discNumberRegex.matches(in: baseName, range: range)
+        guard matches.count == 1, let match = matches.first,
+              let tagRange = Range(match.range, in: baseName),
+              let numberRange = Range(match.range(at: 1), in: baseName),
+              let number = Int(baseName[numberRange]) else {
+            return nil
+        }
+        var total: Int?
+        if let totalRange = Range(match.range(at: 2), in: baseName) {
+            total = Int(baseName[totalRange])
+        }
+        var title = baseName
+        title.removeSubrange(tagRange)
+        title = title.split(whereSeparator: { $0 == " " }).joined(separator: " ")
+            .trimmingCharacters(in: .whitespaces)
+        guard !title.isEmpty else {
+            return nil
+        }
+        return DiscTag(title: title, number: number, total: total)
+    }
+
+    /// Combines complete per-disc groups of one game into a synthesized m3u group.
+    /// Groups that do not form a clean 1...N disc set are returned untouched.
+    func mergeMultiDiscGroups(_ groups: [Group], fileMap: inout [String: SourceFile]) throws -> [Group] {
+        var buckets: [String: [(index: Int, tag: DiscTag)]] = [:]
+        var bucketOrder: [String] = []
+        for (index, group) in groups.enumerated() {
+            guard isMergeableDisc(group), let tag = discTag(for: group) else {
+                continue
+            }
+            if buckets[tag.title] == nil {
+                bucketOrder.append(tag.title)
+            }
+            buckets[tag.title, default: []].append((index, tag))
+        }
+
+        var replacements: [Int: Group] = [:]
+        var removed = Set<Int>()
+        for title in bucketOrder {
+            guard let discs = buckets[title], discs.count >= 2 else {
+                continue
+            }
+            let sorted = discs.sorted { $0.tag.number < $1.tag.number }
+            guard sorted.enumerated().allSatisfy({ $0.offset + 1 == $0.element.tag.number }),
+                  sorted.allSatisfy({ $0.tag.total == nil || $0.tag.total == sorted.count }) else {
+                NSLog("[Import] Discs of %@ are not a contiguous set, imported separately", title)
+                continue
+            }
+            let discGroups = sorted.map { groups[$0.index] }
+            guard let merged = try makeMultiDiscGroup(title: title, discGroups: discGroups, fileMap: &fileMap) else {
+                continue
+            }
+            replacements[sorted.map(\.index).min()!] = merged
+            removed.formUnion(sorted.map(\.index))
+        }
+
+        guard !replacements.isEmpty else {
+            return groups
+        }
+        var result: [Group] = []
+        for (index, group) in groups.enumerated() {
+            if let merged = replacements[index] {
+                result.append(merged)
+            } else if !removed.contains(index) {
+                result.append(group)
+            }
+        }
+        return result
+    }
+
+    /// Disc tag from the entry file name, falling back to the data files of a
+    /// descriptor group (e.g. "FF7CD1.cue" referencing "... (Disc 1).bin") when
+    /// every data file carries the same tag.
+    private func discTag(for group: Group) -> DiscTag? {
+        if let tag = Self.discTag(forFileName: (group.entryPath as NSString).lastPathComponent) {
+            return tag
+        }
+        guard group.type != .single else {
+            return nil
+        }
+        let descriptorExtensions: Set<String> = ["m3u", "cue", "gdi", "mds", "ccd"]
+        let resources = group.memberPaths.filter { !descriptorExtensions.contains(fileExtension(of: $0)) }
+        let tags = resources.map { Self.discTag(forFileName: ($0 as NSString).lastPathComponent) }
+        guard let first = tags.first ?? nil,
+              tags.allSatisfy({ $0?.title == first.title && $0?.number == first.number && $0?.total == first.total }) else {
+            return nil
+        }
+        return first
+    }
+
+    private func isMergeableDisc(_ group: Group) -> Bool {
+        switch group.type {
+        case .cue, .gdi, .mds, .ccd:
+            return true
+        case .single:
+            return Self.singleDiscExtensions.contains(fileExtension(of: group.entryPath))
+        case .m3u:
+            return false
+        }
+    }
+
+    private func makeMultiDiscGroup(title: String, discGroups: [Group], fileMap: inout [String: SourceFile]) throws -> Group? {
+        let directory = commonParentDirectory(of: discGroups.map(\.entryPath))
+        let playlistPath = join(directory: directory, relativePath: title + ".m3u")
+        if fileMap[playlistPath] != nil || findCaseInsensitiveMatch(for: playlistPath, fileMap: fileMap) != nil {
+            NSLog("[Import] %@ already exists, discs of %@ imported separately", playlistPath, title)
+            return nil
+        }
+
+        let lines = discGroups.map { relativePath(of: $0.entryPath, fromDirectory: directory) }
+        let content = lines.joined(separator: "\n") + "\n"
+        guard let data = content.data(using: .utf8) else {
+            return nil
+        }
+        let url = try makeGeneratedFileURL(fileName: title + ".m3u")
+        try data.write(to: url, options: .atomic)
+        fileMap[playlistPath] = SourceFile(relativePath: playlistPath, url: url, fileSize: data.count, isGenerated: true)
+
+        let members = uniqueOrdered([playlistPath] + discGroups.flatMap(\.memberPaths))
+        let matchMode = mergeMatchModes(discGroups.map(\.matchMode))
+        NSLog("[Import] Merged %d discs into %@", discGroups.count, playlistPath)
+        return Group(type: .m3u, entryPath: playlistPath, memberPaths: members, matchMode: matchMode)
+    }
+
+    private func makeGeneratedFileURL(fileName: String) throws -> URL {
+        let directory: URL
+        if let generatedDirectory {
+            directory = generatedDirectory
+        } else {
+            directory = FileManager.default.temporaryDirectory
+                .appendingPathComponent("RetroGoImport-\(UUID().uuidString)", isDirectory: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            generatedDirectory = directory
+        }
+        // One subfolder per file keeps equal titles from different buckets apart.
+        let fileDirectory = directory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: fileDirectory, withIntermediateDirectories: true)
+        return fileDirectory.appendingPathComponent(fileName)
+    }
+
+    private func commonParentDirectory(of paths: [String]) -> String {
+        let directories = paths.map { parentDirectory(of: $0).split(separator: "/").map(String.init) }
+        guard var shared = directories.first else {
+            return ""
+        }
+        for components in directories.dropFirst() {
+            var prefix: [String] = []
+            for (lhs, rhs) in zip(shared, components) {
+                guard lhs == rhs else { break }
+                prefix.append(lhs)
+            }
+            shared = prefix
+        }
+        return shared.joined(separator: "/")
+    }
+
+    private func relativePath(of path: String, fromDirectory directory: String) -> String {
+        guard !directory.isEmpty else {
+            return path
+        }
+        let prefix = directory + "/"
+        return path.hasPrefix(prefix) ? String(path.dropFirst(prefix.count)) : path
     }
 }

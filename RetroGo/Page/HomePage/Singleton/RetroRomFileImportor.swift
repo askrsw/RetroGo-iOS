@@ -45,6 +45,9 @@ final class RetroRomFileImportor: Thread {
     private var incompletePolicy = IncompletePolicy.skip
     private var sourceFiles: [RetroRomImportGroupBuilder.SourceFile] = []
     private var sourceFileMap: [String: RetroRomImportGroupBuilder.SourceFile] = [:]
+    /// Builder-synthesized files (multi-disc m3u), kept alive with the builder until copying ends.
+    private var generatedFileMap: [String: RetroRomImportGroupBuilder.SourceFile] = [:]
+    private var groupBuilder: RetroRomImportGroupBuilder?
     private var fileItems: [RetroRomFileItem] = []
     /// Recognized MAME games by item raw name, and BIOS files routed to the MAME BIOS folder.
     private var mameMatches: [String: MameArchiveMatch] = [:]
@@ -88,6 +91,8 @@ final class RetroRomFileImportor: Thread {
 
 extension RetroRomFileImportor {
     private func postProcess() {
+        groupBuilder?.cleanupGeneratedFiles()
+        groupBuilder = nil
         if success {
             let newFileKeys = fileItems.map({ $0.key })
             DispatchQueue.main.async {
@@ -100,12 +105,14 @@ extension RetroRomFileImportor {
     private func buildFileItems() -> Bool {
         do {
             let builder = RetroRomImportGroupBuilder(indicatorView: indicatorView)
+            groupBuilder = builder
             sourceFiles.removeAll(keepingCapacity: true)
             sourceFileMap.removeAll(keepingCapacity: true)
 
             sourceFiles = try collectSelectedSourceFiles()
             sourceFileMap = Dictionary(uniqueKeysWithValues: sourceFiles.map { ($0.relativePath, $0) })
             let analysis = try builder.analyzeGroups(from: sourceFiles)
+            generatedFileMap = analysis.map.filter { $0.value.isGenerated }
             if !handleIncompleteGroups(analysis.incompleteGroups) {
                 let title = Bundle.localizedString(forKey: "info")
                 let message = Bundle.localizedString(forKey: "homepage_import_cancelled")
@@ -239,7 +246,7 @@ extension RetroRomFileImportor {
                 }
                 try fileManager.createDirectory(atPath: containerPath, withIntermediateDirectories: true)
                 for sub in item.subItems {
-                    guard let source = sourceFileMap[sub.rawName] else {
+                    guard let source = sourceFileMap[sub.rawName] ?? generatedFileMap[sub.rawName] else {
                         throw NSError(domain: "RetroRomError", code: 3, userInfo: [NSLocalizedDescriptionKey: sub.rawName])
                     }
                     let dstPath = containerPath + sub.rawName
