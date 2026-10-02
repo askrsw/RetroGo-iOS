@@ -92,6 +92,9 @@ extension RetroRomCoreFrimwareViewCell {
             let tagText = isRequired ? Bundle.localizedString(forKey: "coreinfo_firmware_required") : Bundle.localizedString(forKey: "coreinfo_firmware_optional")
             let tagColor = isRequired ? UIColor.systemRed : UIColor.systemGray
             appendTag(to: fullString, text: tagText, color: tagColor)
+        } else if let missing = holder?.mameMissingFiles(for: firmware), !missing.isEmpty {
+            // MAME BIOS archive lacking required files: games using it can't start.
+            appendTag(to: fullString, text: Bundle.localizedString(forKey: "coreinfo_mame_bios_incomplete"), color: .systemOrange)
         } else if !firmware.isValid {
             // 4. 文件存在但 MD5 无效：显示 “无效” 气泡
             let isRequired = !firmware.optional
@@ -165,6 +168,9 @@ extension RetroRomCoreFrimwareViewCell {
             let tagText = Bundle.localizedString(forKey: "coreinfo_firmware_missed")
             let tagColor = isRequired ? UIColor.systemRed : UIColor.systemOrange
             appendTag(to: fullString, text: tagText, color: tagColor)
+        } else if let missing = holder?.mameMissingFiles(for: firmware), !missing.isEmpty {
+            let tagText = String(format: Bundle.localizedString(forKey: "coreinfo_mame_bios_missing_count"), missing.count)
+            appendTag(to: fullString, text: tagText, color: .systemOrange)
         } else if firmware.isValid {
             // 5. 文件存在且有效
             let tagText = Bundle.localizedString(forKey: "coreinfo_firmware_ready")
@@ -302,7 +308,10 @@ extension RetroRomCoreFrimwareViewCell: UIDocumentPickerDelegate {
         }
 
         let fileName = url.lastPathComponent
-        if firmware.name == fileName {
+        if holder?.coreInfoItem.coreId == MameImportScreener.mameCoreId {
+            // Recognized by content, renamed to its set and merged; any file name works.
+            holder?.importMameBios(url)
+        } else if firmware.name == fileName {
             if firmware.copyFile(url) {
                 // updateNameLabel()
                 // updatePathLabel()

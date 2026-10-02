@@ -154,6 +154,11 @@ enum MameSetAuditor {
             // MAME looks for loose files in a folder named after the set (or device), under
             // the name the set lists.
             for record in persistence.archivesContaining(rom.key) {
+                // BIOS-folder files can change outside RetroGo, leaving the index stale;
+                // trust only what the archive holds now.
+                if case .bios(let fileName) = record.owner, !biosFolder.entryKeys(fileName: fileName).contains(rom.key) {
+                    continue
+                }
                 if let entryName = persistence.entryName(owner: record.owner, key: rom.key) {
                     extractions.append(MameSetAudit.Extraction(stagedPath: "\(folder)/\(rom.name)",
                                                                source: record.owner, entryName: entryName))

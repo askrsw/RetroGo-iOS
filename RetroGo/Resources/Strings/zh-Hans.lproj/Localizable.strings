@@ -139,6 +139,7 @@
 "mame_check_missing_parent" = "• 父游戏 %1$@ 缺少 %2$d 个文件（%3$@）";
 "mame_check_missing_bios" = "• BIOS %1$@ 缺少 %2$d 个文件（%3$@）";
 "mame_check_missing_device" = "• 设备 %1$@ 缺少 %2$d 个文件（%3$@）";
+"mame_check_bios_hint" = "%1$@ 是同类街机游戏共用的 BIOS，它不完整时，所有依赖它的游戏都无法启动，游戏文件本身通常没有问题。请导入与 MAME 0.289 匹配的完整 %2$@，RetroGo 会自动放入 BIOS 目录并与现有文件合并。";
 "mame_check_chd" = "该游戏还需要 CHD 光盘镜像：%@。";
 "mame_check_driver_warning" = "该游戏在当前 MAME 核心中被标记为无法正常运行。";
 "mame_check_launch_anyway" = "仍然启动";
@@ -276,7 +277,7 @@
 "coreinfo_firmware_import_success" = "成功匹配并导入了 %d 个固件文件。";
 "coreinfo_firmware_import_zero" = "未找到匹配的固件文件。";
 "coreinfo_firmware_read_dir_failed" = "读取目录失败：%@";
-"coreinfo_firmware_mame_tip" = "MAME 核心支持数千种硬件，若游戏无法运行，请导入对应的 BIOS 固件。点击 [ plus ] 导入单个文件，点击 [ folder ] 批量导入文件夹（不含子目录）。注意，重名文件将被覆盖。";
+"coreinfo_firmware_mame_tip" = "MAME 核心支持数千种硬件，若游戏无法运行，请导入对应的 BIOS 固件。点击 [ plus ] 导入单个文件，点击 [ folder ] 批量导入文件夹（不含子目录）。识别出的 BIOS 会自动按标准名称存放，并与已有版本合并；列表中标为「不完整」的 BIOS 可点击查看缺少的文件。";
 "coreinfo_firmware_mame_already_imported" = "已导入的固件文件列表（左滑可删除）：";
 "coreinfo_firmware_ppsspp_foot_tip" = "PPSSPP 所需的界面资源（如 ppge_atlas.zim）源自官方开源项目并已内置。这些文件符合开源版权协议，不含任何私有固件。若文件损坏，您可以尝试恢复。";
 "coreinfo_firmware_ppsspp_reload_word" = "恢复";
@@ -688,6 +689,10 @@
 "mame_backup_usage" = "%1$d 个文件，%2$@";
 "mame_backup_clear_confirm" = "删除之前修复保留的所有原文件？此操作无法撤销。";
 "mame_import_bios_merged" = "%1$@ 是 MAME BIOS 或设备文件，已与 MAME BIOS 文件夹中的版本合并，补入 %2$d 个文件。";
+"mame_import_bios_incomplete" = "注意：%1$@ 仍缺少 %2$d 个必需文件（%3$@），依赖它的游戏将无法启动。请导入与 MAME 0.289 匹配的完整版本，RetroGo 会自动合并。";
+"coreinfo_mame_bios_incomplete" = "不完整";
+"coreinfo_mame_bios_missing_count" = "缺少 %d 个文件";
+"coreinfo_mame_bios_missing_message" = "%1$@ 缺少 %2$d 个必需文件，依赖它的游戏将无法启动：\n\n%3$@\n\n请导入与 MAME 0.289 匹配的完整版本，RetroGo 会自动合并。";
 "mame_import_replace_message" = "游戏库中已有 %@，但导入的文件是同一街机 set 更完整的版本。要替换现有文件吗？原文件会保留在修复备份中，即时存档和设置保持不变。";
 "mame_import_replace_action" = "替换为更完整的版本";
 "mame_import_replaced" = "已将 %d 个游戏替换为更完整的版本，原文件保留在修复备份中。";

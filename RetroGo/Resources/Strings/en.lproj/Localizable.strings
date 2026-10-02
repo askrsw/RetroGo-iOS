@@ -138,6 +138,7 @@
 "mame_check_missing_parent" = "• Parent set %1$@: %2$d missing (%3$@)";
 "mame_check_missing_bios" = "• BIOS %1$@: %2$d missing (%3$@)";
 "mame_check_missing_device" = "• Device %1$@: %2$d missing (%3$@)";
+"mame_check_bios_hint" = "%1$@ is a BIOS shared by a whole family of arcade games. While it is incomplete, none of those games can start, even if their own files are fine. Import a complete %2$@ that matches MAME 0.289, and RetroGo will put it in the BIOS folder and merge it with the files already there.";
 "mame_check_chd" = "This game also needs a CHD disc image: %@.";
 "mame_check_driver_warning" = "This game is marked as not working in the current MAME core.";
 "mame_check_launch_anyway" = "Launch Anyway";
@@ -274,7 +275,7 @@
 "coreinfo_firmware_import_success" = "Successfully matched and imported %d firmware files.";
 "coreinfo_firmware_import_zero" = "No matching firmware files found.";
 "coreinfo_firmware_read_dir_failed" = "Failed to read directory: %@";
-"coreinfo_firmware_mame_tip" = "The MAME core supports thousands of hardware types. If a game fails to run, please import the corresponding BIOS firmware. Tap [ plus ] to import a single file, tap [ folder ] to batch import a folder (excluding subdirectories). Note: files with duplicate names will be overwritten.";
+"coreinfo_firmware_mame_tip" = "The MAME core supports thousands of hardware types. If a game fails to run, please import the corresponding BIOS firmware. Tap [ plus ] to import a single file, tap [ folder ] to batch import a folder (excluding subdirectories). Recognized BIOS files are saved under their standard names and merged with any copy already here; tap a BIOS marked Incomplete to see which files it lacks.";
 "coreinfo_firmware_mame_already_imported" = "List of imported firmware files (swipe left to delete): ";
 "coreinfo_firmware_ppsspp_foot_tip" = "The interface assets required for PPSSPP (such as ppge_atlas.zim) are sourced from the official open-source project and are built-in. These files comply with open-source licenses and do not contain any proprietary firmware. If files are corrupted, you can try to Restore them.";
 "coreinfo_firmware_ppsspp_reload_word" = "Restore";
@@ -686,6 +687,10 @@
 "mame_backup_usage" = "%1$d files, %2$@";
 "mame_backup_clear_confirm" = "Delete every original file kept by earlier repairs? This cannot be undone.";
 "mame_import_bios_merged" = "%1$@ is a MAME BIOS or device file. It was merged with the copy in the MAME BIOS folder, adding %2$d files.";
+"mame_import_bios_incomplete" = "Note: %1$@ still lacks %2$d required files (%3$@), so games that use it can't start. Import a complete copy that matches MAME 0.289 and RetroGo will merge it in.";
+"coreinfo_mame_bios_incomplete" = "Incomplete";
+"coreinfo_mame_bios_missing_count" = "%d Missing";
+"coreinfo_mame_bios_missing_message" = "%1$@ lacks %2$d required files, so games that use it can't start:\n\n%3$@\n\nImport a complete copy that matches MAME 0.289 and RetroGo will merge it in.";
 "mame_import_replace_message" = "%@ is already in your library, but the imported file is a more complete copy of the same arcade set. Replace the existing file? The original is kept in the repair backups; save states and settings stay.";
 "mame_import_replace_action" = "Replace with Complete Copy";
 "mame_import_replaced" = "Replaced %d games with more complete copies. The originals are in the repair backups.";

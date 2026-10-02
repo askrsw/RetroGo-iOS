@@ -24,6 +24,7 @@
 //
 
 import Foundation
+import ObjcHelper
 import RACoordinator
 
 struct MameBiosInstallResult {
@@ -44,6 +45,8 @@ struct MameBiosInstallResult {
     let installedName: String
     let outcome: Outcome
     var addedFiles = 0
+    /// Required files the set still lacks in the BIOS folder after this import.
+    var missingFiles: [String] = []
 }
 
 /// Installs BIOS/device archives into the MAME system folder, where every file is
@@ -68,6 +71,14 @@ final class MameBiosInstaller {
     }
 
     func install(_ match: MameArchiveMatch, sourceURL: URL, sourceName: String) -> MameBiosInstallResult {
+        var result = installArchive(match, sourceURL: sourceURL, sourceName: sourceName)
+        if result.outcome != .failed {
+            result.missingFiles = folder.missingFiles(ofSet: match.machine.name) ?? []
+        }
+        return result
+    }
+
+    private func installArchive(_ match: MameArchiveMatch, sourceURL: URL, sourceName: String) -> MameBiosInstallResult {
         let setName = match.machine.name
         let targetName = "\(setName).\(match.formatName)"
         let persistence = MameRomSetPersistence.shared
@@ -220,5 +231,72 @@ final class MameBiosInstaller {
                 try? FileManager.default.removeItem(atPath: folder.filePath(fileName))
             }
         }
+    }
+}
+
+// MARK: - Importing from the MAME core page
+
+extension MameBiosInstaller {
+    /// Imports files picked on the MAME core page (one file, or the files directly inside
+    /// a folder) into the BIOS folder. Recognized BIOS/device archives go through the
+    /// installer exactly like a Library import: named after their set, merged with the
+    /// installed copy and indexed. Anything else is copied as is, replacing a file of the
+    /// same name. Call off the main thread; returns the result message.
+    static func importPicked(_ url: URL, core: EmuCoreInfoItem, progress: (String) -> Void) -> String {
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if accessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        let fileManager = FileManager.default
+        var isDirectory: ObjCBool = false
+        guard fileManager.fileExists(atPath: url.path(percentEncoded: false), isDirectory: &isDirectory) else {
+            return Bundle.localizedString(forKey: "coreinfo_firmware_import_zero")
+        }
+        let files: [URL]
+        if isDirectory.boolValue {
+            let contents = (try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isDirectoryKey],
+                                                                 options: [.skipsHiddenFiles])) ?? []
+            files = contents.filter { (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != true }
+                .sorted { $0.lastPathComponent < $1.lastPathComponent }
+        } else {
+            files = [url]
+        }
+
+        let isArchive: (URL) -> Bool = { MameBiosFolder.archiveExtensions.contains($0.pathExtension.lowercased()) }
+        let catalogReady = files.contains(where: isArchive) && MameCatalogBuilder.shared.waitUntilReady()
+        let installer = catalogReady ? MameBiosInstaller(core: core) : nil
+
+        var biosResults: [MameBiosInstallResult] = []
+        var copied = 0
+        for file in files {
+            let fileName = file.lastPathComponent
+            progress(fileName)
+            if let installer, isArchive(file),
+               let match = MameArchiveIdentifier.identify(archiveAtPath: file.path(percentEncoded: false), fileName: fileName),
+               match.machine.isSupportSet {
+                biosResults.append(installer.install(match, sourceURL: file, sourceName: fileName))
+                continue
+            }
+            let imported = DispatchQueue.main.sync { core.importFirmwareFile(file) }
+            if let imported {
+                // Copied as is: the romset index no longer describes this file.
+                MameRomSetPersistence.shared.deleteArchive(owner: .bios(fileName: imported.name))
+                copied += 1
+            }
+        }
+        NSLog("[MameBios] Core page import: %d BIOS/device archives, %d files copied as is", biosResults.count, copied)
+
+        var paragraphs: [String] = []
+        if copied > 0 {
+            paragraphs.append(String(format: Bundle.localizedString(forKey: "coreinfo_firmware_import_success"), copied))
+        }
+        if let notice = MameImportScreener.noticeText(biosResults) {
+            paragraphs.append(notice)
+        }
+        return paragraphs.isEmpty ? Bundle.localizedString(forKey: "coreinfo_firmware_import_zero")
+                                  : paragraphs.joined(separator: "\n\n")
     }
 }

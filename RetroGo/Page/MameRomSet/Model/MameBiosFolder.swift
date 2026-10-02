@@ -50,14 +50,27 @@ struct MameBiosFolder {
         (path as NSString).appendingPathComponent(fileName)
     }
 
-    /// CRC/size keys of an archive in the folder: from the romset index, or read directly
-    /// when the file got there without being indexed (e.g. imported by hand).
+    /// CRC/size keys of an archive in the folder, read from the archive itself. Files in
+    /// this folder can be replaced or edited outside RetroGo (e.g. via the Files app),
+    /// and the romset index records no modification state, so it is only a fallback
+    /// when the archive can't be read. Listing entries reads the directory, not the data.
     func entryKeys(fileName: String) -> Set<MameRomKey> {
-        if let keys = MameRomSetPersistence.shared.archiveEntryKeys(owner: .bios(fileName: fileName)) {
-            return keys
+        if let entries = try? RAArchiveReader.entriesOfArchive(atPath: filePath(fileName)) {
+            return Set(entries.filter(\.hasCRC).map { MameRomKey(crc: $0.crc32, size: Int64(clamping: $0.size)) })
         }
-        guard let entries = try? RAArchiveReader.entriesOfArchive(atPath: filePath(fileName)) else { return [] }
-        return Set(entries.filter(\.hasCRC).map { MameRomKey(crc: $0.crc32, size: Int64(clamping: $0.size)) })
+        return MameRomSetPersistence.shared.archiveEntryKeys(owner: .bios(fileName: fileName)) ?? []
+    }
+
+    /// Required files of a BIOS/device set (for its default BIOS option) that no installed
+    /// archive of the set holds, by the names MAME lists. Empty when complete; nil when
+    /// the set is not a BIOS/device set in the catalog. Reads archive directories only.
+    func missingFiles(ofSet setName: String) -> [String]? {
+        let persistence = MameRomSetPersistence.shared
+        guard let machine = persistence.machine(named: setName), machine.isSupportSet else { return nil }
+        let present = entryKeys(ofSet: machine.name)
+        return persistence.requiredRoms(of: machine.name, biosOption: machine.defaultBios)
+            .filter { !present.contains($0.key) }
+            .map(\.name)
     }
 
     /// Union of the keys of every installed archive of this set.
