@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.10.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.10.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>October 4, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.10.0" style="number">
+            <p-item><b>Every feature is now free for everyone</b>: cheats, fast-forward up to 6x, unlimited manual save slots, controller button mapping, and advanced core and game settings no longer require Pro.</p-item>
+            <p-item>A new Pro: <b>Pro means unlimited play</b>. Free users can play <b>10 minutes a day</b> on each platform's free core. Only time spent actually playing counts — not while paused, in a menu or in the background — and it resets at midnight. You'll see how much time is left when a game starts; when it runs out, the game pauses so you can unlock Pro or save and quit.</p-item>
+            <p-item>Each platform has one free core: <b>FCEUmm</b> for NES, <b>Gambatte</b> for Game Boy, <b>PCSX-ReARMed</b> for PlayStation, and the only core on every other platform. The platform's other cores (Nestopia, Mesen, Gearboy, Beetle PSX) require Pro.</p-item>
+            <p-item>Added a <b>welcome offer</b>: for 30 minutes after you first open the Pro page, you can get <b>Lifetime Unlock at a special price</b>, with exactly the same benefits. The page shows a countdown during the offer, and a small countdown badge on the main screens takes you back to the Pro page.</p-item>
+            <p-item><b>Multi-disc games</b> are now merged on import: discs without an .m3u (cue, chd, iso and more, with names like (Disc 1) and (Disc 2)) become a single game in the Library, with disc switching in the game settings and one memory card shared by all discs.</p-item>
+            <p-item><b>Arcade BIOS problems show up before a game fails</b>: the launch check reads the BIOS folder directly, so it stays accurate even after files are changed in the Files app, and explains that a broken BIOS blocks every game that uses it. Importing a BIOS that still lacks files now warns you, and importing from the MAME core page recognizes, renames and merges BIOS files just like the Library does, marking incomplete ones — tap to see what's missing.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.9.1" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.9.1</p-title>
         <p-paragraph fontsize="13">

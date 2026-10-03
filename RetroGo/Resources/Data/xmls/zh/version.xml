@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.10.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.10.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 10 月 4 日</i>。
+        </p-paragraph>
+        <p-list id="v1.10.0" style="number">
+            <p-item><b>所有功能对免费用户全面开放</b>：金手指、最高 6 倍快进、不限数量的手动存档、物理手柄按键映射、核心与游戏的高级设置，不再需要 Pro。</p-item>
+            <p-item>全新的 Pro 方案：<b>Pro 即不限时畅玩</b>。免费用户在每个平台的免费核心上<b>每天可玩 10 分钟</b>，只计算游戏实际运行的时间，暂停、打开菜单或切到后台时不计时，每天零点重置。进入游戏时会提示剩余时间，时间用完后游戏暂停，可解锁 Pro 继续，也可以保存后退出。</p-item>
+            <p-item>每个平台指定一个免费核心：FC 为 <b>FCEUmm</b>，Game Boy 为 <b>Gambatte</b>，PlayStation 为 <b>PCSX-ReARMed</b>，其他平台使用各自唯一的核心。同平台的其他核心（Nestopia、Mesen、Gearboy、Beetle PSX）需要 Pro。</p-item>
+            <p-item>新增<b>首购优惠</b>：第一次打开 Pro 页面后的 30 分钟内，可以用<b>优惠价终身解锁</b>，权益与终身解锁完全相同；优惠期间页面会显示倒计时，主界面也会显示一个小的倒计时标签，点击即可打开 Pro 页面。</p-item>
+            <p-item>导入<b>多光盘游戏</b>时自动合并：没有 .m3u 的多张光盘（如文件名中带 (Disc 1)、(Disc 2) 的 cue、chd、iso 等）会自动合并为游戏库中的一个游戏，可在游戏设置中换盘，所有光盘共用一张记忆卡。</p-item>
+            <p-item>街机 <b>BIOS 问题更早发现</b>：启动前直接检查 BIOS 目录中的文件，即使在「文件」App 中改动过也能准确判断，并说明 BIOS 不完整会影响所有依赖它的游戏；导入的 BIOS 仍缺少文件时会给出提示；MAME 核心页导入 BIOS 时同样会自动识别、重命名与合并，并标出不完整的 BIOS 文件，点击即可查看缺少哪些文件。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.9.1" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.9.1</p-title>
         <p-paragraph fontsize="13">
