@@ -283,10 +283,7 @@ extension GamePageOverlayScene {
             guard let requestedMultiplier = GamePageViewController.instance?.configSession.getFastForwardMultiplier() else {
                 return
             }
-            let multiplier = enabled
-                ? AppStoreProFeatureGate.effectiveFastForwardMultiplierForRuntime(requestedMultiplier)
-                : requestedMultiplier
-            RetroArchX.shared().setFastForwardEnabled(enabled, multiplier: multiplier)
+            RetroArchX.shared().setFastForwardEnabled(enabled, multiplier: requestedMultiplier)
         }
         self.fastButton = node
         return node

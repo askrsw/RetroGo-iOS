@@ -235,6 +235,18 @@ enum MameLaunchCheck {
             }
             paragraphs.append(String(format: Bundle.localizedString(forKey: "mame_check_intro"), gameName)
                               + "\n" + lines.joined(separator: "\n"))
+
+            // A broken BIOS blocks every game on that board, which users read as
+            // "nothing works"; spell out that it's shared and what fixes it.
+            let biosSets = order.compactMap { source -> String? in
+                if case .bios(let set) = source { return set }
+                return nil
+            }
+            if !biosSets.isEmpty {
+                paragraphs.append(String(format: Bundle.localizedString(forKey: "mame_check_bios_hint"),
+                                         biosSets.joined(separator: ", "),
+                                         biosSets.map { "\($0).zip" }.joined(separator: ", ")))
+            }
         }
 
         if !audit.requiredDisks.isEmpty {

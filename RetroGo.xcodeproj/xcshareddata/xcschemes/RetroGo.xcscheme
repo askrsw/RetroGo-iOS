@@ -51,6 +51,12 @@
             ReferencedContainer = "container:RetroGo.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "-ResetWelcomeOffer"
+            isEnabled = "NO">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <AdditionalOptions>
          <AdditionalOption
             key = "APP_DISTRIBUTOR_ID_OVERRIDE"

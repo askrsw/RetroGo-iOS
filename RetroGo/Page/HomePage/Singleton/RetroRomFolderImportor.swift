@@ -67,6 +67,8 @@ final class RetroRomFolderImportor: Thread {
     private var rootKey: String?
     private var flattenRootFolder = false
     private var incompleteGroups: [RetroRomImportGroupBuilder.IncompleteGroup] = []
+    /// Builder-synthesized files (multi-disc m3u) by virtual source path; copied from their own URL.
+    private var generatedFileMap: [String: RetroRomImportGroupBuilder.SourceFile] = [:]
     /// Recognized MAME games by group entry path / item key, and BIOS files routed to the MAME BIOS folder.
     private var mameMatches: [String: MameArchiveMatch] = [:]
     private var mameMatchesByKey: [String: MameArchiveMatch] = [:]
@@ -100,7 +102,10 @@ final class RetroRomFolderImportor: Thread {
     }
 
     override func main() {
-        defer { postProcess() }
+        defer {
+            groupBuilder.cleanupGeneratedFiles()
+            postProcess()
+        }
 
         guard rootUrl.startAccessingSecurityScopedResource() else {
             return
@@ -110,6 +115,7 @@ final class RetroRomFolderImportor: Thread {
         do {
             let sourceFiles = try collectSourceFiles()
             let analysis = try groupBuilder.analyzeGroups(from: sourceFiles)
+            generatedFileMap = analysis.map.filter { $0.value.isGenerated }
             var groups = filterImportableGroups(analysis.groups)
             incompleteGroups = filterIncompleteGroups(analysis.incompleteGroups)
             if !handleIncompleteGroups(incompleteGroups) {
@@ -692,7 +698,8 @@ extension RetroRomFolderImportor {
                     let containerPath = destinationRootPath + file
                     try fileManager.createDirectory(atPath: containerPath, withIntermediateDirectories: true)
                     for plan in plans {
-                        let source = rootUrl.appendingPathComponent(plan.source).path(percentEncoded: false)
+                        let sourceUrl = generatedFileMap[plan.source]?.url ?? rootUrl.appendingPathComponent(plan.source)
+                        let source = sourceUrl.path(percentEncoded: false)
                         let destination = destinationRootPath + plan.destination
                         let parentPath = (destination as NSString).deletingLastPathComponent
                         if !parentPath.isEmpty {

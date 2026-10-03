@@ -259,21 +259,35 @@ final class MameImportScreener {
                 label = installedName
             }
 
+            let line: String
             let added = group.filter { $0.outcome == .merged }.reduce(0) { $0 + $1.addedFiles }
             if added > 0 {
-                return String(format: Bundle.localizedString(forKey: "mame_import_bios_merged"), label, added)
-            }
-            let key: String
-            if group.contains(where: { $0.outcome == .installed }) {
-                key = "mame_import_bios_saved"
-            } else if group.contains(where: { $0.outcome == .keptExisting }) {
-                key = "mame_import_bios_kept"
+                line = String(format: Bundle.localizedString(forKey: "mame_import_bios_merged"), label, added)
             } else {
-                key = "mame_import_bios_failed"
+                let key: String
+                if group.contains(where: { $0.outcome == .installed }) {
+                    key = "mame_import_bios_saved"
+                } else if group.contains(where: { $0.outcome == .keptExisting }) {
+                    key = "mame_import_bios_kept"
+                } else {
+                    key = "mame_import_bios_failed"
+                }
+                line = String(format: Bundle.localizedString(forKey: key), label)
             }
-            return String(format: Bundle.localizedString(forKey: key), label)
+            // The last successful install reflects the folder's final state for this set.
+            guard let missing = group.last(where: { $0.outcome != .failed })?.missingFiles, !missing.isEmpty else {
+                return line
+            }
+            return line + "\n" + incompleteText(installedName: installedName, missing: missing)
         }
         return lines.joined(separator: "\n")
+    }
+
+    /// Warns that a BIOS/device archive still lacks required files, e.g. after importing
+    /// a partial neogeo.zip; games using it fail to start until a complete copy is added.
+    static func incompleteText(installedName: String, missing: [String]) -> String {
+        let listed = missing.prefix(3).joined(separator: ", ") + (missing.count > 3 ? ", …" : "")
+        return String(format: Bundle.localizedString(forKey: "mame_import_bios_incomplete"), installedName, missing.count, listed)
     }
 
     /// Appends the BIOS notice, if any, to an import result message.

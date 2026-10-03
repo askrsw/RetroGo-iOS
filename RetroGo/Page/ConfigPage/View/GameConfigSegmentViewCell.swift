@@ -83,15 +83,6 @@ extension GameConfigSegmentViewCell {
 
         Vibration.selection.vibrate()
 
-        if let feature = entry.requiredProFeatureForSegmentIndex?(sender.selectedSegmentIndex) {
-            let allowed = AppStoreProFeatureGate.shared.requirePro(feature: feature, presentation: entry.proGatePresentation, from: UIViewController.currentActive())
-
-            guard allowed else {
-                updateUI(aniamted: true)
-                return
-            }
-        }
-
         entry.setSegmentSelectedIndex?(sender.selectedSegmentIndex)
     }
 }

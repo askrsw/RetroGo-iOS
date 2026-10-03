@@ -138,6 +138,7 @@
 "mame_check_missing_parent" = "• Parent set %1$@: %2$d missing (%3$@)";
 "mame_check_missing_bios" = "• BIOS %1$@: %2$d missing (%3$@)";
 "mame_check_missing_device" = "• Device %1$@: %2$d missing (%3$@)";
+"mame_check_bios_hint" = "%1$@ is a BIOS shared by a whole family of arcade games. While it is incomplete, none of those games can start, even if their own files are fine. Import a complete %2$@ that matches MAME 0.289, and RetroGo will put it in the BIOS folder and merge it with the files already there.";
 "mame_check_chd" = "This game also needs a CHD disc image: %@.";
 "mame_check_driver_warning" = "This game is marked as not working in the current MAME core.";
 "mame_check_launch_anyway" = "Launch Anyway";
@@ -274,7 +275,7 @@
 "coreinfo_firmware_import_success" = "Successfully matched and imported %d firmware files.";
 "coreinfo_firmware_import_zero" = "No matching firmware files found.";
 "coreinfo_firmware_read_dir_failed" = "Failed to read directory: %@";
-"coreinfo_firmware_mame_tip" = "The MAME core supports thousands of hardware types. If a game fails to run, please import the corresponding BIOS firmware. Tap [ plus ] to import a single file, tap [ folder ] to batch import a folder (excluding subdirectories). Note: files with duplicate names will be overwritten.";
+"coreinfo_firmware_mame_tip" = "The MAME core supports thousands of hardware types. If a game fails to run, please import the corresponding BIOS firmware. Tap [ plus ] to import a single file, tap [ folder ] to batch import a folder (excluding subdirectories). Recognized BIOS files are saved under their standard names and merged with any copy already here; tap a BIOS marked Incomplete to see which files it lacks.";
 "coreinfo_firmware_mame_already_imported" = "List of imported firmware files (swipe left to delete): ";
 "coreinfo_firmware_ppsspp_foot_tip" = "The interface assets required for PPSSPP (such as ppge_atlas.zim) are sourced from the official open-source project and are built-in. These files comply with open-source licenses and do not contain any proprietary firmware. If files are corrupted, you can try to Restore them.";
 "coreinfo_firmware_ppsspp_reload_word" = "Restore";
@@ -349,12 +350,8 @@
 "iap_yearly_trial_desc" = "%@ · then billed yearly";
 "iap_loading" = "Loading...";
 "iap_probenefits" = "Pro Benefits";
-"iap_probenefit_arcade" = "Unlimited arcade play (MAME) — free users get 10 minutes a day.";
-"iap_probenefit_cheats" = "Enable cheat codes and built-in cheat templates.";
-"iap_probenefit1" = "Unlimited fast-forward controls.";
-"iap_probenefit2" = "Unlimited manual save slots per game.";
-"iap_probenefit3" = "Advanced controller button mapping.";
-"iap_probenefit4" = "Core & game-specific settings with finer control.";
+"iap_probenefit_unlimited_play" = "Unlimited play on every platform. Free users get 10 minutes a day per platform.";
+"iap_probenefit_all_cores" = "Every emulator core, not just each platform's free one.";
 "iap_probenefit5" = "Support ongoing RetroGo development and future premium features.";
 "iap_foottiptext" = "The Pro unlock fee is charged to your App Store account at confirmation of purchase. Monthly and yearly subscriptions renew automatically unless auto-renew is turned off at least 24 hours before the end of the current subscription period. Lifetime unlock is a one-time purchase and does not renew. You can Manage Subscriptions on the App Store at any time. If you have any questions, please Contact Us.";
 "iap_foottipmanage" = "Manage Subscriptions";
@@ -389,6 +386,11 @@
 "iap_lifetime_badge" = "Best";
 "iap_save" = "Save";
 "iap_lifetime_tip" = "One-time";
+"iap_welcome_offer_badge" = "Limited";
+"iap_welcome_offer_saving_format" = "Was %1$@ · Save %2$d%%";
+"iap_welcome_offer_countdown_format" = "⏱ Offer ends in %@";
+"iap_welcome_offer_desc" = "Welcome price for first-time buyers. Same benefits as Lifetime Unlock; it won't come back after the countdown.";
+"iap_welcome_offer_floating_format" = "Welcome offer %@";
 "iap_retrogo_pro_monthly" = "RetroGo Pro Monthly";
 "iap_retrogo_pro_yearly" = "RetroGo Pro Yearly";
 "iap_retrogo_pro_lifetime" = "RetroGo Pro Lifetime";
@@ -405,18 +407,14 @@
 // MARK: - Pro Feature Gate
 
 "progate_alert_title" = "RetroGo Pro";
-"progate_alert_message_format" = "%@\nUnlock RetroGo Pro to continue.";
 "progate_unlock_pro" = "Unlock Pro";
 "progate_not_now" = "Not Now";
-"progate_cheats_locked" = "Enabling cheats requires Pro.";
-"progate_fast_forward_locked" = "Fast-forward speeds above 2x require Pro.";
-"progate_manual_save_slot_locked" = "Unlimited manual save slots are a Pro feature.";
-"progate_controller_mapping_locked" = "Advanced controller button mapping is a Pro feature.";
-"progate_advanced_configuration_locked" = "Advanced core and game settings are Pro features.";
-"progate_mame_daily_limit_reached" = "Today's 10 minutes of free arcade play are used up. Unlock RetroGo Pro for unlimited arcade play, or come back tomorrow.";
-"progate_mame_free_time_left_format" = "Free arcade play left today: %d min";
-"progate_mame_free_time_ending" = "Less than 1 minute of free arcade play left today.";
-"progate_mame_quit_game" = "Quit Game";
+"progate_daily_limit_reached_format" = "Today's 10 free minutes for %@ are used up. Unlock RetroGo Pro for unlimited play, or come back tomorrow.";
+"progate_core_requires_pro_format" = "%@ requires RetroGo Pro.";
+"progate_core_requires_pro_with_free_format" = "%1$@ requires RetroGo Pro. Free users can play this platform with %2$@ for 10 minutes a day.";
+"progate_free_time_left_format" = "Free play left today: %d min";
+"progate_free_time_ending" = "Less than 1 minute of free play left today.";
+"progate_quit_game" = "Quit Game";
 
 // MARK: - Game Discover Page
 
@@ -694,6 +692,10 @@
 "mame_backup_usage" = "%1$d files, %2$@";
 "mame_backup_clear_confirm" = "Delete every original file kept by earlier repairs? This cannot be undone.";
 "mame_import_bios_merged" = "%1$@ is a MAME BIOS or device file. It was merged with the copy in the MAME BIOS folder, adding %2$d files.";
+"mame_import_bios_incomplete" = "Note: %1$@ still lacks %2$d required files (%3$@), so games that use it can't start. Import a complete copy that matches MAME 0.289 and RetroGo will merge it in.";
+"coreinfo_mame_bios_incomplete" = "Incomplete";
+"coreinfo_mame_bios_missing_count" = "%d Missing";
+"coreinfo_mame_bios_missing_message" = "%1$@ lacks %2$d required files, so games that use it can't start:\n\n%3$@\n\nImport a complete copy that matches MAME 0.289 and RetroGo will merge it in.";
 "mame_import_replace_message" = "%@ is already in your library, but the imported file is a more complete copy of the same arcade set. Replace the existing file? The original is kept in the repair backups; save states and settings stay.";
 "mame_import_replace_action" = "Replace with Complete Copy";
 "mame_import_replaced" = "Replaced %d games with more complete copies. The originals are in the repair backups.";

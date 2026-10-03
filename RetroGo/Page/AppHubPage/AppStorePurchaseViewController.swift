@@ -527,6 +527,8 @@ fileprivate final class PlanSectionView: UIStackView {
 
     private weak var holder: AppStorePurchaseViewController?
     private var refreshTask: Task<Void, Never>?
+    private var welcomeOfferTimer: Timer?
+    private var showsWelcomeLayout = false
 
     init(holder: AppStorePurchaseViewController) {
         self.holder = holder
@@ -551,7 +553,13 @@ fileprivate final class PlanSectionView: UIStackView {
 
     deinit {
         refreshTask?.cancel()
+        welcomeOfferTimer?.invalidate()
         NotificationCenter.default.removeObserver(self)
+    }
+
+    /// The lifetime card sells the welcome product while its window is open.
+    private var lifetimeKind: AppStoreProductKind {
+        AppStoreWelcomeOffer.isActive && productInfoByKind[.proLifetimeWelcome] != nil ? .proLifetimeWelcome : .proLifetime
     }
 
     private func renderPlans() {
@@ -559,6 +567,17 @@ fileprivate final class PlanSectionView: UIStackView {
 
         let isPro = purchaseManager.activeProEntitlement != nil
         let showsPlanSkeleton = shouldShowPlanSkeleton()
+
+        // The window opens the first time the offer can actually be shown.
+        if !isPro, productInfoByKind[.proLifetimeWelcome] != nil {
+            AppStoreWelcomeOffer.startIfNeeded()
+        }
+        if let selectedKind, selectedKind.isLifetime {
+            self.selectedKind = lifetimeKind
+        }
+        let welcomeActive = !isPro && lifetimeKind == .proLifetimeWelcome
+        updateWelcomeOfferTimer(running: welcomeActive)
+        applyWelcomeLayout(welcomeActive)
 
         holder.heroHeaderView.updateHeroState()
 
@@ -580,7 +599,7 @@ fileprivate final class PlanSectionView: UIStackView {
         planTitleRow.isHidden = false
         monthlyCard.isHidden  = !showsPlanSkeleton && productInfoByKind[.proMonthly]  == nil
         yearlyCard.isHidden   = !showsPlanSkeleton && productInfoByKind[.proYearly]   == nil
-        lifetimeCard.isHidden = !showsPlanSkeleton && productInfoByKind[.proLifetime] == nil
+        lifetimeCard.isHidden = !showsPlanSkeleton && productInfoByKind[lifetimeKind] == nil
         subscribeWrapper.isHidden = false
         tipLabel.isHidden = false
 
@@ -591,7 +610,9 @@ fileprivate final class PlanSectionView: UIStackView {
 
         monthlyCard.apply(info: productInfoByKind[.proMonthly],  selected: selectedKind == .proMonthly, savingText: nil)
         yearlyCard.apply(info: productInfoByKind[.proYearly],   selected: selectedKind == .proYearly, savingText: yearlySaving)
-        lifetimeCard.apply(info: productInfoByKind[.proLifetime], selected: selectedKind == .proLifetime, savingText: Bundle.localizedString(forKey: "iap_lifetime_tip"))
+        let lifetimeSaving = lifetimeKind == .proLifetimeWelcome ? welcomeSavingText() : Bundle.localizedString(forKey: "iap_lifetime_tip")
+        lifetimeCard.apply(info: productInfoByKind[lifetimeKind], selected: selectedKind?.isLifetime == true, savingText: lifetimeSaving)
+        refreshWelcomeCountdown()
         holder.updatePlanSectionHeight(self)
     }
 
@@ -698,7 +719,7 @@ fileprivate final class PlanSectionView: UIStackView {
 
     private func purchaseButtonTitle(for info: AppStoreProductInfo) -> String {
         switch info.kind {
-        case .proLifetime:
+        case .proLifetime, .proLifetimeWelcome:
             return "\(Bundle.localizedString(forKey: "iap_unlock_lifetime")) · \(info.displayPrice)"
         case .proMonthly:
             if info.hasFreeTrial, info.isEligibleForIntroOffer, let trial = info.freeTrialDisplayText {
@@ -718,12 +739,16 @@ fileprivate final class PlanSectionView: UIStackView {
         case .proMonthly:  return Bundle.localizedString(forKey: "iap_monthly_desc")
         case .proYearly:   return Bundle.localizedString(forKey: "iap_yearly_desc")
         case .proLifetime: return Bundle.localizedString(forKey: "iap_lifetime_desc")
+        case .proLifetimeWelcome: return Bundle.localizedString(forKey: "iap_welcome_offer_desc")
         }
     }
 
     private func chooseDefaultSelectedPlanIfNeeded() {
         if let selectedKind, productInfoByKind[selectedKind] != nil { return }
-        if      productInfoByKind[.proYearly]   != nil { selectedKind = .proYearly   }
+        if AppStoreWelcomeOffer.isActive, productInfoByKind[.proLifetimeWelcome] != nil {
+            selectedKind = .proLifetimeWelcome
+        }
+        else if productInfoByKind[.proYearly]   != nil { selectedKind = .proYearly   }
         else if productInfoByKind[.proMonthly]  != nil { selectedKind = .proMonthly  }
         else if productInfoByKind[.proLifetime] != nil { selectedKind = .proLifetime }
         else                                           { selectedKind = nil          }
@@ -737,6 +762,74 @@ fileprivate final class PlanSectionView: UIStackView {
         case .ready, .failed:
             return false
         }
+    }
+
+    /// "Was ¥88 · Save 45%", from both products' prices in the current storefront.
+    private func welcomeSavingText() -> String? {
+        guard let full = productInfoByKind[.proLifetime],
+              let welcome = productInfoByKind[.proLifetimeWelcome],
+              full.price > welcome.price else {
+            return nil
+        }
+        let ratio = (full.price - welcome.price) / full.price
+        let percent = Int(NSDecimalNumber(decimal: ratio * Decimal(100)).doubleValue.rounded())
+        let formatter = Bundle.localizedString(forKey: "iap_welcome_offer_saving_format")
+        return String(format: formatter, full.displayPrice, percent)
+    }
+
+    /// Ticks the countdown in the tip line; re-renders once the window closes so
+    /// the card falls back to the regular lifetime price.
+    private func updateWelcomeOfferTimer(running: Bool) {
+        guard running else {
+            welcomeOfferTimer?.invalidate()
+            welcomeOfferTimer = nil
+            return
+        }
+        guard welcomeOfferTimer == nil else { return }
+        welcomeOfferTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                if AppStoreWelcomeOffer.isActive {
+                    self.refreshWelcomeCountdown()
+                } else {
+                    self.renderPlans()
+                    self.updateUIFromState()
+                }
+            }
+        }
+    }
+
+    private func refreshWelcomeCountdown() {
+        guard showsWelcomeLayout, let remaining = AppStoreWelcomeOffer.remaining else {
+            lifetimeCard.setCountdown(nil)
+            return
+        }
+        let formatter = Bundle.localizedString(forKey: "iap_welcome_offer_countdown_format")
+        lifetimeCard.setCountdown(String(format: formatter, AppStoreWelcomeOffer.formattedRemaining(remaining)))
+    }
+
+    /// While the welcome offer runs, the lifetime card leads, taller and with the
+    /// countdown, and the subscriptions shrink below it. Restored when it ends.
+    private func applyWelcomeLayout(_ on: Bool) {
+        guard on != showsWelcomeLayout else { return }
+        showsWelcomeLayout = on
+
+        removeArrangedSubview(lifetimeCard)
+        removeArrangedSubview(subscriptionRow)
+        let titleIndex = arrangedSubviews.firstIndex(of: planTitleRow) ?? 0
+        if on {
+            insertArrangedSubview(lifetimeCard, at: titleIndex + 1)
+            insertArrangedSubview(subscriptionRow, at: titleIndex + 2)
+        } else {
+            insertArrangedSubview(subscriptionRow, at: titleIndex + 1)
+            insertArrangedSubview(lifetimeCard, at: titleIndex + 2)
+        }
+
+        lifetimeCard.snp.updateConstraints { make in make.height.equalTo(on ? 132 : 90) }
+        subscriptionRow.snp.updateConstraints { make in make.height.equalTo(on ? 64 : 90) }
+        monthlyCard.setCompact(on)
+        yearlyCard.setCompact(on)
+        refreshWelcomeCountdown()
     }
 
     private func yearlySavingPercentText() -> String? {
@@ -963,12 +1056,8 @@ private final class BenefitSectionView: UIStackView {
         addArrangedSubview(benefitsStack)
 
         let benefits: [(String, UIColor)] = [
-            (Bundle.localizedString(forKey: "iap_probenefit_arcade"), UIColor(hex: 0xE67E22, alpha: 1.0)),
-            (Bundle.localizedString(forKey: "iap_probenefit_cheats"), .cheatIconColor),
-            (Bundle.localizedString(forKey: "iap_probenefit1"), UIColor(hex: 0x2ECC71, alpha: 1.0)),
-            (Bundle.localizedString(forKey: "iap_probenefit2"), UIColor(hex: 0xF1C40F, alpha: 1.0)),
-            (Bundle.localizedString(forKey: "iap_probenefit3"), UIColor(hex: 0xE74C3C, alpha: 1.0)),
-            (Bundle.localizedString(forKey: "iap_probenefit4"), UIColor(hex: 0x3498D8, alpha: 1.0)),
+            (Bundle.localizedString(forKey: "iap_probenefit_unlimited_play"), UIColor(hex: 0x2ECC71, alpha: 1.0)),
+            (Bundle.localizedString(forKey: "iap_probenefit_all_cores"), UIColor(hex: 0xE67E22, alpha: 1.0)),
             (Bundle.localizedString(forKey: "iap_probenefit5"), UIColor(hex: 0x9B59B6, alpha: 1.0)),
         ]
         benefits.forEach { benefitsStack.addArrangedSubview(BenefitRowView(text: $0.0, dotColor: $0.1)) }
@@ -1077,13 +1166,14 @@ private final class BottomSectionView: UIStackView {
 // MARK: - PlanCardView
 
 private final class PlanCardView: UIControl {
-    let kind:  AppStoreProductKind
+    private(set) var kind: AppStoreProductKind
     var onTap: ((AppStoreProductKind) -> Void)?
 
     private let titleLabel  = UILabel()
     private let priceLabel  = UILabel()
     private let badgeLabel  = UILabel()   // "Flexible / Popular / Best"
     private let savingLabel = UILabel()
+    private let countdownLabel = UILabel()
     private let borderView  = UIView()
     private let skeletonTitleView = UIView()
     private let skeletonPriceView = UIView()
@@ -1115,6 +1205,7 @@ private final class PlanCardView: UIControl {
             return
         }
 
+        kind = info.kind
         isUserInteractionEnabled = true
         hideSkeleton()
         alpha = 1
@@ -1150,13 +1241,27 @@ private final class PlanCardView: UIControl {
         bringSubviewToFront(badgeLabel)
     }
 
+    /// Smaller type for the subscription cards while the welcome offer leads.
+    func setCompact(_ compact: Bool) {
+        titleLabel.font = .roundedSystemFont(ofSize: compact ? 15 : 18, weight: .regular)
+        priceLabel.font = .roundedSystemFont(ofSize: compact ? 22 : 30, weight: .heavy)
+        titleLabel.snp.updateConstraints { make in make.top.equalToSuperview().offset(compact ? 8 : 12) }
+        priceLabel.snp.updateConstraints { make in make.bottom.equalToSuperview().offset(compact ? -8 : -12) }
+    }
+
+    /// Countdown line between title and price; nil hides it.
+    func setCountdown(_ text: String?) {
+        countdownLabel.text = text
+        countdownLabel.isHidden = text == nil
+    }
+
     // MARK: Private helpers
 
     private func planTitle(for kind: AppStoreProductKind) -> String {
         switch kind {
         case .proMonthly:  return Bundle.localizedString(forKey: "iap_monthly")
         case .proYearly:   return Bundle.localizedString(forKey: "iap_yearly")
-        case .proLifetime: return Bundle.localizedString(forKey: "iap_lifetime")
+        case .proLifetime, .proLifetimeWelcome: return Bundle.localizedString(forKey: "iap_lifetime")
         }
     }
 
@@ -1165,6 +1270,7 @@ private final class PlanCardView: UIControl {
         case .proMonthly:  return "iap_monthly_badge"
         case .proYearly:   return "iap_yearly_badge"
         case .proLifetime: return "iap_lifetime_badge"
+        case .proLifetimeWelcome: return "iap_welcome_offer_badge"
         }
     }
 
@@ -1173,6 +1279,7 @@ private final class PlanCardView: UIControl {
         case .proMonthly:  return UIColor(hex: 0x3B82F6, alpha: 1.0)   // blue  — flexible
         case .proYearly:   return UIColor(hex: 0xF59E0B, alpha: 1.0)   // amber — popular
         case .proLifetime: return UIColor(hex: 0x8B5CF6, alpha: 1.0)   // purple — best value
+        case .proLifetimeWelcome: return UIColor(hex: 0xEF4444, alpha: 1.0)   // red — limited time
         }
     }
 
@@ -1219,6 +1326,7 @@ private final class PlanCardView: UIControl {
         addSubview(priceLabel)
         addSubview(badgeLabel)
         addSubview(savingLabel)
+        addSubview(countdownLabel)
         addSubview(skeletonTitleView)
         addSubview(skeletonPriceView)
 
@@ -1269,6 +1377,17 @@ private final class PlanCardView: UIControl {
         priceLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(12)
             make.bottom.equalToSuperview().offset(-12)
+        }
+
+        countdownLabel.font = .monospacedDigitSystemFont(ofSize: 22, weight: .bold)
+        countdownLabel.textColor = UIColor(hex: 0xFF6B6B, alpha: 1.0)
+        countdownLabel.adjustsFontSizeToFitWidth = true
+        countdownLabel.minimumScaleFactor = 0.75
+        countdownLabel.isHidden = true
+        countdownLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(12)
+            make.top.equalTo(titleLabel.snp.bottom).offset(6)
+            make.trailing.lessThanOrEqualToSuperview().offset(-12)
         }
 
         savingLabel.snp.makeConstraints { make in

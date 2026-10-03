@@ -44,6 +44,12 @@ enum IAPProductID {
         return dict["ProLifetime"] ?? ""
     }()
 
+    /// Welcome-offer price of the lifetime unlock; same entitlement as `lifetime`.
+    static let lifetimeWelcome: String = {
+        guard let dict = inAppPurchaseDict else { return "" }
+        return dict["ProLifetimeWelcome"] ?? ""
+    }()
+
     private static let inAppPurchaseDict = Bundle.main.object(forInfoDictionaryKey: "InAppPurchase") as? Dictionary<String, String>
 }
 
@@ -51,22 +57,30 @@ enum AppStoreProductKind: CaseIterable {
     case proMonthly
     case proYearly
     case proLifetime
+    case proLifetimeWelcome
 
     var productID: String {
         switch self {
         case .proMonthly:  return IAPProductID.monthly
         case .proYearly:   return IAPProductID.yearly
         case .proLifetime: return IAPProductID.lifetime
+        case .proLifetimeWelcome: return IAPProductID.lifetimeWelcome
         }
     }
 
     init?(productID: String) {
+        guard !productID.isEmpty else { return nil }
         switch productID {
         case IAPProductID.monthly:  self = .proMonthly
         case IAPProductID.yearly:   self = .proYearly
         case IAPProductID.lifetime: self = .proLifetime
+        case IAPProductID.lifetimeWelcome: self = .proLifetimeWelcome
         default: return nil
         }
+    }
+
+    var isLifetime: Bool {
+        self == .proLifetime || self == .proLifetimeWelcome
     }
 }
 
@@ -90,20 +104,23 @@ struct AppStoreProEntitlementInfo {
     let productID: String
     let isInFreeTrial: Bool
     let expirationDate: Date?
+    /// The transaction behind this entitlement; nil for caches written before it
+    /// was recorded.
+    var transactionID: UInt64? = nil
 
     var displayName: String {
         Self.localizedDisplayName(for: kind)
     }
 
     var isLifetime: Bool {
-        kind == .proLifetime
+        kind.isLifetime
     }
 
     private static func localizedDisplayName(for kind: AppStoreProductKind) -> String {
         switch kind {
         case .proMonthly:  return Bundle.localizedString(forKey: "iap_retrogo_pro_monthly")
         case .proYearly:   return Bundle.localizedString(forKey: "iap_retrogo_pro_yearly")
-        case .proLifetime: return Bundle.localizedString(forKey: "iap_retrogo_pro_lifetime")
+        case .proLifetime, .proLifetimeWelcome: return Bundle.localizedString(forKey: "iap_retrogo_pro_lifetime")
         }
     }
 }
@@ -112,11 +129,13 @@ private struct CachedProEntitlement: Codable {
     let productID: String
     let isInFreeTrial: Bool
     let expirationDate: Date?
+    let transactionID: UInt64?
 
     init(entitlement: AppStoreProEntitlementInfo) {
         productID = entitlement.productID
         isInFreeTrial = entitlement.isInFreeTrial
         expirationDate = entitlement.expirationDate
+        transactionID = entitlement.transactionID
     }
 }
 
@@ -266,10 +285,20 @@ final class AppStorePurchaseManager: ObservableObject {
         }
 
         let products = try await Product.products(for: ids)
+        let missing = ids.subtracting(products.map(\.id))
+        if !missing.isEmpty {
+            NSLog("[IAP] Products not returned by the App Store: %@", missing.sorted().joined(separator: ", "))
+        }
         var map: [AppStoreProductKind: Product] = [:]
 
         for product in products {
             guard let kind = AppStoreProductKind(productID: product.id) else { continue }
+            // A lifetime unlock must be non-consumable: a consumable leaves no
+            // entitlement once finished, so Pro would vanish right after purchase.
+            if kind.isLifetime, product.type != .nonConsumable {
+                NSLog("[IAP] Ignoring %@: lifetime product must be non-consumable, got %@", product.id, product.type.rawValue)
+                continue
+            }
             map[kind] = product
         }
 
@@ -320,6 +349,7 @@ final class AppStorePurchaseManager: ObservableObject {
                     throw AppStorePurchaseError.noActiveEntitlements
                 }
 
+                NSLog("[IAP] Purchased %@ (transaction %llu)", transaction.productID, transaction.id)
                 applyPurchasedTransaction(transaction, fallbackKind: kind)
                 await transaction.finish()
                 await refreshEntitlements()
@@ -367,6 +397,9 @@ final class AppStorePurchaseManager: ObservableObject {
     }
 
     func refreshEntitlements(allowClearingActiveEntitlement: Bool = false) async {
+        if allowClearingActiveEntitlement {
+            NSLog("[IAP] Refreshing entitlements (clearing allowed)")
+        }
         var ids = Set<String>()
         var entitlements: [AppStoreProEntitlementInfo] = []
 
@@ -382,14 +415,28 @@ final class AppStorePurchaseManager: ObservableObject {
             entitlements.append(makeProEntitlementInfo(kind: kind, transaction: transaction))
         }
 
+        var keepsActiveEntitlement = !allowClearingActiveEntitlement
+        if !keepsActiveEntitlement, entitlements.isEmpty, let activeProEntitlement {
+            keepsActiveEntitlement = await isTransactionStillValid(activeProEntitlement.transactionID)
+        }
+
         if let entitlement = preferredProEntitlement(from: entitlements) {
             purchasedProductIDs = ids
             activeProEntitlement = entitlement
             cacheActiveProEntitlement()
-        } else if let activeProEntitlement, Self.isLocallyValidEntitlement(kind: activeProEntitlement.kind, expirationDate: activeProEntitlement.expirationDate), !allowClearingActiveEntitlement {
+        } else if let activeProEntitlement,
+                  Self.isLocallyValidEntitlement(kind: activeProEntitlement.kind, expirationDate: activeProEntitlement.expirationDate),
+                  keepsActiveEntitlement {
+            // currentEntitlements can lag right after a purchase (seen in the
+            // sandbox after clearing purchase history); only drop Pro once the
+            // transaction behind it is itself revoked or expired.
             purchasedProductIDs = [activeProEntitlement.productID]
             cacheActiveProEntitlement()
         } else {
+            if let activeProEntitlement {
+                NSLog("[IAP] Clearing Pro entitlement %@ (transaction %@)", activeProEntitlement.productID,
+                      activeProEntitlement.transactionID.map { String($0) } ?? "unknown")
+            }
             purchasedProductIDs = []
             activeProEntitlement = nil
             Self.clearCachedProEntitlement()
@@ -407,6 +454,26 @@ final class AppStorePurchaseManager: ObservableObject {
     }
 
     // MARK: - Private
+
+    /// Whether the given transaction is still unrevoked and unexpired according
+    /// to the full transaction history.
+    private func isTransactionStillValid(_ transactionID: UInt64?) async -> Bool {
+        guard let transactionID else { return false }
+        for await result in Transaction.all {
+            guard case .verified(let transaction) = result, transaction.id == transactionID else { continue }
+            if let revocationDate = transaction.revocationDate {
+                NSLog("[IAP] Transaction %llu revoked at %@", transactionID, "\(revocationDate)")
+                return false
+            }
+            if let expirationDate = transaction.expirationDate, expirationDate <= Date() {
+                NSLog("[IAP] Transaction %llu expired at %@", transactionID, "\(expirationDate)")
+                return false
+            }
+            return true
+        }
+        NSLog("[IAP] Transaction %llu not found in transaction history", transactionID)
+        return false
+    }
 
     private func makeProductInfo(kind: AppStoreProductKind, product: Product) -> AppStoreProductInfo {
         let trialText = freeTrialDisplayText(for: product)
@@ -446,7 +513,7 @@ final class AppStorePurchaseManager: ObservableObject {
         guard transaction.revocationDate == nil else { return false }
 
         let kind = AppStoreProductKind(productID: transaction.productID) ?? fallbackKind
-        if kind == .proLifetime {
+        if kind.isLifetime {
             return true
         }
 
@@ -462,7 +529,8 @@ final class AppStorePurchaseManager: ObservableObject {
             kind: kind,
             productID: transaction.productID,
             isInFreeTrial: isFreeTrialEntitlement(kind: kind, transaction: transaction),
-            expirationDate: transaction.expirationDate
+            expirationDate: transaction.expirationDate,
+            transactionID: transaction.id
         )
     }
 
@@ -490,7 +558,7 @@ final class AppStorePurchaseManager: ObservableObject {
 
     private func entitlementPriority(_ kind: AppStoreProductKind) -> Int {
         switch kind {
-        case .proLifetime: return 3
+        case .proLifetime, .proLifetimeWelcome: return 3
         case .proYearly:   return 2
         case .proMonthly:  return 1
         }
@@ -500,12 +568,12 @@ final class AppStorePurchaseManager: ObservableObject {
         switch kind {
         case .proMonthly:  return Bundle.localizedString(forKey: "iap_retrogo_pro_monthly")
         case .proYearly:   return Bundle.localizedString(forKey: "iap_retrogo_pro_yearly")
-        case .proLifetime: return Bundle.localizedString(forKey: "iap_retrogo_pro_lifetime")
+        case .proLifetime, .proLifetimeWelcome: return Bundle.localizedString(forKey: "iap_retrogo_pro_lifetime")
         }
     }
 
     private nonisolated static func isLocallyValidEntitlement(kind: AppStoreProductKind, expirationDate: Date?) -> Bool {
-        if kind == .proLifetime {
+        if kind.isLifetime {
             return true
         }
 
@@ -548,7 +616,8 @@ final class AppStorePurchaseManager: ObservableObject {
             kind: kind,
             productID: cache.productID,
             isInFreeTrial: cache.isInFreeTrial,
-            expirationDate: cache.expirationDate
+            expirationDate: cache.expirationDate,
+            transactionID: cache.transactionID
         )
     }
 
@@ -630,13 +699,20 @@ final class AppStorePurchaseManager: ObservableObject {
             for await result in Transaction.updates {
                 do {
                     let transaction = try await self.verified(result)
+                    NSLog("[IAP] Transaction update %@ (transaction %llu), revoked: %@", transaction.productID, transaction.id,
+                          transaction.revocationDate.map { "\($0)" } ?? "no")
                     if transaction.revocationDate == nil,
                        let kind = AppStoreProductKind(productID: transaction.productID) {
                         await self.applyPurchasedTransaction(transaction, fallbackKind: kind)
                     }
                     await transaction.finish()
+                    // Only a revocation of the transaction behind the active
+                    // entitlement may clear it; revocations of older ones (e.g.
+                    // a refunded earlier plan) must not take Pro away.
+                    let activeTransactionID = await self.activeProEntitlement?.transactionID
                     let allowsClearing = transaction.revocationDate != nil &&
-                        AppStoreProductKind(productID: transaction.productID) != nil
+                        AppStoreProductKind(productID: transaction.productID) != nil &&
+                        (activeTransactionID == nil || activeTransactionID == transaction.id)
                     await self.refreshEntitlements(allowClearingActiveEntitlement: allowsClearing)
                 } catch {
                     // Ignore invalid transaction update

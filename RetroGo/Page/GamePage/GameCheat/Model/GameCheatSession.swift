@@ -73,12 +73,6 @@ final class GameCheatSession {
     private var suspendedUserIDs: Set<String> = []
     private var suspendedTemplateIDs: Set<Int> = []
 
-    /// Runtime paths may run outside the purchase UI flow, so use the cached
-    /// entitlement snapshot here. The UI gate still presents the paywall.
-    private static var canEnableCheats: Bool {
-        AppStorePurchaseManager.hasLocallyValidCachedProEntitlement
-    }
-
     init(game: RetroRomFileItem, core: EmuCoreInfoItem, autoEnableCheatsOnLaunch: Bool = true) {
         self.game = game
         self.core = core
@@ -151,10 +145,9 @@ final class GameCheatSession {
     @discardableResult
     func setEnabled(_ enabled: Bool, for item: GameCheatItem) -> Bool {
         // Cheats can't be enabled during a netplay session (would desync peers).
-        // This is a non-destructive refusal — unlike the Pro-expiry path, it never
-        // wipes the user's saved enabled flags.
+        // This is a non-destructive refusal: it never wipes the user's saved
+        // enabled flags.
         if enabled, RANetplayCoordinator.shared.isNetplayEnabled { return false }
-        guard !enabled || Self.canEnableCheats else { return false }
         guard var found = items.first(where: { $0.id == item.id }) else { return false }
         found.enabled = enabled
         return updateCheat(found)
@@ -163,7 +156,6 @@ final class GameCheatSession {
     @discardableResult
     func setTemplateEnabled(_ enabled: Bool, for item: RACheatItem) -> Bool {
         if enabled, RANetplayCoordinator.shared.isNetplayEnabled { return false }
-        guard !enabled || Self.canEnableCheats else { return false }
         guard let idx = templateItems.firstIndex(where: { $0.catalogId == item.catalogId }) else { return false }
         templateItems[idx].enabled = enabled
         guard Self.upsertTemplateState(
@@ -211,7 +203,6 @@ final class GameCheatSession {
     }
 
     func reloadTemplateItems(completion: @escaping () -> Void) {
-        disableEnabledCheatsIfNeeded()
         reloadTemplateBinding()
         guard let binding = templateBinding,
               binding.isBound,
@@ -233,9 +224,7 @@ final class GameCheatSession {
             RACheatCatalogManager.shared().fetchCheats(forGameId: gameId) { [weak self] cheats, _ in
                 guard let self else { return }
                 let states: [Int: Bool]
-                if !Self.canEnableCheats {
-                    states = [:]
-                } else if self.autoEnableCheatsOnLaunch {
+                if self.autoEnableCheatsOnLaunch {
                     states = Self.loadTemplateStates(romKey: self.game.key, coreId: self.core.coreId)
                 } else {
                     // Same safety fuse for system templates. Preserve switches
@@ -254,37 +243,6 @@ final class GameCheatSession {
                 self.pushToEngine()
                 completion()
             }
-        }
-    }
-
-    /// Pro is checked again at runtime because subscriptions can expire after a
-    /// cheat was previously enabled. Non-Pro users may still browse/edit cheats,
-    /// but no enabled state is allowed to survive into the engine snapshot.
-    private func disableEnabledCheatsIfNeeded() {
-        guard !Self.canEnableCheats else { return }
-
-        var changed = false
-        for index in items.indices where items[index].enabled {
-            var item = items[index]
-            item.enabled = false
-            item.updateAt = Date()
-            if Self.update(item) {
-                items[index] = item
-                changed = true
-            }
-        }
-
-        if Self.deleteEnabledTemplateStates(romKey: game.key, coreId: core.coreId) {
-            changed = true
-        }
-
-        for cheat in templateItems where cheat.enabled {
-            cheat.enabled = false
-            changed = true
-        }
-
-        if changed {
-            pushToEngine()
         }
     }
 
@@ -374,15 +332,11 @@ final class GameCheatSession {
         let templateIDs = suspendedTemplateIDs
         suspendedUserIDs = []
         suspendedTemplateIDs = []
-        // Pro can lapse during a session; never resurrect enabled cheats without
-        // it. The list's own Pro-expiry path wipes the persisted flags later.
-        if Self.canEnableCheats {
-            for index in items.indices where userIDs.contains(items[index].id) {
-                items[index].enabled = true
-            }
-            for cheat in templateItems where templateIDs.contains(cheat.catalogId) {
-                cheat.enabled = true
-            }
+        for index in items.indices where userIDs.contains(items[index].id) {
+            items[index].enabled = true
+        }
+        for cheat in templateItems where templateIDs.contains(cheat.catalogId) {
+            cheat.enabled = true
         }
         pushToEngine()
     }
@@ -679,18 +633,6 @@ extension GameCheatSession {
     static func deleteTemplateStates(romKey: String, coreId: String) -> Bool {
         let states = templateStateTable
             .filter(self.romKey == romKey && self.coreId == coreId)
-        do {
-            try RetroRomPersistence.sqlite.run(states.delete())
-            return true
-        } catch {
-            return false
-        }
-    }
-
-    @discardableResult
-    static func deleteEnabledTemplateStates(romKey: String, coreId: String) -> Bool {
-        let states = templateStateTable
-            .filter(self.romKey == romKey && self.coreId == coreId && enabled == true)
         do {
             try RetroRomPersistence.sqlite.run(states.delete())
             return true

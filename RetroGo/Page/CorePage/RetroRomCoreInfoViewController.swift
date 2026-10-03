@@ -41,6 +41,9 @@ final class RetroRomCoreInfoViewController: UIViewController {
     private var basicItems: [Item] = []
     private var firmwareItems: [Item] = []
     private var descItems: [Item] = []
+    /// MAME only: required files each BIOS-folder archive lacks, by file name. Read from
+    /// the archives (directories only) off the main thread; absent until checked.
+    private var mameBiosMissing: [String: [String]] = [:]
 
     init(coreInfoItem: EmuCoreInfoItem, showCloseButton: Bool = false, interactive: Bool) {
         self.coreInfoItem = coreInfoItem
@@ -74,6 +77,7 @@ final class RetroRomCoreInfoViewController: UIViewController {
 
         _ = collectionView
         applySnapshot()
+        refreshMameBiosStatus()
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -129,7 +133,8 @@ extension RetroRomCoreInfoViewController {
         let collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
         collectionView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         collectionView.delegate = self
-        collectionView.allowsSelection = false
+        // Only incomplete MAME BIOS rows are selectable (see shouldSelectItemAt).
+        collectionView.allowsSelection = true
         view.addSubview(collectionView)
         return collectionView
     }
@@ -206,6 +211,7 @@ extension RetroRomCoreInfoViewController {
 
         coreInfoItem.deleteFirmware(firmware)
         MameRomSetPersistence.shared.deleteArchive(owner: .bios(fileName: firmware.name))
+        mameBiosMissing[firmware.name] = nil
 
         var snapshot = dataSource.snapshot()
         snapshot.deleteItems([item])
@@ -316,6 +322,76 @@ extension RetroRomCoreInfoViewController {
     }
 }
 
+// MARK: - MAME BIOS folder
+
+extension RetroRomCoreInfoViewController {
+    /// Required files the MAME BIOS archive lacks; nil when unknown (not checked yet, not
+    /// MAME, or not a BIOS/device set).
+    func mameMissingFiles(for firmware: EmuCoreFirmware) -> [String]? {
+        mameBiosMissing[firmware.name]
+    }
+
+    /// Imports a picked file or folder through the BIOS installer, which recognizes,
+    /// renames, merges and indexes MAME BIOS/device archives like a Library import.
+    func importMameBios(_ url: URL) {
+        let title = Bundle.localizedString(forKey: "homepage_import_importing")
+        let indicatorView = RetroRomActivityView(mainTitle: title)
+        indicatorView.install()
+        indicatorView.activeMessage(title, title: title)
+
+        let core = coreInfoItem
+        let messageFormat = Bundle.localizedString(forKey: "coreinfo_firmware_matching_file")
+        DispatchQueue.global(qos: .userInitiated).async {
+            let message = MameBiosInstaller.importPicked(url, core: core) { fileName in
+                DispatchQueue.main.async {
+                    indicatorView.activeMessage(String(format: messageFormat, fileName), title: title)
+                }
+            }
+            DispatchQueue.main.async { [weak self = self] in
+                indicatorView.successMessage(message, title: title, canDismiss: true)
+                self?.reloadMameFirmwareSection()
+            }
+        }
+    }
+
+    /// Rebuilds the firmware rows from the core's list (imports may add, rename or drop
+    /// files) and re-checks their completeness.
+    private func reloadMameFirmwareSection() {
+        var snapshot = dataSource.snapshot()
+        guard snapshot.sectionIdentifiers.contains(.firmware) else { return }
+        snapshot.deleteItems(snapshot.itemIdentifiers(inSection: .firmware))
+        firmwareItems = [.mameFirmwareTip(core: coreInfoItem)] + (coreInfoItem.firmwares ?? []).map { Item.firmware(data: $0) }
+        snapshot.appendItems(firmwareItems, toSection: .firmware)
+        dataSource.apply(snapshot, animatingDifferences: true)
+        refreshMameBiosStatus()
+    }
+
+    private func refreshMameBiosStatus() {
+        guard coreInfoItem.coreId == MameImportScreener.mameCoreId,
+              let folder = MameBiosFolder(core: coreInfoItem) else { return }
+        let names = (coreInfoItem.firmwares ?? []).filter(\.fileExists).map(\.name)
+        DispatchQueue.global(qos: .userInitiated).async {
+            guard MameCatalogBuilder.shared.waitUntilReady() else { return }
+            var missing: [String: [String]] = [:]
+            for name in names where MameBiosFolder.archiveExtensions.contains((name as NSString).pathExtension.lowercased()) {
+                missing[name] = folder.missingFiles(ofSet: (name as NSString).deletingPathExtension)
+            }
+            DispatchQueue.main.async { [weak self = self] in
+                guard let self else { return }
+                self.mameBiosMissing = missing
+                var snapshot = self.dataSource.snapshot()
+                let items = snapshot.itemIdentifiers.filter {
+                    if case .firmware = $0 { return true }
+                    return false
+                }
+                guard !items.isEmpty else { return }
+                snapshot.reconfigureItems(items)
+                self.dataSource.apply(snapshot, animatingDifferences: false)
+            }
+        }
+    }
+}
+
 // MARK: - MAME health report
 
 extension RetroRomCoreInfoViewController {
@@ -415,8 +491,26 @@ extension RetroRomCoreInfoViewController {
 #endif // DEBUG
 
 extension RetroRomCoreInfoViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, shouldSelectItemAt indexPath: IndexPath) -> Bool {
+        guard case .firmware(let firmware) = dataSource.itemIdentifier(for: indexPath),
+              let missing = mameMissingFiles(for: firmware) else { return false }
+        return !missing.isEmpty
+    }
+
+    func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool {
+        self.collectionView(collectionView, shouldSelectItemAt: indexPath)
+    }
+
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
+        guard case .firmware(let firmware) = dataSource.itemIdentifier(for: indexPath),
+              let missing = mameMissingFiles(for: firmware), !missing.isEmpty else { return }
+        let message = String(format: Bundle.localizedString(forKey: "coreinfo_mame_bios_missing_message"),
+                             firmware.name, missing.count, missing.joined(separator: "\n"))
+        let alert = UIAlertController(title: Bundle.localizedString(forKey: "coreinfo_mame_bios_incomplete"),
+                                      message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
+        present(alert, animated: true)
     }
 }
 
@@ -440,45 +534,14 @@ extension RetroRomCoreInfoViewController: UIDocumentPickerDelegate {
 
     private func openFirmwareFile(_ url: URL) {
         guard coreInfoItem.coreId == "mame" else { return }
-
-        let title = Bundle.localizedString(forKey: "homepage_import_importing")
-        let indicatorView = RetroRomActivityView(mainTitle: title)
-        indicatorView.install()
-
-        indicatorView.activeMessage(title, title: title)
-
-        if let firmware = coreInfoItem.importFirmwareFile(url) {
-            // Replaced by hand: the romset index no longer describes this file.
-            MameRomSetPersistence.shared.deleteArchive(owner: .bios(fileName: firmware.name))
-            var snapshot = dataSource.snapshot()
-            let fileName = url.lastPathComponent
-            if let item = firmwareItems.first(where: { item in
-                if case .firmware(let data) = item {
-                    return data.name == fileName
-                }
-                return false
-            }) {
-                if #available(iOS 15.0, *) {
-                    snapshot.reconfigureItems([item])
-                } else {
-                    snapshot.reloadItems([item])
-                }
-            } else {
-                let new = Item.firmware(data: firmware)
-                firmwareItems.append(new)
-                snapshot.appendItems([new], toSection: .firmware)
-            }
-            dataSource.apply(snapshot, animatingDifferences: true)
-
-
-            let message = String(format: Bundle.localizedString(forKey: "coreinfo_firmware_import_success"), 1)
-            indicatorView.successMessage(message, title: title, canDismiss: true)
-        } else {
-            indicatorView.infoMessage(Bundle.localizedString(forKey: "coreinfo_firmware_import_zero"), title: title, canDismiss: true)
-        }
+        importMameBios(url)
     }
 
     private func openFrimwareFolder(_ url: URL) {
+        if coreInfoItem.coreId == "mame" {
+            importMameBios(url)
+            return
+        }
         let title = Bundle.localizedString(forKey: "homepage_import_importing")
         let indicatorView = RetroRomActivityView(mainTitle: title)
         indicatorView.install()

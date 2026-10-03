@@ -322,8 +322,7 @@ final class MameCheatListViewController: UIViewController {
         (presentedViewController ?? self).present(alert, animated: true)
     }
 
-    /// Netplay check before anything is switched on or run. Running MAME itself is
-    /// the Pro gate (see `MameFreePlayQuota`), so its cheats need no separate one.
+    /// Netplay check before anything is switched on or run.
     fileprivate func allowEnabling() -> Bool {
         if RANetplayCoordinator.shared.isNetplayEnabled {
             showMessage(Bundle.localizedString(forKey: "netplay_cheat_blocked"))

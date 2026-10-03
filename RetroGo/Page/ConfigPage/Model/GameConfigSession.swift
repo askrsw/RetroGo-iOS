@@ -112,7 +112,7 @@ final class GameConfigSession {
 
         RAInputActionManager.shared().fastForwardMultiplierProvider = { [weak self] in
             guard let self = self else { return 2.0 }
-            return AppStoreProFeatureGate.effectiveFastForwardMultiplierForRuntime(getFastForwardMultiplier())
+            return getFastForwardMultiplier()
         }
 
         applyTurboSpeedToEngine()

@@ -17,6 +17,8 @@
 	<dict>
 		<key>ProLifetime</key>
 		<string>$(IAP_PRO_LIFETIME_ID)</string>
+		<key>ProLifetimeWelcome</key>
+		<string>$(IAP_PRO_LIFETIME_WELCOME_ID)</string>
 		<key>ProMonthly</key>
 		<string>$(IAP_PRO_MONTHLY_ID)</string>
 		<key>ProYearly</key>
