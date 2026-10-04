@@ -865,6 +865,7 @@ extension RetroRomFolderHostViewController: RetroRomFolderSubviewDelegate {
             moveToAction(item: item),
             renameAction(item: item),
             tagAction(item: item),
+            debugSaveFolderAction(item: item),
             deleteAction(item: item)
         ].compactMap { $0 }
 
@@ -1049,6 +1050,26 @@ private extension RetroRomFolderHostViewController {
                 next?.addAction()
             }
         }
+    }
+
+    /// Debug-only: copies the folder's ROM tree as-is to a location picked in
+    /// the Files picker (e.g. a cloud drive). Not shipped; `.retrogo` replaces it.
+    func debugSaveFolderAction(item: RetroRomBaseItem) -> UIAction? {
+        #if DEBUG
+        guard let folder = item as? RetroRomFolderItem else { return nil }
+        return UIAction(title: Bundle.localizedString(forKey: "homepage_save_folder_to"), image: UIImage(systemName: "square.and.arrow.down")) { [weak self] _ in
+            guard let self else { return }
+            let exporter = DebugFolderExporter(folderName: folder.itemName)
+            guard let url = exporter.stage(folder) else { return }
+            let picker = UIDocumentPickerViewController(forExporting: [url], asCopy: true)
+            // A separate delegate: this host's own picker delegate imports what it gets.
+            picker.delegate = exporter
+            objc_setAssociatedObject(picker, &DebugFolderExporter.associationKey, exporter, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            self.present(picker, animated: true)
+        }
+        #else
+        return nil
+        #endif
     }
 
     func moveToAction(item: RetroRomBaseItem) -> UIAction? {
@@ -1255,3 +1276,126 @@ private extension RetroRomFolderHostViewController {
         present(alert, animated: true)
     }
 }
+
+#if DEBUG
+private final class DebugFolderExporter: NSObject, UIDocumentPickerDelegate {
+    static var associationKey: UInt8 = 0
+    let folderName: String
+    private var stagingDirectory: URL?
+
+    init(folderName: String) {
+        self.folderName = folderName
+    }
+
+    deinit {
+        cleanup()
+    }
+
+    /// Rebuilds the folder in tmp under display names from the Library records only
+    /// (APFS clones, no extra space);
+    /// the Library itself is left untouched.
+    func stage(_ folder: RetroRomFolderItem) -> URL? {
+        let fileManager = FileManager.default
+        let staging = fileManager.temporaryDirectory.appendingPathComponent("DebugExport-\(UUID().uuidString)", isDirectory: true)
+        stagingDirectory = staging
+        do {
+            let root = staging.appendingPathComponent(Self.safeName(folder.showName, fallback: folder.rawName), isDirectory: true)
+            try fileManager.createDirectory(at: root, withIntermediateDirectories: true)
+            try stageChildren(of: folder, into: root)
+            return root
+        } catch {
+            NSLog("[DebugExport] Staging %@ failed: %@", folderName, error.localizedDescription)
+            cleanup()
+            return nil
+        }
+    }
+
+    private func stageChildren(of folder: RetroRomFolderItem, into directory: URL) throws {
+        let fileManager = FileManager.default
+        var usedNames = Set<String>()
+        for child in folder.subItems {
+            guard let sourcePath = child.fullPath else { continue }
+            let name = uniqueName(exportName(for: child), used: &usedNames)
+            let destination = directory.appendingPathComponent(name, isDirectory: child.isFolder)
+            if let subFolder = child as? RetroRomFolderItem {
+                try fileManager.createDirectory(at: destination, withIntermediateDirectories: false)
+                try stageChildren(of: subFolder, into: destination)
+            } else if let file = child as? RetroRomFileItem, file.fileGroupType != .single {
+                // Only the recorded members, under their own names, so descriptor references stay valid.
+                for sub in file.subItems where !Self.isSystemJunk(sub.rawName) {
+                    let target = destination.appendingPathComponent(sub.rawName)
+                    try fileManager.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
+                    try fileManager.copyItem(at: URL(fileURLWithPath: sourcePath + sub.rawName), to: target)
+                }
+            } else {
+                try fileManager.copyItem(at: URL(fileURLWithPath: sourcePath), to: destination)
+            }
+        }
+    }
+
+    private func exportName(for item: RetroRomBaseItem) -> String {
+        guard let file = item as? RetroRomFileItem else {
+            return Self.safeName(item.showName, fallback: item.rawName)
+        }
+        // MAME finds games by set name (kof98.zip); a localized title would break it.
+        if file.inheritedPreferCore == MameImportScreener.mameCoreId {
+            return file.baseName
+        }
+        let rawExtension = (file.rawName as NSString).pathExtension
+        var title = file.showName ?? ""
+        if !rawExtension.isEmpty, (title as NSString).pathExtension.lowercased() == rawExtension.lowercased() {
+            title = (title as NSString).deletingPathExtension
+        }
+        guard file.fileGroupType == .single else {
+            return Self.safeName(title, fallback: file.baseName)
+        }
+        let base = Self.safeName(title, fallback: (file.rawName as NSString).deletingPathExtension)
+        return rawExtension.isEmpty ? base : base + "." + rawExtension
+    }
+
+    private func uniqueName(_ name: String, used: inout Set<String>) -> String {
+        var candidate = name
+        var index = 2
+        while used.contains(candidate.lowercased()) {
+            let ext = (name as NSString).pathExtension
+            let base = ext.isEmpty ? name : (name as NSString).deletingPathExtension
+            candidate = ext.isEmpty ? "\(base) (\(index))" : "\(base) (\(index)).\(ext)"
+            index += 1
+        }
+        used.insert(candidate.lowercased())
+        return candidate
+    }
+
+    private static func isSystemJunk(_ path: String) -> Bool {
+        path.split(separator: "/").contains { component in
+            let name = component.lowercased()
+            return name == ".ds_store" || name.hasPrefix("._") || name == "__macosx"
+                || name == "thumbs.db" || name == "desktop.ini"
+        }
+    }
+
+    private static func safeName(_ name: String?, fallback: String) -> String {
+        let cleaned = (name ?? "")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: ":", with: "_")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleaned.isEmpty || cleaned.hasPrefix(".") ? fallback : cleaned
+    }
+
+    private func cleanup() {
+        guard let stagingDirectory else { return }
+        try? FileManager.default.removeItem(at: stagingDirectory)
+        self.stagingDirectory = nil
+    }
+
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        NSLog("[DebugExport] Saved %@ to %@", folderName, urls.first?.path(percentEncoded: false) ?? "-")
+        cleanup()
+    }
+
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        NSLog("[DebugExport] Saving %@ cancelled", folderName)
+        cleanup()
+    }
+}
+#endif

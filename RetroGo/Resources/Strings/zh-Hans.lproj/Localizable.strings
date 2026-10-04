@@ -233,6 +233,7 @@
 "homepage_assign_core_success" = "指定核心成功。";
 "homepage_assign_core_failed" = "指定核心成功。";
 "homepage_import_for_folder" = "导入...";
+"homepage_save_folder_to" = "保存到...";
 "homepage_new_folder" = "新建目录";
 "homepage_new_folder_success" = "新建目录成功。";
 "homepage_new_folder_failed" = "新建目录失败！";
