@@ -27,6 +27,7 @@ enum RetroGoLogger {
 
     static let general    = Logger(subsystem: subsystem, category: "General")
     static let `import`   = Logger(subsystem: subsystem, category: "Import")
+    static let library    = Logger(subsystem: subsystem, category: "Library")
     static let cheat      = Logger(subsystem: subsystem, category: "Cheat")
     static let mame       = Logger(subsystem: subsystem, category: "Mame")
     static let iap        = Logger(subsystem: subsystem, category: "IAP")

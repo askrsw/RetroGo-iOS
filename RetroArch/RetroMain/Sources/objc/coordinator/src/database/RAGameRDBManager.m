@@ -30,6 +30,7 @@
 
 #include <libretrodb.h>
 #include <rmsgpack_dom.h>
+#include <utils/retrogo_log.h>
 
 // ---------------------------------------------------------------------------
 // MARK: - 内部常量
@@ -744,7 +745,7 @@ static NSString *p_locNorm(NSString *s);
     if (rc != SQLITE_OK) {
         // 正常流程下 OnDemandResourceLoader 会先把预制库拷贝就位再调用 initialize；
         // 走到这里通常意味着拷贝失败 / 文件缺失，置空句柄，查询将安全地返回空结果。
-        NSLog(@"[RAGameRDBManager] SQLite 只读打开失败(%d): %@", rc, d_dbPath);
+        RETROGO_LOGE(DATABASE, "Failed to open game database read-only (%d): %@", rc, d_dbPath);
         if (d_db) {
             sqlite3_close(d_db);
             d_db = NULL;
@@ -761,7 +762,7 @@ static NSString *p_locNorm(NSString *s);
     // 仅做一次版本核对日志，便于发现预制库与代码 schema 期望不一致；不做任何写入。
     NSInteger storedVersion = [self p_readUserVersion];
     if (storedVersion != self.currentDBVersion) {
-        NSLog(@"[RAGameRDBManager] ⚠️ 预制库 user_version=%ld 与期望 %ld 不一致，请重新导出预制库",
+        RETROGO_LOGF(DATABASE, "Prebuilt game database user_version %ld does not match expected %ld; re-export the prebuilt database",
               (long)storedVersion, (long)self.currentDBVersion);
     }
 
@@ -776,9 +777,9 @@ static NSString *p_locNorm(NSString *s);
             d_hasLocalization = YES;
             sqlite3_exec(d_db, "PRAGMA loc.cache_size=-2048;", NULL, NULL, NULL);
             sqlite3_exec(d_db, "PRAGMA loc.mmap_size=67108864;", NULL, NULL, NULL);
-            NSLog(@"[RAGameRDBManager] ✅ 已 attach 游戏名本地化库");
+            RETROGO_LOGI(DATABASE, "Attached game name localization database");
         } else {
-            NSLog(@"[RAGameRDBManager] ⚠️ attach 游戏名本地化库失败: %@", locPath);
+            RETROGO_LOGE(DATABASE, "Failed to attach game name localization database: %@", locPath);
         }
     }
     sqlite3_exec(d_db, "PRAGMA query_only=ON;", NULL, NULL, NULL);
@@ -1136,9 +1137,9 @@ static NSString *p_locNorm(NSString *s);
                                       stableId:sid ? sid.integerValue : 0
                                             db:db error:&impErr];
         if (impErr) {
-            NSLog(@"[RAGameRDBManager] export import failed %@: %@", rdbName, impErr.localizedDescription);
+            RETROGO_LOGE(DATABASE, "Debug export: failed to import %{public}@: %@", rdbName, impErr.localizedDescription);
         } else {
-            NSLog(@"[RAGameRDBManager] export import %@ (id=%@): %ld entries", rdbName, sid ?: @"auto", (long)c);
+            RETROGO_LOGD(DATABASE, "Debug export: imported %{public}@ (id=%{public}@): %ld entries", rdbName, sid ?: @"auto", (long)c);
             total += c;
         }
     }
@@ -1168,7 +1169,7 @@ static NSString *p_locNorm(NSString *s);
             ") WHERE rn = 1;";
         char *errMsg = NULL;
         if (sqlite3_exec(db, sql, NULL, NULL, &errMsg) != SQLITE_OK) {
-            NSLog(@"[RAGameRDBManager] export 建分组表失败: %s", errMsg ? errMsg : "unknown");
+            RETROGO_LOGE(DATABASE, "Debug export: failed to build group table: %{public}s", errMsg ? errMsg : "unknown");
             sqlite3_free(errMsg);
         }
     }

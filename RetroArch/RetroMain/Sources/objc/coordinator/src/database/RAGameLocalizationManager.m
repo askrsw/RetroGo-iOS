@@ -26,6 +26,7 @@
 #import "RAGameLocalizationManager.h"
 
 #include <sqlite3.h>
+#include <utils/retrogo_log.h>
 
 static NSString * const kRALocErrorDomain = @"com.retrogame.gameloc";
 static NSString * const kRALocLanguage = @"zh";
@@ -183,7 +184,7 @@ static NSString *p_locNorm(NSString *s);
     int rc = sqlite3_open_v2(uri.UTF8String, &d_db,
                              SQLITE_OPEN_READONLY | SQLITE_OPEN_URI, NULL);
     if (rc != SQLITE_OK) {
-        NSLog(@"[RAGameLocalizationManager] SQLite open failed(%d): %@", rc, d_dbPath);
+        RETROGO_LOGE(DATABASE, "Failed to open game localization database (%d): %@", rc, d_dbPath);
         if (d_db) {
             sqlite3_close(d_db);
             d_db = NULL;

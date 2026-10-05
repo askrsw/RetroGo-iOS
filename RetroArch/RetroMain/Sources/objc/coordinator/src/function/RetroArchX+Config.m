@@ -42,6 +42,7 @@
 #include <lists/string_list.h>
 #import <objc/runtime.h>
 #import <Foundation+Extensions.h>
+#include <utils/retrogo_log.h>
 
 static char coreOptionConfigurationKey;
 
@@ -73,7 +74,7 @@ static char coreOptionConfigurationKey;
 
 - (void)applyLogLevels {
 #if defined(_DEBUG)
-    const unsigned level = RETRO_LOG_INFO;
+    const unsigned level = RETRO_LOG_WARN;  // RETRO_LOG_INFO
 #else
     const unsigned level = RETRO_LOG_WARN;
 #endif
@@ -150,14 +151,14 @@ static char coreOptionConfigurationKey;
     }
     BOOL result = ra_core_options_set(rawKeys, rawValues, keys.count, true);
     free(rawKeys); free(rawValues);
-    NSLog(@"[CoreOptions] Prepared %@ launch snapshot (%lu options, success=%d)", coreId, (unsigned long)keys.count, result);
+    RETROGO_LOGI(CORE_OPTION, "Prepared %{public}@ launch snapshot (%lu options, success=%d)", coreId, (unsigned long)keys.count, result);
     return result;
 }
 
 - (BOOL)updateRunningCoreOption:(NSString *)value forKey:(NSString *)key {
     if (self.currentCoreItem == nil || self.dummyCoreRunning) return NO;
     BOOL result = ra_core_options_queue_update(key.UTF8String, value.UTF8String);
-    NSLog(@"[CoreOptions] Live update %@=%@ (queued=%d)", key, value, result);
+    RETROGO_LOGI(CORE_OPTION, "Live update %{public}@=%{public}@ (queued=%d)", key, value, result);
     return result;
 }
 

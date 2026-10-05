@@ -28,6 +28,7 @@ import SnapKit
 import Combine
 import ObjcHelper
 import RACoordinator
+import os
 
 /// Single host VC for the new Files-app-style library page.
 ///
@@ -1304,7 +1305,7 @@ private final class DebugFolderExporter: NSObject, UIDocumentPickerDelegate {
             try stageChildren(of: folder, into: root)
             return root
         } catch {
-            NSLog("[DebugExport] Staging %@ failed: %@", folderName, error.localizedDescription)
+            RetroGoLogger.library.error("Debug export: staging \(self.folderName) failed: \(error.localizedDescription)")
             cleanup()
             return nil
         }
@@ -1389,12 +1390,12 @@ private final class DebugFolderExporter: NSObject, UIDocumentPickerDelegate {
     }
 
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        NSLog("[DebugExport] Saved %@ to %@", folderName, urls.first?.path(percentEncoded: false) ?? "-")
+        RetroGoLogger.library.debug("Debug export: saved \(self.folderName) to \(urls.first?.path(percentEncoded: false) ?? "-")")
         cleanup()
     }
 
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-        NSLog("[DebugExport] Saving %@ cancelled", folderName)
+        RetroGoLogger.library.debug("Debug export: saving \(self.folderName) cancelled")
         cleanup()
     }
 }

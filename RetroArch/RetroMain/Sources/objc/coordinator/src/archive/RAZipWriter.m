@@ -29,6 +29,7 @@
 #include <zlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <utils/retrogo_log.h>
 
 static const uint32_t kRAZipLocalSignature = 0x04034b50;
 static const uint32_t kRAZipCentralSignature = 0x02014b50;
@@ -49,7 +50,7 @@ static const size_t kRAZipCopyChunk = 256 * 1024;
 NS_ASSUME_NONNULL_BEGIN
 
 static NSError *RAZipError(RAArchiveErrorCode code, NSString *message) {
-    NSLog(@"[RAZipWriter] %@", message);
+    RETROGO_LOGE(IMPORT, "Zip writer: %@", message);
     return [NSError errorWithDomain:RAArchiveErrorDomain code:code userInfo:@{NSLocalizedDescriptionKey: message}];
 }
 

@@ -373,6 +373,14 @@ void RARCH_LOG(const char *fmt, ...)
 void RARCH_LOG_OUTPUT(const char *msg, ...)
 {
    va_list ap;
+   verbosity_state_t *g_verbosity = &main_verbosity_st;
+
+   /* RetroGo: same gate as RARCH_LOG, so the build banner honours the log level. */
+   if (!g_verbosity->verbosity)
+      return;
+   if (verbosity_log_level > 1)
+      return;
+
    va_start(ap, msg);
    RARCH_LOG_OUTPUT_V(FILE_PATH_LOG_INFO, msg, ap);
    va_end(ap);

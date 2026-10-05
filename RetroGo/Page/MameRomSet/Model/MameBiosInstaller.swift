@@ -26,6 +26,7 @@
 import Foundation
 import ObjcHelper
 import RACoordinator
+import os
 
 struct MameBiosInstallResult {
     enum Outcome {
@@ -95,8 +96,7 @@ final class MameBiosInstaller {
                 return merge(match, sourceURL: sourceURL, sourceName: sourceName, baseName: baseName,
                              extraKeys: extra, installedNames: installedNames, requiredCount: required.count)
             }
-            NSLog("[MameBios] Kept installed %@ (%d/%d required files); %@ has %d",
-                  setName, baseCoverage.count, required.count, sourceName, newCoverage.count)
+            RetroGoLogger.mame.info("Kept installed BIOS \(setName, privacy: .public) (\(baseCoverage.count)/\(required.count) required files); \(sourceName) has \(newCoverage.count)")
             return MameBiosInstallResult(sourceName: sourceName, installedName: targetName, outcome: .keptExisting)
         }
 
@@ -113,7 +113,7 @@ final class MameBiosInstaller {
         persistence.storeArchive(owner: .bios(fileName: targetName), format: match.formatName,
                                  matchedSet: setName, matchKind: match.kind.rawValue, entries: match.entries)
 
-        NSLog("[MameBios] Installed %@ as %@ (%d/%d required files)", sourceName, targetName, newCoverage.count, required.count)
+        RetroGoLogger.mame.info("Installed BIOS \(sourceName) as \(targetName, privacy: .public) (\(newCoverage.count)/\(required.count) required files)")
         return MameBiosInstallResult(sourceName: sourceName, installedName: targetName, outcome: .installed)
     }
 
@@ -127,7 +127,7 @@ final class MameBiosInstaller {
         let failed = MameBiosInstallResult(sourceName: sourceName, installedName: targetName, outcome: .failed)
         let basePath = folder.filePath(baseName)
         guard let baseEntries = try? RAArchiveReader.entriesOfArchive(atPath: basePath) else {
-            NSLog("[MameBios] Cannot read installed %@", baseName)
+            RetroGoLogger.mame.error("Cannot read installed BIOS \(baseName, privacy: .public)")
             return failed
         }
 
@@ -140,7 +140,7 @@ final class MameBiosInstaller {
             usedNames.insert(entry.name.lowercased())
         }
         guard !additions.isEmpty else {
-            NSLog("[MameBios] Kept installed %@; the extra files of %@ clash with existing names", baseName, sourceName)
+            RetroGoLogger.mame.notice("Kept installed BIOS \(baseName, privacy: .public); the extra files of \(sourceName) clash with existing names")
             return MameBiosInstallResult(sourceName: sourceName, installedName: targetName, outcome: .keptExisting)
         }
 
@@ -167,7 +167,7 @@ final class MameBiosInstaller {
             try fileManager.createDirectory(atPath: backupFolder, withIntermediateDirectories: true)
             try fileManager.copyItem(atPath: basePath, toPath: (backupFolder as NSString).appendingPathComponent(baseName))
         } catch {
-            NSLog("[MameBios] Merging %@ into %@ failed: %@", sourceName, baseName, error.localizedDescription)
+            RetroGoLogger.mame.error("Merging \(sourceName) into BIOS \(baseName, privacy: .public) failed: \(error.localizedDescription)")
             return failed
         }
 
@@ -188,8 +188,7 @@ final class MameBiosInstaller {
 
         let coverage = persistence.romKeys(of: setName, filter: .required)
             .intersection(folder.entryKeys(fileName: targetName)).count
-        NSLog("[MameBios] Merged %@ into %@: added %d files, now %d/%d required", sourceName, targetName,
-              additions.count, coverage, requiredCount)
+        RetroGoLogger.mame.info("Merged \(sourceName) into BIOS \(targetName, privacy: .public): added \(additions.count) files, now \(coverage)/\(requiredCount) required")
         var result = MameBiosInstallResult(sourceName: sourceName, installedName: targetName, outcome: .merged)
         result.addedFiles = additions.count
         return result
@@ -208,7 +207,7 @@ final class MameBiosInstaller {
             try fileManager.createDirectory(at: stagingDirectory, withIntermediateDirectories: true)
             try fileManager.copyItem(at: sourceURL, to: stagedURL)
         } catch {
-            NSLog("[MameBios] Failed to stage %@: %@", targetName, error.localizedDescription)
+            RetroGoLogger.mame.error("Failed to stage BIOS \(targetName, privacy: .public): \(error.localizedDescription)")
             return false
         }
 
@@ -217,7 +216,7 @@ final class MameBiosInstaller {
             core.importFirmwareFile(stagedURL) != nil
         }
         if !imported {
-            NSLog("[MameBios] Failed to copy %@ into the MAME BIOS folder", targetName)
+            RetroGoLogger.mame.error("Failed to copy \(targetName, privacy: .public) into the MAME BIOS folder")
         }
         return imported
     }
@@ -287,7 +286,7 @@ extension MameBiosInstaller {
                 copied += 1
             }
         }
-        NSLog("[MameBios] Core page import: %d BIOS/device archives, %d files copied as is", biosResults.count, copied)
+        RetroGoLogger.mame.info("Core page import: \(biosResults.count) BIOS/device archives, \(copied) files copied as is")
 
         var paragraphs: [String] = []
         if copied > 0 {

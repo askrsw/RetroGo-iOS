@@ -28,6 +28,7 @@
 #include <dlfcn.h>
 #include <stdbool.h>
 #include <utils/retro_paths.h>
+#include <utils/retrogo_log.h>
 
 typedef int (*mame_cheat_count_fn)(void);
 typedef int (*mame_cheat_int_fn)(int);
@@ -105,7 +106,7 @@ typedef unsigned (*mame_cheat_generation_fn)(void);
     if (!engine->_count || !engine->_kind || !engine->_desc || !engine->_isEnabled || !engine->_parameterPosition
         || !engine->_setEnabled || !engine->_setParameter || !engine->_activate || !engine->_setXML || !engine->_reload
         || !engine->_loadGeneration) {
-        NSLog(@"[MameCheat] Loaded core lacks the retrogo_mame_cheat_* exports: %@", path);
+        RETROGO_LOGF(MAME, "Loaded core lacks the retrogo_mame_cheat_* exports: %@", path);
         return nil;
     }
     return engine;

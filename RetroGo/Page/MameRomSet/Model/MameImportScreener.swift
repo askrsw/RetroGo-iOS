@@ -26,6 +26,7 @@
 import UIKit
 import ObjcHelper
 import RACoordinator
+import os
 
 /// MAME handling shared by the file and folder importers, run on their worker thread
 /// after grouping and before any file is copied:
@@ -61,7 +62,7 @@ final class MameImportScreener {
     static func make(for groups: [RetroRomImportGroupBuilder.Group]) -> MameImportScreener? {
         guard groups.contains(where: isCandidate) else { return nil }
         guard MameCatalogBuilder.shared.waitUntilReady() else {
-            NSLog("[MameImport] Catalog unavailable; importing archives without recognition")
+            RetroGoLogger.mame.notice("Catalog unavailable; importing archives without recognition")
             MameLibraryScanner.markPending()
             return nil
         }
@@ -69,7 +70,7 @@ final class MameImportScreener {
             RetroArchX.shared().allCores.first { $0.coreId == mameCoreId }
         }
         guard let core else {
-            NSLog("[MameImport] MAME core not found; importing archives without recognition")
+            RetroGoLogger.mame.notice("MAME core not found; importing archives without recognition")
             return nil
         }
         return MameImportScreener(installer: MameBiosInstaller(core: core))
@@ -109,9 +110,7 @@ final class MameImportScreener {
                 result.groups.append(group)
                 continue
             }
-            NSLog("[MameImport] %@ -> %@ (%@, %@%@)", fileName, match.machine.name, match.kind.rawValue,
-                  match.machine.isBios ? "bios" : (match.machine.isDevice ? "device" : "game"),
-                  match.machine.cloneOf.map { ", clone of \($0)" } ?? "")
+            RetroGoLogger.mame.debug("Import identified \(fileName) -> \(match.machine.name, privacy: .public) (\(match.kind.rawValue, privacy: .public), \(match.machine.isBios ? "bios" : (match.machine.isDevice ? "device" : "game"), privacy: .public)\(match.machine.cloneOf.map { ", clone of \($0)" } ?? "", privacy: .public))")
 
             if match.machine.isSupportSet {
                 if let installer {
@@ -126,8 +125,7 @@ final class MameImportScreener {
             result.gameMatches[group.entryPath] = match
         }
 
-        NSLog("[MameImport] Screened %d archives in %.2fs: %d games, %d BIOS/device files",
-              candidateCount, CFAbsoluteTimeGetCurrent() - start, result.gameMatches.count, result.biosResults.count)
+        RetroGoLogger.mame.info("Import screened \(candidateCount) archives in \(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 2))s: \(result.gameMatches.count) games, \(result.biosResults.count) BIOS/device files")
         return result
     }
 
@@ -208,7 +206,7 @@ final class MameImportScreener {
                                                    match: replacement.match)
                 replaced += 1
             } catch {
-                NSLog("[MameImport] Replacing %@ failed: %@", replacement.source.lastPathComponent, error.localizedDescription)
+                RetroGoLogger.mame.error("Replacing \(replacement.source.lastPathComponent) failed: \(error.localizedDescription)")
             }
         }
         return replaced
@@ -233,7 +231,7 @@ final class MameImportScreener {
                 stored += 1
             }
         }
-        NSLog("[MameImport] Indexed %d of %d imported games", stored, games.count)
+        RetroGoLogger.mame.info("Indexed \(stored) of \(games.count) imported games")
     }
 
     /// One line per BIOS/device set, for the import result message.
@@ -310,7 +308,7 @@ final class MameImportScreener {
             }
             return String(format: Bundle.localizedString(forKey: "mame_import_cheats_done"), fileName, info.setCount)
         } catch {
-            NSLog("[MameImport] Cheat collection %@ failed: %@", fileName, error.localizedDescription)
+            RetroGoLogger.mame.error("Importing cheat collection \(fileName) failed: \(error.localizedDescription)")
             return String(format: Bundle.localizedString(forKey: "mame_import_cheats_failed"), fileName, error.localizedDescription)
         }
     }

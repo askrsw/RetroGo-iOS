@@ -27,6 +27,7 @@
 #import <Foundation+Extensions.h>
 
 #include <sqlite3.h>
+#include <utils/retrogo_log.h>
 
 static NSString * const kRACheatErrorDomain = @"com.retrogame.cheatcatalog";
 
@@ -632,7 +633,7 @@ static BOOL p_isSpecialTemplateName(NSString *name);
     int rc = sqlite3_open_v2(uri.UTF8String, &d_db,
                              SQLITE_OPEN_READONLY | SQLITE_OPEN_URI, NULL);
     if (rc != SQLITE_OK) {
-        NSLog(@"[RACheatCatalogManager] SQLite open failed(%d): %@", rc, d_cheatPath);
+        RETROGO_LOGE(CHEAT, "Failed to open cheat catalog database (%d): %@", rc, d_cheatPath);
         if (d_db) {
             sqlite3_close(d_db);
             d_db = NULL;
@@ -649,7 +650,7 @@ static BOOL p_isSpecialTemplateName(NSString *name);
         if (sqlite3_exec(d_db, sql.UTF8String, NULL, NULL, NULL) == SQLITE_OK) {
             d_hasLocalization = YES;
         } else {
-            NSLog(@"[RACheatCatalogManager] attach gameloc failed: %@", d_localizationPath);
+            RETROGO_LOGE(CHEAT, "Failed to attach game localization database to cheat catalog: %@", d_localizationPath);
         }
     }
     sqlite3_stmt *versionStmt = NULL;

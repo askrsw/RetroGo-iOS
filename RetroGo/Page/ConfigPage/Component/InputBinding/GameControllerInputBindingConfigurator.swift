@@ -27,6 +27,7 @@ import UIKit
 import SpriteKit
 import ObjcHelper
 import RACoordinator
+import os
 
 final class GameControllerInputBindingConfigurator: UIViewController {
     private(set) lazy var skView = configSKView()
@@ -122,9 +123,9 @@ extension GameControllerInputBindingConfigurator {
         let profile = overlayView.exportBindingProfileForPersistence()
     #if DEBUG
         if let profile {
-            print(profile)
+            RetroGoLogger.game.debug("Saving input binding profile: \(String(describing: profile), privacy: .public)")
         } else {
-            print("default binding, profile is nil")
+            RetroGoLogger.game.debug("Saving default input binding (no profile)")
         }
     #endif // DEBUG
         _ = session.saveInputBindingProfile(profile) // profile 为 nil 时会写 NULL

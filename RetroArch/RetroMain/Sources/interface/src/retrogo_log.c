@@ -9,6 +9,7 @@
 static const char *const retrogo_log_category_names[RETROGO_LOG_CAT_COUNT] = {
    "General",
    "Import",
+   "Library",
    "Cheat",
    "Mame",
    "IAP",

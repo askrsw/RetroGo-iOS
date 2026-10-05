@@ -25,6 +25,7 @@
 
 import Foundation
 import RACoordinator
+import os
 
 /// A zip/7z recognized as a MAME set.
 struct MameArchiveMatch {
@@ -61,7 +62,7 @@ enum MameArchiveIdentifier {
         do {
             entries = try RAArchiveReader.entriesOfArchive(atPath: path)
         } catch {
-            NSLog("[MameIdentify] Cannot list %@: %@", fileName, error.localizedDescription)
+            RetroGoLogger.mame.error("Cannot list archive \(fileName): \(error.localizedDescription)")
             return nil
         }
         guard !entries.isEmpty else { return nil }

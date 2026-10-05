@@ -26,6 +26,7 @@
 import Foundation
 import ObjcHelper
 import RACoordinator
+import os
 
 /// Re-identifies every zip/7z game in the Library against the catalog, so the romset
 /// index follows the core:
@@ -84,9 +85,7 @@ enum MameLibraryScanner {
 
         persistence.setMetaValue(coreFingerprint, for: .libraryScanFingerprint)
         persistence.setMetaValue(nil, for: .libraryScanPending)
-        NSLog("[MameScan] Scanned %d archives in %.2fs%@: %d indexed (%d new), %d records removed",
-              candidates.count, CFAbsoluteTimeGetCurrent() - start, pending ? " (pending import)" : "",
-              indexed, newlyRecognized.count, removed)
+        RetroGoLogger.mame.info("Library scan: \(candidates.count) archives in \(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 2))s\(pending ? " (pending import)" : "", privacy: .public): \(indexed) indexed (\(newlyRecognized.count) new), \(removed) records removed")
     }
 
     /// Marks that an import could not recognize archives; the next catalog update scans.

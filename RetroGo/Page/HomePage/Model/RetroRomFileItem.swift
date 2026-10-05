@@ -27,6 +27,7 @@ import UIKit
 import SQLite
 import ObjcHelper
 import RACoordinator
+import os
 
 enum RetroRomFileGroupType: String, Value {
     case single = "single"
@@ -243,7 +244,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
         do {
             try FileManager.default.removeItem(atPath: fullPath)
         } catch {
-            print("Failed to delete rom file: \(rawName) for item: \(itemName), error: \(error)")
+            RetroGoLogger.library.error("Failed to delete rom file \(self.rawName) for item \(self.itemName): \(String(describing: error))")
             let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_failed"), filePath)
             indicatorView.errorMessage(message, title: Bundle.localizedString(forKey: "error"), canDismiss: true)
             return false
@@ -252,7 +253,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
         do {
             try GameConfigSession.deleteGameConfig(key)
         } catch {
-            print("Failed to delete game config: \(key) for item: \(itemName), error: \(error)")
+            RetroGoLogger.library.error("Failed to delete game config \(self.key, privacy: .public) for item \(self.itemName): \(String(describing: error))")
         }
 
         if !RetroRomFileManager.shared.deleteFileItem(key) {

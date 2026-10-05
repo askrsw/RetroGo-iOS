@@ -26,6 +26,7 @@
 import Foundation
 import ObjcHelper
 import RACoordinator
+import os
 
 enum MameSetRepairError: LocalizedError {
     case notRecognized
@@ -168,8 +169,7 @@ enum MameSetRepairer {
         let backupFolder = try install(newFile: rebuilt, romgameKey: plan.romgameKey, archivePath: plan.archivePath,
                                        archiveFileName: plan.archiveFileName, targetFileName: plan.targetFileName,
                                        setName: plan.setName, format: "zip", matchKind: .name)
-        NSLog("[MameRepair] %@ -> %@: kept %d, added %d, backup %@ (%.2fs)", plan.archiveFileName, plan.targetFileName,
-              plan.kept.count, plan.additions.count, backupFolder, CFAbsoluteTimeGetCurrent() - start)
+        RetroGoLogger.mame.info("Repaired \(plan.archiveFileName) -> \(plan.targetFileName, privacy: .public): kept \(plan.kept.count), added \(plan.additions.count), backup \(backupFolder) (\(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 2))s)")
     }
 
     /// Replaces a Library game's archive with a more complete copy of the same set picked
@@ -191,7 +191,7 @@ enum MameSetRepairer {
         let backupFolder = try install(newFile: staged, romgameKey: romgameKey, archivePath: archivePath,
                                        archiveFileName: archiveFileName, targetFileName: archiveFileName,
                                        setName: match.machine.name, format: match.formatName, matchKind: match.kind)
-        NSLog("[MameRepair] Replaced %@ with a more complete copy, backup %@", archiveFileName, backupFolder)
+        RetroGoLogger.mame.notice("Replaced \(archiveFileName) with a more complete copy, backup \(backupFolder)")
     }
 
     /// Puts `newFile` in place of the game's archive: original to the backup folder, new

@@ -42,6 +42,7 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <tasks/task_content.h>
 #include <core/ra_core_options.h>
+#include <utils/retrogo_log.h>
 
 #define SHOW_CORE_ROM_TYPE_INFO 0
 
@@ -678,9 +679,9 @@ bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
     for(NSString *key in dict) {
         NSArray *value = dict[key];
         NSString *string = [value componentsJoinedByString:@","];
-        NSLog(@"\t%@: %@", key, string);
+        RETROGO_LOGD(GENERAL, "Core ROM types %{public}@: %{public}@", key, string);
     }
-    NSLog(@"Dynamic Types: %@", [dynamicTypes componentsJoinedByString:@","]);
+    RETROGO_LOGD(GENERAL, "Dynamic ROM types: %{public}@", [dynamicTypes componentsJoinedByString:@","]);
 #endif // SHOW_CORE_ROM_TYPE_INFO
 
     [set addObject:@"gdi"];

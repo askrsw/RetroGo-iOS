@@ -25,6 +25,7 @@
 
 import Foundation
 import Security
+import os
 
 extension Notification.Name {
     static let appStoreWelcomeOfferDidStart = Notification.Name("appStoreWelcomeOfferDidStart")
@@ -66,7 +67,7 @@ enum AppStoreWelcomeOffer {
         guard startDate == nil else { return }
         let now = Date()
         guard writeStartDate(now) else {
-            NSLog("[WelcomeOffer] Failed to store start date in Keychain")
+            RetroGoLogger.iap.error("Welcome offer: failed to store start date in Keychain")
             return
         }
         // Another device may have opened the window already (iCloud Keychain).
@@ -88,7 +89,7 @@ enum AppStoreWelcomeOffer {
         query[kSecAttrSynchronizable as String] = kSecAttrSynchronizableAny
         let status = SecItemDelete(query as CFDictionary)
         cachedStartDate = nil
-        NSLog("[WelcomeOffer] Reset for testing, status %d", status)
+        RetroGoLogger.iap.info("Welcome offer reset for testing, status \(status)")
     }
     #endif
 

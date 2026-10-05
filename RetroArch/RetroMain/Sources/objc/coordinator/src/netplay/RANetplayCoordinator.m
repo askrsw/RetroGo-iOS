@@ -37,6 +37,7 @@
 #include <emu/cheat_manager.h>
 #include <emu/content.h>
 #include <utils/configuration.h>
+#include <utils/retrogo_log.h>
 
 // Defined in netplay_nsnetservice.m. Builds "RetroGo/<app-version>/<cpu-arch>".
 extern void netplay_retrogo_ident(char *buf, size_t len);
@@ -151,7 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
     __block UIBackgroundTaskIdentifier task =
         [app beginBackgroundTaskWithName:@"netplay.leave" expirationHandler:^{}];
 
-    NSLog(@"[Netplay] App entering background during a session -> leaving netplay.");
+    RETROGO_LOGN(NETPLAY, "App entering background during a session, leaving netplay");
     [self disconnect];
 
     if (task != UIBackgroundTaskInvalid) {
@@ -260,7 +261,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)ra_runControlOnLogicThread:(BOOL (^)(void))block label:(NSString *)label {
     id<RAGameLoopRunner> runner = [RetroArchX shared].gameLogicRunner;
     if (runner == nil) {
-        NSLog(@"[Netplay] %@ skipped: no active game loop runner (no game running).",
+        RETROGO_LOGN(NETPLAY, "%{public}@ skipped: no active game loop runner (no game running)",
               label);
         return NO;
     }
@@ -292,7 +293,7 @@ NS_ASSUME_NONNULL_BEGIN
     dispatch_async(dispatch_get_main_queue(), ^{
 #ifdef HAVE_NETPLAYDISCOVERY
         if (self->d_scanInFlight) {
-            NSLog(@"[Netplay] LAN scan ignored: a scan is already in flight.");
+            RETROGO_LOGI(NETPLAY, "LAN scan ignored: a scan is already in flight");
             finish(@[]);
             return;
         }
@@ -301,13 +302,13 @@ NS_ASSUME_NONNULL_BEGIN
         // Start a fresh browse session (Bonjour) plus a best-effort UDP query.
         netplay_discovery_driver_ctl(RARCH_NETPLAY_DISCOVERY_CTL_LAN_CLEAR_RESPONSES, NULL);
         if (!init_netplay_discovery()) {
-            NSLog(@"[Netplay] LAN discovery init failed.");
+            RETROGO_LOGE(NETPLAY, "LAN discovery init failed");
             self->d_scanInFlight = NO;
             finish(@[]);
             return;
         }
         netplay_discovery_driver_ctl(RARCH_NETPLAY_DISCOVERY_CTL_LAN_SEND_QUERY, NULL);
-        NSLog(@"[Netplay] LAN scan started (%.1fs)...", timeout);
+        RETROGO_LOGI(NETPLAY, "LAN scan started (%.1fs)", timeout);
 
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                      (int64_t)(timeout * NSEC_PER_SEC)),
@@ -328,12 +329,12 @@ NS_ASSUME_NONNULL_BEGIN
 
             netplay_discovery_driver_ctl(RARCH_NETPLAY_DISCOVERY_CTL_LAN_CLEAR_RESPONSES, NULL);
             self->d_scanInFlight = NO;
-            NSLog(@"[Netplay] LAN scan finished: %lu host(s).",
+            RETROGO_LOGI(NETPLAY, "LAN scan finished: %lu host(s)",
                   (unsigned long)result.count);
             finish(result);
         });
 #else
-        NSLog(@"[Netplay] LAN discovery unavailable (HAVE_NETPLAYDISCOVERY off).");
+        RETROGO_LOGF(NETPLAY, "LAN discovery unavailable (HAVE_NETPLAYDISCOVERY off)");
         finish(@[]);
 #endif
     });
@@ -363,7 +364,7 @@ NS_ASSUME_NONNULL_BEGIN
         command_event(CMD_EVENT_UNPAUSE, NULL);
         netplay_driver_ctl(RARCH_NETPLAY_CTL_ENABLE_SERVER, NULL);
         bool ok = command_event(CMD_EVENT_NETPLAY_INIT, NULL);
-        NSLog(@"[Netplay] startHost port=%u -> %s (enabled=%d server=%d)",
+        RETROGO_LOGI(NETPLAY, "Start host port=%u -> %{public}s (enabled=%d server=%d)",
               settings->uints.netplay_port, ok ? "ok" : "FAILED",
               netplay_driver_ctl(RARCH_NETPLAY_CTL_IS_ENABLED, NULL),
               netplay_driver_ctl(RARCH_NETPLAY_CTL_IS_SERVER, NULL));
@@ -380,7 +381,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)joinHostAddress:(NSString *)address port:(uint16_t)port asSpectator:(BOOL)asSpectator {
     if (address.length == 0) {
-        NSLog(@"[Netplay] join skipped: empty address.");
+        RETROGO_LOGN(NETPLAY, "Join skipped: empty address");
         return NO;
     }
     NSString *hostStr = (port != 0)
@@ -401,7 +402,7 @@ NS_ASSUME_NONNULL_BEGIN
         // synchronously via netplay_decode_hostname, so a transient buffer is fine.
         bool ok = command_event(CMD_EVENT_NETPLAY_INIT_DIRECT,
                                 (void *)hostStr.UTF8String);
-        NSLog(@"[Netplay] join %@ -> %s (enabled=%d connected=%d)",
+        RETROGO_LOGI(NETPLAY, "Join %@ -> %{public}s (enabled=%d connected=%d)",
               hostStr, ok ? "ok" : "FAILED",
               netplay_driver_ctl(RARCH_NETPLAY_CTL_IS_ENABLED, NULL),
               netplay_driver_ctl(RARCH_NETPLAY_CTL_IS_CONNECTED, NULL));
@@ -420,7 +421,7 @@ NS_ASSUME_NONNULL_BEGIN
     d_userInitiatedDisconnect = YES;
     [self ra_runControlOnLogicThread:^BOOL {
         bool ok = command_event(CMD_EVENT_NETPLAY_DISCONNECT, NULL);
-        NSLog(@"[Netplay] disconnect -> %s", ok ? "ok" : "noop");
+        RETROGO_LOGI(NETPLAY, "Disconnect -> %{public}s", ok ? "ok" : "noop");
         return ok;
     } label:@"disconnect"];
 }

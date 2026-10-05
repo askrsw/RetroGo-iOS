@@ -25,6 +25,7 @@
 
 import Foundation
 import RACoordinator
+import os
 
 /// State of every recognized arcade game in the Library plus the BIOS/device files in
 /// the MAME BIOS folder, computed with the same audit the launch check uses.
@@ -112,9 +113,7 @@ struct MameHealthReport {
             let backup = backupUsage()
             let report = MameHealthReport(games: games, bios: bios, repairable: repairable,
                                           backupFileCount: backup.count, backupBytes: backup.bytes)
-            NSLog("[MameHealth] %d games (%@), %d BIOS files in %.3fs", report.gameCount,
-                  Status.allCases.map { "\($0): \(games[$0]?.count ?? 0)" }.joined(separator: ", "),
-                  bios.count, CFAbsoluteTimeGetCurrent() - start)
+            RetroGoLogger.mame.info("Health report: \(report.gameCount) games (\(Status.allCases.map { "\($0): \(games[$0]?.count ?? 0)" }.joined(separator: ", "), privacy: .public)), \(bios.count) BIOS files in \(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 3))s")
             DispatchQueue.main.async {
                 completion(report)
             }
@@ -144,7 +143,7 @@ struct MameHealthReport {
         for name in (try? FileManager.default.contentsOfDirectory(atPath: folder)) ?? [] {
             try? FileManager.default.removeItem(atPath: (folder as NSString).appendingPathComponent(name))
         }
-        NSLog("[MameRepair] Cleared repair backups")
+        RetroGoLogger.mame.info("Cleared repair backups")
     }
 
     /// Archives in the BIOS folder named after a BIOS or device set.

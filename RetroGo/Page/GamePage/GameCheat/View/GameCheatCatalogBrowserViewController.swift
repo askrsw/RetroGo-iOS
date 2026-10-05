@@ -28,6 +28,7 @@ import UIKit
 import SnapKit
 import ObjcHelper
 import RACoordinator
+import os
 
 /// Browses the read-only cheat catalog for the current core's platform(s).
 /// Search is intentionally limited to game names (English/RDB + localized name);
@@ -217,7 +218,7 @@ final class GameCheatCatalogBrowserViewController: UIViewController {
         ) { [weak self] games, error in
             guard let self else { return }
             if let error {
-                print("[CheatCatalog] failed to load featured games: \(error)")
+                RetroGoLogger.cheat.error("Failed to load featured cheat games: \(String(describing: error))")
                 return
             }
             self.featuredGames = games
@@ -240,7 +241,7 @@ final class GameCheatCatalogBrowserViewController: UIViewController {
                 do {
                     _ = try game.ensureCRC32()
                 } catch {
-                    print("[CheatCatalog] failed to ensure CRC32 for match info: \(error)")
+                    RetroGoLogger.cheat.error("Failed to compute CRC32 for match info: \(String(describing: error))")
                 }
             }
 

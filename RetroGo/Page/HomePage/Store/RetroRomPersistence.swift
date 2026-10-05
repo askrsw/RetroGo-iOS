@@ -26,6 +26,7 @@
 import SQLite
 import Foundation
 import ObjcHelper
+import os
 
 final class RetroRomPersistence {
     static let shared = RetroRomPersistence()
@@ -529,7 +530,7 @@ final class RetroRomPersistence {
             return true
         } catch {
             // No fatalError here: the caller rolls the file move back.
-            print("Failed to replace file of \(key): \(error)")
+            RetroGoLogger.library.error("Failed to replace file of \(key, privacy: .public): \(String(describing: error))")
             return false
         }
     }

@@ -31,6 +31,7 @@
 #include <file/archive_file.h>
 #include <file/file_path.h>
 #include <retro_miscellaneous.h>
+#include <utils/retrogo_log.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -351,9 +352,9 @@ NS_ASSUME_NONNULL_BEGIN
         [manager removeItemAtURL:stagingDir error:&error];
 
         if (error) {
-            NSLog(@"Cleanup warning: %@", error);
+            RETROGO_LOGN(MAME, "Session cleanup failed: %@", error);
         } else {
-            NSLog(@"MAME session cleaned up.");
+            RETROGO_LOGD(MAME, "Session cleaned up");
         }
     }
 }
@@ -521,7 +522,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
         NSError *error = nil;
         [readmeContent writeToFile:readmePath atomically:YES encoding:NSUTF8StringEncoding error:&error];
         if (error) {
-            NSLog(@"Note: Failed to create README.txt, but assets were extracted.");
+            RETROGO_LOGN(GENERAL, "PPSSPP assets extracted, but README.txt could not be created");
         }
         return YES;
     }
@@ -532,7 +533,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
         if (error) {
             *error = [NSError errorWithDomain:@"RetroGo.MameListXML" code:-1 userInfo:@{NSLocalizedDescriptionKey: message}];
         }
-        NSLog(@"[MameListXML] %@", message);
+        RETROGO_LOGE(MAME, "listxml export: %@", message);
     };
 
     if (![_coreId isEqualToString:@"mame"] || path.length == 0) {
@@ -573,7 +574,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
     }
 
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:path error:nil];
-    NSLog(@"[MameListXML] Wrote %llu bytes to %@ in %.1fs", [attributes fileSize], path, -[start timeIntervalSinceNow]);
+    RETROGO_LOGD(MAME, "listxml export: wrote %llu bytes to %@ in %.1fs", [attributes fileSize], path, -[start timeIntervalSinceNow]);
     return YES;
 }
 
@@ -592,7 +593,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
     NSError *error = nil;
     NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
     if(error) {
-        NSLog(@"Parse %@ file error: %@", jsonFileName, error.localizedDescription);
+        RETROGO_LOGF(GENERAL, "Failed to parse %{public}@: %{public}@", jsonFileName, error.localizedDescription);
         return nil;
     } else {
         return jsonDict;
@@ -616,7 +617,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
     NSURL *stagedGameURL = [stagingDir URLByAppendingPathComponent:stagedName.length > 0 ? stagedName : gameURL.lastPathComponent];
     // 注意：linkItemAtURL 创建的是硬链接
     if (![manager linkItemAtURL:gameURL toURL:stagedGameURL error:error]) {
-        NSLog(@"Failed to link game ROM: %@", *error);
+        RETROGO_LOGE(MAME, "Failed to link game ROM: %@", *error);
         return nil;
     }
 
@@ -644,13 +645,13 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
         [manager createDirectoryAtURL:destination.URLByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:nil];
         NSError *linkError = nil;
         if ([manager linkItemAtURL:[NSURL fileURLWithPath:sourcePath] toURL:destination error:&linkError]) {
-            NSLog(@"[MameSession] Linked %@ from %@", name, sourcePath);
+            RETROGO_LOGD(MAME, "Session linked %{public}@ from %@", name, sourcePath);
         } else {
-            NSLog(@"[MameSession] Failed to link %@: %@", name, linkError.localizedDescription);
+            RETROGO_LOGE(MAME, "Session failed to link %{public}@: %@", name, linkError.localizedDescription);
         }
     }];
 
-    NSLog(@"MAME Staging complete at: %@", stagingDir.path);
+    RETROGO_LOGI(MAME, "Session staging complete at %@", stagingDir.path);
 
     // 5. 返回位于临时目录中的游戏 ROM 路径给核心使用
     return stagedGameURL;
@@ -684,7 +685,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
     if (![manager fileExistsAtPath:path]) {
         NSError *error = nil;
         if (![manager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:&error]) {
-            NSLog(@"[CoreInfo] Failed to create system directory %@: %@", path, error.localizedDescription);
+            RETROGO_LOGE(IMPORT, "Failed to create system directory %@: %@", path, error.localizedDescription);
             return nil;
         }
     }
@@ -714,7 +715,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
     }
 
     if (!success) {
-        NSLog(@"[CoreInfo] Failed to import %@ as %@: %@", url.lastPathComponent, fileName, error.localizedDescription);
+        RETROGO_LOGE(IMPORT, "Failed to import BIOS %@ as %{public}@: %@", url.lastPathComponent, fileName, error.localizedDescription);
     }
 
     return success;

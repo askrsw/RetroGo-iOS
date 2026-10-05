@@ -26,6 +26,7 @@
 import SQLite
 import Foundation
 import RACoordinator
+import os
 
 /// Who owns an indexed archive. Paths are never stored: Library games are found
 /// through roms.db by key, BIOS files by name inside the MAME system folder.
@@ -84,7 +85,7 @@ extension MameRomSetPersistence {
             }
             return true
         } catch {
-            NSLog("[MameRomSet] Failed to store archive for %@: %@", "\(owner)", "\(error)")
+            RetroGoLogger.mame.error("Failed to store archive for \(String(describing: owner)): \(String(describing: error))")
             return false
         }
     }
@@ -96,7 +97,7 @@ extension MameRomSetPersistence {
             let condition = owner.condition
             try db.run("DELETE FROM archive WHERE \(condition.sql)", condition.value)
         } catch {
-            NSLog("[MameRomSet] Failed to delete archive for %@: %@", "\(owner)", "\(error)")
+            RetroGoLogger.mame.error("Failed to delete archive for \(String(describing: owner)): \(String(describing: error))")
         }
     }
 
@@ -116,7 +117,7 @@ extension MameRomSetPersistence {
             }
             return keys
         } catch {
-            NSLog("[MameRomSet] Failed to read archive for %@: %@", "\(owner)", "\(error)")
+            RetroGoLogger.mame.error("Failed to read archive for \(String(describing: owner)): \(String(describing: error))")
             return nil
         }
     }
@@ -133,7 +134,7 @@ extension MameRomSetPersistence {
                 return MameArchiveRecord(owner: owner, matchedSet: set, matchKind: kind, format: format)
             }
         } catch {
-            NSLog("[MameRomSet] Failed to read archive for %@: %@", "\(owner)", "\(error)")
+            RetroGoLogger.mame.error("Failed to read archive for \(String(describing: owner)): \(String(describing: error))")
         }
         return nil
     }
@@ -162,7 +163,7 @@ extension MameRomSetPersistence {
                 return MameArchiveRecord(owner: owner, matchedSet: set, matchKind: kind, format: format)
             }
         } catch {
-            NSLog("[MameRomSet] Failed to locate rom %08x: %@", key.crc, "\(error)")
+            RetroGoLogger.mame.error("Failed to locate rom \(key.crc, format: .hex(minDigits: 8)): \(String(describing: error))")
             return []
         }
     }
@@ -179,7 +180,7 @@ extension MameRomSetPersistence {
                 return MameArchiveRecord(owner: .game(romgameKey: key), matchedSet: setName, matchKind: kind, format: format)
             }
         } catch {
-            NSLog("[MameRomSet] Failed to find library archives of %@: %@", setName, "\(error)")
+            RetroGoLogger.mame.error("Failed to find library archives of \(setName, privacy: .public): \(String(describing: error))")
             return []
         }
     }
@@ -195,7 +196,7 @@ extension MameRomSetPersistence {
                 """
             return try db.scalar(sql, condition.value, Int64(key.crc), key.size) as? String
         } catch {
-            NSLog("[MameRomSet] Failed to read entry name for %@: %@", "\(owner)", "\(error)")
+            RetroGoLogger.mame.error("Failed to read entry name for \(String(describing: owner)): \(String(describing: error))")
             return nil
         }
     }

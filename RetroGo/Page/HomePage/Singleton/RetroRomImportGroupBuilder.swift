@@ -25,6 +25,7 @@
 
 import UIKit
 import ObjcHelper
+import os
 
 final class RetroRomImportGroupBuilder {
     struct SourceFile {
@@ -819,7 +820,7 @@ extension RetroRomImportGroupBuilder {
             let sorted = discs.sorted { $0.tag.number < $1.tag.number }
             guard sorted.enumerated().allSatisfy({ $0.offset + 1 == $0.element.tag.number }),
                   sorted.allSatisfy({ $0.tag.total == nil || $0.tag.total == sorted.count }) else {
-                NSLog("[Import] Discs of %@ are not a contiguous set, imported separately", title)
+                RetroGoLogger.import.info("Discs of \(title) are not a contiguous set, imported separately")
                 continue
             }
             let discGroups = sorted.map { groups[$0.index] }
@@ -879,7 +880,7 @@ extension RetroRomImportGroupBuilder {
         let directory = commonParentDirectory(of: discGroups.map(\.entryPath))
         let playlistPath = join(directory: directory, relativePath: title + ".m3u")
         if fileMap[playlistPath] != nil || findCaseInsensitiveMatch(for: playlistPath, fileMap: fileMap) != nil {
-            NSLog("[Import] %@ already exists, discs of %@ imported separately", playlistPath, title)
+            RetroGoLogger.import.info("\(playlistPath) already exists, discs of \(title) imported separately")
             return nil
         }
 
@@ -894,7 +895,7 @@ extension RetroRomImportGroupBuilder {
 
         let members = uniqueOrdered([playlistPath] + discGroups.flatMap(\.memberPaths))
         let matchMode = mergeMatchModes(discGroups.map(\.matchMode))
-        NSLog("[Import] Merged %d discs into %@", discGroups.count, playlistPath)
+        RetroGoLogger.import.info("Merged \(discGroups.count) discs into \(playlistPath)")
         return Group(type: .m3u, entryPath: playlistPath, memberPaths: members, matchMode: matchMode)
     }
 

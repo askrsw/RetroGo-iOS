@@ -27,6 +27,7 @@ import SQLite
 import Foundation
 import ObjcHelper
 import RACoordinator
+import os
 
 /// Cheat XMLs for the sets of the MAME core, imported from Pugsy's cheat.7z by the user.
 ///
@@ -112,7 +113,7 @@ final class MameCheatLibrary {
                         importedAt: importedAt, releaseMameVersion: meta["release_mame"], releaseDate: meta["release_date"],
                         hasNotes: hasNotes)
         } catch {
-            NSLog("[MameCheat] Failed to read library info: %@", "\(error)")
+            RetroGoLogger.mame.error("Failed to read cheat library info: \(String(describing: error))")
             return nil
         }
     }
@@ -215,7 +216,7 @@ final class MameCheatLibrary {
         } catch {
             throw ImportError.extractFailed(error.localizedDescription)
         }
-        NSLog("[MameCheat] Extracted %d cheat files in %.2fs", wanted.count, CFAbsoluteTimeGetCurrent() - start)
+        RetroGoLogger.mame.info("Extracted \(wanted.count) cheat files in \(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 2))s")
 
         progress(Bundle.localizedString(forKey: "mame_cheat_import_saving"))
         let tempPath = AppConfig.shared.mameCheatDatabasePath + ".importing-\(UUID().uuidString)"
@@ -252,7 +253,7 @@ final class MameCheatLibrary {
             for suffix in ["", "-journal", "-wal", "-shm"] {
                 try? FileManager.default.removeItem(atPath: tempPath + suffix)
             }
-            NSLog("[MameCheat] Writing the cheat library failed: %@", String(describing: error))
+            RetroGoLogger.mame.error("Writing the cheat library failed: \(String(describing: error))")
             throw ImportError.writeFailed(String(describing: error))
         }
 
@@ -270,7 +271,7 @@ final class MameCheatLibrary {
         lock.unlock()
 
         guard let info else { throw ImportError.noCheatFiles }
-        NSLog("[MameCheat] Imported %d files covering %d sets from %@", info.fileCount, info.setCount, url.lastPathComponent)
+        RetroGoLogger.mame.info("Imported \(info.fileCount) files covering \(info.setCount) sets from \(url.lastPathComponent)")
         return info
     }
 
@@ -326,7 +327,7 @@ final class MameCheatLibrary {
                 return (name, xml)
             }
         } catch {
-            NSLog("[MameCheat] Failed to read cheats of %@: %@", setName, "\(error)")
+            RetroGoLogger.mame.error("Failed to read cheats of \(setName, privacy: .public): \(String(describing: error))")
         }
         return nil
     }
@@ -357,12 +358,12 @@ final class MameCheatLibrary {
         do {
             let db = try Connection(path, readonly: true)
             guard (try db.scalar("PRAGMA user_version") as? Int64) == schemaVersion else {
-                NSLog("[MameCheat] Ignoring library with unknown schema at %@", path)
+                RetroGoLogger.mame.notice("Ignoring cheat library with unknown schema at \(path)")
                 return nil
             }
             return db
         } catch {
-            NSLog("[MameCheat] Failed to open %@: %@", path, "\(error)")
+            RetroGoLogger.mame.error("Failed to open cheat library \(path): \(String(describing: error))")
             return nil
         }
     }

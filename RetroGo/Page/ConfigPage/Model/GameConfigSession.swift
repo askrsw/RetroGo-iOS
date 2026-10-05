@@ -25,6 +25,7 @@
 
 import SQLite
 import RACoordinator
+import os
 
 enum GameConfigScope: String {
     case global, core, game
@@ -95,7 +96,7 @@ final class GameConfigSession {
             } catch {
                 // A corrupt or unreadable preference falls back to the actual
                 // core defaults, not old .opt files or a previous game's values.
-                NSLog("[CoreOptions] Failed to resolve launch options for %@: %@", core.coreId, String(describing: error))
+                RetroGoLogger.coreOption.error("Failed to resolve launch options for \(core.coreId, privacy: .public): \(String(describing: error))")
             }
             // MAME's own cheat engine loads <cheatpath>/<set>.xml; it only runs with this on.
             // Hidden from the option page: RetroGo owns cheats (see MameCheatLibrary).
@@ -556,13 +557,13 @@ private extension GameConfigSession {
                let profile = try RAInputBindingProfile.decode(from: v)
                 config.inputBindingProfile = profile
             #if DEBUG
-                print(profile)
+                RetroGoLogger.game.debug("Loaded input binding profile: \(String(describing: profile), privacy: .public)")
             #endif
             } catch {
             #if DEBUG
                 fatalError("Decode inputBindingProfile failed: \(error.localizedDescription)")
             #else
-                print("Decode inputBindingProfile failed: \(error.localizedDescription)")
+                RetroGoLogger.game.fault("Failed to decode input binding profile: \(error.localizedDescription, privacy: .public)")
             #endif
             }
         }

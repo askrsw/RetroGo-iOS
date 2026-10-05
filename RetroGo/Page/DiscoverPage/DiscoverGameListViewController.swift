@@ -27,6 +27,7 @@ import UIKit
 import SnapKit
 import ObjcHelper
 import RACoordinator
+import os
 
 final class DiscoverGameListViewController: UIViewController {
 
@@ -222,7 +223,7 @@ final class DiscoverGameListViewController: UIViewController {
             self.refreshControl.endRefreshing()
 
             if let error {
-                NSLog("[DiscoverGameList] fetchGroups error: %@", error.localizedDescription)
+                RetroGoLogger.database.error("Discover: failed to fetch game groups: \(error.localizedDescription)")
                 return
             }
 
@@ -246,7 +247,7 @@ final class DiscoverGameListViewController: UIViewController {
         ) { [weak self] games, error in
             guard let self else { return }
             if let error {
-                NSLog("[DiscoverGameList] search error: %@", error.localizedDescription)
+                RetroGoLogger.database.error("Discover: search failed: \(error.localizedDescription)")
                 return
             }
             self.searchResults = games

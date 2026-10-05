@@ -26,6 +26,7 @@
 import UIKit
 import ObjcHelper
 import RACoordinator
+import os
 
 final class RetroRomFolderItem: RetroRomBaseItem {
     private(set) var subFolderKeys: Set<String>
@@ -87,7 +88,7 @@ final class RetroRomFolderItem: RetroRomBaseItem {
         do {
             try FileManager.default.moveItem(atPath: srcPath, toPath: dstPath)
         } catch {
-            print("Move \(item.baseName) from \(srcPath) to \(dstPath) error: \(error)")
+            RetroGoLogger.library.error("Failed to move \(item.baseName) from \(srcPath) to \(dstPath): \(String(describing: error))")
             return false
         }
 
@@ -102,7 +103,7 @@ final class RetroRomFolderItem: RetroRomBaseItem {
             do {
                 try FileManager.default.moveItem(atPath: dstPath, toPath: srcPath)
             } catch {
-                print("Move \(item.baseName) from \(dstPath) to \(srcPath) error: \(error)")
+                RetroGoLogger.library.error("Failed to move \(item.baseName) back from \(dstPath) to \(srcPath): \(String(describing: error))")
             }
             return false
         }
@@ -126,7 +127,7 @@ final class RetroRomFolderItem: RetroRomBaseItem {
                 do {
                     try FileManager.default.removeItem(atPath: path)
                 } catch {
-                    print("Failed to delete rom folder: \(rawName) for item: \(itemName)")
+                    RetroGoLogger.library.error("Failed to delete rom folder \(self.rawName) for item \(self.itemName)")
                 }
             }
             return true

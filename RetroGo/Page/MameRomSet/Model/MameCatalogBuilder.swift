@@ -27,6 +27,7 @@ import MachO
 import Foundation
 import ObjcHelper
 import RACoordinator
+import os
 
 enum MameCatalogBuilderError: LocalizedError {
     case coreNotFound
@@ -72,12 +73,12 @@ final class MameCatalogBuilder {
 
         let ra = RetroArchX.shared()
         guard let core = ra.allCores.first(where: { $0.coreId == "mame" }) else {
-            NSLog("[MameCatalog] MAME core not found among %d cores", ra.allCores.count)
+            RetroGoLogger.mame.notice("MAME core not found among \(ra.allCores.count) cores")
             completion?(.failure(MameCatalogBuilderError.coreNotFound))
             return
         }
         let gameRunning = ra.currentCoreItem != nil && !ra.dummyCoreRunning
-        NSLog("[MameCatalog] Update requested (game running: %@)", gameRunning ? "yes" : "no")
+        RetroGoLogger.mame.info("Catalog update requested (game running: \(gameRunning ? "yes" : "no", privacy: .public))")
 
         queue.async {
             let start = CFAbsoluteTimeGetCurrent()
@@ -85,11 +86,11 @@ final class MameCatalogBuilder {
             let seconds = CFAbsoluteTimeGetCurrent() - start
             switch result {
                 case .success(.upToDate):
-                    NSLog("[MameCatalog] Update finished: catalog up to date (%.2fs)", seconds)
+                    RetroGoLogger.mame.info("Catalog update finished: catalog up to date (\(seconds, format: .fixed(precision: 2))s)")
                 case .success(.rebuilt):
-                    NSLog("[MameCatalog] Update finished: catalog rebuilt (total %.2fs)", seconds)
+                    RetroGoLogger.mame.info("Catalog update finished: catalog rebuilt (total \(seconds, format: .fixed(precision: 2))s)")
                 case .failure(let error):
-                    NSLog("[MameCatalog] Update failed after %.2fs: %@", seconds, error.localizedDescription)
+                    RetroGoLogger.mame.error("Catalog update failed after \(seconds, format: .fixed(precision: 2))s: \(error.localizedDescription)")
             }
             DispatchQueue.main.async {
                 completion?(result)
@@ -122,11 +123,10 @@ final class MameCatalogBuilder {
         let persistence = MameRomSetPersistence.shared
         let fingerprint = try coreFingerprint(core)
         if persistence.hasCatalog(coreFingerprint: fingerprint) {
-            NSLog("[MameCatalog] Catalog matches core (build %@)", persistence.metaValue(.catalogBuild) ?? "unknown")
+            RetroGoLogger.mame.info("Catalog matches core (build \(persistence.metaValue(.catalogBuild) ?? "unknown", privacy: .public))")
             return .upToDate
         }
-        NSLog("[MameCatalog] Catalog missing or outdated (stored core fingerprint: %@)",
-              persistence.metaValue(.catalogCoreFingerprint) ?? "none")
+        RetroGoLogger.mame.notice("Catalog missing or outdated (stored core fingerprint: \(persistence.metaValue(.catalogCoreFingerprint) ?? "none", privacy: .public))")
         guard !gameRunning else {
             throw MameCatalogBuilderError.gameRunning
         }
@@ -142,7 +142,7 @@ final class MameCatalogBuilder {
         let exportStart = CFAbsoluteTimeGetCurrent()
         try core.exportMameListXML(toPath: xmlURL.path)
         let exportSeconds = CFAbsoluteTimeGetCurrent() - exportStart
-        NSLog("[MameCatalog] Export: %.2fs, XML %@", exportSeconds, Self.formatBytes(Self.fileSize(xmlURL.path)))
+        RetroGoLogger.mame.debug("listxml export: \(exportSeconds, format: .fixed(precision: 2))s, XML \(Self.formatBytes(Self.fileSize(xmlURL.path)), privacy: .public)")
         Self.logMemory("after export")
 
         // 2. Parse and write in one transaction. Insert time is measured separately so the
@@ -163,13 +163,10 @@ final class MameCatalogBuilder {
         }
         let importSeconds = CFAbsoluteTimeGetCurrent() - importStart
 
-        NSLog("[MameCatalog] Import: %.2fs total (XML parse %.2fs, row inserts %.2fs, other %.2fs)",
-              importSeconds, fillSeconds - insertSeconds, insertSeconds, importSeconds - fillSeconds)
-        NSLog("[MameCatalog] Rebuilt: %d machines, %d roms, %d disks, %d device refs",
-              summary.machineCount, summary.romCount, summary.diskCount, summary.deviceRefCount)
+        RetroGoLogger.mame.debug("Catalog import: \(importSeconds, format: .fixed(precision: 2))s total (XML parse \(fillSeconds - insertSeconds, format: .fixed(precision: 2))s, row inserts \(insertSeconds, format: .fixed(precision: 2))s, other \(importSeconds - fillSeconds, format: .fixed(precision: 2))s)")
+        RetroGoLogger.mame.info("Catalog rebuilt: \(summary.machineCount) machines, \(summary.romCount) roms, \(summary.diskCount) disks, \(summary.deviceRefCount) device refs")
         let dbPath = AppConfig.shared.mameRomSetDatabasePath
-        NSLog("[MameCatalog] Database size: %@ (+ WAL %@)",
-              Self.formatBytes(Self.fileSize(dbPath)), Self.formatBytes(Self.fileSize(dbPath + "-wal")))
+        RetroGoLogger.mame.debug("Catalog database size: \(Self.formatBytes(Self.fileSize(dbPath)), privacy: .public) (+ WAL \(Self.formatBytes(Self.fileSize(dbPath + "-wal")), privacy: .public))")
         Self.logMemory("after import")
         return .rebuilt(summary)
     }
@@ -187,7 +184,7 @@ final class MameCatalogBuilder {
             return cachedFingerprint.value
         }
         guard FileManager.default.fileExists(atPath: path) else {
-            NSLog("[MameCatalog] Core binary missing at %@", path)
+            RetroGoLogger.mame.error("MAME core binary missing at \(path)")
             throw MameCatalogBuilderError.coreBinaryMissing
         }
 
@@ -196,10 +193,10 @@ final class MameCatalogBuilder {
         if let uuid = Self.machOUUID(atPath: path) {
             fingerprint = "uuid:" + uuid
         } else {
-            NSLog("[MameCatalog] No LC_UUID in core binary, falling back to SHA-256")
+            RetroGoLogger.mame.notice("No LC_UUID in core binary, falling back to SHA-256")
             fingerprint = "sha256:" + (try (URL(fileURLWithPath: path) as NSURL).computeSHA256String())
         }
-        NSLog("[MameCatalog] Core fingerprint %@ (%.3fs): %@", fingerprint, CFAbsoluteTimeGetCurrent() - start, path)
+        RetroGoLogger.mame.debug("MAME core fingerprint \(fingerprint, privacy: .public) (\(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 3))s): \(path)")
         cachedFingerprint = (path, fingerprint)
         return fingerprint
     }
@@ -299,7 +296,6 @@ final class MameCatalogBuilder {
             }
         }
         guard result == KERN_SUCCESS else { return }
-        NSLog("[MameCatalog] Memory %@: footprint %@, peak %@", stage,
-              formatBytes(Int64(info.phys_footprint)), formatBytes(info.ledger_phys_footprint_peak))
+        RetroGoLogger.mame.debug("Memory \(stage, privacy: .public): footprint \(formatBytes(Int64(info.phys_footprint)), privacy: .public), peak \(formatBytes(info.ledger_phys_footprint_peak), privacy: .public)")
     }
 }

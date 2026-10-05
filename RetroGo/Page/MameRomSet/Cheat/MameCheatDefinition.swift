@@ -25,6 +25,7 @@
 
 import Foundation
 import RACoordinator
+import os
 
 /// One `<cheat>` of a MAME cheat XML, as the list shows it. MAME's engine runs the XML
 /// itself; this only carries what the UI needs, in engine order (MAME keeps duplicates).
@@ -72,7 +73,7 @@ struct MameCheatDefinition {
         let parser = XMLParser(data: data)
         parser.delegate = delegate
         guard parser.parse(), delegate.isMameCheat else {
-            NSLog("[MameCheat] Failed to parse cheat XML: %@", parser.parserError.map { "\($0)" } ?? "not <mamecheat>")
+            RetroGoLogger.mame.error("Failed to parse cheat XML: \(parser.parserError.map { "\($0)" } ?? "not <mamecheat>", privacy: .public)")
             return nil
         }
         return delegate.definitions

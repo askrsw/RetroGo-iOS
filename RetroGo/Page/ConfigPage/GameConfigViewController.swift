@@ -27,6 +27,7 @@ import UIKit
 import SnapKit
 import ObjcHelper
 import RACoordinator
+import os
 
 final class GameConfigViewController: UIViewController {
     private lazy var tableView  = self.configUI()
@@ -329,7 +330,7 @@ extension GameConfigViewController: UITableViewDelegate {
                 let options = try session.makeCoreOptionSession()
                 navigationController?.pushViewController(GameCoreOptionViewController(session: options, settings: session), animated: true)
             } catch {
-                NSLog("[CoreOptions] Failed to load catalog for %@: %@", core.coreId, String(describing: error))
+                RetroGoLogger.coreOption.error("Failed to load catalog for \(core.coreId, privacy: .public): \(String(describing: error))")
                 let alert = UIAlertController(title: Bundle.localizedString(forKey: "coreoption_title"), message: Bundle.localizedString(forKey: "coreoption_load_error"), preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "coreoption_ok"), style: .default))
                 present(alert, animated: true)
@@ -502,7 +503,7 @@ extension GameConfigViewController {
 
         let catalog = try JSONDecoder().decode(GameCoreOptionCatalog.self, from: data)
         try catalog.validate(expectedCoreId: coreId)
-        NSLog("[CoreOptions] Exported %d options (%@) to %@", options.count, language, url.path)
+        RetroGoLogger.coreOption.debug("Debug export: \(options.count) options (\(language, privacy: .public)) written to \(url.path)")
         return (url.path, languages.sorted(), options.count)
     }
 }

@@ -28,6 +28,7 @@ import SnapKit
 import StoreKit
 import ObjcHelper
 import RACoordinator
+import os
 
 final class GamePageViewController: RAGameViewController {
     static private(set) weak var instance: GamePageViewController?
@@ -421,7 +422,7 @@ extension RetroArchX {
                 try romItem.ensureCRC32()
                 try GameCheatTemplateAutoBinder.shared.prepareBindingIfNeeded(game: romItem, core: core)
             } catch {
-                print("Failed to prepare launch metadata for ROM: \(romItem.itemName), error: \(error)")
+                RetroGoLogger.game.error("Failed to prepare launch metadata for \(romItem.itemName): \(String(describing: error))")
             }
         }
     }
