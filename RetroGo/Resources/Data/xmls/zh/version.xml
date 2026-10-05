@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.11.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.11.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 10 月 7 日</i>。
+        </p-paragraph>
+        <p-list id="v1.11.0" style="number">
+            <p-item>新增 <b>Flycast</b> 核心，支持世嘉 <b>Dreamcast</b>，以及 <b>NAOMI、NAOMI 2、Atomiswave</b> 街机游戏。iOS 不允许 JIT，核心以解释器模式运行，对性能要求较高的 3D 游戏在较旧的设备上可能无法全速运行。Dreamcast 游戏建议提供 BIOS（dc 文件夹中的 dc_boot.bin 和 dc_flash.bin），街机游戏需要对应的街机 BIOS（naomi.zip、naomi2.zip、awbios.zip）。</p-item>
+            <p-item>为 Dreamcast 配置了<b>专用屏幕按键布局</b>，街机游戏可直接使用<b>投币键</b>；同时提供精选的 Flycast <b>核心选项</b>，已全部中文化。</p-item>
+            <p-item>导入 NAOMI / Atomiswave 的 <b>.lst 格式游戏</b>时，.lst 与它列出的 ROM 文件会<b>合并为游戏库中的一个游戏</b>；缺少文件时会提示游戏不完整。</p-item>
+            <p-item>「发现」页游戏数据库新增 <b>Dreamcast、NAOMI、NAOMI 2、Atomiswave 与 SG-1000</b> 平台，可直接浏览与查询游戏信息；金手指模版库新增 <b>Dreamcast</b> 游戏，支持自动匹配。</p-item>
+            <p-item>修复 <b>cue、gdi 等多文件游戏</b>无法自动匹配金手指模版的问题；同一游戏有多个地区版本的模版时，<b>美版和全球版</b> ROM 也能正确匹配。</p-item>
+            <p-item>核心改为跟随 <b>App 语言</b>，不再跟随系统语言：在 App 中切换语言后，核心选项名称以及 PPSSPP 等核心的游戏内语言会随之改变，从下一次启动游戏开始生效。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.10.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.10.0</p-title>
         <p-paragraph fontsize="13">
