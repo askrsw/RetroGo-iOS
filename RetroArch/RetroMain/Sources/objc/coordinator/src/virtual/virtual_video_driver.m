@@ -204,7 +204,8 @@ NS_ASSUME_NONNULL_BEGIN
 
         d_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(step:)];
         if (@available(iOS 15.0, tvOS 15.0, *)) {
-            [d_displayLink setPreferredFrameRateRange:CAFrameRateRangeDefault];
+            // Retro cores output 60Hz or less; presenting at 120Hz only repeats frames.
+            [d_displayLink setPreferredFrameRateRange:CAFrameRateRangeMake(60, 60, 60)];
         }
         [d_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
     }
