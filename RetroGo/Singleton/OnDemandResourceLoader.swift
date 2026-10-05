@@ -84,21 +84,21 @@ final class OnDemandResourceLoader: NSObject {
             id: "gamerdb", odrTag: "game-db",
             bundleResource: "gamerdb", bundleExtension: "sqlite",
             installedFileName: "gamerdb.db",
-            approxByteSize: 71_794_688, bundledVersion: 3,
+            approxByteSize: 71_794_688, bundledVersion: 4,
             isRequired: true,
             titleKey: "odr_gamerdb_title", descKey: "odr_gamerdb_desc"),
         ODRResource(
             id: "gameloc", odrTag: "gameloc-db",
             bundleResource: "gameloc", bundleExtension: "sqlite",
             installedFileName: "gameloc.sqlite",
-            approxByteSize: 9_457_664, bundledVersion: 3,
+            approxByteSize: 9_457_664, bundledVersion: 4,
             isRequired: true,   // required: small, and language is easily toggled
             titleKey: "odr_gameloc_title", descKey: "odr_gameloc_desc"),
         ODRResource(
             id: "cheat", odrTag: "cheat-db",
             bundleResource: "cheat", bundleExtension: "sqlite",
             installedFileName: "cheat.sqlite",
-            approxByteSize: 130_015_232, bundledVersion: 3,
+            approxByteSize: 130_015_232, bundledVersion: 4,
             isRequired: false,
             titleKey: "odr_cheat_title", descKey: "odr_cheat_desc"),
         ODRResource(
@@ -320,6 +320,11 @@ extension OnDemandResourceLoader {
         "Sega - PICO",
         "Sega - Saturn",
         "Nintendo - Super Nintendo Entertainment System",
+        "Sega - Dreamcast",
+        "Sega - Naomi",
+        "Sega - Naomi 2",
+        "Atomiswave",
+        "Sega - SG-1000",
     ]
 
     /// DEBUG：把 Bundle 内的 .rdb 合并构建成成品预制库，

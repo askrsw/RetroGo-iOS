@@ -1572,7 +1572,27 @@ void drivers_init(
 
       if (   !(video_st->flags & VIDEO_FLAG_CACHE_CONTEXT_ACK)
             && hwr->context_reset)
-         hwr->context_reset();
+      {
+#if defined(__APPLE__) && defined(TARGET_OS_IOS)
+         /* The EAGL context is only current on the main thread, where the
+          * video driver was just initialized; GL cores must reset there too. */
+         bool is_gl_context =
+               hwr->context_type == RETRO_HW_CONTEXT_OPENGL
+            || hwr->context_type == RETRO_HW_CONTEXT_OPENGL_CORE
+            || hwr->context_type == RETRO_HW_CONTEXT_OPENGLES2
+            || hwr->context_type == RETRO_HW_CONTEXT_OPENGLES3
+            || hwr->context_type == RETRO_HW_CONTEXT_OPENGLES_VERSION;
+         if (is_gl_context && !pthread_main_np())
+         {
+            retro_hw_context_reset_t context_reset = hwr->context_reset;
+            dispatch_sync(dispatch_get_main_queue(), ^{
+               context_reset();
+            });
+         }
+         else
+#endif
+            hwr->context_reset();
+      }
       video_st->flags            &= ~VIDEO_FLAG_CACHE_CONTEXT_ACK;
       runloop_st->frame_time_last = 0;
    }

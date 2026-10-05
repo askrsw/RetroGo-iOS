@@ -243,7 +243,7 @@ static NSString *p_locNorm(NSString *s);
 }
 
 - (NSInteger)currentDBVersion {
-    return 3;
+    return 4;
 }
 
 // MARK: 平台查询
@@ -1119,6 +1119,11 @@ static NSString *p_locNorm(NSString *s);
         @"Sega - Mega Drive - Genesis":                     @17,
         @"Sega - Mega-CD - Sega CD":                        @18,
         @"Sega - PICO":                                     @19,
+        @"Sega - Dreamcast":                                @20,
+        @"Sega - Naomi":                                    @21,
+        @"Sega - Naomi 2":                                  @22,
+        @"Atomiswave":                                      @23,
+        @"Sega - SG-1000":                                  @24,
     };
 
     // 逐个导入 .rdb（复用与线上完全相同的导入核心）

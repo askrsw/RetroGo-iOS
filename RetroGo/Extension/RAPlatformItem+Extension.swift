@@ -44,10 +44,15 @@ extension RAPlatformItem {
         case "Sega - 32X":                                       return .md
         case "Sega - Game Gear":                                 return .sms
         case "Sega - Master System - Mark III":                  return .sms
+        case "Sega - SG-1000":                                   return .sms
         case "Sega - Mega Drive - Genesis":                      return .md
         case "Sega - Mega-CD - Sega CD":                         return .md
         case "Sega - PICO":                                      return .md
         case "Sega - Saturn":                                    return .saturn
+        case "Sega - Dreamcast":                                 return .dreamcast
+        case "Sega - Naomi":                                     return .mame
+        case "Sega - Naomi 2":                                   return .mame
+        case "Atomiswave":                                       return .mame
         case "Sony - PlayStation":                               return .psx
         case "Sony - PlayStation Portable":                      return .psp
         default:                                                 return nil

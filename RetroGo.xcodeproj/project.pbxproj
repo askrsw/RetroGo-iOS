@@ -206,6 +206,7 @@
 		ABF60F8C2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F8B2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift */; };
 		AC10C1D22FF0A00000C1D001 /* emu.clownmdemu.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AC10C1D12FF0A00000C1D001 /* emu.clownmdemu.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AC10C1D42FF0A00000C1D001 /* emu.gearsystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AC10C1D32FF0A00000C1D001 /* emu.gearsystem.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AC10F1C22FF0A00000F1C001 /* emu.flycast.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AC10F1C12FF0A00000F1C001 /* emu.flycast.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AC2309260000000000000001 /* GameOverlayArcadeLayoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC2309260000000000000002 /* GameOverlayArcadeLayoutButton.swift */; };
 		C01920260919000000000001 /* GameCoreOptionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000003 /* GameCoreOptionCatalog.swift */; };
 		C01920260919000000000002 /* GameCoreOptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000004 /* GameCoreOptionViewController.swift */; };
@@ -220,6 +221,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				AC10C1D22FF0A00000C1D001 /* emu.clownmdemu.framework in CopyFiles */,
+				AC10F1C22FF0A00000F1C001 /* emu.flycast.framework in CopyFiles */,
 				AC10C1D42FF0A00000C1D001 /* emu.gearsystem.framework in CopyFiles */,
 				C02120260921000000000001 /* emu.mame.framework in CopyFiles */,
 				AB6789632FE5278B0015D5E0 /* emu.fceumm.framework in CopyFiles */,
@@ -450,6 +452,7 @@
 		ABF60F8B2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderUnifiedSubview.swift; sourceTree = "<group>"; };
 		AC10C1D12FF0A00000C1D001 /* emu.clownmdemu.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.clownmdemu.framework; sourceTree = "<group>"; };
 		AC10C1D32FF0A00000C1D001 /* emu.gearsystem.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.gearsystem.framework; sourceTree = "<group>"; };
+		AC10F1C12FF0A00000F1C001 /* emu.flycast.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.flycast.framework; sourceTree = "<group>"; };
 		AC2309260000000000000002 /* GameOverlayArcadeLayoutButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayArcadeLayoutButton.swift; sourceTree = "<group>"; };
 		C01920260919000000000003 /* GameCoreOptionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionCatalog.swift; sourceTree = "<group>"; };
 		C01920260919000000000004 /* GameCoreOptionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionViewController.swift; sourceTree = "<group>"; };
@@ -772,6 +775,7 @@
 			isa = PBXGroup;
 			children = (
 				AC10C1D12FF0A00000C1D001 /* emu.clownmdemu.framework */,
+				AC10F1C12FF0A00000F1C001 /* emu.flycast.framework */,
 				AC10C1D32FF0A00000C1D001 /* emu.gearsystem.framework */,
 				C02120260921000000000002 /* emu.mame.framework */,
 				ABBC8AC12F5E5504007E1669 /* emu.dosbox-pure.framework */,
@@ -1408,7 +1412,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 21;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1465,7 +1469,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 21;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

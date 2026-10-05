@@ -338,6 +338,7 @@ extension GamePageOverlayConfig {
         case gba = "gba"
         case snes = "snes"
         case saturn = "saturn"
+        case dreamcast = "dreamcast"
         case ps = "ps"
         case psp = "psp"
         case genesis = "genesis"
