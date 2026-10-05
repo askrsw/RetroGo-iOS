@@ -35,6 +35,7 @@ enum RetroRomFileGroupType: String, Value {
     case m3u = "m3u"
     case gdi = "gdi"
     case ccd = "ccd"
+    case lst = "lst"
 
     // 1. Define the underlying storage data type (String corresponds to String.Datatype, which is TEXT in SQLite)
     static var declaredDatatype: String {

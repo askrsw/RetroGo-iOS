@@ -267,7 +267,7 @@ extension RetroRomImportGroupBuilder {
         switch ext {
         case "m3u":
             return 0
-        case "cue", "gdi", "mds", "ccd":
+        case "cue", "gdi", "mds", "ccd", "lst":
             return 1
         default:
             return 2
@@ -316,6 +316,8 @@ extension RetroRomImportGroupBuilder {
             return .gdi
         case "ccd":
             return .ccd
+        case "lst":
+            return .lst
         default:
             return nil
         }
@@ -339,6 +341,8 @@ extension RetroRomImportGroupBuilder {
             let members = uniqueOrdered(imgMembers + subMembers)
             let missingPaths = imgMembers.isEmpty ? [siblingPath(for: entryPath, ext: "img")] : []
             return ResolvedMembers(memberPaths: members, matchMode: .exact, missingPaths: missingPaths)
+        case .lst:
+            return try parseLSTMembers(for: entryPath, fileMap: fileMap)
         case .single:
             return nil
         }
@@ -394,6 +398,40 @@ extension RetroRomImportGroupBuilder {
             } else {
                 missingPaths.append(memberPath)
             }
+        }
+        return ResolvedMembers(memberPaths: uniqueOrdered(members), matchMode: .exact, missingPaths: uniqueOrdered(missingPaths))
+    }
+
+    /// NAOMI/Atomiswave ROM list used by Flycast: a title line, then one
+    /// `"file", offset, size` line per ROM chunk.
+    func parseLSTMembers(for entryPath: String, fileMap: [String: SourceFile]) throws -> ResolvedMembers {
+        guard let file = fileMap[entryPath] else {
+            throw BuildError.missingEntryFile(path: entryPath)
+        }
+        let content = try readTextFile(at: file.url)
+        let directory = parentDirectory(of: entryPath)
+        var members: [String] = []
+        var missingPaths: [String] = []
+        for line in content.components(separatedBy: .newlines).dropFirst() {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard trimmed.hasPrefix("\""), let close = trimmed.dropFirst().firstIndex(of: "\"") else {
+                continue
+            }
+            let name = String(trimmed[trimmed.index(after: trimmed.startIndex)..<close])
+            guard !name.isEmpty else {
+                continue
+            }
+            let memberPath = join(directory: directory, relativePath: name)
+            if fileMap[memberPath] != nil {
+                members.append(memberPath)
+            } else if let match = findCaseInsensitiveMatch(for: memberPath, fileMap: fileMap) {
+                members.append(match)
+            } else {
+                missingPaths.append(memberPath)
+            }
+        }
+        if members.isEmpty && missingPaths.isEmpty {
+            missingPaths.append(siblingPath(for: entryPath, ext: "dat"))
         }
         return ResolvedMembers(memberPaths: uniqueOrdered(members), matchMode: .exact, missingPaths: uniqueOrdered(missingPaths))
     }
@@ -470,8 +508,8 @@ extension RetroRomImportGroupBuilder {
 
         let ext = fileExtension(of: path)
         switch groupType {
-        case .m3u, .cue, .gdi, .mds, .ccd:
-            if ["m3u", "cue", "gdi", "mds", "ccd"].contains(ext) {
+        case .m3u, .cue, .gdi, .mds, .ccd, .lst:
+            if ["m3u", "cue", "gdi", "mds", "ccd", "lst"].contains(ext) {
                 return .descriptor
             }
             return .resource
@@ -666,7 +704,7 @@ extension RetroRomImportGroupBuilder {
 
     func isPotentialMultiFileComponent(_ path: String) -> Bool {
         let ext = fileExtension(of: path)
-        return ["cue", "mds", "m3u", "gdi", "ccd", "sub", "mdf", "wav", "mp3", "flac", "ape"].contains(ext)
+        return ["cue", "mds", "m3u", "gdi", "ccd", "lst", "sub", "mdf", "wav", "mp3", "flac", "ape"].contains(ext)
     }
 
     func readTextFile(at url: URL) throws -> String {
@@ -816,7 +854,7 @@ extension RetroRomImportGroupBuilder {
         guard group.type != .single else {
             return nil
         }
-        let descriptorExtensions: Set<String> = ["m3u", "cue", "gdi", "mds", "ccd"]
+        let descriptorExtensions: Set<String> = ["m3u", "cue", "gdi", "mds", "ccd", "lst"]
         let resources = group.memberPaths.filter { !descriptorExtensions.contains(fileExtension(of: $0)) }
         let tags = resources.map { Self.discTag(forFileName: ($0 as NSString).lastPathComponent) }
         guard let first = tags.first ?? nil,
@@ -832,7 +870,7 @@ extension RetroRomImportGroupBuilder {
             return true
         case .single:
             return Self.singleDiscExtensions.contains(fileExtension(of: group.entryPath))
-        case .m3u:
+        case .m3u, .lst:
             return false
         }
     }
