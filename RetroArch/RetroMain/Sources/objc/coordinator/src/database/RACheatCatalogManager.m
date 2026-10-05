@@ -527,6 +527,20 @@ static BOOL p_isSpecialTemplateName(NSString *name);
                 return;
             }
         }
+        // Some cht sets (e.g. Dreamcast) name the USA release without a region
+        // tag and only tag the others ("(Japanese)", "(European)"). For a USA or
+        // World ROM, take the single untagged template of the group.
+        NSArray<NSString *> *preferences = p_regionPreferences(name);
+        if ([preferences containsObject:@"usa"] || [preferences containsObject:@"world"]) {
+            NSPredicate *untagged = [NSPredicate predicateWithBlock:^BOOL(RAGameEntry *candidate, NSDictionary *bindings) {
+                return [candidate.name rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@"(["]].location == NSNotFound;
+            }];
+            NSArray<RAGameEntry *> *untaggedMatches = [matches filteredArrayUsingPredicate:untagged];
+            if (untaggedMatches.count == 1) {
+                result = untaggedMatches.firstObject;
+                return;
+            }
+        }
     });
     return result;
 }

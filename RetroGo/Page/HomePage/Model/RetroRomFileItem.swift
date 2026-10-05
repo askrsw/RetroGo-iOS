@@ -310,7 +310,16 @@ final class RetroRomFileItem: RetroRomBaseItem {
     @discardableResult
     func ensureCRC32() throws -> String? {
         if let crc32, !crc32.isEmpty {
-            return crc32
+            // A multi-file game's own CRC is an aggregate that never matches a
+            // database record; lookups use the member CRCs, so load them first.
+            if fileGroupType == .single || !subItems.isEmpty {
+                return crc32
+            }
+            if let loaded = RetroRomPersistence.shared.getGameFileSubItems(key: key), !loaded.isEmpty,
+               loaded.allSatisfy({ $0.crc32?.isEmpty == false }) {
+                subItems = loaded
+                return crc32
+            }
         }
 
         if fileGroupType == .single {
