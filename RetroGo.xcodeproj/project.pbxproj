@@ -78,6 +78,7 @@
 		AB55BC622F3B587F00569A84 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = AB55BC612F3B587F00569A84 /* Defaults */; };
 		AB55BC642F3B804600569A84 /* DefaultKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC632F3B803F00569A84 /* DefaultKeys.swift */; };
 		AB55BC662F3B806800569A84 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC652F3B806600569A84 /* DeviceConfig.swift */; };
+		AB0106A12F8B000000C0FFEE /* RetroGoLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0106A22F8B000000C0FFEE /* RetroGoLogger.swift */; };
 		AB55BC682F3B80C500569A84 /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC672F3B80C300569A84 /* NotificationNames.swift */; };
 		AB55BC6A2F3B80D800569A84 /* Vibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC692F3B80D700569A84 /* Vibration.swift */; };
 		AB55BC6C2F3B84DA00569A84 /* IconRender.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC6B2F3B84D500569A84 /* IconRender.swift */; };
@@ -312,6 +313,7 @@
 		AB4DCCDD2FA2F0A0004691BD /* GameOverlayTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayTheme.swift; sourceTree = "<group>"; };
 		AB55BC632F3B803F00569A84 /* DefaultKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultKeys.swift; sourceTree = "<group>"; };
 		AB55BC652F3B806600569A84 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
+		AB0106A22F8B000000C0FFEE /* RetroGoLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroGoLogger.swift; sourceTree = "<group>"; };
 		AB55BC672F3B80C300569A84 /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
 		AB55BC692F3B80D700569A84 /* Vibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vibration.swift; sourceTree = "<group>"; };
 		AB55BC6B2F3B84D500569A84 /* IconRender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconRender.swift; sourceTree = "<group>"; };
@@ -762,6 +764,7 @@
 			children = (
 				AB55BC632F3B803F00569A84 /* DefaultKeys.swift */,
 				AB55BC652F3B806600569A84 /* DeviceConfig.swift */,
+				AB0106A22F8B000000C0FFEE /* RetroGoLogger.swift */,
 				AB55BC672F3B80C300569A84 /* NotificationNames.swift */,
 				AB55BC692F3B80D700569A84 /* Vibration.swift */,
 				AB55BC6B2F3B84D500569A84 /* IconRender.swift */,
@@ -1304,6 +1307,7 @@
 				ABF60F832FC59F08006C5B5A /* RetroRomSectionHeaderView.swift in Sources */,
 				ABDAD2822F3BB558004100A9 /* RetroRomCoreFirmwareFooterView.swift in Sources */,
 				AB55BC662F3B806800569A84 /* DeviceConfig.swift in Sources */,
+				AB0106A12F8B000000C0FFEE /* RetroGoLogger.swift in Sources */,
 				ABDAD2552F3BAA1F004100A9 /* RetroRomFolderImportor.swift in Sources */,
 				AB3D70402F7D53260008A6AA /* GameOverlayThumbStick.swift in Sources */,
 				AB3D70442F7D57760008A6AA /* GameOverlayActionButton.swift in Sources */,

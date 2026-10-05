@@ -91,7 +91,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
             // open log
             verbosity_enable();
-            verbosity_set_log_level(0);
+            [self applyLogLevels];
 
             //set language (App language, not the system one)
             msg_hash_set_uint(MSG_HASH_USER_LANGUAGE, [RetroArchX appRetroLanguage]);
@@ -100,6 +100,8 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
             char       *argv[] = {arguments,   NULL};
             int argc           = 1;
             rarch_main(argc, argv, NULL, false);
+            // Settings were loaded (and log levels possibly reset) during init.
+            [self applyLogLevels];
 
             [self findAllSupportedExtensions];
 

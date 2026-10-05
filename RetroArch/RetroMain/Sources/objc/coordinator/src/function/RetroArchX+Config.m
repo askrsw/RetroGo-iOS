@@ -38,6 +38,7 @@
 #include <core/ra_core_options.h>
 #include <core/core_option_manager.h>
 #include <intl/msg_hash.h>
+#include <utils/verbosity.h>
 #include <lists/string_list.h>
 #import <objc/runtime.h>
 #import <Foundation+Extensions.h>
@@ -70,6 +71,19 @@ static char coreOptionConfigurationKey;
         ? RETRO_LANGUAGE_CHINESE_SIMPLIFIED : RETRO_LANGUAGE_ENGLISH;
 }
 
+- (void)applyLogLevels {
+#if defined(_DEBUG)
+    const unsigned level = RETRO_LOG_INFO;
+#else
+    const unsigned level = RETRO_LOG_WARN;
+#endif
+    verbosity_set_log_level(level);
+    settings_t *settings = config_get_ptr();
+    if (settings) {
+        settings->uints.libretro_log_level = level;
+    }
+}
+
 - (void)config:(RAConfig *)cfg {
     @synchronized (self) {
         NSDictionary *pending = cfg.coreOptions && cfg.coreOptionsCoreId
@@ -82,6 +96,8 @@ static char coreOptionConfigurationKey;
     // language defaults); follow the App language, which may differ from the
     // system one and can change while the App runs.
     msg_hash_set_uint(MSG_HASH_USER_LANGUAGE, [RetroArchX appRetroLanguage]);
+
+    [self applyLogLevels];
 
     video_driver_set_threaded(cfg.logicThread);
 

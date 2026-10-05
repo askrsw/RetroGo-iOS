@@ -116,6 +116,12 @@
 #include <utils/config.def.h>
 
 #include <main/runloop.h>
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#if TARGET_OS_IPHONE
+#include <utils/retrogo_log.h>
+#endif
+#endif
 #include <camera_driver.h>
 #include "location_driver.h"
 #include <record/record_driver.h>
@@ -784,6 +790,32 @@ static void libretro_log_cb(
 
    va_start(vp, fmt);
 
+#if defined(__APPLE__) && TARGET_OS_IPHONE
+   /* RetroGo: core logs go to unified logging, category Core, tagged with the core name. */
+   {
+      char buffer[1024];
+      size_t len;
+      os_log_type_t type;
+      runloop_state_t *runloop_st = &runloop_state;
+      const char *core_name       = runloop_st->system.info.library_name;
+
+      switch (level)
+      {
+         case RETRO_LOG_DEBUG: type = RETROGO_LOG_DEBUG;  break;
+         case RETRO_LOG_INFO:  type = RETROGO_LOG_INFO;   break;
+         case RETRO_LOG_WARN:  type = RETROGO_LOG_NOTICE; break;
+         case RETRO_LOG_ERROR: type = RETROGO_LOG_ERROR;  break;
+         default:              type = RETROGO_LOG_INFO;   break;
+      }
+
+      vsnprintf(buffer, sizeof(buffer), fmt, vp);
+      len = strlen(buffer);
+      while (len > 0 && (buffer[len - 1] == '\n' || buffer[len - 1] == '\r'))
+         buffer[--len] = '\0';
+      RETROGO_LOG(RETROGO_LOG_CAT_CORE, type, "[%{public}s] %s",
+            (core_name && *core_name) ? core_name : "core", buffer);
+   }
+#else
    switch (level)
    {
       case RETRO_LOG_DEBUG:
@@ -805,6 +837,8 @@ static void libretro_log_cb(
       default:
          break;
    }
+
+#endif
 
    va_end(vp);
 }
