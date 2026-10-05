@@ -61,6 +61,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface RetroArchX (Config)
+// RETRO_LANGUAGE_* matching the App language (English or Simplified Chinese).
++ (unsigned)appRetroLanguage;
 - (void)config:(RAConfig *)cfg;
 - (BOOL)prepareCoreOptionsForCoreId:(NSString *)coreId;
 - (void)clearCoreOptionConfiguration;

@@ -93,9 +93,8 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
             verbosity_enable();
             verbosity_set_log_level(0);
 
-            //set language
-            unsigned language = frontend_driver_get_user_language();
-            msg_hash_set_uint(MSG_HASH_USER_LANGUAGE, language);
+            //set language (App language, not the system one)
+            msg_hash_set_uint(MSG_HASH_USER_LANGUAGE, [RetroArchX appRetroLanguage]);
 
             char arguments[]   = "retroarch";
             char       *argv[] = {arguments,   NULL};

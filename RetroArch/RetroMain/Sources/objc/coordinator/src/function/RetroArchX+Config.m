@@ -40,6 +40,7 @@
 #include <intl/msg_hash.h>
 #include <lists/string_list.h>
 #import <objc/runtime.h>
+#import <Foundation+Extensions.h>
 
 static char coreOptionConfigurationKey;
 
@@ -64,6 +65,11 @@ static char coreOptionConfigurationKey;
 
 @implementation RetroArchX (Config)
 
++ (unsigned)appRetroLanguage {
+    return [[NSBundle currentSimpleLanguageKey] isEqualToString:@"zh"]
+        ? RETRO_LANGUAGE_CHINESE_SIMPLIFIED : RETRO_LANGUAGE_ENGLISH;
+}
+
 - (void)config:(RAConfig *)cfg {
     @synchronized (self) {
         NSDictionary *pending = cfg.coreOptions && cfg.coreOptionsCoreId
@@ -71,6 +77,11 @@ static char coreOptionConfigurationKey;
         objc_setAssociatedObject(self, &coreOptionConfigurationKey, pending, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     [self p_enforceBuiltinTurboDisabled];
+
+    // Cores read the frontend language when they load (option labels, BIOS
+    // language defaults); follow the App language, which may differ from the
+    // system one and can change while the App runs.
+    msg_hash_set_uint(MSG_HASH_USER_LANGUAGE, [RetroArchX appRetroLanguage]);
 
     video_driver_set_threaded(cfg.logicThread);
 
