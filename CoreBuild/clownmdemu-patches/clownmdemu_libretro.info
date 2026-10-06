@@ -1,0 +1,32 @@
+# Software Information
+display_name = "Sega - MD/CD (ClownMDEmu)"
+authors = "Clownacy"
+supported_extensions = "bin|md|gen|smd|cue|iso|chd"
+corename = "ClownMDEmu"
+license = "AGPLv3+"
+permissions = ""
+display_version = "v1.6.12"
+categories = "Emulator"
+
+# Hardware Information
+manufacturer = "Sega"
+systemname = "Mega Drive / Genesis"
+systemid = "mega_drive"
+
+# Libretro Features
+database = "Sega - Mega Drive - Genesis|Sega - Mega-CD - Sega CD"
+supports_no_game = "false"
+savestate = "true"
+savestate_features = "deterministic"
+cheats = "true"
+input_descriptors = "true"
+memory_descriptors = "true"
+libretro_saves = "true"
+core_options = "true"
+load_subsystem = "true"
+hw_render = "false"
+needs_fullpath = "true"
+disk_control = "false"
+is_experimental = "false"
+
+description = "An accurate Sega Mega Drive / Mega CD emulator written in C89. Mega CD support uses a built-in BIOS replacement, so no BIOS files are required."

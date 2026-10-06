@@ -1,0 +1,34 @@
+From 3f4ebf358f8273d63d2c4be677b79b57b285b9d7 Mon Sep 17 00:00:00 2001
+From: RetroGo <noreply@retrogo.invalid>
+Date: Mon, 5 Oct 2026 00:29:47 +0800
+Subject: [PATCH 2/2] sh4 interpreter: rebind context on reset after the
+ address space is reserved again
+
+---
+ core/hw/sh4/interpr/sh4_interpreter.cpp | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/core/hw/sh4/interpr/sh4_interpreter.cpp b/core/hw/sh4/interpr/sh4_interpreter.cpp
+index 54a2b02..2de05b1 100644
+--- a/core/hw/sh4/interpr/sh4_interpreter.cpp
++++ b/core/hw/sh4/interpr/sh4_interpreter.cpp
+@@ -98,6 +98,16 @@ void Sh4Interpreter::Step()
+ 
+ void Sh4Interpreter::Reset(bool hard)
+ {
++	// The address space may have been released and reserved again since Init()
++	// (libretro on Apple keeps the emulator across retro_deinit/retro_init),
++	// so rebind the context and the caches that hold it.
++	if (ctx != &p_sh4rcb->cntx)
++	{
++		ctx = &p_sh4rcb->cntx;
++		sh4cycles.init(ctx);
++		icache.init(ctx);
++		ocache.init(ctx);
++	}
+ 	verify(!ctx->CpuRunning);
+ 
+ 	if (hard)
+-- 
+2.54.0 (Apple Git-157)
+

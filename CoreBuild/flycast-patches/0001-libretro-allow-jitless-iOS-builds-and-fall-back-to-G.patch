@@ -1,0 +1,38 @@
+From 9601f4821f4b79736af1a88ed59cd358b08096cc Mon Sep 17 00:00:00 2001
+From: RetroGo <noreply@retrogo.invalid>
+Date: Sun, 4 Oct 2026 23:39:54 +0800
+Subject: [PATCH 1/2] libretro: allow jitless iOS builds and fall back to GLES
+ when the preferred API is unavailable
+
+---
+ shell/libretro/libretro.cpp | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/shell/libretro/libretro.cpp b/shell/libretro/libretro.cpp
+index a4444c9..36aff9a 100644
+--- a/shell/libretro/libretro.cpp
++++ b/shell/libretro/libretro.cpp
+@@ -2205,7 +2205,7 @@ static bool set_dx11_hw_render()
+ // Loading/unloading games
+ bool retro_load_game(const struct retro_game_info *game)
+ {
+-#if defined(IOS)
++#if defined(IOS) && FEAT_SHREC == DYNAREC_JIT
+ 	bool can_jit;
+ 	if (environ_cb(RETRO_ENVIRONMENT_GET_JIT_CAPABLE, &can_jit) && !can_jit) {
+ 		// jit is required both for performance and for audio. trying to run
+@@ -2383,6 +2383,11 @@ bool retro_load_game(const struct retro_game_info *game)
+ #endif
+ 	}
+ 
++#if defined(HAVE_OPENGLES)
++	// The frontend may prefer an API this build lacks (e.g. Vulkan on iOS); fall back to GLES.
++	if (!foundRenderApi)
++		foundRenderApi = set_opengl_hw_render(RETRO_HW_CONTEXT_OPENGLES3);
++#endif
+ 	if (!foundRenderApi)
+ 		return false;
+ 
+-- 
+2.54.0 (Apple Git-157)
+

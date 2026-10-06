@@ -1,0 +1,79 @@
+diff --git a/source/libretro-interface.c b/source/libretro-interface.c
+index 55c1be7..fb236f3 100644
+--- a/source/libretro-interface.c
++++ b/source/libretro-interface.c
+@@ -24,7 +24,7 @@
+ #define FRAMEBUFFER_WIDTH VDP_MAX_SCANLINE_WIDTH
+ #define FRAMEBUFFER_HEIGHT VDP_MAX_SCANLINES
+ 
+-#define CARTRIDGE_FILE_EXTENSIONS "bin|md|gen"
++#define CARTRIDGE_FILE_EXTENSIONS "bin|md|gen|smd"
+ #define CD_FILE_EXTENSIONS "cue|iso|chd"
+ 
+ /* Mixer data. */
+@@ -144,14 +144,49 @@ static void Geometry_SetTallInterlaceMode2(const cc_bool tall_interlace_mode_2)
+ /* File IO */
+ /***********/
+ 
+-static bool CreateROMBuffer(const unsigned char* const input_buffer, const size_t input_buffer_length, cc_u16l** const output_buffer, size_t* const output_buffer_length)
++/* Super Magic Drive dumps: a 512-byte header (bytes 8/9 are 0xAA 0xBB), then
++   16KiB blocks holding the odd bytes in the first half and the even bytes in
++   the second half. Many .smd files are plain binaries, so check the layout. */
++static cc_bool IsInterleavedSMD(const unsigned char* const buffer, const size_t length)
+ {
++	return length > 0x200 && (length - 0x200) % 0x4000 == 0 && buffer[8] == 0xAA && buffer[9] == 0xBB;
++}
++
++static bool CreateROMBuffer(const unsigned char* input_buffer, size_t input_buffer_length, cc_u16l** const output_buffer, size_t* const output_buffer_length)
++{
++	unsigned char *deinterleaved = NULL;
++
++	if (IsInterleavedSMD(input_buffer, input_buffer_length))
++	{
++		size_t block, i;
++
++		input_buffer += 0x200;
++		input_buffer_length -= 0x200;
++		deinterleaved = (unsigned char*)malloc(input_buffer_length);
++
++		if (deinterleaved == NULL)
++			return false;
++
++		for (block = 0; block < input_buffer_length; block += 0x4000)
++		{
++			for (i = 0; i < 0x2000; ++i)
++			{
++				deinterleaved[block + i * 2 + 0] = input_buffer[block + 0x2000 + i];
++				deinterleaved[block + i * 2 + 1] = input_buffer[block + i];
++			}
++		}
++
++		input_buffer = deinterleaved;
++	}
++
++	{
+ 	const size_t buffer_length = input_buffer_length / 2;
+ 
+ 	cc_u16l* const buffer = (cc_u16l*)malloc(buffer_length * sizeof(cc_u16l));
+ 
+ 	if (buffer == NULL)
+ 	{
++		free(deinterleaved);
+ 		return false;
+ 	}
+ 	else
+@@ -161,11 +196,14 @@ static bool CreateROMBuffer(const unsigned char* const input_buffer, const size_
+ 		for (i = 0; i < buffer_length; ++i)
+ 			buffer[i] = input_buffer[i * 2 + 0] << 8 | input_buffer[i * 2 + 1] << 0;
+ 
++		free(deinterleaved);
++
+ 		*output_buffer = buffer;
+ 		*output_buffer_length = buffer_length;
+ 
+ 		return true;
+ 	}
++	}
+ }
+ 
+ /************************/

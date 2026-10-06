@@ -1,0 +1,17 @@
+diff --git a/src/osd/libretro/retromain.cpp b/src/osd/libretro/retromain.cpp
+index 042ac9004c6..4b114a617d5 100644
+--- a/src/osd/libretro/retromain.cpp
++++ b/src/osd/libretro/retromain.cpp
+@@ -246,7 +246,11 @@ int mmain(int argc, char *argv[])
+ #endif
+ 
+ 	{
+-		static retro_options retro_global_options;
++		// Use a fresh options object per load. A function-local static kept slot options (e.g. the NeoGeo
++		// "cslot1" cart type) from the previous game, because emu_options only applies a driver's default
++		// slot option when that slot option does not exist yet. The old object is intentionally leaked:
++		// the previous osd interface and machine manager may still reference it.
++		retro_options &retro_global_options = *new retro_options();
+ 		retro_global_osd = new retro_osd_interface(retro_global_options);
+ 
+ 		retro_output retrooutput;

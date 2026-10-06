@@ -1,0 +1,42 @@
+diff --git a/source/libretro-interface.c b/source/libretro-interface.c
+index fb236f3..34e13c5 100644
+--- a/source/libretro-interface.c
++++ b/source/libretro-interface.c
+@@ -681,6 +681,12 @@ static void ClownCDLog(void* const user_data, const char* const message)
+ 	libretro_callbacks.log(RETRO_LOG_WARN, "ClownCD: %s", message);
+ }
+ 
++/* Some games trip emulator warnings (such as reads past the end of the
++   cartridge) hundreds of thousands of times while booting. Logging each one
++   stalls the frontend, so only the first few per loaded game are reported. */
++#define MAX_EMULATOR_WARNINGS 100
++static unsigned int emulator_warning_count;
++
+ static void ClownMDEmuLog(void* const user_data, const char* const format, va_list arg)
+ {
+ 	/* libretro lacks an error log callback that takes a va_list,
+@@ -689,6 +695,15 @@ static void ClownMDEmuLog(void* const user_data, const char* const format, va_li
+ 
+ 	(void)user_data;
+ 
++	if (emulator_warning_count > MAX_EMULATOR_WARNINGS)
++		return;
++
++	if (emulator_warning_count++ == MAX_EMULATOR_WARNINGS)
++	{
++		libretro_callbacks.log(RETRO_LOG_WARN, "Further emulator warnings for this game are suppressed.\n");
++		return;
++	}
++
+ 	/* TODO: This unbounded printf is so nasty... */
+ 	vsprintf(message_buffer, format, arg);
+ 	strcat(message_buffer, "\n");
+@@ -1242,6 +1257,8 @@ bool retro_load_game_special(const unsigned int type, const struct retro_game_in
+ 	if (type != 0)
+ 		return false;
+ 
++	emulator_warning_count = 0;
++
+ 	switch (num)
+ 	{
+ 		case 1:

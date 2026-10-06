@@ -1,0 +1,32 @@
+From 7f41af230d467f1e8ff1542f040a356cdbf6ad96 Mon Sep 17 00:00:00 2001
+From: RetroGo <noreply@retrogo.invalid>
+Date: Mon, 5 Oct 2026 23:05:51 +0800
+Subject: [PATCH] naomi: restore the default coin setting when free play is
+ turned off
+
+---
+ core/hw/naomi/naomi_flashrom.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/core/hw/naomi/naomi_flashrom.cpp b/core/hw/naomi/naomi_flashrom.cpp
+index e41336b..c6e43f9 100644
+--- a/core/hw/naomi/naomi_flashrom.cpp
++++ b/core/hw/naomi/naomi_flashrom.cpp
+@@ -266,6 +266,14 @@ void configure_naomi_eeprom(const RomBootID *bootId)
+ 	// Coin settings
+ 	if (config::ForceFreePlay && !settings.naomi.slave)
+ 		write_naomi_eeprom(9, 27 - 1);
++	else if (!settings.naomi.slave && read_naomi_eeprom(9) == 27 - 1)
++	{
++		// RetroGo: free play persists in the saved EEPROM, so turning the option
++		// off would change nothing. Restore the game's default coin setting.
++		u8 coinSetting = bootId->coinFlag[0][0] == 1 ? bootId->coinFlag[0][3] - 1 : 0;
++		if (coinSetting != 27 - 1)
++			write_naomi_eeprom(9, coinSetting);
++	}
+ }
+ 
+ static u32 aw_crc32(const void *data, size_t len)
+-- 
+2.54.0 (Apple Git-157)
+

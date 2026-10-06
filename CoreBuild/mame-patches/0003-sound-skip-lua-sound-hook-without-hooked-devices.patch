@@ -1,0 +1,15 @@
+diff --git a/src/emu/sound.cpp b/src/emu/sound.cpp
+index 5a560da4db8..10bc1fcd861 100644
+--- a/src/emu/sound.cpp
++++ b/src/emu/sound.cpp
+@@ -2741,7 +2741,9 @@ void sound_manager::streams_update()
+ 				sound_data.emplace(sound.device().tag(), std::move(buffers));
+ 			}
+ 
+-		emulator_info::sound_hook(sound_data);
++		// Only enter Lua when a plugin actually hooked a device; otherwise this allocates Lua tables every update.
++		if(!sound_data.empty())
++			emulator_info::sound_hook(sound_data);
+ 	}
+ 
+ 	for(sound_stream *stream : m_ordered_streams)

@@ -1,0 +1,39 @@
+From a33a2d2a16f3c2fa7f0a2c60214a78397e5d4188 Mon Sep 17 00:00:00 2001
+From: RetroGo <noreply@retrogo.invalid>
+Date: Mon, 5 Oct 2026 21:51:16 +0800
+Subject: [PATCH] libretro: log instead of showing the MAME romset warning for
+ .lst/.bin/.dat arcade dumps
+
+---
+ shell/libretro/libretro.cpp | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/shell/libretro/libretro.cpp b/shell/libretro/libretro.cpp
+index 36aff9a..79fa950 100644
+--- a/shell/libretro/libretro.cpp
++++ b/shell/libretro/libretro.cpp
+@@ -2277,17 +2277,13 @@ bool retro_load_game(const struct retro_game_info *game)
+ 					|| !strcmp(".7z", ext) || !strcmp(".7Z", ext))
+ 			{
+ 				settings.platform.system = naomi_cart_GetPlatform(game->path);
+-				// Users should use the superior format instead, let's warn them
++				// RetroGo: log instead of an on-screen message; "MAME romsets"
++				// reads as the MAME core, which cannot run these dumps at all.
+ 				if (!strcmp(".lst", ext)
+ 						|| !strcmp(".bin", ext) || !strcmp(".BIN", ext)
+ 						|| !strcmp(".dat", ext) || !strcmp(".DAT", ext))
+-				{
+-					struct retro_message msg;
+-					// Sadly, this callback is only able to display short messages, so we can't give proper explanations...
+-					msg.msg = "Please upgrade to MAME romsets or expect issues";
+-					msg.frames = 1200;
+-					environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
+-				}
++					if (log_cb)
++						log_cb(RETRO_LOG_WARN, "Non-MAME arcade dump %s; MAME-format romsets are preferred\n", game->path);
+ 			}
+ 			// If m3u playlist found load the paths into array
+ 			else if (!strcmp(".m3u", ext) || !strcmp(".M3U", ext))
+-- 
+2.54.0 (Apple Git-157)
+
