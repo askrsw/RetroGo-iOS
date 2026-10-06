@@ -26,6 +26,7 @@
 import SQLite
 import Foundation
 import RACoordinator
+import os
 
 /// Cheats of one MAME game run, executed by MAME's own cheat engine.
 ///
@@ -208,17 +209,17 @@ final class MameCheatSession {
     private func attach(_ engine: RAMameCheatEngine) {
         let running = engine.entries()
         if running.count != entries.count {
-            NSLog("[MameCheat] Engine has %d entries, %@.xml has %d", running.count, fileName ?? "-", entries.count)
+            RetroGoLogger.mame.notice("Cheat engine has \(running.count) entries, \(self.fileName ?? "-", privacy: .public).xml has \(self.entries.count)")
         }
         for index in entries.indices {
             let desc = index < running.count ? running[index].desc.trimmingCharacters(in: .whitespaces) : nil
             entries[index].available = desc == entries[index].definition.desc
             if !entries[index].available {
-                NSLog("[MameCheat] Entry %d (%@) does not match the engine; disabled", index, entries[index].definition.desc)
+                RetroGoLogger.mame.notice("Cheat entry \(index) (\(self.entries[index].definition.desc, privacy: .public)) does not match the engine; disabled")
             }
         }
         self.engine = engine
-        NSLog("[MameCheat] Loaded %d cheats of %@.xml for %@", running.count, fileName ?? "-", setName ?? "-")
+        RetroGoLogger.mame.info("Loaded \(running.count) cheats of \(self.fileName ?? "-", privacy: .public).xml for \(self.setName ?? "-", privacy: .public)")
         for entry in entries where entry.enabled && entry.available {
             push(entry)
         }
@@ -254,7 +255,7 @@ final class MameCheatSession {
             push(entries[i])
         }
         restorableIndices = Array(Set(restorableIndices).union(active)).sorted()
-        NSLog("[MameCheat] Reset; %d cheats turned off until restored", active.count)
+        RetroGoLogger.mame.info("Cheat reset; \(active.count) cheats turned off until restored")
         NotificationCenter.default.post(name: .gameCheatStateChanged, object: nil)
     }
 
@@ -277,7 +278,7 @@ final class MameCheatSession {
             push(entries[i])
         }
         if !suspendedIndices.isEmpty {
-            NSLog("[MameCheat] Netplay started; %d cheats turned off for the session", suspendedIndices.count)
+            RetroGoLogger.mame.info("Netplay started; \(self.suspendedIndices.count) cheats turned off for the session")
         }
         NotificationCenter.default.post(name: .gameCheatStateChanged, object: nil)
     }
@@ -351,7 +352,7 @@ final class MameCheatSession {
         default:
             return false
         }
-        NSLog("[MameCheat] Activated %d (%@)%@", index, entries[i].definition.desc, engine == nil ? " before the engine was ready" : "")
+        RetroGoLogger.mame.info("Activated cheat \(index) (\(self.entries[i].definition.desc, privacy: .public))\(self.engine == nil ? " before the engine was ready" : "", privacy: .public)")
         return engine != nil
     }
 
@@ -401,7 +402,7 @@ final class MameCheatSession {
             }
             return states
         } catch {
-            NSLog("[MameCheat] Failed to load states: %@", "\(error)")
+            RetroGoLogger.mame.error("Failed to load cheat states: \(String(describing: error))")
             return [:]
         }
     }
@@ -420,7 +421,7 @@ final class MameCheatSession {
             ))
             return true
         } catch {
-            NSLog("[MameCheat] Failed to save state: %@", "\(error)")
+            RetroGoLogger.mame.error("Failed to save cheat state: \(String(describing: error))")
             return false
         }
     }

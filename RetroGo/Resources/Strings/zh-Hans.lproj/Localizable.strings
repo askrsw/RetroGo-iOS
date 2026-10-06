@@ -233,6 +233,7 @@
 "homepage_assign_core_success" = "指定核心成功。";
 "homepage_assign_core_failed" = "指定核心成功。";
 "homepage_import_for_folder" = "导入...";
+"homepage_save_folder_to" = "保存到...";
 "homepage_new_folder" = "新建目录";
 "homepage_new_folder_success" = "新建目录成功。";
 "homepage_new_folder_failed" = "新建目录失败！";
@@ -709,7 +710,7 @@
 "mame_cheat_library_not_imported" = "未导入";
 "mame_cheat_library_source_file" = "来源文件";
 "mame_cheat_library_imported_at" = "导入时间";
-"mame_cheat_library_footer" = "街机金手指来自 %1$@。\n1. 前往 %2$@ 下载最新的金手指合集；\n2. 下载后无需解压；\n3. 点“导入金手指合集”，选择下载的 zip（也可以选择其中的 cheat.7z）。\n只会保留本 MAME 核心能运行的游戏的金手指。";
+"mame_cheat_library_footer" = "街机金手指来自 %1$@。\n1. 前往 %2$@ 下载最新的金手指合集；\n2. 下载后无需解压；\n3. 点“导入金手指合集”，选择下载的 zip（也可以选择其中的 cheat.7z）。\n只会保留本 MAME 核心能运行的游戏的金手指。\n在 RetroGo 中使用金手指遇到问题，请先通过 RetroGo 反馈。";
 "mame_cheat_import_action" = "导入金手指合集";
 "mame_cheat_reimport_action" = "导入更新的合集";
 "mame_cheat_download_action" = "前往 mamecheat.co.uk 下载";

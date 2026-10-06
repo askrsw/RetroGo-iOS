@@ -26,6 +26,7 @@
 import SQLite
 import SQLite3
 import Foundation
+import os
 
 enum MameRomSetPersistenceError: LocalizedError {
     case databaseUnavailable
@@ -242,7 +243,7 @@ extension MameRomSetPersistence {
                 DELETE FROM meta WHERE key LIKE 'catalog\\_%' ESCAPE '\\';
                 """)
 
-            NSLog("[MameCatalog] Cleared old catalog: %.2fs", CFAbsoluteTimeGetCurrent() - stageStart)
+            RetroGoLogger.mame.debug("Cleared old catalog: \(CFAbsoluteTimeGetCurrent() - stageStart, format: .fixed(precision: 2))s")
 
             let writer = try MameCatalogWriter(db: db)
             build = try fill(writer)
@@ -250,7 +251,7 @@ extension MameRomSetPersistence {
             stageStart = CFAbsoluteTimeGetCurrent()
             try writer.flushDeviceRefs()
             summary = writer.summary
-            NSLog("[MameCatalog] Device refs written: %.2fs", CFAbsoluteTimeGetCurrent() - stageStart)
+            RetroGoLogger.mame.debug("Catalog device refs written: \(CFAbsoluteTimeGetCurrent() - stageStart, format: .fixed(precision: 2))s")
 
             try db.run("INSERT INTO meta (key, value) VALUES (?, ?)", MetaKey.catalogCoreFingerprint.rawValue, coreFingerprint)
             if let build {
@@ -258,16 +259,16 @@ extension MameRomSetPersistence {
             }
             commitStart = CFAbsoluteTimeGetCurrent()
         }
-        NSLog("[MameCatalog] Committed: %.2fs (listxml build %@)", CFAbsoluteTimeGetCurrent() - commitStart, build ?? "unknown")
+        RetroGoLogger.mame.info("Catalog committed: \(CFAbsoluteTimeGetCurrent() - commitStart, format: .fixed(precision: 2))s (listxml build \(build ?? "unknown", privacy: .public))")
 
         // The rebuild leaves a WAL as large as the database itself; fold it back and
         // truncate it. Failure (e.g. a concurrent reader) only costs disk space.
         stageStart = CFAbsoluteTimeGetCurrent()
         do {
             try db.execute("PRAGMA wal_checkpoint(TRUNCATE);")
-            NSLog("[MameCatalog] WAL checkpoint: %.2fs", CFAbsoluteTimeGetCurrent() - stageStart)
+            RetroGoLogger.mame.debug("Catalog WAL checkpoint: \(CFAbsoluteTimeGetCurrent() - stageStart, format: .fixed(precision: 2))s")
         } catch {
-            NSLog("[MameCatalog] WAL checkpoint failed: %@", "\(error)")
+            RetroGoLogger.mame.error("Catalog WAL checkpoint failed: \(String(describing: error))")
         }
         return summary
     }
@@ -278,7 +279,7 @@ extension MameRomSetPersistence {
         do {
             return try db.scalar("SELECT EXISTS (SELECT 1 FROM machine)") as? Int64 == 1
         } catch {
-            NSLog("[MameRomSet] Failed to check catalog: %@", "\(error)")
+            RetroGoLogger.mame.error("Failed to check catalog: \(String(describing: error))")
             return false
         }
     }

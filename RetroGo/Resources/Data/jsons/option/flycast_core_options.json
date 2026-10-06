@@ -1,0 +1,2263 @@
+{
+  "coreId": "flycast",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Console region and language, BIOS, sound DSP and arcade cabinet settings.",
+        "zh-Hans": "主机地区与语言、BIOS、音频 DSP 以及街机机台设置。"
+      },
+      "id": "system",
+      "options": [
+        {
+          "categoryId": "system",
+          "defaultValue": "USA",
+          "description": {
+            "en": "The console region. Games check it at boot, so a game from another region may refuse to start or show a different version. Default follows the game.",
+            "zh-Hans": "主机的地区。游戏启动时会检查地区，其他地区的游戏可能无法启动或显示不同的版本。默认会跟随游戏。"
+          },
+          "key": "reicast_region",
+          "restartRequired": true,
+          "title": {
+            "en": "Region",
+            "zh-Hans": "区域"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Default": {
+              "en": "Default (Game)",
+              "zh-Hans": "默认（跟随游戏）"
+            },
+            "Europe": {
+              "en": "Europe",
+              "zh-Hans": "欧洲"
+            },
+            "Japan": {
+              "en": "Japan",
+              "zh-Hans": "日本"
+            },
+            "USA": {
+              "en": "USA",
+              "zh-Hans": "美国"
+            }
+          },
+          "values": [
+            "Japan",
+            "USA",
+            "Europe",
+            "Default"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "English",
+          "description": {
+            "en": "The language of the Dreamcast BIOS and of games that include several languages. The BIOS has no Chinese.",
+            "zh-Hans": "Dreamcast BIOS 以及内含多种语言的游戏所使用的语言。BIOS 不支持中文。"
+          },
+          "key": "reicast_language",
+          "restartRequired": true,
+          "title": {
+            "en": "Language",
+            "zh-Hans": "语言"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Default": {
+              "en": "Default",
+              "zh-Hans": "默认"
+            },
+            "English": {
+              "en": "English",
+              "zh-Hans": "英语"
+            },
+            "Japanese": {
+              "en": "Japanese",
+              "zh-Hans": "日语"
+            }
+          },
+          "values": [
+            "Japanese",
+            "English",
+            "Default"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Boot with Flycast's built-in replacement BIOS even when dc_boot.bin is present. Without a BIOS file it is used anyway. Some games are less compatible with it.",
+            "zh-Hans": "即使已添加 dc_boot.bin，也用 Flycast 内置的替代 BIOS 启动。没有 BIOS 文件时会自动使用它。部分游戏在替代 BIOS 下兼容性较差。"
+          },
+          "key": "reicast_hle_bios",
+          "restartRequired": true,
+          "title": {
+            "en": "HLE BIOS",
+            "zh-Hans": "HLE BIOS"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Emulate the sound DSP used for effects such as reverb. Sound is more accurate but the CPU load is higher.",
+            "zh-Hans": "模拟用于混响等音效的音频 DSP。声音更准确，但 CPU 负担更高。"
+          },
+          "key": "reicast_enable_dsp",
+          "restartRequired": true,
+          "title": {
+            "en": "Enable DSP",
+            "zh-Hans": "启用 DSP"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Arcade games only. Enables the cabinet's TEST and SERVICE buttons, used to open the operator menu. They are on L3 and R3, so a physical controller is needed.",
+            "zh-Hans": "仅街机游戏有效。启用机台的 TEST 和 SERVICE 按钮，用来进入机台设置菜单。这两个键对应 L3、R3，需要使用实体手柄。"
+          },
+          "key": "reicast_allow_service_buttons",
+          "restartRequired": false,
+          "title": {
+            "en": "Allow Arcade Service Buttons",
+            "zh-Hans": "允许街机服务按钮"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "NAOMI games only. Changes the game's coin settings to free play, so START begins a game without inserting coins. Turning it off restores the game's default coin setting. Takes effect when the game is opened again; Reset is not enough.",
+            "zh-Hans": "仅 NAOMI 游戏有效。把游戏的投币设置改为免费游玩，按 START 即可开始，无需投币。关闭后会恢复游戏默认的投币设置。需要重新打开游戏才会生效，只按重置不行。"
+          },
+          "key": "reicast_force_freeplay",
+          "restartRequired": true,
+          "title": {
+            "en": "Set NAOMI Games to Free Play",
+            "zh-Hans": "NAOMI 游戏免投币"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "0",
+          "description": {
+            "en": "Arcade games only. Stops accepting coins once this many credits have been inserted.",
+            "zh-Hans": "仅街机游戏有效。投币次数达到上限后不再接受投币。"
+          },
+          "key": "reicast_coin_limit",
+          "restartRequired": false,
+          "title": {
+            "en": "Coin Limit",
+            "zh-Hans": "投币上限"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ]
+        }
+      ],
+      "title": {
+        "en": "System",
+        "zh-Hans": "系统"
+      }
+    },
+    {
+      "description": {
+        "en": "Rendering resolution, video output and graphics accuracy.",
+        "zh-Hans": "渲染分辨率、视频输出与画面精度。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "640x480",
+          "description": {
+            "en": "The resolution 3D graphics are rendered at. Higher values look sharper but increase GPU load and battery use.",
+            "zh-Hans": "3D 画面的渲染分辨率。越高越清晰，但 GPU 负担和耗电也越高。"
+          },
+          "key": "reicast_internal_resolution",
+          "restartRequired": true,
+          "title": {
+            "en": "Internal Resolution",
+            "zh-Hans": "内部分辨率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1280x960": {
+              "en": "1280x960 (x2)",
+              "zh-Hans": "1280x960（x2）"
+            },
+            "1440x1080": {
+              "en": "1440x1080 (x2.25)",
+              "zh-Hans": "1440x1080（x2.25）"
+            },
+            "1920x1440": {
+              "en": "1920x1440 (x3)",
+              "zh-Hans": "1920x1440（x3）"
+            },
+            "2560x1920": {
+              "en": "2560x1920 (x4)",
+              "zh-Hans": "2560x1920（x4）"
+            },
+            "2880x2160": {
+              "en": "2880x2160 (x4.5)",
+              "zh-Hans": "2880x2160（x4.5）"
+            },
+            "320x240": {
+              "en": "320x240 (Half)",
+              "zh-Hans": "320x240（一半）"
+            },
+            "640x480": {
+              "en": "640x480 (Native)",
+              "zh-Hans": "640x480（原生）"
+            },
+            "960x720": {
+              "en": "960x720 (x1.5)",
+              "zh-Hans": "960x720（x1.5）"
+            }
+          },
+          "values": [
+            "320x240",
+            "640x480",
+            "960x720",
+            "1280x960",
+            "1440x1080",
+            "1920x1440",
+            "2560x1920",
+            "2880x2160"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "TV (Composite)",
+          "description": {
+            "en": "The video cable connected to the console. TV (Composite) works with every game; VGA is sharper but a few games do not support it.",
+            "zh-Hans": "主机连接的视频线。电视（复合）支持所有游戏；VGA 更清晰，但少数游戏不支持。"
+          },
+          "key": "reicast_cable_type",
+          "restartRequired": true,
+          "title": {
+            "en": "Cable Type",
+            "zh-Hans": "线缆类型"
+          },
+          "type": "select",
+          "valueLabels": {
+            "TV (Composite)": {
+              "en": "TV (Composite)",
+              "zh-Hans": "电视（复合）"
+            },
+            "TV (RGB)": {
+              "en": "TV (RGB)",
+              "zh-Hans": "电视 (RGB)"
+            },
+            "VGA": {
+              "en": "VGA",
+              "zh-Hans": "VGA"
+            }
+          },
+          "values": [
+            "VGA",
+            "TV (RGB)",
+            "TV (Composite)"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "NTSC",
+          "description": {
+            "en": "The TV standard of the console. PAL runs at 50 Hz. Default follows the game.",
+            "zh-Hans": "主机的电视制式。PAL 为 50Hz。默认会跟随游戏。"
+          },
+          "key": "reicast_broadcast",
+          "restartRequired": true,
+          "title": {
+            "en": "Broadcast Standard",
+            "zh-Hans": "广播制式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Default": {
+              "en": "Default (Game)",
+              "zh-Hans": "默认（跟随游戏）"
+            },
+            "NTSC": {
+              "en": "NTSC",
+              "zh-Hans": "NTSC"
+            },
+            "PAL": {
+              "en": "PAL (World)",
+              "zh-Hans": "PAL（全球）"
+            },
+            "PAL_M": {
+              "en": "PAL-M (Brazil)",
+              "zh-Hans": "PAL-M（巴西）"
+            },
+            "PAL_N": {
+              "en": "PAL-N (Argentina, Paraguay, Uruguay)",
+              "zh-Hans": "PAL-N（阿根廷，巴拉圭，乌拉圭）"
+            }
+          },
+          "values": [
+            "NTSC",
+            "PAL",
+            "PAL_N",
+            "PAL_M",
+            "Default"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "horizontal",
+          "description": {
+            "en": "Rotate the picture for vertical games, such as arcade shooters made for a vertical monitor.",
+            "zh-Hans": "为竖屏游戏旋转画面，例如为竖向显示器设计的街机射击游戏。"
+          },
+          "key": "reicast_screen_rotation",
+          "restartRequired": false,
+          "title": {
+            "en": "Screen Orientation",
+            "zh-Hans": "屏幕方向"
+          },
+          "type": "select",
+          "valueLabels": {
+            "horizontal": {
+              "en": "Horizontal",
+              "zh-Hans": "水平"
+            },
+            "vertical": {
+              "en": "Vertical",
+              "zh-Hans": "垂直"
+            }
+          },
+          "values": [
+            "horizontal",
+            "vertical"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "per-triangle (normal)",
+          "description": {
+            "en": "How translucent polygons are sorted before drawing. Per-Strip is faster but some transparent effects may be drawn in the wrong order.",
+            "zh-Hans": "绘制前对半透明多边形的排序方式。按条带更快，但部分透明效果的前后顺序可能出错。"
+          },
+          "key": "reicast_alpha_sorting",
+          "restartRequired": true,
+          "title": {
+            "en": "Alpha Sorting",
+            "zh-Hans": "半透明排序"
+          },
+          "type": "select",
+          "valueLabels": {
+            "per-strip (fast, least accurate)": {
+              "en": "Per-Strip (fast, least accurate)",
+              "zh-Hans": "按条带（快速，最不精确）"
+            },
+            "per-triangle (normal)": {
+              "en": "Per-Triangle (normal)",
+              "zh-Hans": "按三角形（正常）"
+            }
+          },
+          "values": [
+            "per-strip (fast, least accurate)",
+            "per-triangle (normal)"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enable full framebuffer emulation in VRAM. This is useful for games that directly read or write the framebuffer in VRAM. When enabled, Internal Resolution is forced to 640x480 and performance may be severely impacted.",
+            "zh-Hans": "在 VRAM 中启用完整的帧缓冲区模拟。这对于直接读取或写入 VRAM 帧缓冲区的游戏很有用。启用后，内部分辨率将被强制设为 640x480，且性能可能会受到严重影响。"
+          },
+          "key": "reicast_emulate_framebuffer",
+          "restartRequired": true,
+          "title": {
+            "en": "Full Framebuffer Emulation",
+            "zh-Hans": "完整帧缓冲区模拟"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Copy rendered textures back to video memory. Only needed by games that read them back; it disables upscaling of those textures and costs performance.",
+            "zh-Hans": "把渲染好的纹理复制回显存。只有需要回读这些纹理的游戏才用得到；开启后这些纹理不会被放大，并且会降低性能。"
+          },
+          "key": "reicast_enable_rttb",
+          "restartRequired": true,
+          "title": {
+            "en": "Enable RTT (Render To Texture) Buffer",
+            "zh-Hans": "启用 RTT（渲染到纹理）缓冲区"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Distant textures use smaller copies of themselves, which reduces shimmering.",
+            "zh-Hans": "远处的纹理改用缩小的版本，可以减少闪烁。"
+          },
+          "key": "reicast_mipmapping",
+          "restartRequired": true,
+          "title": {
+            "en": "Mipmapping",
+            "zh-Hans": "多级纹理（Mipmapping）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Draw the fog games use to fade out distant scenery. Turn it off only to see through it.",
+            "zh-Hans": "绘制游戏用来淡化远景的雾气。只有想看清远处时才需要关闭。"
+          },
+          "key": "reicast_fog",
+          "restartRequired": false,
+          "title": {
+            "en": "Fog Effects",
+            "zh-Hans": "雾效"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "A Dreamcast GPU feature most games use to draw shadows. Keep it on; the performance cost is negligible.",
+            "zh-Hans": "Dreamcast 显示芯片的一项功能，多数游戏用它绘制阴影。建议保持开启，对性能几乎没有影响。"
+          },
+          "key": "reicast_volume_modifier_enable",
+          "restartRequired": false,
+          "title": {
+            "en": "Modifier Volumes",
+            "zh-Hans": "阴影体积（Modifier Volume）"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "4",
+          "description": {
+            "en": "Sharpen textures on surfaces seen at an angle, such as roads and floors. Higher values put more load on the GPU.",
+            "zh-Hans": "让倾斜表面（如道路、地面）上的纹理更清晰。数值越高 GPU 负担越重。"
+          },
+          "key": "reicast_anisotropic_filtering",
+          "restartRequired": true,
+          "title": {
+            "en": "Anisotropic Filtering",
+            "zh-Hans": "各向异性过滤"
+          },
+          "type": "select",
+          "valueLabels": {
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "off": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "off",
+            "2",
+            "4",
+            "8",
+            "16"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "0",
+          "description": {
+            "en": "Force one filtering mode on every texture: Nearest-Neighbor looks crisp, Linear looks smooth. Anything other than Default may cause rendering issues.",
+            "zh-Hans": "强制所有纹理使用同一种过滤方式：最近邻更锐利，线性更平滑。选默认以外的值可能导致画面问题。"
+          },
+          "key": "reicast_texture_filtering",
+          "restartRequired": true,
+          "title": {
+            "en": "Texture Filtering",
+            "zh-Hans": "纹理过滤"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Default",
+              "zh-Hans": "默认"
+            },
+            "1": {
+              "en": "Force Nearest-Neighbor",
+              "zh-Hans": "强制最近邻"
+            },
+            "2": {
+              "en": "Force Linear",
+              "zh-Hans": "强制线性"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Wait before showing a new frame. Helps with flickering screens or glitchy videos in some games, at a small performance cost.",
+            "zh-Hans": "延迟显示新的一帧。可以改善部分游戏的闪屏或视频花屏，但会略微降低性能。"
+          },
+          "key": "reicast_delay_frame_swapping",
+          "restartRequired": false,
+          "title": {
+            "en": "Delay Frame Swapping",
+            "zh-Hans": "延迟帧交换"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Post-process the rendered image to simulate effects specific to the PowerVR2 GPU and analog video signals.",
+            "zh-Hans": "对渲染图像进行后处理，以模拟 PowerVR2 GPU 和模拟视频信号特有的效果。"
+          },
+          "key": "reicast_pvr2_filtering",
+          "restartRequired": false,
+          "title": {
+            "en": "PowerVR2 Post-processing Filter",
+            "zh-Hans": "PowerVR2 画面后处理"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Use the original hardware's depth calculation. Turn it on if textures flicker or overlap incorrectly in a game.",
+            "zh-Hans": "按原机的方式计算深度。如果某款游戏出现纹理闪烁或前后遮挡错误，可以尝试开启。"
+          },
+          "key": "reicast_native_depth_interpolation",
+          "restartRequired": true,
+          "title": {
+            "en": "Native Depth Interpolation",
+            "zh-Hans": "原生深度插值"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Prevents texture edges from bleeding when rendering above native resolution. Turn it off if pixels warp in 2D games at higher resolutions (Marvel vs. Capcom 2, Capcom vs. SNK, The King of Fighters).",
+            "zh-Hans": "防止在高于原生分辨率时纹理边缘渗色。如果 2D 游戏在高分辨率下出现像素扭曲（如《漫画英雄 VS 卡普空 2》《卡普空 VS SNK》《拳皇》），可以关闭。"
+          },
+          "key": "reicast_fix_upscale_bleeding_edge",
+          "restartRequired": true,
+          "title": {
+            "en": "Fix Upscale Bleeding Edge",
+            "zh-Hans": "修复放大后的纹理边缘"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Frame skipping for games that cannot reach full speed.",
+        "zh-Hans": "为无法全速运行的游戏跳过部分画面。"
+      },
+      "id": "performance",
+      "options": [
+        {
+          "categoryId": "performance",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Skip frames automatically when the game slows down. Maximum skips more and keeps the speed better, but the picture is less smooth.",
+            "zh-Hans": "游戏变慢时自动跳过部分画面。最大会跳过更多帧，速度更稳，但画面不够流畅。"
+          },
+          "key": "reicast_auto_skip_frame",
+          "restartRequired": true,
+          "title": {
+            "en": "Auto Skip Frame",
+            "zh-Hans": "自动跳帧"
+          },
+          "type": "select",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "more": {
+              "en": "Maximum",
+              "zh-Hans": "最大"
+            },
+            "some": {
+              "en": "Normal",
+              "zh-Hans": "正常"
+            }
+          },
+          "values": [
+            "disabled",
+            "some",
+            "more"
+          ]
+        },
+        {
+          "categoryId": "performance",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Skip this many frames after each frame shown. Lowers the rendering load at the cost of a choppier picture.",
+            "zh-Hans": "每显示一帧后跳过的帧数。可以降低渲染负担，但画面会变得不连贯。"
+          },
+          "key": "reicast_frame_skipping",
+          "restartRequired": false,
+          "title": {
+            "en": "Frame Skipping",
+            "zh-Hans": "跳帧"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Performance",
+        "zh-Hans": "性能"
+      }
+    },
+    {
+      "description": {
+        "en": "Widescreen, faster disc loading, extra memory and CPU clock. These go beyond the original hardware and may cause glitches.",
+        "zh-Hans": "宽屏、加快光盘读取、扩充内存与 CPU 频率。这些设置超出原机规格，可能导致画面或运行异常。"
+      },
+      "id": "hacks",
+      "options": [
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Apply built-in patches that make supported games render in widescreen. Has no effect on other games.",
+            "zh-Hans": "为支持的游戏应用内置补丁，使其以宽屏渲染。对其他游戏没有效果。"
+          },
+          "key": "reicast_widescreen_cheats",
+          "restartRequired": true,
+          "title": {
+            "en": "Widescreen Patches",
+            "zh-Hans": "宽屏补丁"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Draw scenery outside the original 4:3 frame. Works with most 3D games, but the extra areas may show missing objects or glitches.",
+            "zh-Hans": "绘制原本 4:3 画面以外的场景。多数 3D 游戏可用，但多出来的区域可能缺少物体或出现异常。"
+          },
+          "key": "reicast_widescreen_hack",
+          "restartRequired": true,
+          "title": {
+            "en": "Widescreen Hack",
+            "zh-Hans": "强制宽屏"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Read discs faster than the real drive to shorten loading. Not accurate; a few games may break.",
+            "zh-Hans": "以超过原机光驱的速度读取光盘，缩短读盘时间。不够准确，少数游戏可能出错。"
+          },
+          "key": "reicast_gdrom_fast_loading",
+          "restartRequired": true,
+          "title": {
+            "en": "GD-ROM Fast Loading",
+            "zh-Hans": "GD-ROM 快速读取"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Emulate the 32MB RAM modification for homebrew that uses it. Retail games do not need it and some may not run.",
+            "zh-Hans": "模拟 32MB 内存改装，供使用它的自制软件运行。正式发售的游戏不需要，部分游戏开启后可能无法运行。"
+          },
+          "key": "reicast_dc_32mb_mod",
+          "restartRequired": true,
+          "title": {
+            "en": "Dreamcast 32MB RAM Mod",
+            "zh-Hans": "Dreamcast 32MB 内存扩充"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "hacks",
+          "defaultValue": "200",
+          "description": {
+            "en": "Change the main CPU clock from the original 200 MHz. Overclocking can smooth out games that slow down on the original hardware but raises the CPU load a lot; underclocking lowers it but may slow games down. Use with care.",
+            "zh-Hans": "调整主 CPU 频率（原机为 200 MHz）。超频可以让原机上就会掉帧的游戏更流畅，但 CPU 负担会明显增加；降频可以减轻负担，但游戏可能变慢。请谨慎使用。"
+          },
+          "key": "reicast_sh4clock",
+          "restartRequired": true,
+          "title": {
+            "en": "SH4 CPU Clock",
+            "zh-Hans": "SH4 CPU 频率"
+          },
+          "type": "select",
+          "valueLabels": {
+            "100": {
+              "en": "100 MHz",
+              "zh-Hans": "100 MHz"
+            },
+            "110": {
+              "en": "110 MHz",
+              "zh-Hans": "110 MHz"
+            },
+            "120": {
+              "en": "120 MHz",
+              "zh-Hans": "120 MHz"
+            },
+            "130": {
+              "en": "130 MHz",
+              "zh-Hans": "130 MHz"
+            },
+            "140": {
+              "en": "140 MHz",
+              "zh-Hans": "140 MHz"
+            },
+            "150": {
+              "en": "150 MHz",
+              "zh-Hans": "150 MHz"
+            },
+            "160": {
+              "en": "160 MHz",
+              "zh-Hans": "160 MHz"
+            },
+            "170": {
+              "en": "170 MHz",
+              "zh-Hans": "170 MHz"
+            },
+            "180": {
+              "en": "180 MHz",
+              "zh-Hans": "180 MHz"
+            },
+            "190": {
+              "en": "190 MHz",
+              "zh-Hans": "190 MHz"
+            },
+            "200": {
+              "en": "200 MHz",
+              "zh-Hans": "200 MHz"
+            },
+            "210": {
+              "en": "210 MHz",
+              "zh-Hans": "210 MHz"
+            },
+            "220": {
+              "en": "220 MHz",
+              "zh-Hans": "220 MHz"
+            },
+            "230": {
+              "en": "230 MHz",
+              "zh-Hans": "230 MHz"
+            },
+            "240": {
+              "en": "240 MHz",
+              "zh-Hans": "240 MHz"
+            },
+            "250": {
+              "en": "250 MHz",
+              "zh-Hans": "250 MHz"
+            },
+            "260": {
+              "en": "260 MHz",
+              "zh-Hans": "260 MHz"
+            },
+            "270": {
+              "en": "270 MHz",
+              "zh-Hans": "270 MHz"
+            },
+            "280": {
+              "en": "280 MHz",
+              "zh-Hans": "280 MHz"
+            },
+            "290": {
+              "en": "290 MHz",
+              "zh-Hans": "290 MHz"
+            },
+            "300": {
+              "en": "300 MHz",
+              "zh-Hans": "300 MHz"
+            },
+            "310": {
+              "en": "310 MHz",
+              "zh-Hans": "310 MHz"
+            },
+            "320": {
+              "en": "320 MHz",
+              "zh-Hans": "320 MHz"
+            },
+            "330": {
+              "en": "330 MHz",
+              "zh-Hans": "330 MHz"
+            },
+            "340": {
+              "en": "340 MHz",
+              "zh-Hans": "340 MHz"
+            },
+            "350": {
+              "en": "350 MHz",
+              "zh-Hans": "350 MHz"
+            },
+            "360": {
+              "en": "360 MHz",
+              "zh-Hans": "360 MHz"
+            },
+            "370": {
+              "en": "370 MHz",
+              "zh-Hans": "370 MHz"
+            },
+            "380": {
+              "en": "380 MHz",
+              "zh-Hans": "380 MHz"
+            },
+            "390": {
+              "en": "390 MHz",
+              "zh-Hans": "390 MHz"
+            },
+            "400": {
+              "en": "400 MHz",
+              "zh-Hans": "400 MHz"
+            },
+            "410": {
+              "en": "410 MHz",
+              "zh-Hans": "410 MHz"
+            },
+            "420": {
+              "en": "420 MHz",
+              "zh-Hans": "420 MHz"
+            },
+            "430": {
+              "en": "430 MHz",
+              "zh-Hans": "430 MHz"
+            },
+            "440": {
+              "en": "440 MHz",
+              "zh-Hans": "440 MHz"
+            },
+            "450": {
+              "en": "450 MHz",
+              "zh-Hans": "450 MHz"
+            },
+            "460": {
+              "en": "460 MHz",
+              "zh-Hans": "460 MHz"
+            },
+            "470": {
+              "en": "470 MHz",
+              "zh-Hans": "470 MHz"
+            },
+            "480": {
+              "en": "480 MHz",
+              "zh-Hans": "480 MHz"
+            },
+            "490": {
+              "en": "490 MHz",
+              "zh-Hans": "490 MHz"
+            },
+            "500": {
+              "en": "500 MHz",
+              "zh-Hans": "500 MHz"
+            }
+          },
+          "values": [
+            "100",
+            "110",
+            "120",
+            "130",
+            "140",
+            "150",
+            "160",
+            "170",
+            "180",
+            "190",
+            "200",
+            "210",
+            "220",
+            "230",
+            "240",
+            "250",
+            "260",
+            "270",
+            "280",
+            "290",
+            "300",
+            "310",
+            "320",
+            "330",
+            "340",
+            "350",
+            "360",
+            "370",
+            "380",
+            "390",
+            "400",
+            "410",
+            "420",
+            "430",
+            "440",
+            "450",
+            "460",
+            "470",
+            "480",
+            "490",
+            "500"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Emulation Tweaks",
+        "zh-Hans": "模拟修正"
+      }
+    },
+    {
+      "description": {
+        "en": "Analog stick and trigger response.",
+        "zh-Hans": "摇杆与扳机的响应方式。"
+      },
+      "id": "input",
+      "options": [
+        {
+          "categoryId": "input",
+          "defaultValue": "15%",
+          "description": {
+            "en": "How far a controller's analog stick must move before the game sees it. Applies to physical controllers.",
+            "zh-Hans": "手柄摇杆需要推动多少，游戏才会响应。用于实体手柄。"
+          },
+          "key": "reicast_analog_stick_deadzone",
+          "restartRequired": false,
+          "title": {
+            "en": "Analog Stick Deadzone",
+            "zh-Hans": "模拟摇杆死区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0%": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10%": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "15%": {
+              "en": "15%",
+              "zh-Hans": "15%"
+            },
+            "20%": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "25%": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "30%": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "5%": {
+              "en": "5%",
+              "zh-Hans": "5%"
+            }
+          },
+          "values": [
+            "0%",
+            "5%",
+            "10%",
+            "15%",
+            "20%",
+            "25%",
+            "30%"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "0%",
+          "description": {
+            "en": "How far a controller's trigger must be pressed before the game sees it. Applies to physical controllers.",
+            "zh-Hans": "手柄扳机需要按下多少，游戏才会响应。用于实体手柄。"
+          },
+          "key": "reicast_trigger_deadzone",
+          "restartRequired": false,
+          "title": {
+            "en": "Trigger Deadzone",
+            "zh-Hans": "扳机死区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0%": {
+              "en": "0%",
+              "zh-Hans": "0%"
+            },
+            "10%": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "15%": {
+              "en": "15%",
+              "zh-Hans": "15%"
+            },
+            "20%": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "25%": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "30%": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "5%": {
+              "en": "5%",
+              "zh-Hans": "5%"
+            }
+          },
+          "values": [
+            "0%",
+            "5%",
+            "10%",
+            "15%",
+            "20%",
+            "25%",
+            "30%"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Treat L and R as plain buttons: fully pressed or released, with nothing in between.",
+            "zh-Hans": "把 L、R 扳机当作普通按键：只有按下和松开两种状态，没有中间值。"
+          },
+          "key": "reicast_digital_triggers",
+          "restartRequired": false,
+          "title": {
+            "en": "Digital Triggers",
+            "zh-Hans": "数字扳机"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Input",
+        "zh-Hans": "输入"
+      }
+    },
+    {
+      "description": {
+        "en": "The devices plugged into the two expansion slots of controllers A and B.",
+        "zh-Hans": "插在 A、B 两个手柄扩展插槽中的设备。"
+      },
+      "id": "expansions",
+      "options": [
+        {
+          "categoryId": "expansions",
+          "defaultValue": "VMU",
+          "description": {
+            "en": "The device in the first expansion slot of controller A. Most games save to a VMU here.",
+            "zh-Hans": "A 手柄第一个扩展插槽中的设备。多数游戏会把存档写到这里的 VMU。"
+          },
+          "key": "reicast_device_port1_slot1",
+          "restartRequired": true,
+          "title": {
+            "en": "Device in Expansion Slot A1",
+            "zh-Hans": "A1 扩展插槽设备"
+          },
+          "type": "select",
+          "valueLabels": {
+            "None": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "Purupuru": {
+              "en": "Vibration Pack",
+              "zh-Hans": "震动包"
+            },
+            "VMU": {
+              "en": "VMU",
+              "zh-Hans": "VMU"
+            }
+          },
+          "values": [
+            "VMU",
+            "Purupuru",
+            "None"
+          ]
+        },
+        {
+          "categoryId": "expansions",
+          "defaultValue": "Purupuru",
+          "description": {
+            "en": "The device in the second expansion slot of controller A. The Vibration Pack makes supported games rumble.",
+            "zh-Hans": "A 手柄第二个扩展插槽中的设备。震动包可以让支持的游戏产生震动。"
+          },
+          "key": "reicast_device_port1_slot2",
+          "restartRequired": true,
+          "title": {
+            "en": "Device in Expansion Slot A2",
+            "zh-Hans": "A2 扩展插槽设备"
+          },
+          "type": "select",
+          "valueLabels": {
+            "None": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "Purupuru": {
+              "en": "Vibration Pack",
+              "zh-Hans": "震动包"
+            },
+            "VMU": {
+              "en": "VMU",
+              "zh-Hans": "VMU"
+            }
+          },
+          "values": [
+            "VMU",
+            "Purupuru",
+            "None"
+          ]
+        },
+        {
+          "categoryId": "expansions",
+          "defaultValue": "VMU",
+          "description": {
+            "en": "The device in the first expansion slot of controller B.",
+            "zh-Hans": "B 手柄第一个扩展插槽中的设备。"
+          },
+          "key": "reicast_device_port2_slot1",
+          "restartRequired": true,
+          "title": {
+            "en": "Device in Expansion Slot B1",
+            "zh-Hans": "B1 扩展插槽设备"
+          },
+          "type": "select",
+          "valueLabels": {
+            "None": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "Purupuru": {
+              "en": "Vibration Pack",
+              "zh-Hans": "震动包"
+            },
+            "VMU": {
+              "en": "VMU",
+              "zh-Hans": "VMU"
+            }
+          },
+          "values": [
+            "VMU",
+            "Purupuru",
+            "None"
+          ]
+        },
+        {
+          "categoryId": "expansions",
+          "defaultValue": "Purupuru",
+          "description": {
+            "en": "The device in the second expansion slot of controller B.",
+            "zh-Hans": "B 手柄第二个扩展插槽中的设备。"
+          },
+          "key": "reicast_device_port2_slot2",
+          "restartRequired": true,
+          "title": {
+            "en": "Device in Expansion Slot B2",
+            "zh-Hans": "B2 扩展插槽设备"
+          },
+          "type": "select",
+          "valueLabels": {
+            "None": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "Purupuru": {
+              "en": "Vibration Pack",
+              "zh-Hans": "震动包"
+            },
+            "VMU": {
+              "en": "VMU",
+              "zh-Hans": "VMU"
+            }
+          },
+          "values": [
+            "VMU",
+            "Purupuru",
+            "None"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Controller Expansion Slots",
+        "zh-Hans": "手柄扩展插槽"
+      }
+    },
+    {
+      "description": {
+        "en": "VMU save files, beeps and the small VMU screen shown over the game.",
+        "zh-Hans": "VMU 存档文件、提示音，以及叠加在游戏画面上的 VMU 小屏幕。"
+      },
+      "id": "vmu",
+      "options": [
+        {
+          "categoryId": "vmu",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Off: every game shares the same VMU files, as on a real console. VMU A1: each game gets its own A1 VMU. All VMUs: each game gets its own set of VMUs. Existing saves stay in the shared VMU and are not moved.",
+            "zh-Hans": "关：所有游戏共用同一组 VMU 文件，和真机一样。VMU A1：每款游戏使用独立的 A1 VMU。所有 VMU：每款游戏使用独立的整组 VMU。已有存档留在共用的 VMU 中，不会被搬移。"
+          },
+          "key": "reicast_per_content_vmus",
+          "restartRequired": true,
+          "title": {
+            "en": "Per-Game VMUs",
+            "zh-Hans": "每款游戏独立 VMU"
+          },
+          "type": "select",
+          "valueLabels": {
+            "All VMUs": {
+              "en": "All VMUs",
+              "zh-Hans": "所有 VMU"
+            },
+            "VMU A1": {
+              "en": "VMU A1",
+              "zh-Hans": "VMU A1"
+            },
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "disabled",
+            "VMU A1",
+            "All VMUs"
+          ]
+        },
+        {
+          "categoryId": "vmu",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Play the beeps some games send to the VMU.",
+            "zh-Hans": "播放部分游戏通过 VMU 发出的提示音。"
+          },
+          "key": "reicast_vmu_sound",
+          "restartRequired": false,
+          "title": {
+            "en": "VMU Sounds",
+            "zh-Hans": "VMU 提示音"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "vmu",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Show the small screen of controller A's VMU over the game. Some games put extra information on it, such as stats or mini-games.",
+            "zh-Hans": "在游戏画面上显示 A 手柄 VMU 的小屏幕。部分游戏会在上面显示额外信息，例如角色状态或小游戏。"
+          },
+          "key": "reicast_vmu1_screen_display",
+          "restartRequired": false,
+          "title": {
+            "en": "Show VMU Screen",
+            "zh-Hans": "显示 VMU 屏幕"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "vmu",
+          "defaultValue": "Upper Left",
+          "description": {
+            "en": "Which corner of the game picture the VMU screen is drawn in.",
+            "zh-Hans": "VMU 屏幕显示在游戏画面的哪个角落。"
+          },
+          "key": "reicast_vmu1_screen_position",
+          "restartRequired": false,
+          "title": {
+            "en": "VMU Screen Position",
+            "zh-Hans": "VMU 屏幕位置"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Lower Left": {
+              "en": "Lower Left",
+              "zh-Hans": "左下角"
+            },
+            "Lower Right": {
+              "en": "Lower Right",
+              "zh-Hans": "右下角"
+            },
+            "Upper Left": {
+              "en": "Upper Left",
+              "zh-Hans": "左上角"
+            },
+            "Upper Right": {
+              "en": "Upper Right",
+              "zh-Hans": "右上角"
+            }
+          },
+          "values": [
+            "Upper Left",
+            "Upper Right",
+            "Lower Left",
+            "Lower Right"
+          ],
+          "visibleWhen": [
+            {
+              "reicast_vmu1_screen_display": [
+                "enabled"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "vmu",
+          "defaultValue": "1x",
+          "description": {
+            "en": "How much the 48×32 VMU screen is enlarged.",
+            "zh-Hans": "48×32 的 VMU 屏幕的放大倍数。"
+          },
+          "key": "reicast_vmu1_screen_size_mult",
+          "restartRequired": false,
+          "title": {
+            "en": "VMU Screen Size",
+            "zh-Hans": "VMU 屏幕大小"
+          },
+          "type": "select",
+          "valueLabels": {
+            "1x": {
+              "en": "1x",
+              "zh-Hans": "1x"
+            },
+            "2x": {
+              "en": "2x",
+              "zh-Hans": "2x"
+            },
+            "3x": {
+              "en": "3x",
+              "zh-Hans": "3x"
+            },
+            "4x": {
+              "en": "4x",
+              "zh-Hans": "4x"
+            },
+            "5x": {
+              "en": "5x",
+              "zh-Hans": "5x"
+            }
+          },
+          "values": [
+            "1x",
+            "2x",
+            "3x",
+            "4x",
+            "5x"
+          ],
+          "visibleWhen": [
+            {
+              "reicast_vmu1_screen_display": [
+                "enabled"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "vmu",
+          "defaultValue": "DEFAULT_ON 00",
+          "description": {
+            "en": "The color of lit pixels on the VMU screen.",
+            "zh-Hans": "VMU 屏幕上点亮像素的颜色。"
+          },
+          "key": "reicast_vmu1_pixel_on_color",
+          "restartRequired": false,
+          "title": {
+            "en": "VMU Lit Pixel Color",
+            "zh-Hans": "VMU 点亮像素颜色"
+          },
+          "type": "select",
+          "valueLabels": {
+            "BLACK 02": {
+              "en": "Black",
+              "zh-Hans": "黑色"
+            },
+            "BLUE 03": {
+              "en": "Blue",
+              "zh-Hans": "蓝色"
+            },
+            "CYAN 06": {
+              "en": "Cyan",
+              "zh-Hans": "青色"
+            },
+            "CYAN_BLUE 07": {
+              "en": "Cyan Blue",
+              "zh-Hans": "青蓝色"
+            },
+            "CYAN_GREEN 09": {
+              "en": "Cyan Green",
+              "zh-Hans": "青绿色"
+            },
+            "DEFAULT_OFF 01": {
+              "en": "Default (Unlit)",
+              "zh-Hans": "默认（暗色）"
+            },
+            "DEFAULT_ON 00": {
+              "en": "Default (Lit)",
+              "zh-Hans": "默认（亮色）"
+            },
+            "GRAY 15": {
+              "en": "Gray",
+              "zh-Hans": "灰色"
+            },
+            "GREEN 05": {
+              "en": "Green",
+              "zh-Hans": "绿色"
+            },
+            "LIGHT_BLUE 04": {
+              "en": "Light Blue",
+              "zh-Hans": "浅蓝色"
+            },
+            "LIGHT_CYAN 10": {
+              "en": "Light Cyan",
+              "zh-Hans": "浅青色"
+            },
+            "LIGHT_CYAN_2 19": {
+              "en": "Light Cyan (2)",
+              "zh-Hans": "浅青色（2）"
+            },
+            "LIGHT_GREEN 08": {
+              "en": "Light Green",
+              "zh-Hans": "浅绿色"
+            },
+            "LIGHT_GREEN_2 17": {
+              "en": "Light Green (2)",
+              "zh-Hans": "浅绿色（2）"
+            },
+            "LIGHT_GREEN_3 18": {
+              "en": "Light Green (3)",
+              "zh-Hans": "浅绿色（3）"
+            },
+            "LIGHT_ORANGE 23": {
+              "en": "Light Orange",
+              "zh-Hans": "浅橙色"
+            },
+            "LIGHT_PURPLE 13": {
+              "en": "Light Purple",
+              "zh-Hans": "紫色"
+            },
+            "LIGHT_PURPLE_2 16": {
+              "en": "Light Purple (2)",
+              "zh-Hans": "浅紫色（2）"
+            },
+            "LIGHT_PURPLE_3 22": {
+              "en": "Light Purple (3)",
+              "zh-Hans": "浅紫色（3）"
+            },
+            "LIGHT_PURPLE_4 25": {
+              "en": "Light Purple (4)",
+              "zh-Hans": "浅紫色（4）"
+            },
+            "LIGHT_RED_2 20": {
+              "en": "Light Red (2)",
+              "zh-Hans": "浅红色（2）"
+            },
+            "LIGHT_YELLOW 26": {
+              "en": "Light Yellow",
+              "zh-Hans": "浅黄色"
+            },
+            "LIGHT_YELLOW_2 27": {
+              "en": "Light Yellow (2)",
+              "zh-Hans": "浅黄色（2）"
+            },
+            "MAGENTA 21": {
+              "en": "Magenta",
+              "zh-Hans": "品红色"
+            },
+            "ORANGE 24": {
+              "en": "Orange",
+              "zh-Hans": "橙色"
+            },
+            "PURPLE 12": {
+              "en": "Purple",
+              "zh-Hans": "紫色"
+            },
+            "RED 11": {
+              "en": "Red",
+              "zh-Hans": "红色"
+            },
+            "WHITE 28": {
+              "en": "White",
+              "zh-Hans": "白色"
+            },
+            "YELLOW 14": {
+              "en": "Yellow",
+              "zh-Hans": "黄色"
+            }
+          },
+          "values": [
+            "DEFAULT_ON 00",
+            "DEFAULT_OFF 01",
+            "BLACK 02",
+            "BLUE 03",
+            "LIGHT_BLUE 04",
+            "GREEN 05",
+            "CYAN 06",
+            "CYAN_BLUE 07",
+            "LIGHT_GREEN 08",
+            "CYAN_GREEN 09",
+            "LIGHT_CYAN 10",
+            "RED 11",
+            "PURPLE 12",
+            "LIGHT_PURPLE 13",
+            "YELLOW 14",
+            "GRAY 15",
+            "LIGHT_PURPLE_2 16",
+            "LIGHT_GREEN_2 17",
+            "LIGHT_GREEN_3 18",
+            "LIGHT_CYAN_2 19",
+            "LIGHT_RED_2 20",
+            "MAGENTA 21",
+            "LIGHT_PURPLE_3 22",
+            "LIGHT_ORANGE 23",
+            "ORANGE 24",
+            "LIGHT_PURPLE_4 25",
+            "LIGHT_YELLOW 26",
+            "LIGHT_YELLOW_2 27",
+            "WHITE 28"
+          ],
+          "visibleWhen": [
+            {
+              "reicast_vmu1_screen_display": [
+                "enabled"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "vmu",
+          "defaultValue": "DEFAULT_OFF 01",
+          "description": {
+            "en": "The color of unlit pixels, the background of the VMU screen.",
+            "zh-Hans": "VMU 屏幕上未点亮像素（即背景）的颜色。"
+          },
+          "key": "reicast_vmu1_pixel_off_color",
+          "restartRequired": false,
+          "title": {
+            "en": "VMU Unlit Pixel Color",
+            "zh-Hans": "VMU 背景像素颜色"
+          },
+          "type": "select",
+          "valueLabels": {
+            "BLACK 02": {
+              "en": "Black",
+              "zh-Hans": "黑色"
+            },
+            "BLUE 03": {
+              "en": "Blue",
+              "zh-Hans": "蓝色"
+            },
+            "CYAN 06": {
+              "en": "Cyan",
+              "zh-Hans": "青色"
+            },
+            "CYAN_BLUE 07": {
+              "en": "Cyan Blue",
+              "zh-Hans": "青蓝色"
+            },
+            "CYAN_GREEN 09": {
+              "en": "Cyan Green",
+              "zh-Hans": "青绿色"
+            },
+            "DEFAULT_OFF 01": {
+              "en": "Default (Unlit)",
+              "zh-Hans": "默认（暗色）"
+            },
+            "DEFAULT_ON 00": {
+              "en": "Default (Lit)",
+              "zh-Hans": "默认（亮色）"
+            },
+            "GRAY 15": {
+              "en": "Gray",
+              "zh-Hans": "灰色"
+            },
+            "GREEN 05": {
+              "en": "Green",
+              "zh-Hans": "绿色"
+            },
+            "LIGHT_BLUE 04": {
+              "en": "Light Blue",
+              "zh-Hans": "浅蓝色"
+            },
+            "LIGHT_CYAN 10": {
+              "en": "Light Cyan",
+              "zh-Hans": "浅青色"
+            },
+            "LIGHT_CYAN_2 19": {
+              "en": "Light Cyan (2)",
+              "zh-Hans": "浅青色（2）"
+            },
+            "LIGHT_GREEN 08": {
+              "en": "Light Green",
+              "zh-Hans": "浅绿色"
+            },
+            "LIGHT_GREEN_2 17": {
+              "en": "Light Green (2)",
+              "zh-Hans": "浅绿色（2）"
+            },
+            "LIGHT_GREEN_3 18": {
+              "en": "Light Green (3)",
+              "zh-Hans": "浅绿色（3）"
+            },
+            "LIGHT_ORANGE 23": {
+              "en": "Light Orange",
+              "zh-Hans": "浅橙色"
+            },
+            "LIGHT_PURPLE 13": {
+              "en": "Light Purple",
+              "zh-Hans": "紫色"
+            },
+            "LIGHT_PURPLE_2 16": {
+              "en": "Light Purple (2)",
+              "zh-Hans": "浅紫色（2）"
+            },
+            "LIGHT_PURPLE_3 22": {
+              "en": "Light Purple (3)",
+              "zh-Hans": "浅紫色（3）"
+            },
+            "LIGHT_PURPLE_4 25": {
+              "en": "Light Purple (4)",
+              "zh-Hans": "浅紫色（4）"
+            },
+            "LIGHT_RED_2 20": {
+              "en": "Light Red (2)",
+              "zh-Hans": "浅红色（2）"
+            },
+            "LIGHT_YELLOW 26": {
+              "en": "Light Yellow",
+              "zh-Hans": "浅黄色"
+            },
+            "LIGHT_YELLOW_2 27": {
+              "en": "Light Yellow (2)",
+              "zh-Hans": "浅黄色（2）"
+            },
+            "MAGENTA 21": {
+              "en": "Magenta",
+              "zh-Hans": "品红色"
+            },
+            "ORANGE 24": {
+              "en": "Orange",
+              "zh-Hans": "橙色"
+            },
+            "PURPLE 12": {
+              "en": "Purple",
+              "zh-Hans": "紫色"
+            },
+            "RED 11": {
+              "en": "Red",
+              "zh-Hans": "红色"
+            },
+            "WHITE 28": {
+              "en": "White",
+              "zh-Hans": "白色"
+            },
+            "YELLOW 14": {
+              "en": "Yellow",
+              "zh-Hans": "黄色"
+            }
+          },
+          "values": [
+            "DEFAULT_OFF 01",
+            "DEFAULT_ON 00",
+            "BLACK 02",
+            "BLUE 03",
+            "LIGHT_BLUE 04",
+            "GREEN 05",
+            "CYAN 06",
+            "CYAN_BLUE 07",
+            "LIGHT_GREEN 08",
+            "CYAN_GREEN 09",
+            "LIGHT_CYAN 10",
+            "RED 11",
+            "PURPLE 12",
+            "LIGHT_PURPLE 13",
+            "YELLOW 14",
+            "GRAY 15",
+            "LIGHT_PURPLE_2 16",
+            "LIGHT_GREEN_2 17",
+            "LIGHT_GREEN_3 18",
+            "LIGHT_CYAN_2 19",
+            "LIGHT_RED_2 20",
+            "MAGENTA 21",
+            "LIGHT_PURPLE_3 22",
+            "LIGHT_ORANGE 23",
+            "ORANGE 24",
+            "LIGHT_PURPLE_4 25",
+            "LIGHT_YELLOW 26",
+            "LIGHT_YELLOW_2 27",
+            "WHITE 28"
+          ],
+          "visibleWhen": [
+            {
+              "reicast_vmu1_screen_display": [
+                "enabled"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "vmu",
+          "defaultValue": "100%",
+          "description": {
+            "en": "How opaque the VMU screen is over the game picture.",
+            "zh-Hans": "VMU 屏幕叠加在游戏画面上的不透明程度。"
+          },
+          "key": "reicast_vmu1_screen_opacity",
+          "restartRequired": false,
+          "title": {
+            "en": "VMU Screen Opacity",
+            "zh-Hans": "VMU 屏幕不透明度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "10%": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "100%": {
+              "en": "100%",
+              "zh-Hans": "100%"
+            },
+            "20%": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "30%": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "40%": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "50%": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "60%": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "70%": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "80%": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "90%": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            }
+          },
+          "values": [
+            "10%",
+            "20%",
+            "30%",
+            "40%",
+            "50%",
+            "60%",
+            "70%",
+            "80%",
+            "90%",
+            "100%"
+          ],
+          "visibleWhen": [
+            {
+              "reicast_vmu1_screen_display": [
+                "enabled"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Visual Memory Unit",
+        "zh-Hans": "记忆卡（VMU）"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Flycast",
+    "coreVersion": "Git",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

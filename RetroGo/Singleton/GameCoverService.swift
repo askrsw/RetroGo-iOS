@@ -26,6 +26,7 @@
 import UIKit
 import Kingfisher
 import RACoordinator
+import os
 
 // ---------------------------------------------------------------------------
 // MARK: - GameCoverService
@@ -484,8 +485,7 @@ final class GameCoverService {
             }
             return files
         } catch {
-            NSLog("[GameCoverService] fetchFileList error: %@  url=%@",
-                  error.localizedDescription, url.absoluteString)
+            RetroGoLogger.database.error("Cover: failed to fetch file list from \(url.absoluteString, privacy: .public): \(error.localizedDescription)")
             return []
         }
     }

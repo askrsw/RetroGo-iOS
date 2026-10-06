@@ -26,6 +26,7 @@
 import Combine
 import ObjcHelper
 import RACoordinator
+import os
 
 final class RetroRomFileManager {
     static let shared = RetroRomFileManager()
@@ -598,7 +599,7 @@ extension RetroRomFileManager {
             // 尝试删除已经搬空的旧子目录
             try? fileManager.removeItem(atPath: oldDir)
         } catch {
-            print("Migration Error at \(oldDir): \(error)")
+            RetroGoLogger.library.error("Migration failed at \(oldDir): \(String(describing: error))")
         }
     }
 }

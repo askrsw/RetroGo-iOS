@@ -27,6 +27,7 @@ import Combine
 import StoreKit
 import Foundation
 import ObjcHelper
+import os
 
 enum IAPProductID {
     static let monthly: String = {
@@ -287,7 +288,7 @@ final class AppStorePurchaseManager: ObservableObject {
         let products = try await Product.products(for: ids)
         let missing = ids.subtracting(products.map(\.id))
         if !missing.isEmpty {
-            NSLog("[IAP] Products not returned by the App Store: %@", missing.sorted().joined(separator: ", "))
+            RetroGoLogger.iap.notice("Products not returned by the App Store: \(missing.sorted().joined(separator: ", "), privacy: .public)")
         }
         var map: [AppStoreProductKind: Product] = [:]
 
@@ -296,7 +297,7 @@ final class AppStorePurchaseManager: ObservableObject {
             // A lifetime unlock must be non-consumable: a consumable leaves no
             // entitlement once finished, so Pro would vanish right after purchase.
             if kind.isLifetime, product.type != .nonConsumable {
-                NSLog("[IAP] Ignoring %@: lifetime product must be non-consumable, got %@", product.id, product.type.rawValue)
+                RetroGoLogger.iap.notice("Ignoring \(product.id, privacy: .public): lifetime product must be non-consumable, got \(product.type.rawValue, privacy: .public)")
                 continue
             }
             map[kind] = product
@@ -349,7 +350,7 @@ final class AppStorePurchaseManager: ObservableObject {
                     throw AppStorePurchaseError.noActiveEntitlements
                 }
 
-                NSLog("[IAP] Purchased %@ (transaction %llu)", transaction.productID, transaction.id)
+                RetroGoLogger.iap.notice("Purchased \(transaction.productID, privacy: .public) (transaction \(transaction.id))")
                 applyPurchasedTransaction(transaction, fallbackKind: kind)
                 await transaction.finish()
                 await refreshEntitlements()
@@ -398,7 +399,7 @@ final class AppStorePurchaseManager: ObservableObject {
 
     func refreshEntitlements(allowClearingActiveEntitlement: Bool = false) async {
         if allowClearingActiveEntitlement {
-            NSLog("[IAP] Refreshing entitlements (clearing allowed)")
+            RetroGoLogger.iap.info("Refreshing entitlements (clearing allowed)")
         }
         var ids = Set<String>()
         var entitlements: [AppStoreProEntitlementInfo] = []
@@ -434,8 +435,7 @@ final class AppStorePurchaseManager: ObservableObject {
             cacheActiveProEntitlement()
         } else {
             if let activeProEntitlement {
-                NSLog("[IAP] Clearing Pro entitlement %@ (transaction %@)", activeProEntitlement.productID,
-                      activeProEntitlement.transactionID.map { String($0) } ?? "unknown")
+                RetroGoLogger.iap.notice("Clearing Pro entitlement \(activeProEntitlement.productID, privacy: .public) (transaction \(activeProEntitlement.transactionID.map { String($0) } ?? "unknown", privacy: .public))")
             }
             purchasedProductIDs = []
             activeProEntitlement = nil
@@ -462,16 +462,16 @@ final class AppStorePurchaseManager: ObservableObject {
         for await result in Transaction.all {
             guard case .verified(let transaction) = result, transaction.id == transactionID else { continue }
             if let revocationDate = transaction.revocationDate {
-                NSLog("[IAP] Transaction %llu revoked at %@", transactionID, "\(revocationDate)")
+                RetroGoLogger.iap.notice("Transaction \(transactionID) revoked at \(String(describing: revocationDate), privacy: .public)")
                 return false
             }
             if let expirationDate = transaction.expirationDate, expirationDate <= Date() {
-                NSLog("[IAP] Transaction %llu expired at %@", transactionID, "\(expirationDate)")
+                RetroGoLogger.iap.notice("Transaction \(transactionID) expired at \(String(describing: expirationDate), privacy: .public)")
                 return false
             }
             return true
         }
-        NSLog("[IAP] Transaction %llu not found in transaction history", transactionID)
+        RetroGoLogger.iap.notice("Transaction \(transactionID) not found in transaction history")
         return false
     }
 
@@ -699,8 +699,7 @@ final class AppStorePurchaseManager: ObservableObject {
             for await result in Transaction.updates {
                 do {
                     let transaction = try await self.verified(result)
-                    NSLog("[IAP] Transaction update %@ (transaction %llu), revoked: %@", transaction.productID, transaction.id,
-                          transaction.revocationDate.map { "\($0)" } ?? "no")
+                    RetroGoLogger.iap.info("Transaction update \(transaction.productID, privacy: .public) (transaction \(transaction.id)), revoked: \(transaction.revocationDate.map { "\($0)" } ?? "no", privacy: .public)")
                     if transaction.revocationDate == nil,
                        let kind = AppStoreProductKind(productID: transaction.productID) {
                         await self.applyPurchasedTransaction(transaction, fallbackKind: kind)

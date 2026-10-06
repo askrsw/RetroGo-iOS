@@ -231,6 +231,7 @@
 "homepage_assign_core_success" = "Core assigned successfully.";
 "homepage_assign_core_failed" = "Failed to assign core.";
 "homepage_import_for_folder" = "Import...";
+"homepage_save_folder_to" = "Save To...";
 "homepage_new_folder" = "New Folder";
 "homepage_new_folder_success" = "Folder created successfully.";
 "homepage_new_folder_failed" = "Failed to create folder!";
@@ -707,7 +708,7 @@
 "mame_cheat_library_not_imported" = "Not Imported";
 "mame_cheat_library_source_file" = "Imported From";
 "mame_cheat_library_imported_at" = "Imported";
-"mame_cheat_library_footer" = "Arcade cheats come from %1$@.\n1. Download the latest cheat collection from %2$@.\n2. No need to unzip it.\n3. Tap Import Cheat Collection and choose the downloaded zip (cheat.7z works too).\nOnly cheats for games this MAME core can run are kept.";
+"mame_cheat_library_footer" = "Arcade cheats come from %1$@.\n1. Download the latest cheat collection from %2$@.\n2. No need to unzip it.\n3. Tap Import Cheat Collection and choose the downloaded zip (cheat.7z works too).\nOnly cheats for games this MAME core can run are kept.\nIf cheats don't work as expected in RetroGo, please report it to RetroGo first.";
 "mame_cheat_import_action" = "Import Cheat Collection";
 "mame_cheat_reimport_action" = "Import a Newer Collection";
 "mame_cheat_download_action" = "Download from mamecheat.co.uk";

@@ -26,6 +26,7 @@
 import SQLite
 import Foundation
 import ObjcHelper
+import os
 
 /// Chinese names for arcade games, from the same data as Discover: gamerdb's MAME rows map
 /// `<set>.zip` to a game group, and gameloc names the group. Clones without a row of their
@@ -100,10 +101,10 @@ final class MameGameNameLocalizer {
                 let setName = (romName as NSString).deletingPathExtension.lowercased()
                 if names[setName] == nil { names[setName] = name }
             }
-            NSLog("[MameNames] Loaded %d localized arcade names in %.2fs", names.count, CFAbsoluteTimeGetCurrent() - start)
+            RetroGoLogger.mame.info("Loaded \(names.count) localized arcade names in \(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 2))s")
             return names
         } catch {
-            NSLog("[MameNames] Failed to read localized names: %@", "\(error)")
+            RetroGoLogger.mame.error("Failed to read localized names: \(String(describing: error))")
             return nil
         }
     }

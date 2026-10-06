@@ -27,6 +27,7 @@ import UIKit
 import SnapKit
 import ObjcHelper
 import RACoordinator
+import os
 
 final class RetroRomCoreInfoViewController: UIViewController {
     private var gamePauseLease: GamePauseCoordinator.Lease?
@@ -467,7 +468,7 @@ extension RetroRomCoreInfoViewController {
             }
             let seconds = CFAbsoluteTimeGetCurrent() - start
             let bytes = (try? FileManager.default.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.int64Value ?? 0
-            print("[MameListXML] ok=\(ok) seconds=\(String(format: "%.2f", seconds)) bytes=\(bytes) path=\(url.path)")
+            RetroGoLogger.mame.info("listxml export ok=\(ok, privacy: .public) seconds=\(seconds, format: .fixed(precision: 2)) bytes=\(bytes) path=\(url.path)")
 
             DispatchQueue.main.async { [weak self = self] in
                 guard let self else { return }

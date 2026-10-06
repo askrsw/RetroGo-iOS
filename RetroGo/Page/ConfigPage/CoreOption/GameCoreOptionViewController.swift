@@ -25,6 +25,7 @@
 
 import UIKit
 import ObjcHelper
+import os
 
 final class GameCoreOptionViewController: UITableViewController {
     private enum Row: Hashable { case info(Int), group(String), option(String) }
@@ -77,7 +78,7 @@ final class GameCoreOptionViewController: UITableViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: resetTitle, style: .plain, target: self, action: #selector(resetOptions))
 
         session.onSaveError = { [weak self] error in
-            NSLog("[CoreOptions] Save failed: %@", String(describing: error))
+            RetroGoLogger.coreOption.error("Failed to save core options: \(String(describing: error))")
             guard let self else { return }
             let alert = UIAlertController(title: Bundle.localizedString(forKey: "coreoption_title"), message: Bundle.localizedString(forKey: "coreoption_save_error"), preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "coreoption_ok"), style: .default))

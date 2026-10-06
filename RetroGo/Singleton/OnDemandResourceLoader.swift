@@ -25,6 +25,7 @@
 
 import Foundation
 import RACoordinator
+import os
 
 extension Notification.Name {
     /// Posted (on main) when an ODR resource finishes installing or is deleted.
@@ -84,21 +85,21 @@ final class OnDemandResourceLoader: NSObject {
             id: "gamerdb", odrTag: "game-db",
             bundleResource: "gamerdb", bundleExtension: "sqlite",
             installedFileName: "gamerdb.db",
-            approxByteSize: 71_794_688, bundledVersion: 3,
+            approxByteSize: 71_794_688, bundledVersion: 4,
             isRequired: true,
             titleKey: "odr_gamerdb_title", descKey: "odr_gamerdb_desc"),
         ODRResource(
             id: "gameloc", odrTag: "gameloc-db",
             bundleResource: "gameloc", bundleExtension: "sqlite",
             installedFileName: "gameloc.sqlite",
-            approxByteSize: 9_457_664, bundledVersion: 3,
+            approxByteSize: 9_457_664, bundledVersion: 4,
             isRequired: true,   // required: small, and language is easily toggled
             titleKey: "odr_gameloc_title", descKey: "odr_gameloc_desc"),
         ODRResource(
             id: "cheat", odrTag: "cheat-db",
             bundleResource: "cheat", bundleExtension: "sqlite",
             installedFileName: "cheat.sqlite",
-            approxByteSize: 130_015_232, bundledVersion: 3,
+            approxByteSize: 130_015_232, bundledVersion: 4,
             isRequired: false,
             titleKey: "odr_cheat_title", descKey: "odr_cheat_desc"),
         ODRResource(
@@ -263,7 +264,7 @@ final class OnDemandResourceLoader: NSObject {
         }
         RAGameRDBManager.shared().initialize(path) { [weak self] in
             self?.rdbReady = true
-            NSLog("[ODR] ✅ 游戏数据库就绪，rdbReady = true")
+            RetroGoLogger.odr.info("Game database ready")
         }
     }
 
@@ -272,7 +273,7 @@ final class OnDemandResourceLoader: NSObject {
     private func installFromBundle(_ r: ODRResource) -> Bool {
         guard let srcURL = Bundle.main.url(forResource: r.bundleResource,
                                            withExtension: r.bundleExtension) else {
-            NSLog("[ODR] ❌ Bundle 中找不到资源 %@.%@", r.bundleResource, r.bundleExtension)
+            RetroGoLogger.odr.error("Resource \(r.bundleResource, privacy: .public).\(r.bundleExtension, privacy: .public) not found in bundle")
             return false
         }
         let fm = FileManager.default
@@ -285,10 +286,10 @@ final class OnDemandResourceLoader: NSObject {
             try fm.createDirectory(at: dst.deletingLastPathComponent(),
                                    withIntermediateDirectories: true)
             try fm.copyItem(at: srcURL, to: dst)
-            NSLog("[ODR] ✅ 预制资源已安装 → %@", targetPath(r))
+            RetroGoLogger.odr.info("Installed bundled resource \(r.id, privacy: .public) to \(self.targetPath(r))")
             return true
         } catch {
-            NSLog("[ODR] ❌ 安装资源失败 (%@): %@", r.id, error.localizedDescription)
+            RetroGoLogger.odr.error("Failed to install resource \(r.id, privacy: .public): \(error.localizedDescription)")
             return false
         }
     }
@@ -320,6 +321,11 @@ extension OnDemandResourceLoader {
         "Sega - PICO",
         "Sega - Saturn",
         "Nintendo - Super Nintendo Entertainment System",
+        "Sega - Dreamcast",
+        "Sega - Naomi",
+        "Sega - Naomi 2",
+        "Atomiswave",
+        "Sega - SG-1000",
     ]
 
     /// DEBUG：把 Bundle 内的 .rdb 合并构建成成品预制库，
@@ -348,7 +354,7 @@ extension OnDemandResourceLoader {
             if let error {
                 completion(nil, error)
             } else {
-                NSLog("[ODR][DEBUG] ✅ 导出完成，共 %ld 条游戏 → %@", total, dest)
+                RetroGoLogger.odr.debug("Debug export: \(total) games written to \(dest)")
                 completion(dest, nil)
             }
         }

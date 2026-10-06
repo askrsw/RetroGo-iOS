@@ -105,7 +105,8 @@ static inline double RASanitizeFastForwardMultiplier(double multiplier) {
         d_pauseCounter = 0;
         d_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(step:)];
         if(@available(iOS 15.0, tvOS 15.0, *)) {
-            [d_displayLink setPreferredFrameRateRange:CAFrameRateRangeDefault];
+            // One iteration per tick: pin 60Hz so a ProMotion display never runs games at 2x.
+            [d_displayLink setPreferredFrameRateRange:CAFrameRateRangeMake(60, 60, 60)];
         }
         [d_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
 

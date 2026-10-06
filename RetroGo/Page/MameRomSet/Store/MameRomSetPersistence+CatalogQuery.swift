@@ -25,6 +25,7 @@
 
 import SQLite
 import Foundation
+import os
 
 /// Identity of a ROM file as MAME matches it inside an archive.
 struct MameRomKey: Hashable {
@@ -73,7 +74,7 @@ extension MameRomSetPersistence {
                 return Self.machineRecord(row)
             }
         } catch {
-            NSLog("[MameRomSet] Failed to read machine %@: %@", name, "\(error)")
+            RetroGoLogger.mame.error("Failed to read machine \(name, privacy: .public): \(String(describing: error))")
         }
         return nil
     }
@@ -88,7 +89,7 @@ extension MameRomSetPersistence {
                 return (name, row[1] as? String)
             }
         } catch {
-            NSLog("[MameRomSet] Failed to list game sets: %@", "\(error)")
+            RetroGoLogger.mame.error("Failed to list game sets: \(String(describing: error))")
             return []
         }
     }
@@ -104,7 +105,7 @@ extension MameRomSetPersistence {
                 return (machine, (row[1] as? Int64) == 1)
             }
         } catch {
-            NSLog("[MameRomSet] Failed to look up rom %08x: %@", key.crc, "\(error)")
+            RetroGoLogger.mame.error("Failed to look up rom \(key.crc, format: .hex(minDigits: 8)): \(String(describing: error))")
             return []
         }
     }
@@ -128,7 +129,7 @@ extension MameRomSetPersistence {
             }
             return keys
         } catch {
-            NSLog("[MameRomSet] Failed to read roms of %@: %@", machine, "\(error)")
+            RetroGoLogger.mame.error("Failed to read roms of \(machine, privacy: .public): \(String(describing: error))")
             return []
         }
     }
@@ -146,7 +147,7 @@ extension MameRomSetPersistence {
             }
             return result
         } catch {
-            NSLog("[MameRomSet] Failed to read rom names of %@: %@", machine, "\(error)")
+            RetroGoLogger.mame.error("Failed to read rom names of \(machine, privacy: .public): \(String(describing: error))")
             return []
         }
     }
@@ -182,7 +183,7 @@ extension MameRomSetPersistence {
             }
             return result
         } catch {
-            NSLog("[MameRomSet] Failed to read required roms of %@: %@", machine, "\(error)")
+            RetroGoLogger.mame.error("Failed to read required roms of \(machine, privacy: .public): \(String(describing: error))")
             return []
         }
     }
@@ -208,7 +209,7 @@ extension MameRomSetPersistence {
             }
             return result
         } catch {
-            NSLog("[MameRomSet] Failed to read own roms of %@: %@", machine, "\(error)")
+            RetroGoLogger.mame.error("Failed to read own roms of \(machine, privacy: .public): \(String(describing: error))")
             return []
         }
     }
@@ -228,7 +229,7 @@ extension MameRomSetPersistence {
                 """
             return try db.prepare(sql, machine).compactMap { $0[0] as? String }
         } catch {
-            NSLog("[MameRomSet] Failed to read devices of %@: %@", machine, "\(error)")
+            RetroGoLogger.mame.error("Failed to read devices of \(machine, privacy: .public): \(String(describing: error))")
             return []
         }
     }
@@ -240,7 +241,7 @@ extension MameRomSetPersistence {
             let sql = "SELECT name FROM machine_disk WHERE machine = ? AND optional = 0 AND status != 'nodump' ORDER BY name"
             return try db.prepare(sql, machine).compactMap { $0[0] as? String }
         } catch {
-            NSLog("[MameRomSet] Failed to read disks of %@: %@", machine, "\(error)")
+            RetroGoLogger.mame.error("Failed to read disks of \(machine, privacy: .public): \(String(describing: error))")
             return []
         }
     }

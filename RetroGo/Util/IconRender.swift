@@ -74,6 +74,7 @@ final class IconRender {
         case psx
         case psp
         case saturn
+        case dreamcast
         case mame
         case dos
     }
@@ -429,6 +430,7 @@ private extension IconRender {
         case .psx:    drawDisc(in: inner, context: context)
         case .psp:    drawHandheldPSP(in: inner)
         case .saturn: drawDisc(in: inner, context: context)
+        case .dreamcast: drawDisc(in: inner, context: context)
         case .mame:   drawArcadeStick(in: inner)
         case .dos:    drawCRT(in: inner)
         }
@@ -449,6 +451,7 @@ private extension IconRender {
         case .psx:    return UIColor(red: 0.23, green: 0.37, blue: 0.49, alpha: 1.0)
         case .psp:    return UIColor(red: 0.18, green: 0.18, blue: 0.20, alpha: 1.0)
         case .saturn: return UIColor(red: 0.06, green: 0.30, blue: 0.46, alpha: 1.0)
+        case .dreamcast: return UIColor(red: 0.93, green: 0.45, blue: 0.13, alpha: 1.0)
         case .mame:   return UIColor(red: 0.85, green: 0.22, blue: 0.27, alpha: 1.0)
         case .dos:    return UIColor(red: 0.55, green: 0.40, blue: 0.06, alpha: 1.0)
         }

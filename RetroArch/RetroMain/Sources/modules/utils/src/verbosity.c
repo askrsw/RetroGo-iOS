@@ -69,6 +69,9 @@
 #include <retro_miscellaneous.h>
 
 #include <utils/verbosity.h>
+#if defined(__APPLE__)
+#include <utils/retrogo_log.h>
+#endif
 
 #ifdef RARCH_INTERNAL
 #include <utils/config.def.h>
@@ -267,31 +270,26 @@ void RARCH_LOG_V(const char *tag, const char *fmt, va_list ap)
 #endif
 #else /* !HAVE_QT && !__WINRT__ */
 #if TARGET_OS_IPHONE
-#if TARGET_IPHONE_SIMULATOR
-   vprintf(fmt, ap);
-#elif __IPHONE_OS_VERSION_MIN_REQUIRED > __IPHONE_10_0 || __TV_OS_VERSION_MIN_REQUIRED > __TVOS_10_0
-   int sz = vsnprintf(NULL, 0, fmt, ap) + 1;
-   char buffer[sz]; /* TODO/FIXME - VLA - C89 backwards compatibility */
-   vsnprintf(buffer, sz, fmt, ap);
-   os_log(OS_LOG_DEFAULT, "%s %s", tag_v, buffer);
-#else
-   static aslclient asl_client;
-   static int asl_initialized = 0;
-   if (!asl_initialized)
+   /* RetroGo: route to unified logging, category RetroArch, level from tag. */
    {
-      asl_client      = asl_open(
-                                 FILE_PATH_PROGRAM_NAME,
-                                 "com.apple.console",
-                                 ASL_OPT_STDERR | ASL_OPT_NO_DELAY);
-      asl_initialized = 1;
+      char buffer[1024];
+      size_t len;
+      os_log_type_t type = RETROGO_LOG_INFO;
+      if (tag)
+      {
+         if (string_is_equal(FILE_PATH_LOG_DBG, tag))
+            type = RETROGO_LOG_DEBUG;
+         else if (string_is_equal(FILE_PATH_LOG_WARN, tag))
+            type = RETROGO_LOG_NOTICE;
+         else if (string_is_equal(FILE_PATH_LOG_ERROR, tag))
+            type = RETROGO_LOG_ERROR;
+      }
+      vsnprintf(buffer, sizeof(buffer), fmt, ap);
+      len = strlen(buffer);
+      while (len > 0 && (buffer[len - 1] == '\n' || buffer[len - 1] == '\r'))
+         buffer[--len] = '\0';
+      RETROGO_LOG(RETROGO_LOG_CAT_RETROARCH, type, "%s", buffer);
    }
-   aslmsg msg = asl_new(ASL_TYPE_MSG);
-   asl_set(msg, ASL_KEY_READ_UID, "-1");
-   if (tag)
-      asl_log(asl_client, msg, ASL_LEVEL_NOTICE, "%s", tag);
-   asl_vlog(asl_client, msg, ASL_LEVEL_NOTICE, fmt, ap);
-   asl_free(msg);
-#endif
 #endif // TARGET_OS_IPHONE
 #if defined(HAVE_LIBNX)
    mutexLock(&g_verbosity->mtx);
@@ -347,12 +345,10 @@ void RARCH_DBG(const char *fmt, ...)
 {
    va_list ap;
    verbosity_state_t *g_verbosity = &main_verbosity_st;
-#ifndef _DEBUG
    if (!g_verbosity->verbosity)
       return;
    if (verbosity_log_level > 0)
       return;
-#endif // !_DEBUG
 
    va_start(ap, fmt);
    RARCH_LOG_V(FILE_PATH_LOG_DBG, fmt, ap);
@@ -364,12 +360,10 @@ void RARCH_LOG(const char *fmt, ...)
    va_list ap;
    verbosity_state_t *g_verbosity = &main_verbosity_st;
 
-#ifndef _DEBUG
    if (!g_verbosity->verbosity)
       return;
    if (verbosity_log_level > 1)
       return;
-#endif // !_DEBUG
 
    va_start(ap, fmt);
    RARCH_LOG_V(FILE_PATH_LOG_INFO, fmt, ap);
@@ -379,6 +373,14 @@ void RARCH_LOG(const char *fmt, ...)
 void RARCH_LOG_OUTPUT(const char *msg, ...)
 {
    va_list ap;
+   verbosity_state_t *g_verbosity = &main_verbosity_st;
+
+   /* RetroGo: same gate as RARCH_LOG, so the build banner honours the log level. */
+   if (!g_verbosity->verbosity)
+      return;
+   if (verbosity_log_level > 1)
+      return;
+
    va_start(ap, msg);
    RARCH_LOG_OUTPUT_V(FILE_PATH_LOG_INFO, msg, ap);
    va_end(ap);
@@ -389,12 +391,10 @@ void RARCH_WARN(const char *fmt, ...)
    va_list ap;
    verbosity_state_t *g_verbosity = &main_verbosity_st;
 
-#ifndef _DEBUG
    if (!g_verbosity->verbosity)
       return;
    if (verbosity_log_level > 2)
       return;
-#endif // !_DEBUG
 
    va_start(ap, fmt);
    RARCH_WARN_V(FILE_PATH_LOG_WARN, fmt, ap);
@@ -406,10 +406,8 @@ void RARCH_ERR(const char *fmt, ...)
    va_list ap;
    verbosity_state_t *g_verbosity = &main_verbosity_st;
 
-#ifndef _DEBUG
    if (!g_verbosity->verbosity)
       return;
-#endif
 
    va_start(ap, fmt);
    RARCH_ERR_V(FILE_PATH_LOG_ERROR, fmt, ap);

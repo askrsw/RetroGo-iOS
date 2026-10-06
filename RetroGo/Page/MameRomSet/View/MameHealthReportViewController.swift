@@ -27,6 +27,7 @@ import UIKit
 import SnapKit
 import ObjcHelper
 import RACoordinator
+import os
 
 /// Overview of the arcade library: games that a repair can complete (with "Repair
 /// All"), games grouped by what keeps them from running (problems first), the
@@ -161,7 +162,7 @@ final class MameHealthReportViewController: UIViewController {
                         try MameSetRepairer.repair(plan)
                     }
                 } catch {
-                    NSLog("[MameRepair] %@ failed: %@", item.game.name, error.localizedDescription)
+                    RetroGoLogger.mame.error("Repair of \(item.game.name, privacy: .public) failed: \(error.localizedDescription)")
                     failures.append("\(item.game.name): \(error.localizedDescription)")
                 }
             }
@@ -424,7 +425,7 @@ final class MameHealthDetailViewController: UITableViewController {
             do {
                 plan = try MameSetRepairer.makePlan(romgameKey: key)
             } catch {
-                NSLog("[MameRepair] %@ cannot be repaired: %@", key, error.localizedDescription)
+                RetroGoLogger.mame.error("\(key, privacy: .public) cannot be repaired: \(error.localizedDescription)")
                 plan = nil
             }
             DispatchQueue.main.async { [weak self] in

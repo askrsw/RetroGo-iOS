@@ -61,7 +61,13 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface RetroArchX (Config)
+// RETRO_LANGUAGE_* matching the App language (English or Simplified Chinese).
++ (unsigned)appRetroLanguage;
 - (void)config:(RAConfig *)cfg;
+
+/// Frontend and core log levels: INFO in Debug builds, WARN in Release builds.
+/// Call after RetroArch loads its settings, which may reset them.
+- (void)applyLogLevels;
 - (BOOL)prepareCoreOptionsForCoreId:(NSString *)coreId;
 - (void)clearCoreOptionConfiguration;
 // Applies a value to the running core from its next frame; also kept for re-registration.

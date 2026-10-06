@@ -24,6 +24,7 @@
 //
 
 import Foundation
+import os
 
 /// Curated "popular games" used by the cheat catalog browser's featured
 /// section. The bundled JSON is keyed by cheat.sqlite platform_id and holds, in
@@ -46,13 +47,13 @@ enum GameCheatFeaturedCatalog {
         guard let url = Bundle.main.url(forResource: "featured_cheat_games",
                                         withExtension: "json",
                                         subdirectory: "Data/jsons/cheat") else {
-            print("[CheatCatalog] featured_cheat_games.json not found in bundle")
+            RetroGoLogger.cheat.fault("featured_cheat_games.json not found in bundle")
             return nil
         }
         do {
             return try JSONDecoder().decode(Payload.self, from: Data(contentsOf: url))
         } catch {
-            print("[CheatCatalog] failed to decode featured games: \(error)")
+            RetroGoLogger.cheat.fault("Failed to decode featured cheat games: \(String(describing: error), privacy: .public)")
             return nil
         }
     }()

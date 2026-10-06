@@ -1,0 +1,17 @@
+{
+    "desc": {
+        "en": "Flycast is a multi-platform Sega Dreamcast, NAOMI, NAOMI 2 and Atomiswave emulator. On iOS it runs in interpreter mode without JIT, so demanding 3D games may not reach full speed on older devices. It needs the Dreamcast BIOS (dc_boot.bin and dc_flash.bin in the dc folder) for the best compatibility, and the arcade BIOS (naomi.zip, naomi2.zip, awbios.zip) for arcade games.",
+        "zh": "[Flycast] 是一款多平台的世嘉 Dreamcast、NAOMI、NAOMI 2 与 Atomiswave 模拟器。在 iOS 上以无 JIT 的解释器模式运行，对性能要求较高的 3D 游戏在较旧的设备上可能无法全速运行。为获得最佳兼容性，需要提供 Dreamcast BIOS（dc 文件夹中的 dc_boot.bin 和 dc_flash.bin）；运行街机游戏还需要相应的街机 BIOS（naomi.zip、naomi2.zip、awbios.zip）。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src_url": "https://github.com/flyinghead/flycast",
+    "supports_analog": true,
+    "overlay": "dreamcast",
+    "supports_logic_thread": false,
+    "allows_default_turbo_xy_hijack": false
+}

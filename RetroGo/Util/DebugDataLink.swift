@@ -24,6 +24,7 @@
 //
 
 import Foundation
+import os
 
 enum DebugDataLink {
     private static func symlinkDestination(at url: URL, fileManager: FileManager) -> String? {
@@ -57,7 +58,7 @@ enum DebugDataLink {
 
             try fm.createSymbolicLink(atPath: linkURL.path, withDestinationPath: appSupport.path)
         } catch {
-            print("Debug data symlink create failed: \(error)")
+            RetroGoLogger.general.error("Failed to create debug data symlink: \(String(describing: error))")
         }
         #else
         do {
@@ -65,7 +66,7 @@ enum DebugDataLink {
                 try fm.removeItem(at: linkURL) // Release 下删除
             }
         } catch {
-            print("Release data symlink cleanup failed: \(error)")
+            RetroGoLogger.general.error("Failed to remove debug data symlink: \(String(describing: error))")
         }
         #endif
     }

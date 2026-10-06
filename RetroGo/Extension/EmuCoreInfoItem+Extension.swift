@@ -55,10 +55,13 @@ extension EmuCoreInfoItem {
         case "mega_drive":
             return [17, 18]
         case "master_system":
-            // SG-1000 has no gamerdb platform id yet.
+            // SG-1000 (id 24) has no cht templates.
             return [16, 15]
         case "sega_saturn":
             return [12]
+        case "dreamcast":
+            // Only Dreamcast has cht templates; arcade sets stay out of the catalog.
+            return [20]
         default:
             return []
         }
@@ -80,6 +83,7 @@ extension EmuCoreInfoItem {
         case "ppsspp": return .psp
         case "vbam": return .gba
         case "clownmdemu": return .md
+        case "flycast": return .dreamcast
         case "gearsystem": return .sms
         case "yabause": return .saturn
         case "mame": return .mame

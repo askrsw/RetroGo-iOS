@@ -27,6 +27,7 @@ import UIKit
 import SnapKit
 import ObjcHelper
 import RACoordinator
+import os
 
 /// The in-game cheat editor. Bound system templates are shown first and are
 /// toggle/detail-only; user-created cheats are shown second and remain editable,
@@ -395,11 +396,11 @@ extension GameCheatListViewController {
             do {
                 _ = try game.ensureCRC32()
             } catch {
-                print("[CheatAutoBind] ROM=\(game.itemName), failed to ensure CRC32: \(error)")
+                RetroGoLogger.cheat.error("Auto-bind: failed to compute CRC32 of \(game.itemName): \(String(describing: error))")
             }
 
             let candidates = game.crc32LookupCandidates()
-            print("[CheatAutoBind] ROM=\(game.itemName), rom.crc32=\(game.crc32 ?? "nil"), candidates=\(candidates)")
+            RetroGoLogger.cheat.debug("Auto-bind: \(game.itemName) crc32=\(game.crc32 ?? "nil", privacy: .public) candidates=\(candidates, privacy: .public)")
             guard !candidates.isEmpty else {
                 return
             }
@@ -407,9 +408,9 @@ extension GameCheatListViewController {
             for crc32 in candidates {
                 if let entry = RAGameRDBManager.shared().findGame(byCRC32: crc32) {
                     let group = entry.groupName ?? "nil"
-                    print("[CheatAutoBind] CRC32=\(crc32) matched gamerdb: name=\"\(entry.name)\", group=\"\(group)\", platformId=\(entry.platformId)")
+                    RetroGoLogger.cheat.debug("Auto-bind: CRC32 \(crc32, privacy: .public) matched gamerdb \"\(entry.name, privacy: .public)\" group \"\(group, privacy: .public)\" platform \(entry.platformId)")
                 } else {
-                    print("[CheatAutoBind] CRC32=\(crc32) did not match gamerdb")
+                    RetroGoLogger.cheat.debug("Auto-bind: CRC32 \(crc32, privacy: .public) did not match gamerdb")
                 }
             }
         }

@@ -26,6 +26,7 @@
 import SQLite
 import Foundation
 import ObjcHelper
+import os
 
 /// RetroGo's translations of the texts in Pugsy's MAME cheats: the on-demand resource
 /// "mamecheat-i18n" (`text(en, lang, text)`, every language in one file), looked up by the
@@ -70,12 +71,12 @@ final class MameCheatTexts {
         guard FileManager.default.fileExists(atPath: path), let db = try? Connection(path, readonly: true) else {
             if !loggedMissing {
                 loggedMissing = true
-                NSLog("[MameCheat] Cheat translations not installed yet (%@)", path)
+                RetroGoLogger.mame.info("Cheat translations not installed yet (\(path))")
             }
             return nil
         }
         let count = (try? db.scalar("SELECT count(*) FROM text")) as? Int64 ?? 0
-        NSLog("[MameCheat] Cheat translations opened: %lld texts, app language %@", count, Bundle.currentSimpleLanguageKey())
+        RetroGoLogger.mame.info("Cheat translations opened: \(count) texts, app language \(Bundle.currentSimpleLanguageKey(), privacy: .public)")
         self.db = db
         return db
     }

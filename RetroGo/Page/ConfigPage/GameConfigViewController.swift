@@ -27,6 +27,7 @@ import UIKit
 import SnapKit
 import ObjcHelper
 import RACoordinator
+import os
 
 final class GameConfigViewController: UIViewController {
     private lazy var tableView  = self.configUI()
@@ -329,7 +330,7 @@ extension GameConfigViewController: UITableViewDelegate {
                 let options = try session.makeCoreOptionSession()
                 navigationController?.pushViewController(GameCoreOptionViewController(session: options, settings: session), animated: true)
             } catch {
-                NSLog("[CoreOptions] Failed to load catalog for %@: %@", core.coreId, String(describing: error))
+                RetroGoLogger.coreOption.error("Failed to load catalog for \(core.coreId, privacy: .public): \(String(describing: error))")
                 let alert = UIAlertController(title: Bundle.localizedString(forKey: "coreoption_title"), message: Bundle.localizedString(forKey: "coreoption_load_error"), preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "coreoption_ok"), style: .default))
                 present(alert, animated: true)
@@ -373,7 +374,7 @@ extension GameConfigViewController {
         do {
             let (path, languages, count) = try debugWriteCoreOptionCatalog()
             title = "导出成功"
-            message = "\(count) 个选项，已包含语言：\(languages.joined(separator: ", "))\n\n\(path)\n\n切换系统语言（en / zh-Hans）重新进入游戏再次导出，会与该文件合并。"
+            message = "\(count) 个选项，已包含语言：\(languages.joined(separator: ", "))\n\n\(path)\n\n在设置里切换 App 语言（English / 简体中文）后重新进入游戏再次导出，会与该文件合并。"
         } catch {
             title = "导出失败"
             message = error.localizedDescription
@@ -394,7 +395,7 @@ extension GameConfigViewController {
               let options = snapshot["options"] as? [[String: Any]], !options.isEmpty else {
             throw fail("核心没有注册 Core Option")
         }
-        guard !language.isEmpty else { throw fail("RetroArch 当前语言不是 en / zh-Hans，请切换系统语言后重启 App") }
+        guard !language.isEmpty else { throw fail("RetroArch 当前语言不是 en / zh-Hans，请切换 App 语言后重新进入游戏") }
 
         let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent(Self.debugCoreOptionExportDirectory, isDirectory: true)
@@ -502,7 +503,7 @@ extension GameConfigViewController {
 
         let catalog = try JSONDecoder().decode(GameCoreOptionCatalog.self, from: data)
         try catalog.validate(expectedCoreId: coreId)
-        NSLog("[CoreOptions] Exported %d options (%@) to %@", options.count, language, url.path)
+        RetroGoLogger.coreOption.debug("Debug export: \(options.count) options (\(language, privacy: .public)) written to \(url.path)")
         return (url.path, languages.sorted(), options.count)
     }
 }

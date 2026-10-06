@@ -26,6 +26,7 @@
 import SQLite
 import Foundation
 import RACoordinator
+import os
 
 /// MAME romset database (`mame_romset.db`): the catalog exported from the MAME core
 /// plus the index of recognized user archives.
@@ -75,11 +76,11 @@ final class MameRomSetPersistence {
         guard db != nil else { return }
         DispatchQueue.main.async { [self] in
             if RetroArchX.shared().initialized {
-                NSLog("[MameCatalog] RetroArchX ready, checking catalog")
+                RetroGoLogger.mame.info("RetroArchX ready, checking catalog")
                 MameCatalogBuilder.shared.updateIfNeeded()
                 return
             }
-            NSLog("[MameCatalog] Waiting for RetroArchX before checking catalog")
+            RetroGoLogger.mame.info("Waiting for RetroArchX before checking catalog")
             let waitStart = CFAbsoluteTimeGetCurrent()
             // The ready notification is posted asynchronously on the main queue after
             // `initialized` is set, so it cannot be missed between the check and here.
@@ -90,7 +91,7 @@ final class MameRomSetPersistence {
                     NotificationCenter.default.removeObserver(retroArchReadyObserver)
                     self.retroArchReadyObserver = nil
                 }
-                NSLog("[MameCatalog] RetroArchX ready after %.2fs, checking catalog", CFAbsoluteTimeGetCurrent() - waitStart)
+                RetroGoLogger.mame.info("RetroArchX ready after \(CFAbsoluteTimeGetCurrent() - waitStart, format: .fixed(precision: 2))s, checking catalog")
                 MameCatalogBuilder.shared.updateIfNeeded()
             }
         }
@@ -132,7 +133,7 @@ final class MameRomSetPersistence {
             if attempt > 0 {
                 // Unreadable, corrupt or from another schema version: start over. The
                 // previous connection was released at the end of the last iteration.
-                NSLog("[MameRomSet] Recreating database at %@", path)
+                RetroGoLogger.mame.notice("Recreating romset database at \(path)")
                 removeDatabaseFiles(at: path)
             }
             do {
@@ -140,14 +141,14 @@ final class MameRomSetPersistence {
                 let db = try connect(path: path)
                 if prepareSchema(db: db) {
                     let size = ((try? FileManager.default.attributesOfItem(atPath: path))?[.size] as? NSNumber)?.int64Value ?? 0
-                    NSLog("[MameRomSet] Opened %@ (%lld bytes, %.3fs)", path, size, CFAbsoluteTimeGetCurrent() - start)
+                    RetroGoLogger.mame.info("Opened romset database \(path) (\(size) bytes, \(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 3))s)")
                     return db
                 }
             } catch {
-                NSLog("[MameRomSet] Failed to open %@: %@", path, "\(error)")
+                RetroGoLogger.mame.error("Failed to open romset database \(path): \(String(describing: error))")
             }
         }
-        NSLog("[MameRomSet] Database unavailable, romset features disabled")
+        RetroGoLogger.mame.error("Romset database unavailable, romset features disabled")
         return nil
     }
 
@@ -170,19 +171,19 @@ final class MameRomSetPersistence {
                 case schemaVersion:
                     return true
                 case 0:
-                    NSLog("[MameRomSet] Creating schema v%lld", schemaVersion)
+                    RetroGoLogger.mame.info("Creating romset schema v\(schemaVersion)")
                     try db.transaction {
                         try db.execute(schemaSQL)
                         try db.execute("PRAGMA user_version = \(schemaVersion);")
                     }
                     return true
                 default:
-                    NSLog("[MameRomSet] Schema version %lld, expected %lld", version, schemaVersion)
+                    RetroGoLogger.mame.notice("Romset schema version \(version), expected \(schemaVersion)")
                     return false
             }
         } catch {
             // Expected for a corrupt file; the caller recreates it, so no assertion here.
-            NSLog("[MameRomSet] Failed to prepare schema: %@", "\(error)")
+            RetroGoLogger.mame.error("Failed to prepare romset schema: \(String(describing: error))")
             return false
         }
     }
@@ -202,7 +203,7 @@ final class MameRomSetPersistence {
     }
 
     private static func report(_ error: Error, _ context: String) {
-        NSLog("[MameRomSet] Failed to %@: %@", context, "\(error)")
+        RetroGoLogger.mame.error("Failed to \(context, privacy: .public): \(String(describing: error))")
         assertionFailure("\(context): \(error)")
     }
 

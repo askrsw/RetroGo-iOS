@@ -26,6 +26,7 @@
 import UIKit
 import ObjcHelper
 import RACoordinator
+import os
 
 /// Runs before a Library game starts in MAME. When the set is missing files, needs a
 /// CHD or is known not to work, the user sees what is wrong and can still launch;
@@ -88,22 +89,19 @@ enum MameLaunchCheck {
 
     private static func check(romgameKey: String, archiveFileName: String, core: EmuCoreInfoItem) -> MameSetAudit? {
         guard MameCatalogBuilder.shared.waitUntilReady() else {
-            NSLog("[MameCheck] Catalog unavailable; launching %@ without a check", archiveFileName)
+            RetroGoLogger.mame.notice("Catalog unavailable; launching \(archiveFileName) without a check")
             return nil
         }
         guard let biosFolder = MameBiosFolder(core: core) else { return nil }
 
         let start = CFAbsoluteTimeGetCurrent()
         guard let audit = MameSetAuditor.audit(romgameKey: romgameKey, archiveFileName: archiveFileName, biosFolder: biosFolder) else {
-            NSLog("[MameCheck] %@ is not a recognized set; launching without a check", archiveFileName)
+            RetroGoLogger.mame.info("Launch check: \(archiveFileName) is not a recognized set; launching without a check")
             return nil
         }
-        NSLog("[MameCheck] %@ -> %@%@: %@, %d missing, %d links, %d extractions, %d CHDs, driver %@ (%.3fs)",
-              archiveFileName, audit.machine.name, audit.gameStagedName.map { " (staged as \($0))" } ?? "",
-              "\(audit.verdict)", audit.problems.count, audit.links.count, audit.extractions.count,
-              audit.requiredDisks.count, audit.machine.driverStatus ?? "-", CFAbsoluteTimeGetCurrent() - start)
+        RetroGoLogger.mame.info("Launch check: \(archiveFileName) -> \(audit.machine.name, privacy: .public)\(audit.gameStagedName.map { " (staged as \($0))" } ?? "", privacy: .public): \(String(describing: audit.verdict), privacy: .public), \(audit.problems.count) missing, \(audit.links.count) links, \(audit.extractions.count) extractions, \(audit.requiredDisks.count) CHDs, driver \(audit.machine.driverStatus ?? "-", privacy: .public) (\(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 3))s)")
         for problem in audit.problems {
-            NSLog("[MameCheck]   missing %@ (%@)", problem.fileName, "\(problem.source)")
+            RetroGoLogger.mame.debug("Launch check missing \(problem.fileName, privacy: .public) (\(String(describing: problem.source), privacy: .public))")
         }
         return audit
     }
@@ -146,7 +144,7 @@ enum MameLaunchCheck {
         let byArchive = Dictionary(grouping: extractions) { sourceId($0.source) }
         for (id, items) in byArchive {
             guard let archivePath = sources[id] else {
-                NSLog("[MameCheck] Source of %d files no longer exists (%@)", items.count, id)
+                RetroGoLogger.mame.notice("Launch check: source of \(items.count) files no longer exists (\(id, privacy: .public))")
                 continue
             }
             var destinations: [String: String] = [:]
@@ -161,10 +159,10 @@ enum MameLaunchCheck {
                     }
                 }
             } catch {
-                NSLog("[MameCheck] Extraction from %@ failed: %@", (archivePath as NSString).lastPathComponent, error.localizedDescription)
+                RetroGoLogger.mame.error("Extraction from \((archivePath as NSString).lastPathComponent) failed: \(error.localizedDescription)")
             }
         }
-        NSLog("[MameCheck] Extracted %d of %d files in %.2fs", result.count, extractions.count, CFAbsoluteTimeGetCurrent() - start)
+        RetroGoLogger.mame.info("Launch check extracted \(result.count) of \(extractions.count) files in \(CFAbsoluteTimeGetCurrent() - start, format: .fixed(precision: 2))s")
         return result
     }
 
@@ -180,7 +178,7 @@ enum MameLaunchCheck {
         core.pendingMameSessionLinks = links.isEmpty ? nil : links
         core.pendingMameSessionGameName = audit.gameStagedName
         if !links.isEmpty {
-            NSLog("[MameCheck] Session links: %@", links.keys.sorted().joined(separator: ", "))
+            RetroGoLogger.mame.debug("Launch check session links: \(links.keys.sorted().joined(separator: ", "), privacy: .public)")
         }
     }
 

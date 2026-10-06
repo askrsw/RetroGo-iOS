@@ -26,6 +26,7 @@
 import UIKit
 import ObjcHelper
 import RACoordinator
+import os
 
 enum RetroRomImportMessage {
     case enumeratorBuildFailed
@@ -461,7 +462,7 @@ extension RetroRomFolderImportor {
         // stays. Either way the import no longer fails when the second copy hits the first.
         if let pending = fileItems[targetPath] {
             if pending.sha256 == item.sha256 {
-                NSLog("[Import] Duplicate of %@ at %@ imported once", targetPath, group.entryPath)
+                RetroGoLogger.import.info("Duplicate of \(targetPath) at \(group.entryPath) imported once")
                 return nil
             }
             let newMatch = group.type == .single ? mameMatches[group.entryPath] : nil
@@ -518,7 +519,7 @@ extension RetroRomFolderImportor {
     }
 
     private func reportSkippedDuplicate(entryPath: String, targetPath: String) {
-        NSLog("[Import] %@ skipped: another copy imports to %@", entryPath, targetPath)
+        RetroGoLogger.import.notice("\(entryPath) skipped: another copy imports to \(targetPath)")
         skipedFiles.append(entryPath)
         let formatter = Bundle.localizedString(forKey: "homepage_import_file_skipped")
         let message = String(format: formatter, "\(rootUrl.lastPathComponent)/\(entryPath)")

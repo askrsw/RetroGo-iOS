@@ -29,6 +29,7 @@
 #include <file/archive_file.h>
 #include <streams/file_stream.h>
 #include <encodings/crc32.h>
+#include <utils/retrogo_log.h>
 
 NSErrorDomain const RAArchiveErrorDomain = @"com.retrogame.archive";
 
@@ -41,7 +42,7 @@ static const unsigned kRAZipModeDeflated = 8;
 NS_ASSUME_NONNULL_BEGIN
 
 static NSError *RAArchiveMakeError(RAArchiveErrorCode code, NSString *message) {
-    NSLog(@"[RAArchive] %@", message);
+    RETROGO_LOGE(IMPORT, "Archive: %@", message);
     return [NSError errorWithDomain:RAArchiveErrorDomain code:code userInfo:@{NSLocalizedDescriptionKey: message}];
 }
 
@@ -257,7 +258,7 @@ static int RAArchiveListCallback(const char *name, const char *valid_exts,
 
     NSString *entryName = RAArchiveDecodeName(name);
     if (entryName == nil) {
-        NSLog(@"[RAArchive] Skip entry with undecodable name in %s", userdata->archive_path);
+        RETROGO_LOGN(IMPORT, "Archive: skipped an entry with an undecodable name in %s", userdata->archive_path);
         return 1;
     }
 

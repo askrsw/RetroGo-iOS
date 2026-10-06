@@ -25,6 +25,7 @@
 
 #import "EmuCoreFirmware.h"
 #import <CommonCrypto/CommonDigest.h>
+#include <utils/retrogo_log.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -108,7 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (!success) {
-        NSLog(@"[Firmware] Copy failed: %@", error.localizedDescription);
+        RETROGO_LOGE(IMPORT, "Firmware copy failed: %@", error.localizedDescription);
     }
 
     return success;
@@ -120,7 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     // 1. 检查文件是否存在 (可选，为了防止对不存在的文件报错)
     if (![fileManager fileExistsAtPath:destPath]) {
-        NSLog(@"Delete skipped: File not found at %@", destPath);
+        RETROGO_LOGN(IMPORT, "Firmware delete skipped: file not found at %@", destPath);
         return YES;
     }
 
@@ -129,7 +130,7 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL success = [fileManager removeItemAtPath:destPath error:&error];
 
     if (!success) {
-        NSLog(@"Failed to delete file: %@, Error: %@", destPath, error.localizedDescription);
+        RETROGO_LOGE(IMPORT, "Failed to delete firmware %@: %@", destPath, error.localizedDescription);
         return NO;
     }
 

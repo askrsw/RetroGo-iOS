@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.11.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.11.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>October 7, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.11.0" style="number">
+            <p-item>Added the <b>Flycast</b> core for Sega <b>Dreamcast</b> and <b>NAOMI, NAOMI 2 and Atomiswave</b> arcade games. iOS doesn't allow JIT, so the core runs as an interpreter, and demanding 3D games may not reach full speed on older devices. Dreamcast games work best with the BIOS (dc_boot.bin and dc_flash.bin in the dc folder), and arcade games need their arcade BIOS (naomi.zip, naomi2.zip, awbios.zip).</p-item>
+            <p-item>Dreamcast gets its own <b>on-screen controller layout</b>, with a <b>coin button</b> for arcade games, plus a curated set of Flycast <b>core options</b>.</p-item>
+            <p-item>NAOMI / Atomiswave games in <b>.lst format</b> are now imported as <b>a single game in the Library</b>, together with the ROM files the .lst lists; you'll be told if any of them are missing.</p-item>
+            <p-item>The game database in Discover now covers <b>Dreamcast, NAOMI, NAOMI 2, Atomiswave and SG-1000</b>, so you can browse and look up their games, and the cheat template library adds <b>Dreamcast</b> games with automatic matching.</p-item>
+            <p-item>Fixed cheat templates not matching automatically for <b>multi-file games</b> such as cue and gdi. When a game has templates for several regions, <b>USA and World</b> ROMs now match correctly too.</p-item>
+            <p-item>Cores now follow the <b>App language</b> instead of the system language: after you change the language in RetroGo, core option names and the in-game language of cores such as PPSSPP follow it from the next game you start.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.10.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.10.0</p-title>
         <p-paragraph fontsize="13">

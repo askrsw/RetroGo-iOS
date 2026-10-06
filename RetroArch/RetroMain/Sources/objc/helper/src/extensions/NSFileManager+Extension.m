@@ -25,6 +25,18 @@
 
 #import "NSFileManager+Extension.h"
 #include <CommonCrypto/CommonDigest.h>
+#include <os/log.h>
+
+// Self-contained so ObjcHelper stays independent of the host app.
+static os_log_t ObjcHelperLog(void) {
+    static os_log_t log;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        NSString *subsystem = NSBundle.mainBundle.bundleIdentifier ?: @"ObjcHelper";
+        log = os_log_create(subsystem.UTF8String, "ObjcHelper");
+    });
+    return log;
+}
 
 @implementation NSFileManager (Extension)
 
@@ -79,7 +91,7 @@
         NSError *error = nil;
         BOOL success = [self createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:&error];
         if (!success) {
-            NSLog(@"Failed to create directory at path: %@, error: %@", path, error);
+            os_log_error(ObjcHelperLog(), "Failed to create directory at %@: %@", path, error);
         }
         return success;
     }
@@ -116,7 +128,7 @@
             }
         }
     } @catch (NSException *exception) {
-        NSLog(@"Exception occurred while reading file: %@", exception);
+        os_log_error(ObjcHelperLog(), "Exception while reading %@ for MD5: %{public}@", filePath, exception.reason);
         return nil;
     } @finally {
         if (fileHandle) {
@@ -153,7 +165,7 @@
             }
         }
     } @catch (NSException *exception) {
-        NSLog(@"Exception occurred while reading file: %@", exception);
+        os_log_error(ObjcHelperLog(), "Exception while reading %@ for SHA-256: %{public}@", filePath, exception.reason);
         return nil;
     } @finally {
         if (fileHandle) {

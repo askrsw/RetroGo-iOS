@@ -27,6 +27,7 @@ import UIKit
 import SQLite
 import ObjcHelper
 import RACoordinator
+import os
 
 enum RetroRomFileGroupType: String, Value {
     case single = "single"
@@ -35,6 +36,7 @@ enum RetroRomFileGroupType: String, Value {
     case m3u = "m3u"
     case gdi = "gdi"
     case ccd = "ccd"
+    case lst = "lst"
 
     // 1. Define the underlying storage data type (String corresponds to String.Datatype, which is TEXT in SQLite)
     static var declaredDatatype: String {
@@ -242,7 +244,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
         do {
             try FileManager.default.removeItem(atPath: fullPath)
         } catch {
-            print("Failed to delete rom file: \(rawName) for item: \(itemName), error: \(error)")
+            RetroGoLogger.library.error("Failed to delete rom file \(self.rawName) for item \(self.itemName): \(String(describing: error))")
             let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_failed"), filePath)
             indicatorView.errorMessage(message, title: Bundle.localizedString(forKey: "error"), canDismiss: true)
             return false
@@ -251,7 +253,7 @@ final class RetroRomFileItem: RetroRomBaseItem {
         do {
             try GameConfigSession.deleteGameConfig(key)
         } catch {
-            print("Failed to delete game config: \(key) for item: \(itemName), error: \(error)")
+            RetroGoLogger.library.error("Failed to delete game config \(self.key, privacy: .public) for item \(self.itemName): \(String(describing: error))")
         }
 
         if !RetroRomFileManager.shared.deleteFileItem(key) {
@@ -310,7 +312,16 @@ final class RetroRomFileItem: RetroRomBaseItem {
     @discardableResult
     func ensureCRC32() throws -> String? {
         if let crc32, !crc32.isEmpty {
-            return crc32
+            // A multi-file game's own CRC is an aggregate that never matches a
+            // database record; lookups use the member CRCs, so load them first.
+            if fileGroupType == .single || !subItems.isEmpty {
+                return crc32
+            }
+            if let loaded = RetroRomPersistence.shared.getGameFileSubItems(key: key), !loaded.isEmpty,
+               loaded.allSatisfy({ $0.crc32?.isEmpty == false }) {
+                subItems = loaded
+                return crc32
+            }
         }
 
         if fileGroupType == .single {
