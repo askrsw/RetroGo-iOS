@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "platform_labels": {
     "2": "FDS (Famicom Disk System)",
     "3": "GB (Game Boy)",
@@ -11,7 +11,8 @@
     "10": "PS1 (PlayStation)",
     "12": "Saturn",
     "13": "SNES",
-    "17": "MD (Mega Drive / Genesis)"
+    "17": "MD (Mega Drive / Genesis)",
+    "20": "DC (Dreamcast)"
   },
   "platforms": {
     "2": [
@@ -194,6 +195,23 @@
       "Comix Zone (USA)",
       "Altered Beast (USA, Europe)",
       "Thunder Force III (Japan, USA)"
+    ],
+    "20": [
+      "Sonic Adventure Version 1.1",
+      "Shenmue",
+      "Soul Calibur",
+      "Resident Evil 2",
+      "Bio Hazard 3-Last Escape",
+      "Dino Crisis",
+      "Grandia II",
+      "Phantasy Star Online",
+      "Jet Grind Radio",
+      "Crazy Taxi",
+      "Marvel Vs. Capcom 2",
+      "Street Fighter III-3rd Strike",
+      "Capcom Vs. SNK",
+      "Dead Or Alive 2",
+      "House Of The Dead, The"
     ]
   }
 }

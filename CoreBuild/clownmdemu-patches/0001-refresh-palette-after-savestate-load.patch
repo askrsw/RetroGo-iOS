@@ -1,0 +1,49 @@
+diff --git a/source/libretro-interface.c b/source/libretro-interface.c
+index c85833d..f6abd6d 100644
+--- a/source/libretro-interface.c
++++ b/source/libretro-interface.c
+@@ -61,6 +61,10 @@ static CheatManager cheat_manager;
+ 
+ static cc_bool pal_mode_enabled;
+ 
++/* Set after a savestate is loaded: the colour lookup table is only filled by
++   CRAM writes, so it must be rebuilt from the restored CRAM. */
++static cc_bool colours_need_refresh;
++
+ static struct retro_vfs_file_handle *buram_file_handle;
+ 
+ LibretroCallbacks libretro_callbacks;
+@@ -296,6 +300,25 @@ static void ScanlineRenderedCallback(void* const user_data, const cc_u16f scanli
+ 		Geometry_SetScreenSize(screen_width, screen_height);
+ 	}
+ 
++	/* Rebuild the colour lookup table from CRAM using the colour callback that
++	   matches the framebuffer format selected above. The offsets and conversions
++	   mirror the VDP's CRAM write path (normal, shadow, highlight). */
++	if (scanline == 0 && colours_need_refresh)
++	{
++		cc_u16f i;
++
++		colours_need_refresh = cc_false;
++
++		for (i = 0; i < CC_COUNT_OF(clownmdemu.vdp.state.cram); ++i)
++		{
++			const cc_u16f colour = clownmdemu.vdp.state.cram[i];
++
++			clownmdemu_callbacks.colour_updated(user_data, (0 << 6) + i, colour | ((colour & 0x888) >> 3));
++			clownmdemu_callbacks.colour_updated(user_data, (1 << 6) + i, colour >> 1);
++			clownmdemu_callbacks.colour_updated(user_data, (2 << 6) + i, 0x888 + (colour >> 1));
++		}
++	}
++
+ 	/* Prevent mid-frame resolution changes from causing out-of-bound framebuffer accesses. */
+ 	if (scanline < geometry.current_screen_height)
+ 		scanline_rendered_callback(user_data, pixels, (unsigned char*)current_framebuffer + (current_framebuffer_pitch * scanline), left_boundary, right_boundary);
+@@ -1176,6 +1199,7 @@ bool retro_unserialize(const void* const data, const size_t size)
+ 
+ 	ClownMDEmu_LoadState(&clownmdemu, &serialised_state->clownmdemu);
+ 	CDReader_LoadState(&cd_reader, &serialised_state->cd_reader);
++	colours_need_refresh = cc_true;
+ 	return true;
+ }
+ 

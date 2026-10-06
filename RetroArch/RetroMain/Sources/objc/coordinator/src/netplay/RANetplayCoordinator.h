@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Bridges RetroGo's Swift/UIKit layer to RetroArch's C netplay engine.
 ///
-/// Design contract (see LocalDocs/15_netplay.md):
+/// Design contract:
 ///   - This is the ONLY object that talks to the C netplay API.
 ///   - State-mutating calls (host/join/disconnect/spectate) are marshalled onto
 ///     the game-logic execution domain via the active RAGameLoopRunner, so they

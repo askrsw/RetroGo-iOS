@@ -1,0 +1,47 @@
+diff --git a/src/frontend/mame/cheat.h b/src/frontend/mame/cheat.h
+index 55cba77c16f..048fd6e2329 100644
+--- a/src/frontend/mame/cheat.h
++++ b/src/frontend/mame/cheat.h
+@@ -101,6 +101,10 @@ public:
+ 	bool set_prev_state();
+ 	bool set_next_state();
+ 
++	// RetroGo: direct access by 0-based position (item index, or step count from the minimum)
++	int position() const;
++	bool set_position(unsigned position);
++
+ 	// actions
+ 	void save(util::core_file &cheatfile) const;
+ 
+@@ -267,6 +271,8 @@ public:
+ 	bool select_default_state();
+ 	bool select_previous_state();
+ 	bool select_next_state();
++	bool select_parameter_position(unsigned position);
++	int parameter_position() const { return m_parameter ? m_parameter->position() : -1; }
+ 	void save(util::core_file &cheatfile) const;
+ 
+ 	// UI helpers
+@@ -324,6 +330,12 @@ public:
+ 	// output helpers
+ 	std::string &get_output_string(int row, ui::text_layout::text_justify justify);
+ 
++	// RetroGo: cheat XML handed over by the frontend; reload() uses it instead of cheat
++	// files while it is set. Empty clears it. Any thread; takes effect on the next reload().
++	static void set_frontend_xml(std::string xml);
++	// RetroGo: increases every time reload() has replaced the cheat list (any thread)
++	static unsigned load_generation();
++
+ 	// global helpers
+ 	static std::string quote_expression(parsed_expression const &expression);
+ 	static uint64_t execute_frombcd(int params, uint64_t const *param);
+@@ -333,6 +345,9 @@ private:
+ 	// internal helpers
+ 	void frame_update();
+ 	void load_cheats(std::string const &filename);
++	bool load_frontend_xml();
++	static void note_cheats_loaded();
++	void parse_cheat_file(util::core_file &file, std::string const &filename, char const *source);
+ 
+ 	// internal state
+ 	running_machine &                           m_machine;      // reference to our machine

@@ -1,0 +1,155 @@
+diff --git a/source/libretro-interface.c b/source/libretro-interface.c
+index f6abd6d..55c1be7 100644
+--- a/source/libretro-interface.c
++++ b/source/libretro-interface.c
+@@ -61,6 +61,11 @@ static CheatManager cheat_manager;
+ 
+ static cc_bool pal_mode_enabled;
+ 
++/* Region and TV standard taken from the cartridge header, used when the
++   corresponding options are set to "auto". */
++static cc_bool detected_japan;
++static cc_bool detected_pal;
++
+ /* Set after a savestate is loaded: the colour lookup table is only filled by
+    CRAM writes, so it must be rebuilt from the restored CRAM. */
+ static cc_bool colours_need_refresh;
+@@ -693,9 +698,72 @@ static ControllerManager_Protocol DoOptionInputProtocol(const char* const key)
+ 	return CONTROLLER_MANAGER_PROTOCOL_STANDARD;
+ }
+ 
++static cc_bool DoOptionAuto(const char* const key)
++{
++	struct retro_variable variable;
++	variable.key = key;
++	return !libretro_callbacks.environment(RETRO_ENVIRONMENT_GET_VARIABLE, (void*)&variable) || variable.value == NULL || strcmp(variable.value, "auto") == 0;
++}
++
++/* Reads the region field of the cartridge header (0x1F0-0x1F2). Supports
++   both the old letter codes (J/U/E) and the newer hex bitmask
++   (bit 0: Japan, bit 2: Americas, bit 3: Europe). Americas is preferred,
++   then Japan, then Europe, so multi-region games run as NTSC. */
++static void DetectRegion(void)
++{
++	cc_bool japan = cc_false, americas = cc_false, europe = cc_false;
++	size_t offset;
++
++	detected_japan = cc_false;
++	detected_pal = cc_false;
++
++	if (rom == NULL || rom_length * 2 < 0x1F3)
++		return;
++
++	/* Hacked ROMs often overwrite the header; only trust printable ASCII. */
++	for (offset = 0x1F0; offset < 0x1F3; ++offset)
++	{
++		const unsigned int c = (rom[offset / 2] >> ((offset & 1) ? 0 : 8)) & 0xFF;
++
++		if (c < 0x20 || c > 0x7E)
++			return;
++	}
++
++	for (offset = 0x1F0; offset < 0x1F3; ++offset)
++	{
++		const unsigned int c = (rom[offset / 2] >> ((offset & 1) ? 0 : 8)) & 0xFF;
++		unsigned int mask = 0;
++
++		if (c == 'J')
++			japan = cc_true;
++		else if (c == 'U')
++			americas = cc_true;
++		else if (c == 'E')
++			europe = cc_true;
++		else if (offset == 0x1F0 && c >= '0' && c <= '9')
++			mask = c - '0';
++		else if (offset == 0x1F0 && c >= 'A' && c <= 'F' && c != 'E')
++			mask = c - 'A' + 10;
++
++		if (mask & 1) japan = cc_true;
++		if (mask & 4) americas = cc_true;
++		if (mask & 8) europe = cc_true;
++	}
++
++	if (americas)
++		return;
++
++	if (japan)
++		detected_japan = cc_true;
++	else if (europe)
++		detected_pal = cc_true;
++}
++
+ static void UpdateOptions(const cc_bool only_update_flags)
+ {
+-	const cc_bool pal_mode_changed = pal_mode_enabled != DoOptionBoolean("clownmdemu_tv_standard", "pal");
++	const cc_bool want_pal = DoOptionAuto("clownmdemu_tv_standard") ? detected_pal : DoOptionBoolean("clownmdemu_tv_standard", "pal");
++	const cc_bool want_japan = DoOptionAuto("clownmdemu_overseas_region") ? detected_japan : DoOptionBoolean("clownmdemu_overseas_region", "japan");
++	const cc_bool pal_mode_changed = pal_mode_enabled != want_pal;
+ 
+ 	pal_mode_enabled ^= pal_mode_changed;
+ 
+@@ -713,7 +781,7 @@ static void UpdateOptions(const cc_bool only_update_flags)
+ 
+ 	Geometry_SetTallInterlaceMode2(DoOptionBoolean("clownmdemu_tall_interlace_mode_2", "enabled"));
+ 
+-	clownmdemu.configuration.region                           =  DoOptionBoolean("clownmdemu_overseas_region", "elsewhere") ? CLOWNMDEMU_REGION_OVERSEAS : CLOWNMDEMU_REGION_DOMESTIC;
++	clownmdemu.configuration.region                           =  want_japan ? CLOWNMDEMU_REGION_DOMESTIC : CLOWNMDEMU_REGION_OVERSEAS;
+ 	clownmdemu.configuration.tv_standard                      =  pal_mode_enabled ? CLOWNMDEMU_TV_STANDARD_PAL : CLOWNMDEMU_TV_STANDARD_NTSC;
+ 	clownmdemu.configuration.low_pass_filter_disabled         = !DoOptionBoolean("clownmdemu_lowpass_filter", "enabled");
+ 	clownmdemu.configuration.cd_add_on_enabled                =  DoOptionBoolean("clownmdemu_cd_addon", "enabled");
+@@ -1160,6 +1228,21 @@ bool retro_load_game_special(const unsigned int type, const struct retro_game_in
+ 		return false;
+ 	}
+ 
++	/* Apply the header region before booting. The frontend queries the AV
++	   info after loading, so only the mixer needs to follow a PAL switch. */
++	{
++		const cc_bool was_pal = pal_mode_enabled;
++
++		DetectRegion();
++		UpdateOptions(cc_true);
++
++		if (pal_mode_enabled != was_pal)
++		{
++			Mixer_Deinitialise(&mixer);
++			Mixer_Initialise(&mixer, pal_mode_enabled);
++		}
++	}
++
+ 	/* Provide memory descriptors to the frontend (needed for achievements, cheats, and the like). */
+ 	SetMemoryMaps(rom, rom_length);
+ 
+diff --git a/source/options.h b/source/options.h
+index fed34a7..e9336b6 100644
+--- a/source/options.h
++++ b/source/options.h
+@@ -346,12 +346,13 @@ struct retro_core_option_v2_definition option_defs_us[] = {
+ 		"console",
+ 		/* Values. */
+ 		{
++			{"auto", "Auto"},
+ 			{"pal", "PAL (50Hz)"},
+ 			{"ntsc", "NTSC (59.94Hz)"},
+ 			{NULL, NULL},
+ 		},
+ 		/* Default value. */
+-		"ntsc"
++		"auto"
+ 	},
+ 	{
+ 		/* Key. */
+@@ -368,12 +369,13 @@ struct retro_core_option_v2_definition option_defs_us[] = {
+ 		"console",
+ 		/* Values. */
+ 		{
++			{"auto", "Auto"},
+ 			{"elsewhere", "International"},
+ 			{"japan", "Japan"},
+ 			{NULL, NULL},
+ 		},
+ 		/* Default value. */
+-		"elsewhere"
++		"auto"
+ 	},
+ 	{
+ 		/* Key. */

@@ -1,0 +1,294 @@
+diff --git a/src/frontend/mame/cheat.cpp b/src/frontend/mame/cheat.cpp
+index 1abac11dec2..1e503766a43 100644
+--- a/src/frontend/mame/cheat.cpp
++++ b/src/frontend/mame/cheat.cpp
+@@ -81,6 +81,9 @@
+ 
+ #include "corestr.h"
+ #include "emuopts.h"
++
++#include <atomic>
++#include <mutex>
+ #include "fileio.h"
+ 
+ #include <cstring>
+@@ -306,6 +309,52 @@ bool cheat_parameter::set_next_state()
+ 
+ 
+ 
++//-------------------------------------------------
++//  position - RetroGo: 0-based position of the
++//  current value (item index or steps from min)
++//-------------------------------------------------
++
++int cheat_parameter::position() const
++{
++	if (has_itemlist())
++	{
++		for (size_t index = 0; index < m_itemlist.size(); index++)
++			if (m_itemlist[index].value() == m_value)
++				return int(index);
++		return -1;
++	}
++	uint64_t const step = m_stepval ? uint64_t(m_stepval) : 1;
++	return int((uint64_t(m_value) - uint64_t(m_minval)) / step);
++}
++
++
++//-------------------------------------------------
++//  set_position - RetroGo: jump straight to a
++//  position without walking the states between
++//-------------------------------------------------
++
++bool cheat_parameter::set_position(unsigned position)
++{
++	uint64_t const origvalue(m_value);
++
++	if (has_itemlist())
++	{
++		if (position >= m_itemlist.size())
++			return false;
++		m_value = m_itemlist[position].value();
++	}
++	else
++	{
++		uint64_t const step = m_stepval ? uint64_t(m_stepval) : 1;
++		uint64_t const value = uint64_t(m_minval) + step * position;
++		m_value = (value > uint64_t(m_maxval) || value < uint64_t(m_minval)) ? uint64_t(m_maxval) : value;
++	}
++
++	return m_value != origvalue;
++}
++
++
++
+ //**************************************************************************
+ //  CHEAT SCRIPT
+ //**************************************************************************
+@@ -940,6 +989,32 @@ bool cheat_entry::select_next_state()
+ }
+ 
+ 
++//-------------------------------------------------
++//  select_parameter_position - RetroGo: switch a
++//  parameter cheat on at the given position
++//-------------------------------------------------
++
++bool cheat_entry::select_parameter_position(unsigned position)
++{
++	if (m_parameter == nullptr)
++		return false;
++
++	bool changed(false);
++	if (m_state == SCRIPT_STATE_OFF)
++	{
++		changed = set_state(SCRIPT_STATE_RUN);
++		m_parameter->set_minimum_state();
++	}
++	changed = m_parameter->set_position(position) || changed;
++
++	// same as select_next_state: one-shot parameters only apply on activate()
++	if (changed && !is_oneshot_parameter())
++		execute_change_script();
++
++	return changed;
++}
++
++
+ //-------------------------------------------------
+ //  menu_text - return the text needed to display
+ //  this cheat in a menu item
+@@ -1155,6 +1230,13 @@ void cheat_manager::reload()
+ 	m_lastline = 0;
+ 	m_disabled = false;
+ 
++	// RetroGo: cheats handed over by the frontend take the place of cheat files
++	if (load_frontend_xml())
++	{
++		note_cheats_loaded();
++		return;
++	}
++
+ 	// load the cheat file, if it's a system that has a software list then try softlist_name/shortname.xml first,
+ 	// if it fails to load then try to load via crc32 - basename/crc32.xml ( eg. 01234567.xml )
+ 	for (device_image_interface &image : image_interface_enumerator(machine().root_device()))
+@@ -1186,9 +1268,9 @@ void cheat_manager::reload()
+ 	if (m_cheatlist.empty())
+ 		load_cheats(machine().basename());
+ 
+-	// temporary: save the file back out as output.xml for comparison
+-	if (m_cheatlist.size() != 0)
+-		save_all("output");
++	// RetroGo: upstream writes output.xml into the cheat path here ("temporary"); cheat files are
++	// owned by the app, so nothing is written back.
++	note_cheats_loaded();
+ }
+ 
+ 
+@@ -1412,58 +1494,123 @@ void cheat_manager::load_cheats(std::string const &filename)
+ 		for (std::error_condition filerr = cheatfile.open(filename + ".xml"); !filerr; filerr = cheatfile.open_next())
+ 		{
+ 			osd_printf_verbose("Loading cheats file from %s\n", cheatfile.fullpath());
++			parse_cheat_file(cheatfile, filename, cheatfile.fullpath());
++		}
++	}
++	catch (emu_fatalerror const &err)
++	{
++		// handle errors cleanly
++		osd_printf_error("%s\n", err.what());
++		m_cheatlist.clear();
++	}
++}
+ 
+-			// read the XML file into internal data structures
+-			util::xml::parse_options options;
+-			util::xml::parse_error error;
+-			options.error = &error;
+-			util::xml::file::ptr const rootnode(util::xml::file::read(cheatfile, &options));
+ 
+-			// if unable to parse the file, just bail
+-			if (!rootnode)
+-				throw emu_fatalerror("%s.xml(%d): error parsing XML (%s)\n", filename, error.error_line, error.error_message);
++//-------------------------------------------------
++//  RetroGo: cheat XML handed over by the frontend
++//-------------------------------------------------
+ 
+-			// find the layout node
+-			util::xml::data_node const *const mamecheatnode(rootnode->get_child("mamecheat"));
+-			if (mamecheatnode == nullptr)
+-				throw emu_fatalerror("%s.xml: missing mamecheatnode node", filename);
++static std::mutex s_frontend_xml_mutex;
++static std::string s_frontend_xml;
++static std::atomic<unsigned> s_load_generation{ 0 };
+ 
+-			// validate the config data version
+-			int const version(mamecheatnode->get_attribute_int("version", 0));
+-			if (version != CHEAT_VERSION)
+-				throw emu_fatalerror("%s.xml(%d): Invalid cheat XML file: unsupported version", filename, mamecheatnode->line);
++void cheat_manager::note_cheats_loaded()
++{
++	s_load_generation.fetch_add(1, std::memory_order_release);
++}
+ 
+-			// parse all the elements
+-			for (util::xml::data_node const *cheatnode = mamecheatnode->get_child("cheat"); cheatnode != nullptr; cheatnode = cheatnode->get_next_sibling("cheat"))
+-			{
+-				try
+-				{
+-					// load this entry
+-					auto curcheat = std::make_unique<cheat_entry>(*this, m_symtable, filename, *cheatnode);
+-
+-					// make sure we're not a duplicate
+-					if (REMOVE_DUPLICATE_CHEATS && curcheat->is_duplicate())
+-					{
+-						osd_printf_verbose("Ignoring duplicate cheat '%s' from file %s\n", curcheat->description(), cheatfile.fullpath());
+-					}
+-					else
+-					{
+-						// add to the end of the list
+-						m_cheatlist.push_back(std::move(curcheat));
+-					}
+-				}
+-				catch (emu_fatalerror const &err)
+-				{
+-					// just move on to the next cheat
+-					osd_printf_error("%s\n", err.what());
+-				}
+-			}
+-		}
++unsigned cheat_manager::load_generation()
++{
++	return s_load_generation.load(std::memory_order_acquire);
++}
++
++void cheat_manager::set_frontend_xml(std::string xml)
++{
++	std::lock_guard<std::mutex> lock(s_frontend_xml_mutex);
++	s_frontend_xml = std::move(xml);
++}
++
++bool cheat_manager::load_frontend_xml()
++{
++	std::string xml;
++	{
++		std::lock_guard<std::mutex> lock(s_frontend_xml_mutex);
++		xml = s_frontend_xml;
++	}
++	if (xml.empty())
++		return false;
++
++	// open_ram does not copy: `xml` outlives the file
++	util::core_file::ptr file;
++	if (util::core_file::open_ram(xml.data(), xml.size(), OPEN_FLAG_READ, file))
++	{
++		osd_printf_error("Cheats: could not open the frontend cheat data\n");
++		return true;
++	}
++	try
++	{
++		parse_cheat_file(*file, machine().basename(), "frontend");
++		osd_printf_verbose("Loaded %d cheats handed over by the frontend\n", int(m_cheatlist.size()));
+ 	}
+ 	catch (emu_fatalerror const &err)
+ 	{
+-		// handle errors cleanly
+ 		osd_printf_error("%s\n", err.what());
+ 		m_cheatlist.clear();
+ 	}
++	return true;
++}
++
++
++//-------------------------------------------------
++//  parse_cheat_file - append the cheats of one
++//  cheat XML to the list; throws on a bad file
++//-------------------------------------------------
++
++void cheat_manager::parse_cheat_file(util::core_file &file, std::string const &filename, char const *source)
++{
++	// read the XML file into internal data structures
++	util::xml::parse_options options;
++	util::xml::parse_error error;
++	options.error = &error;
++	util::xml::file::ptr const rootnode(util::xml::file::read(file, &options));
++
++	// if unable to parse the file, just bail
++	if (!rootnode)
++		throw emu_fatalerror("%s.xml(%d): error parsing XML (%s)\n", filename, error.error_line, error.error_message);
++
++	// find the layout node
++	util::xml::data_node const *const mamecheatnode(rootnode->get_child("mamecheat"));
++	if (mamecheatnode == nullptr)
++		throw emu_fatalerror("%s.xml: missing mamecheatnode node", filename);
++
++	// validate the config data version
++	int const version(mamecheatnode->get_attribute_int("version", 0));
++	if (version != CHEAT_VERSION)
++		throw emu_fatalerror("%s.xml(%d): Invalid cheat XML file: unsupported version", filename, mamecheatnode->line);
++
++	// parse all the elements
++	for (util::xml::data_node const *cheatnode = mamecheatnode->get_child("cheat"); cheatnode != nullptr; cheatnode = cheatnode->get_next_sibling("cheat"))
++	{
++		try
++		{
++			// load this entry
++			auto curcheat = std::make_unique<cheat_entry>(*this, m_symtable, filename, *cheatnode);
++
++			// make sure we're not a duplicate
++			if (REMOVE_DUPLICATE_CHEATS && curcheat->is_duplicate())
++			{
++				osd_printf_verbose("Ignoring duplicate cheat '%s' from file %s\n", curcheat->description(), source);
++			}
++			else
++			{
++				// add to the end of the list
++				m_cheatlist.push_back(std::move(curcheat));
++			}
++		}
++		catch (emu_fatalerror const &err)
++		{
++			// just move on to the next cheat
++			osd_printf_error("%s\n", err.what());
++		}
++	}
+ }

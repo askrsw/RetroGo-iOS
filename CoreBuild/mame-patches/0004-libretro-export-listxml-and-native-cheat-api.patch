@@ -1,0 +1,235 @@
+diff --git a/src/osd/libretro/libretro-internal/libretro.cpp b/src/osd/libretro/libretro-internal/libretro.cpp
+index b5370dfd65f..1d262066384 100755
+--- a/src/osd/libretro/libretro-internal/libretro.cpp
++++ b/src/osd/libretro/libretro-internal/libretro.cpp
+@@ -14,6 +14,12 @@
+ #include "uiinput.h"
+ #include "drivenum.h"
+ #include "../frontend/mame/mame.h"
++#include "../frontend/mame/infoxml.h"
++#include "../frontend/mame/cheat.h"
++
++#include <fstream>
++#include <mutex>
++#include <vector>
+ 
+ #include "libretro.h"
+ #include "libretro_shared.h"
+@@ -887,10 +893,14 @@ void retro_reset(void)
+    coin_inserted = 0;
+ }
+ 
++static void retrogo_mame_apply_cheat_requests(void);
++
+ void retro_run(void)
+ {
+    bool updated = false;
+ 
++   retrogo_mame_apply_cheat_requests();
++
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
+    {
+       check_variables();
+@@ -1146,3 +1156,202 @@ void retro_frame_draw_enable(bool enable)
+ {
+    draw_this_frame = enable;
+ }
++
++/* RetroGo: write the -listxml inventory of the drivers compiled into this core.
++ * Must not be called while a game is running (MAME keeps global machine state). */
++extern "C" RETRO_API bool retrogo_mame_write_listxml(const char *path)
++{
++   if (!path || !*path)
++      return false;
++   try
++   {
++      std::ofstream out(path, std::ios::binary | std::ios::trunc);
++      if (!out)
++         return false;
++      emu_options options;
++      info_xml_creator(options, true).output(out, std::vector<std::string>());
++      out.flush();
++      return out.good();
++   }
++   catch (...)
++   {
++      return false;
++   }
++}
++
++/* RetroGo: access to MAME's native cheat engine (retro_cheat_* are no-ops in this core).
++ * Cheats come from the XML handed over with retrogo_mame_cheat_set_xml (or else from
++ * <cheatpath>/<set>.xml) and load when the machine starts with -cheat.
++ * Reads are safe from any thread once the machine runs (the entry list is fixed after load);
++ * changes are queued and applied on the emulation thread at the start of retro_run. */
++enum retrogo_cheat_op { RETROGO_CHEAT_OFF, RETROGO_CHEAT_ON, RETROGO_CHEAT_PARAMETER, RETROGO_CHEAT_ACTIVATE };
++
++struct retrogo_cheat_request
++{
++   int index;
++   retrogo_cheat_op op;
++   unsigned position;
++};
++
++static std::mutex retrogo_cheat_mutex;
++static std::vector<retrogo_cheat_request> retrogo_cheat_requests;
++static bool retrogo_cheat_reload_requested = false;
++
++static cheat_manager *retrogo_mame_cheat_manager(void)
++{
++   mame_machine_manager *manager = mame_machine_manager::instance();
++   if (!manager || !manager->machine() || manager->machine()->phase() != machine_phase::RUNNING)
++      return nullptr;
++   if (!manager->machine()->options().cheat())
++      return nullptr;
++   return &manager->cheat();
++}
++
++static cheat_entry *retrogo_mame_cheat_entry(int index)
++{
++   cheat_manager *cheats = retrogo_mame_cheat_manager();
++   if (!cheats || index < 0 || index >= (int)cheats->entries().size())
++      return nullptr;
++   return cheats->entries()[index].get();
++}
++
++static void retrogo_mame_apply_cheat_requests(void)
++{
++   std::vector<retrogo_cheat_request> requests;
++   bool reload = false;
++   {
++      std::lock_guard<std::mutex> lock(retrogo_cheat_mutex);
++      if (retrogo_cheat_requests.empty() && !retrogo_cheat_reload_requested)
++         return;
++      requests.swap(retrogo_cheat_requests);
++      reload = retrogo_cheat_reload_requested;
++      retrogo_cheat_reload_requested = false;
++   }
++   if (reload)
++   {
++      /* Requests queued before the reload refer to the old entries. */
++      if (cheat_manager *cheats = retrogo_mame_cheat_manager())
++         cheats->reload();
++      return;
++   }
++   for (auto const &request : requests)
++   {
++      cheat_entry *entry = retrogo_mame_cheat_entry(request.index);
++      if (!entry)
++         continue;
++      switch (request.op)
++      {
++      case RETROGO_CHEAT_OFF:
++         entry->select_default_state();
++         break;
++      case RETROGO_CHEAT_ON:
++         if (entry->is_onoff() && entry->state() == SCRIPT_STATE_OFF)
++            entry->select_next_state();
++         break;
++      case RETROGO_CHEAT_PARAMETER:
++         entry->select_parameter_position(request.position);
++         break;
++      case RETROGO_CHEAT_ACTIVATE:
++         entry->activate();
++         break;
++      }
++   }
++}
++
++static bool retrogo_mame_queue_cheat_request(int index, retrogo_cheat_op op, unsigned position)
++{
++   if (!retrogo_mame_cheat_entry(index))
++      return false;
++   std::lock_guard<std::mutex> lock(retrogo_cheat_mutex);
++   retrogo_cheat_requests.push_back({ index, op, position });
++   return true;
++}
++
++extern "C" RETRO_API int retrogo_mame_cheat_count(void)
++{
++   cheat_manager *cheats = retrogo_mame_cheat_manager();
++   return cheats ? (int)cheats->entries().size() : -1;
++}
++
++/* Kind: 0 text/separator, 1 one-shot, 2 on/off, 3 parameter, 4 one-shot parameter
++ * (pick a value, then activate). -1 invalid. */
++extern "C" RETRO_API int retrogo_mame_cheat_kind(int index)
++{
++   cheat_entry *entry = retrogo_mame_cheat_entry(index);
++   if (!entry)
++      return -1;
++   if (entry->is_oneshot_parameter())
++      return 4;
++   if (entry->is_value_parameter() || entry->is_itemlist_parameter())
++      return 3;
++   if (entry->is_onoff())
++      return 2;
++   if (entry->is_oneshot())
++      return 1;
++   return 0;
++}
++
++extern "C" RETRO_API const char *retrogo_mame_cheat_description(int index)
++{
++   cheat_entry *entry = retrogo_mame_cheat_entry(index);
++   return entry ? entry->description() : nullptr;
++}
++
++extern "C" RETRO_API bool retrogo_mame_cheat_is_enabled(int index)
++{
++   cheat_entry *entry = retrogo_mame_cheat_entry(index);
++   return entry && entry->state() != SCRIPT_STATE_OFF;
++}
++
++/* Current 0-based parameter position (item index or steps from the minimum); -1 if none. */
++extern "C" RETRO_API int retrogo_mame_cheat_parameter_position(int index)
++{
++   cheat_entry *entry = retrogo_mame_cheat_entry(index);
++   return entry ? entry->parameter_position() : -1;
++}
++
++/* On/off cheats: toggle. Parameter cheats: disabling turns them off; enable with
++ * retrogo_mame_cheat_set_parameter instead. */
++extern "C" RETRO_API bool retrogo_mame_cheat_set_enabled(int index, bool enabled)
++{
++   return retrogo_mame_queue_cheat_request(index, enabled ? RETROGO_CHEAT_ON : RETROGO_CHEAT_OFF, 0);
++}
++
++/* Switches a parameter cheat on at the given 0-based position. */
++extern "C" RETRO_API bool retrogo_mame_cheat_set_parameter(int index, int position)
++{
++   if (position < 0)
++      return false;
++   return retrogo_mame_queue_cheat_request(index, RETROGO_CHEAT_PARAMETER, (unsigned)position);
++}
++
++/* Runs a one-shot cheat, or applies a one-shot parameter cheat at its current position. */
++extern "C" RETRO_API bool retrogo_mame_cheat_activate(int index)
++{
++   return retrogo_mame_queue_cheat_request(index, RETROGO_CHEAT_ACTIVATE, 0);
++}
++
++/* Cheat XML for the next machine start (or retrogo_mame_cheat_reload); replaces cheat
++ * files. NULL or length 0 clears it. Call from any thread. */
++extern "C" RETRO_API void retrogo_mame_cheat_set_xml(const char *xml, size_t length)
++{
++   cheat_manager::set_frontend_xml(xml && length ? std::string(xml, length) : std::string());
++}
++
++/* Increases every time the cheat list was (re)loaded: compare before/after
++ * retrogo_mame_cheat_reload to know when the new cheats are in. */
++extern "C" RETRO_API unsigned retrogo_mame_cheat_load_generation(void)
++{
++   return cheat_manager::load_generation();
++}
++
++/* Reloads the cheats of the running machine at the start of the next frame: every entry
++ * starts off again and pending changes are dropped. False when no machine runs. */
++extern "C" RETRO_API bool retrogo_mame_cheat_reload(void)
++{
++   if (!retrogo_mame_cheat_manager())
++      return false;
++   std::lock_guard<std::mutex> lock(retrogo_cheat_mutex);
++   retrogo_cheat_reload_requested = true;
++   return true;
++}

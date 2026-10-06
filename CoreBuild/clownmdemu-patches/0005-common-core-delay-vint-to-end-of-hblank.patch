@@ -1,0 +1,25 @@
+diff --git a/source/clownmdemu.c b/source/clownmdemu.c
+index 84c6820..6916700 100644
+--- a/source/clownmdemu.c
++++ b/source/clownmdemu.c
+@@ -319,10 +319,19 @@ void ClownMDEmu_Iterate(ClownMDEmu* const clownmdemu)
+ 			}
+ 			else if (scanline == console_vertical_resolution)
+ 			{
++				/* The emulated scanline starts at the end of active display, but V-Int
++				   fires near H-counter 0x1FF, after most of H-blank. Games such as
++				   Double Dragon II poll the H-blank status bit in their V-Int handler. */
++				const cc_bool h40 = clownmdemu->vdp.state.h40_enabled;
++				const cc_u32f v_int_delay = (cc_u32f)cycles_per_scanline * (h40 ? 73 : 75) / (h40 ? 420 : 342);
++
++				current_mega_drive_cycle.cycle += v_int_delay;
++				SyncM68k(clownmdemu, &cpu_callback_user_data, current_mega_drive_cycle);
++				current_mega_drive_cycle.cycle -= v_int_delay;
++
+ 				clownmdemu->vdp.state.currently_in_vblank = cc_true;
+ 
+ 				/* Do V-Int. */
+-				/* TODO: This SHOULD occur around H-scroll 0x1FF. */
+ 				state->m68k.v_int_pending = cc_true;
+ 				RaiseInterruptIfNeeded(clownmdemu);
+ 

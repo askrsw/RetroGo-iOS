@@ -117,10 +117,27 @@ RetroGo/Resources/Data/rdb/
 !/RetroGo/Resources/Cores/.gitkeep
 
 /LocalDocs/
-/AppStoreScreenshots/
-/Backup/
-/Reference/
+/Backups/
+/References/
 /Tools/
+
+# Core build tooling is open-sourced for GPL compliance: the *-patches folders
+# and framework/ are committed; upstream checkouts and binaries are not.
+/CoreBuild/*-libretro/
+# MAME's ThinLTO build clones the checkout into mame-libretro-lto.
+/CoreBuild/*-libretro-lto/
+# Build output, including the compiler .d dependency files and CMake caches that record
+# absolute paths and break once a checkout is moved.
+/CoreBuild/**/build-ios/
+/CoreBuild/**/*.d
+/CoreBuild/**/CMakeCache.txt
+/CoreBuild/**/CMakeFiles/
+/CoreBuild/framework/using/
+/CoreBuild/framework/used/
+/CoreBuild/framework/frameworks/
+/CoreBuild/**/__pycache__/
+/CoreBuild/**/*.pyc
+/CoreBuild/**/.DS_Store
 /.claude/
 /.codex/
 

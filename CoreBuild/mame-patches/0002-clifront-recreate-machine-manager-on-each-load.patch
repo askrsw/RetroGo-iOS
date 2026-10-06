@@ -1,0 +1,15 @@
+diff --git a/src/frontend/mame/clifront.cpp b/src/frontend/mame/clifront.cpp
+index 14e8922b653..eae3d95beb6 100644
+--- a/src/frontend/mame/clifront.cpp
++++ b/src/frontend/mame/clifront.cpp
+@@ -308,6 +308,10 @@ int cli_frontend::execute(std::vector<std::string> &args)
+ 	m_result = EMU_ERR_NONE;
+ 
+ #if defined(__LIBRETRO__)
++	// A failed retro_load_game leaves the previous manager alive (retro_finish only runs after a
++	// successful load). Reusing it would run lua_engine::initialize() twice on the same Lua state,
++	// orphaning the sol usertype storage and crashing later inside the Lua GC. Start fresh instead.
++	delete mame_machine_manager::instance();
+ 	retro_manager = mame_machine_manager::instance(m_options, m_osd);
+ #else
+ 	mame_machine_manager *manager = mame_machine_manager::instance(m_options, m_osd);

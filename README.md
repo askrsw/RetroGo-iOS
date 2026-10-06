@@ -27,12 +27,12 @@ Download it if you want to try the latest public release on your iPhone or iPad.
 
 ## 🖼️ Screenshots
 
-![RetroGo Screenshot 1](Screenshot/iphone01.png)
-![RetroGo Screenshot 2](Screenshot/iphone02.png)
-![RetroGo Screenshot 3](Screenshot/iphone03.png)
-![RetroGo Screenshot 4](Screenshot/iphone04.png)
-![RetroGo Screenshot 5](Screenshot/iphone05.png)
-![RetroGo Screenshot 6](Screenshot/iphone06.png)
+![RetroGo Screenshot 1](Screenshots/iphone01.png)
+![RetroGo Screenshot 2](Screenshots/iphone02.png)
+![RetroGo Screenshot 3](Screenshots/iphone03.png)
+![RetroGo Screenshot 4](Screenshots/iphone04.png)
+![RetroGo Screenshot 5](Screenshots/iphone05.png)
+![RetroGo Screenshot 6](Screenshots/iphone06.png)
 
 ## ✨ Features
 

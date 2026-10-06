@@ -1,0 +1,21 @@
+diff --git a/src/osd/libretro/libretro-internal/retro_init.cpp b/src/osd/libretro/libretro-internal/retro_init.cpp
+index 855bb7d405f..305447eb99b 100755
+--- a/src/osd/libretro/libretro-internal/retro_init.cpp
++++ b/src/osd/libretro/libretro-internal/retro_init.cpp
+@@ -216,6 +216,8 @@ static int parseSystemName(const char *path, char *systemName)
+    int slashIndex[2] = {-1, -1};
+    int len = strlen(path);
+ 
++   systemName[0] = '\0';
++
+    if (len < 1)
+       return 0;
+ 
+@@ -237,6 +239,7 @@ static int parseSystemName(const char *path, char *systemName)
+       return 0;
+ 
+    strncpy(systemName, path + (slashIndex[1] + 1), slashIndex[0] - slashIndex[1] - 1);
++   systemName[slashIndex[0] - slashIndex[1] - 1] = '\0';
+    return 1;
+ }
+ 
