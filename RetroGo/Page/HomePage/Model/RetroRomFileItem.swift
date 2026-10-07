@@ -243,6 +243,12 @@ final class RetroRomFileItem: RetroRomBaseItem {
 
         do {
             try FileManager.default.removeItem(atPath: fullPath)
+        } catch CocoaError.fileNoSuchFile {
+            // The file is already gone (e.g. an earlier delete removed it but not the
+            // record). That is the state we want: keep removing the record, otherwise
+            // the item and its folder can never be deleted.
+            let parentExists = FileManager.default.fileExists(atPath: (fullPath as NSString).deletingLastPathComponent)
+            RetroGoLogger.library.notice("ROM file of item \(self.key, privacy: .public) is already missing (parent folder exists: \(parentExists)), removing the record")
         } catch {
             RetroGoLogger.library.error("Failed to delete rom file \(self.rawName) for item \(self.itemName): \(String(describing: error))")
             let message = String(format: Bundle.localizedString(forKey: "homepage_delete_item_failed"), filePath)
