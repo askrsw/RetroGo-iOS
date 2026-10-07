@@ -87,7 +87,13 @@ final class GamePageViewController: RAGameViewController {
     init(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
         let configSession = GameConfigSession(scope: .game, core: core, game: romItem)
         self.romItem   = romItem
-        self.romUrl    = URL(fileURLWithPath: romItem.entryPath!)
+        let entryPath = romItem.entryPath!
+        if RetroRomMdsCueSheet.isNeeded(entryPath: entryPath, core: core),
+           let cuePath = RetroRomMdsCueSheet.make(mdsPath: entryPath, key: romItem.key) {
+            self.romUrl = URL(fileURLWithPath: cuePath)
+        } else {
+            self.romUrl = URL(fileURLWithPath: entryPath)
+        }
         self.startTime = Date()
         self.configSession = configSession
         if core.coreId == MameImportScreener.mameCoreId {

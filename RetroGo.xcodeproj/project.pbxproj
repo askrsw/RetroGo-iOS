@@ -90,6 +90,7 @@
 		AB55BC8A2F3BA0B500569A84 /* RetroRomFolderItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC892F3BA0B400569A84 /* RetroRomFolderItem.swift */; };
 		AB5A7B012FA1C00000E5A7B0 /* emu.mednafen-saturn.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AB5A7B022FA1C00000E5A7B0 /* emu.mednafen-saturn.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB5D01822F813F8000C7081D /* RetroRomImportGroupBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5D01812F813F8000C7081D /* RetroRomImportGroupBuilder.swift */; };
+		AB5A7B032FA1C00000E5A7B0 /* RetroRomMdsCueSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5A7B042FA1C00000E5A7B0 /* RetroRomMdsCueSheet.swift */; };
 		AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */; };
 		AB6378A22F7E6394001E1152 /* GameOverlayN64CButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */; };
 		AB6789632FE5278B0015D5E0 /* emu.fceumm.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC22F5E5504007E1669 /* emu.fceumm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -326,6 +327,7 @@
 		AB55BC892F3BA0B400569A84 /* RetroRomFolderItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderItem.swift; sourceTree = "<group>"; };
 		AB5A7B022FA1C00000E5A7B0 /* emu.mednafen-saturn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = "emu.mednafen-saturn.framework"; sourceTree = "<group>"; };
 		AB5D01812F813F8000C7081D /* RetroRomImportGroupBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomImportGroupBuilder.swift; sourceTree = "<group>"; };
+		AB5A7B042FA1C00000E5A7B0 /* RetroRomMdsCueSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomMdsCueSheet.swift; sourceTree = "<group>"; };
 		AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayNDSLayoutButton.swift; sourceTree = "<group>"; };
 		AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayN64CButton.swift; sourceTree = "<group>"; };
 		AB69E2FD2F4EB4D800C532EE /* RetroRomEmptyTipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomEmptyTipView.swift; sourceTree = "<group>"; };
@@ -984,6 +986,7 @@
 				ABDAD25D2F3BAB65004100A9 /* RetroRomCoreManager.swift */,
 				AB8FDDDF2FC38C9E008607E0 /* RetroRomFolderPageState.swift */,
 				AB5D01812F813F8000C7081D /* RetroRomImportGroupBuilder.swift */,
+				AB5A7B042FA1C00000E5A7B0 /* RetroRomMdsCueSheet.swift */,
 			);
 			path = Singleton;
 			sourceTree = "<group>";
@@ -1234,6 +1237,7 @@
 				AB38A1F02FC0000000000001 /* GameFreePlayQuota.swift in Sources */,
 				AB94AAC22FBD8FEF0046B830 /* DiscoverGameListViewController.swift in Sources */,
 				AB5D01822F813F8000C7081D /* RetroRomImportGroupBuilder.swift in Sources */,
+				AB5A7B032FA1C00000E5A7B0 /* RetroRomMdsCueSheet.swift in Sources */,
 				AB55BC802F3B8D5500569A84 /* RetroRomBaseItem.swift in Sources */,
 				AB9E78892FC4BD9A00266281 /* RetroRomFolderTitleView.swift in Sources */,
 				AB0AF4BD2FD9B74400257A18 /* ODRResourceViewController.swift in Sources */,

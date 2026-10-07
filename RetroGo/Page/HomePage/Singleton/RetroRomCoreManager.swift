@@ -119,6 +119,17 @@ final class RetroRomCoreManager {
                 }
             }
             cores.removeAll(where: { notUniqueCores.contains($0 )})
+            if ext == "mds" {
+                // Cores of the same systems that read cue sheets can open mds/mdf
+                // images through RetroRomMdsCueSheet. They go after the cores that
+                // read mds directly, which stay the default (getRunningCore).
+                let systemIDs = Set(cores.compactMap(\.systemID))
+                let cueCores = allCores.filter { core in
+                    guard let systemID = core.systemID, systemIDs.contains(systemID), !cores.contains(core) else { return false }
+                    return (core.extensions ?? []).contains { $0.lowercased() == "cue" }
+                }
+                cores += cueCores.sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
+            }
             extensionOpenCores[ext] = cores
             return cores
         }
