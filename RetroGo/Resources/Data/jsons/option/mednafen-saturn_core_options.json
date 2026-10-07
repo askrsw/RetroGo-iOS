@@ -1,0 +1,1706 @@
+{
+  "coreId": "mednafen-saturn",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Region, BIOS language, clock and disc loading settings.",
+        "zh-Hans": "地区、BIOS 语言、时钟与光盘读取设置。"
+      },
+      "id": "general",
+      "options": [
+        {
+          "categoryId": "general",
+          "defaultValue": "Auto Detect",
+          "description": {
+            "en": "The console region. Auto Detect follows the game. Japanese consoles use the sega_101.bin BIOS and the other regions use mpr-17933.bin, so the matching BIOS must be added to the core.",
+            "zh-Hans": "主机的地区。「自动检测」会跟随游戏。日本地区的主机使用 sega_101.bin BIOS，其他地区使用 mpr-17933.bin，需要在核心 BIOS 中添加对应的文件。"
+          },
+          "key": "beetle_saturn_region",
+          "restartRequired": true,
+          "title": {
+            "en": "System Region",
+            "zh-Hans": "主机地区"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Asia (NTSC)": {
+              "en": "Asia (NTSC)",
+              "zh-Hans": "亚洲（NTSC）"
+            },
+            "Asia (PAL)": {
+              "en": "Asia (PAL)",
+              "zh-Hans": "亚洲（PAL）"
+            },
+            "Auto Detect": {
+              "en": "Auto Detect",
+              "zh-Hans": "自动检测"
+            },
+            "Brazil": {
+              "en": "Brazil",
+              "zh-Hans": "巴西"
+            },
+            "Europe": {
+              "en": "Europe",
+              "zh-Hans": "欧洲"
+            },
+            "Japan": {
+              "en": "Japan",
+              "zh-Hans": "日本"
+            },
+            "Latin America": {
+              "en": "Latin America",
+              "zh-Hans": "拉丁美洲"
+            },
+            "North America": {
+              "en": "North America",
+              "zh-Hans": "北美"
+            },
+            "South Korea": {
+              "en": "South Korea",
+              "zh-Hans": "韩国"
+            }
+          },
+          "values": [
+            "Auto Detect",
+            "Japan",
+            "North America",
+            "Europe",
+            "South Korea",
+            "Asia (NTSC)",
+            "Asia (PAL)",
+            "Brazil",
+            "Latin America"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "english",
+          "description": {
+            "en": "The language of the Saturn BIOS menu. Some games that include several languages also follow it. The BIOS has no Chinese.",
+            "zh-Hans": "土星 BIOS 菜单使用的语言，部分内含多种语言的游戏也会跟随它。BIOS 不支持中文。"
+          },
+          "key": "beetle_saturn_autortc_lang",
+          "restartRequired": true,
+          "title": {
+            "en": "BIOS Language",
+            "zh-Hans": "BIOS 语言"
+          },
+          "type": "select",
+          "valueLabels": {
+            "english": {
+              "en": "English",
+              "zh-Hans": "英语"
+            },
+            "japanese": {
+              "en": "Japanese",
+              "zh-Hans": "日语"
+            }
+          },
+          "values": [
+            "english",
+            "japanese"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Loads the whole disc image into memory when the game starts. Starting takes longer and uses more memory, but loading inside the game can be faster.",
+            "zh-Hans": "启动游戏时把整个光盘镜像读入内存。启动会变慢、占用更多内存，但游戏中的读盘可能更快。"
+          },
+          "key": "beetle_saturn_cdimagecache",
+          "restartRequired": true,
+          "title": {
+            "en": "CD Image Cache",
+            "zh-Hans": "光盘镜像缓存"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Reads input in the middle of the frame as well, which can lower input latency in some games at the cost of more CPU time.",
+            "zh-Hans": "在一帧的中途也读取输入，可降低部分游戏的输入延迟，但会占用更多 CPU。"
+          },
+          "key": "beetle_saturn_midsync",
+          "restartRequired": false,
+          "title": {
+            "en": "Mid-frame Input Synchronization",
+            "zh-Hans": "帧中输入同步"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "general",
+          "defaultValue": "enabled",
+          "description": {
+            "en": "Sets the console clock to the device's current date and time when a game starts.",
+            "zh-Hans": "启动游戏时把主机时钟设为设备当前的日期和时间。"
+          },
+          "key": "beetle_saturn_autortc",
+          "restartRequired": true,
+          "title": {
+            "en": "Set Clock Automatically",
+            "zh-Hans": "自动设置时钟"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "General",
+        "zh-Hans": "通用"
+      }
+    },
+    {
+      "description": {
+        "en": "Cropping, horizontal blending and deinterlacing settings.",
+        "zh-Hans": "画面裁切、水平混合与去隔行设置。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "0",
+          "description": {
+            "en": "Crops the given number of pixels from the left and right edges together, removing the black borders some games have.",
+            "zh-Hans": "从画面左右两侧共裁掉指定数量的像素，可去掉部分游戏两侧的黑边。"
+          },
+          "key": "beetle_saturn_horizontal_overscan",
+          "restartRequired": false,
+          "title": {
+            "en": "Horizontal Overscan Mask",
+            "zh-Hans": "水平裁切"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "52": {
+              "en": "52",
+              "zh-Hans": "52"
+            },
+            "54": {
+              "en": "54",
+              "zh-Hans": "54"
+            },
+            "56": {
+              "en": "56",
+              "zh-Hans": "56"
+            },
+            "58": {
+              "en": "58",
+              "zh-Hans": "58"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "60": {
+              "en": "60",
+              "zh-Hans": "60"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            }
+          },
+          "values": [
+            "0",
+            "2",
+            "4",
+            "6",
+            "8",
+            "10",
+            "12",
+            "14",
+            "16",
+            "18",
+            "20",
+            "22",
+            "24",
+            "26",
+            "28",
+            "30",
+            "32",
+            "34",
+            "36",
+            "38",
+            "40",
+            "42",
+            "44",
+            "46",
+            "48",
+            "50",
+            "52",
+            "54",
+            "56",
+            "58",
+            "60"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "8",
+          "description": {
+            "en": "The first scanline shown for NTSC games. Values above 0 crop the top of the picture.",
+            "zh-Hans": "NTSC 游戏显示的第一条扫描线。大于 0 时会裁掉画面顶部，可用于去掉部分游戏的黑边。"
+          },
+          "key": "beetle_saturn_initial_scanline",
+          "restartRequired": false,
+          "title": {
+            "en": "Initial Scanline - NTSC",
+            "zh-Hans": "起始扫描线（NTSC）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "231",
+          "description": {
+            "en": "The last scanline shown for NTSC games. Values below 239 crop the bottom of the picture.",
+            "zh-Hans": "NTSC 游戏显示的最后一条扫描线。小于 239 时会裁掉画面底部。"
+          },
+          "key": "beetle_saturn_last_scanline",
+          "restartRequired": false,
+          "title": {
+            "en": "Last Scanline - NTSC",
+            "zh-Hans": "结束扫描线（NTSC）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "210": {
+              "en": "210",
+              "zh-Hans": "210"
+            },
+            "211": {
+              "en": "211",
+              "zh-Hans": "211"
+            },
+            "212": {
+              "en": "212",
+              "zh-Hans": "212"
+            },
+            "213": {
+              "en": "213",
+              "zh-Hans": "213"
+            },
+            "214": {
+              "en": "214",
+              "zh-Hans": "214"
+            },
+            "215": {
+              "en": "215",
+              "zh-Hans": "215"
+            },
+            "216": {
+              "en": "216",
+              "zh-Hans": "216"
+            },
+            "217": {
+              "en": "217",
+              "zh-Hans": "217"
+            },
+            "218": {
+              "en": "218",
+              "zh-Hans": "218"
+            },
+            "219": {
+              "en": "219",
+              "zh-Hans": "219"
+            },
+            "220": {
+              "en": "220",
+              "zh-Hans": "220"
+            },
+            "221": {
+              "en": "221",
+              "zh-Hans": "221"
+            },
+            "222": {
+              "en": "222",
+              "zh-Hans": "222"
+            },
+            "223": {
+              "en": "223",
+              "zh-Hans": "223"
+            },
+            "224": {
+              "en": "224",
+              "zh-Hans": "224"
+            },
+            "225": {
+              "en": "225",
+              "zh-Hans": "225"
+            },
+            "226": {
+              "en": "226",
+              "zh-Hans": "226"
+            },
+            "227": {
+              "en": "227",
+              "zh-Hans": "227"
+            },
+            "228": {
+              "en": "228",
+              "zh-Hans": "228"
+            },
+            "229": {
+              "en": "229",
+              "zh-Hans": "229"
+            },
+            "230": {
+              "en": "230",
+              "zh-Hans": "230"
+            },
+            "231": {
+              "en": "231",
+              "zh-Hans": "231"
+            },
+            "232": {
+              "en": "232",
+              "zh-Hans": "232"
+            },
+            "233": {
+              "en": "233",
+              "zh-Hans": "233"
+            },
+            "234": {
+              "en": "234",
+              "zh-Hans": "234"
+            },
+            "235": {
+              "en": "235",
+              "zh-Hans": "235"
+            },
+            "236": {
+              "en": "236",
+              "zh-Hans": "236"
+            },
+            "237": {
+              "en": "237",
+              "zh-Hans": "237"
+            },
+            "238": {
+              "en": "238",
+              "zh-Hans": "238"
+            },
+            "239": {
+              "en": "239",
+              "zh-Hans": "239"
+            }
+          },
+          "values": [
+            "210",
+            "211",
+            "212",
+            "213",
+            "214",
+            "215",
+            "216",
+            "217",
+            "218",
+            "219",
+            "220",
+            "221",
+            "222",
+            "223",
+            "224",
+            "225",
+            "226",
+            "227",
+            "228",
+            "229",
+            "230",
+            "231",
+            "232",
+            "233",
+            "234",
+            "235",
+            "236",
+            "237",
+            "238",
+            "239"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "16",
+          "description": {
+            "en": "The first scanline shown for PAL games. Values above 0 crop the top of the picture.",
+            "zh-Hans": "PAL 游戏显示的第一条扫描线。大于 0 时会裁掉画面顶部。"
+          },
+          "key": "beetle_saturn_initial_scanline_pal",
+          "restartRequired": false,
+          "title": {
+            "en": "Initial Scanline - PAL",
+            "zh-Hans": "起始扫描线（PAL）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "11": {
+              "en": "11",
+              "zh-Hans": "11"
+            },
+            "12": {
+              "en": "12",
+              "zh-Hans": "12"
+            },
+            "13": {
+              "en": "13",
+              "zh-Hans": "13"
+            },
+            "14": {
+              "en": "14",
+              "zh-Hans": "14"
+            },
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "16": {
+              "en": "16",
+              "zh-Hans": "16"
+            },
+            "17": {
+              "en": "17",
+              "zh-Hans": "17"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "19": {
+              "en": "19",
+              "zh-Hans": "19"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "20": {
+              "en": "20",
+              "zh-Hans": "20"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "22": {
+              "en": "22",
+              "zh-Hans": "22"
+            },
+            "23": {
+              "en": "23",
+              "zh-Hans": "23"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "25": {
+              "en": "25",
+              "zh-Hans": "25"
+            },
+            "26": {
+              "en": "26",
+              "zh-Hans": "26"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "28": {
+              "en": "28",
+              "zh-Hans": "28"
+            },
+            "29": {
+              "en": "29",
+              "zh-Hans": "29"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "31": {
+              "en": "31",
+              "zh-Hans": "31"
+            },
+            "32": {
+              "en": "32",
+              "zh-Hans": "32"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "34": {
+              "en": "34",
+              "zh-Hans": "34"
+            },
+            "35": {
+              "en": "35",
+              "zh-Hans": "35"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "37": {
+              "en": "37",
+              "zh-Hans": "37"
+            },
+            "38": {
+              "en": "38",
+              "zh-Hans": "38"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "40": {
+              "en": "40",
+              "zh-Hans": "40"
+            },
+            "41": {
+              "en": "41",
+              "zh-Hans": "41"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "43": {
+              "en": "43",
+              "zh-Hans": "43"
+            },
+            "44": {
+              "en": "44",
+              "zh-Hans": "44"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "46": {
+              "en": "46",
+              "zh-Hans": "46"
+            },
+            "47": {
+              "en": "47",
+              "zh-Hans": "47"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "49": {
+              "en": "49",
+              "zh-Hans": "49"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "50": {
+              "en": "50",
+              "zh-Hans": "50"
+            },
+            "51": {
+              "en": "51",
+              "zh-Hans": "51"
+            },
+            "52": {
+              "en": "52",
+              "zh-Hans": "52"
+            },
+            "53": {
+              "en": "53",
+              "zh-Hans": "53"
+            },
+            "54": {
+              "en": "54",
+              "zh-Hans": "54"
+            },
+            "55": {
+              "en": "55",
+              "zh-Hans": "55"
+            },
+            "56": {
+              "en": "56",
+              "zh-Hans": "56"
+            },
+            "57": {
+              "en": "57",
+              "zh-Hans": "57"
+            },
+            "58": {
+              "en": "58",
+              "zh-Hans": "58"
+            },
+            "59": {
+              "en": "59",
+              "zh-Hans": "59"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "60": {
+              "en": "60",
+              "zh-Hans": "60"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+            "32",
+            "33",
+            "34",
+            "35",
+            "36",
+            "37",
+            "38",
+            "39",
+            "40",
+            "41",
+            "42",
+            "43",
+            "44",
+            "45",
+            "46",
+            "47",
+            "48",
+            "49",
+            "50",
+            "51",
+            "52",
+            "53",
+            "54",
+            "55",
+            "56",
+            "57",
+            "58",
+            "59",
+            "60"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "271",
+          "description": {
+            "en": "The last scanline shown for PAL games. Values below 287 crop the bottom of the picture.",
+            "zh-Hans": "PAL 游戏显示的最后一条扫描线。小于 287 时会裁掉画面底部。"
+          },
+          "key": "beetle_saturn_last_scanline_pal",
+          "restartRequired": false,
+          "title": {
+            "en": "Last Scanline - PAL",
+            "zh-Hans": "结束扫描线（PAL）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "230": {
+              "en": "230",
+              "zh-Hans": "230"
+            },
+            "231": {
+              "en": "231",
+              "zh-Hans": "231"
+            },
+            "232": {
+              "en": "232",
+              "zh-Hans": "232"
+            },
+            "233": {
+              "en": "233",
+              "zh-Hans": "233"
+            },
+            "234": {
+              "en": "234",
+              "zh-Hans": "234"
+            },
+            "235": {
+              "en": "235",
+              "zh-Hans": "235"
+            },
+            "236": {
+              "en": "236",
+              "zh-Hans": "236"
+            },
+            "237": {
+              "en": "237",
+              "zh-Hans": "237"
+            },
+            "238": {
+              "en": "238",
+              "zh-Hans": "238"
+            },
+            "239": {
+              "en": "239",
+              "zh-Hans": "239"
+            },
+            "240": {
+              "en": "240",
+              "zh-Hans": "240"
+            },
+            "241": {
+              "en": "241",
+              "zh-Hans": "241"
+            },
+            "242": {
+              "en": "242",
+              "zh-Hans": "242"
+            },
+            "243": {
+              "en": "243",
+              "zh-Hans": "243"
+            },
+            "244": {
+              "en": "244",
+              "zh-Hans": "244"
+            },
+            "245": {
+              "en": "245",
+              "zh-Hans": "245"
+            },
+            "246": {
+              "en": "246",
+              "zh-Hans": "246"
+            },
+            "247": {
+              "en": "247",
+              "zh-Hans": "247"
+            },
+            "248": {
+              "en": "248",
+              "zh-Hans": "248"
+            },
+            "249": {
+              "en": "249",
+              "zh-Hans": "249"
+            },
+            "250": {
+              "en": "250",
+              "zh-Hans": "250"
+            },
+            "251": {
+              "en": "251",
+              "zh-Hans": "251"
+            },
+            "252": {
+              "en": "252",
+              "zh-Hans": "252"
+            },
+            "253": {
+              "en": "253",
+              "zh-Hans": "253"
+            },
+            "254": {
+              "en": "254",
+              "zh-Hans": "254"
+            },
+            "255": {
+              "en": "255",
+              "zh-Hans": "255"
+            },
+            "256": {
+              "en": "256",
+              "zh-Hans": "256"
+            },
+            "257": {
+              "en": "257",
+              "zh-Hans": "257"
+            },
+            "258": {
+              "en": "258",
+              "zh-Hans": "258"
+            },
+            "259": {
+              "en": "259",
+              "zh-Hans": "259"
+            },
+            "260": {
+              "en": "260",
+              "zh-Hans": "260"
+            },
+            "261": {
+              "en": "261",
+              "zh-Hans": "261"
+            },
+            "262": {
+              "en": "262",
+              "zh-Hans": "262"
+            },
+            "263": {
+              "en": "263",
+              "zh-Hans": "263"
+            },
+            "264": {
+              "en": "264",
+              "zh-Hans": "264"
+            },
+            "265": {
+              "en": "265",
+              "zh-Hans": "265"
+            },
+            "266": {
+              "en": "266",
+              "zh-Hans": "266"
+            },
+            "267": {
+              "en": "267",
+              "zh-Hans": "267"
+            },
+            "268": {
+              "en": "268",
+              "zh-Hans": "268"
+            },
+            "269": {
+              "en": "269",
+              "zh-Hans": "269"
+            },
+            "270": {
+              "en": "270",
+              "zh-Hans": "270"
+            },
+            "271": {
+              "en": "271",
+              "zh-Hans": "271"
+            },
+            "272": {
+              "en": "272",
+              "zh-Hans": "272"
+            },
+            "273": {
+              "en": "273",
+              "zh-Hans": "273"
+            },
+            "274": {
+              "en": "274",
+              "zh-Hans": "274"
+            },
+            "275": {
+              "en": "275",
+              "zh-Hans": "275"
+            },
+            "276": {
+              "en": "276",
+              "zh-Hans": "276"
+            },
+            "277": {
+              "en": "277",
+              "zh-Hans": "277"
+            },
+            "278": {
+              "en": "278",
+              "zh-Hans": "278"
+            },
+            "279": {
+              "en": "279",
+              "zh-Hans": "279"
+            },
+            "280": {
+              "en": "280",
+              "zh-Hans": "280"
+            },
+            "281": {
+              "en": "281",
+              "zh-Hans": "281"
+            },
+            "282": {
+              "en": "282",
+              "zh-Hans": "282"
+            },
+            "283": {
+              "en": "283",
+              "zh-Hans": "283"
+            },
+            "284": {
+              "en": "284",
+              "zh-Hans": "284"
+            },
+            "285": {
+              "en": "285",
+              "zh-Hans": "285"
+            },
+            "286": {
+              "en": "286",
+              "zh-Hans": "286"
+            },
+            "287": {
+              "en": "287",
+              "zh-Hans": "287"
+            }
+          },
+          "values": [
+            "230",
+            "231",
+            "232",
+            "233",
+            "234",
+            "235",
+            "236",
+            "237",
+            "238",
+            "239",
+            "240",
+            "241",
+            "242",
+            "243",
+            "244",
+            "245",
+            "246",
+            "247",
+            "248",
+            "249",
+            "250",
+            "251",
+            "252",
+            "253",
+            "254",
+            "255",
+            "256",
+            "257",
+            "258",
+            "259",
+            "260",
+            "261",
+            "262",
+            "263",
+            "264",
+            "265",
+            "266",
+            "267",
+            "268",
+            "269",
+            "270",
+            "271",
+            "272",
+            "273",
+            "274",
+            "275",
+            "276",
+            "277",
+            "278",
+            "279",
+            "280",
+            "281",
+            "282",
+            "283",
+            "284",
+            "285",
+            "286",
+            "287"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Blends neighboring pixels horizontally to soften the picture. Most visible in high-resolution modes (640/704 wide).",
+            "zh-Hans": "水平混合相邻像素，让画面更柔和。在高分辨率模式（宽 640/704）下效果最明显。"
+          },
+          "key": "beetle_saturn_horizontal_blend",
+          "restartRequired": false,
+          "title": {
+            "en": "Horizontal Blend",
+            "zh-Hans": "水平混合"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "weave",
+          "description": {
+            "en": "Weave combines both fields into one frame for the sharpest still picture; Bob gives up some sharpness for smoother motion.",
+            "zh-Hans": "「Weave」把两场合成一帧，静止画面最清晰；「Bob」牺牲清晰度换取运动画面的流畅。"
+          },
+          "key": "beetle_saturn_deinterlacer",
+          "restartRequired": false,
+          "title": {
+            "en": "Deinterlace Method",
+            "zh-Hans": "去隔行方式"
+          },
+          "type": "select",
+          "valueLabels": {
+            "bob": {
+              "en": "Bob",
+              "zh-Hans": "Bob"
+            },
+            "weave": {
+              "en": "Weave",
+              "zh-Hans": "Weave"
+            }
+          },
+          "values": [
+            "weave",
+            "bob"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Multiplayer adaptor and D-pad settings.",
+        "zh-Hans": "多人适配器与方向键设置。"
+      },
+      "id": "input",
+      "options": [
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Connects a 6Player adaptor to controller port 1, for games that support more players.",
+            "zh-Hans": "在 1 号手柄口上连接 6 人适配器，用于支持多人游玩的游戏。"
+          },
+          "key": "beetle_saturn_multitap_port1",
+          "restartRequired": false,
+          "title": {
+            "en": "6Player Adaptor on Port 1",
+            "zh-Hans": "1 号口多人适配器"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Connects a 6Player adaptor to controller port 2, for games that support more players.",
+            "zh-Hans": "在 2 号手柄口上连接 6 人适配器，用于支持多人游玩的游戏。"
+          },
+          "key": "beetle_saturn_multitap_port2",
+          "restartRequired": false,
+          "title": {
+            "en": "6Player Adaptor on Port 2",
+            "zh-Hans": "2 号口多人适配器"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Allows pressing up and down, or left and right, at the same time. The real D-pad cannot do this, and some games glitch when it happens.",
+            "zh-Hans": "允许同时按下上和下、或左和右。真机方向键做不到这一点，部分游戏遇到这种输入会出错。"
+          },
+          "key": "beetle_saturn_opposite_directions",
+          "restartRequired": false,
+          "title": {
+            "en": "Allow Opposite Directions",
+            "zh-Hans": "允许同时按相反方向"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Input",
+        "zh-Hans": "输入"
+      }
+    },
+    {
+      "description": {
+        "en": "The cartridge in the console slot and where save data is kept.",
+        "zh-Hans": "插在主机卡槽里的卡带，以及存档数据的保存方式。"
+      },
+      "id": "memcards",
+      "options": [
+        {
+          "categoryId": "memcards",
+          "defaultValue": "Auto Detect",
+          "description": {
+            "en": "The cartridge in the console slot. Auto Detect picks it by game: some games need the 1MB or 4MB RAM cartridge, and The King of Fighters '95 and Ultraman: Hikari no Kyojin Densetsu need their ROM cartridge (mpr-18811-mx.ic1, mpr-19367-mx.ic1) added to the core BIOS.",
+            "zh-Hans": "插在主机卡槽里的卡带。「自动检测」会按游戏选择：部分游戏需要 1MB 或 4MB 内存扩展卡带，《拳皇 95》和《奥特曼 光之巨人传说》需要在核心 BIOS 中添加对应的 ROM 卡带文件（mpr-18811-mx.ic1、mpr-19367-mx.ic1）。"
+          },
+          "key": "beetle_saturn_cart",
+          "restartRequired": true,
+          "title": {
+            "en": "Cartridge",
+            "zh-Hans": "卡带"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto Detect": {
+              "en": "Auto Detect",
+              "zh-Hans": "自动检测"
+            },
+            "Backup Memory": {
+              "en": "Backup Memory",
+              "zh-Hans": "存档卡带"
+            },
+            "Extended RAM (1MB)": {
+              "en": "Extended RAM (1MB)",
+              "zh-Hans": "内存扩展（1MB）"
+            },
+            "Extended RAM (4MB)": {
+              "en": "Extended RAM (4MB)",
+              "zh-Hans": "内存扩展（4MB）"
+            },
+            "None": {
+              "en": "None",
+              "zh-Hans": "无"
+            },
+            "The King of Fighters '95": {
+              "en": "The King of Fighters '95",
+              "zh-Hans": "拳皇 95"
+            },
+            "Ultraman: Hikari no Kyojin Densetsu": {
+              "en": "Ultraman: Hikari no Kyojin Densetsu",
+              "zh-Hans": "奥特曼 光之巨人传说"
+            }
+          },
+          "values": [
+            "Auto Detect",
+            "None",
+            "Backup Memory",
+            "Extended RAM (1MB)",
+            "Extended RAM (4MB)",
+            "The King of Fighters '95",
+            "Ultraman: Hikari no Kyojin Densetsu"
+          ]
+        },
+        {
+          "categoryId": "memcards",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Keeps the console's internal save memory in one file shared by all games, like a real console, instead of one file per game.",
+            "zh-Hans": "像真机一样，所有游戏共用同一份主机内置存档，而不是每个游戏各自一份。"
+          },
+          "key": "beetle_saturn_shared_int",
+          "restartRequired": true,
+          "title": {
+            "en": "Shared Internal Memory",
+            "zh-Hans": "共享内置存档"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        },
+        {
+          "categoryId": "memcards",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Keeps the backup memory cartridge in one file shared by all games, instead of one file per game.",
+            "zh-Hans": "所有游戏共用同一份存档卡带数据，而不是每个游戏各自一份。"
+          },
+          "key": "beetle_saturn_shared_ext",
+          "restartRequired": true,
+          "title": {
+            "en": "Shared Backup Cartridge",
+            "zh-Hans": "共享存档卡带"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "enabled",
+            "disabled"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Cartridge & Saves",
+        "zh-Hans": "卡带与存档"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "Beetle Saturn",
+    "coreVersion": "v0.9.45.1",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

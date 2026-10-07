@@ -1,0 +1,17 @@
+{
+    "desc": {
+        "en": "An older fork of Mednafen's Saturn emulator (circa mid-2019 with some fixes backported from later versions), this core represents a major step forward for accurate Saturn emulation, and it runs most games with few or no noticeable glitches/anomalies. However, this accuracy comes at the price of high CPU requirements. Additionally, this core is software-rendered and does not support any increased internal resolution or other fun-but-accuracy-compromising features, unlike the other, less-accurate Saturn cores. This core requires a Saturn BIOS: sega_101.bin for Japanese games and mpr-17933.bin for US/European games, named exactly as listed.",
+        "zh": "[Beetle Saturn] 是 Mednafen 世嘉土星（Sega Saturn）模拟器的一个较早分支（约为 2019 年年中的版本，并移植了部分后续版本的修复）。它让土星模拟的精度迈上了一个台阶，大多数游戏都能运行得几乎没有明显的画面错误或异常。但高精度的代价是对 CPU 性能要求很高。此外，该核心使用软件渲染，与其他精度较低的土星核心不同，它不支持提高内部分辨率等以牺牲精度换取效果的功能。该核心必须提供土星 BIOS：日版游戏需要 sega_101.bin，美版和欧版游戏需要 mpr-17933.bin，文件名必须与此完全一致。"
+    },
+    "licenses": [
+        {
+            "show_name": "GPLv2",
+            "file_name": "gpl-2.0.txt"
+        }
+    ],
+    "src_url": "https://github.com/libretro/beetle-saturn-libretro",
+    "supports_analog": false,
+    "overlay": "saturn",
+    "supports_logic_thread": true,
+    "allows_default_turbo_xy_hijack": false
+}

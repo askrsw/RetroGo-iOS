@@ -88,6 +88,7 @@
 		AB55BC7C2F3B8BC400569A84 /* GamePageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC7B2F3B8BC200569A84 /* GamePageViewController.swift */; };
 		AB55BC802F3B8D5500569A84 /* RetroRomBaseItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC7F2F3B8D5400569A84 /* RetroRomBaseItem.swift */; };
 		AB55BC8A2F3BA0B500569A84 /* RetroRomFolderItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC892F3BA0B400569A84 /* RetroRomFolderItem.swift */; };
+		AB5A7B012FA1C00000E5A7B0 /* emu.mednafen-saturn.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AB5A7B022FA1C00000E5A7B0 /* emu.mednafen-saturn.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB5D01822F813F8000C7081D /* RetroRomImportGroupBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5D01812F813F8000C7081D /* RetroRomImportGroupBuilder.swift */; };
 		AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */; };
 		AB6378A22F7E6394001E1152 /* GameOverlayN64CButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */; };
@@ -229,6 +230,7 @@
 				AB11A5612F9941BF00C32E39 /* emu.gambatte.framework in CopyFiles */,
 				AB11A5622F9941BF00C32E39 /* emu.gearboy.framework in CopyFiles */,
 				AB11A5632F9941BF00C32E39 /* emu.mednafen-psx.framework in CopyFiles */,
+				AB5A7B012FA1C00000E5A7B0 /* emu.mednafen-saturn.framework in CopyFiles */,
 				AB11A5642F9941BF00C32E39 /* emu.melondsds.framework in CopyFiles */,
 				AB11A5652F9941BF00C32E39 /* emu.mesen.framework in CopyFiles */,
 				AB11A5662F9941BF00C32E39 /* emu.mesen-s.framework in CopyFiles */,
@@ -322,6 +324,7 @@
 		AB55BC7B2F3B8BC200569A84 /* GamePageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageViewController.swift; sourceTree = "<group>"; };
 		AB55BC7F2F3B8D5400569A84 /* RetroRomBaseItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomBaseItem.swift; sourceTree = "<group>"; };
 		AB55BC892F3BA0B400569A84 /* RetroRomFolderItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderItem.swift; sourceTree = "<group>"; };
+		AB5A7B022FA1C00000E5A7B0 /* emu.mednafen-saturn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = "emu.mednafen-saturn.framework"; sourceTree = "<group>"; };
 		AB5D01812F813F8000C7081D /* RetroRomImportGroupBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomImportGroupBuilder.swift; sourceTree = "<group>"; };
 		AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayNDSLayoutButton.swift; sourceTree = "<group>"; };
 		AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayN64CButton.swift; sourceTree = "<group>"; };
@@ -784,6 +787,7 @@
 				ABBC8AC32F5E5504007E1669 /* emu.gambatte.framework */,
 				ABBC8AC42F5E5504007E1669 /* emu.gearboy.framework */,
 				ABBC8AC52F5E5504007E1669 /* emu.mednafen-psx.framework */,
+				AB5A7B022FA1C00000E5A7B0 /* emu.mednafen-saturn.framework */,
 				ABBC8AC62F5E5504007E1669 /* emu.melondsds.framework */,
 				ABBC8AC72F5E5504007E1669 /* emu.mesen.framework */,
 				ABBC8AC82F5E5504007E1669 /* emu.mesen-s.framework */,

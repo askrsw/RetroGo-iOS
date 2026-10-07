@@ -137,6 +137,29 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
+			<string>Sega - Saturn (Beetle Saturn)</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.haharsw.pudge.mednafen_saturn</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>ccd</string>
+					<string>chd</string>
+					<string>cue</string>
+					<string>toc</string>
+					<string>m3u</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/x-mednafen_saturn-rom</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
 			<string>Nintendo - SNES / SFC / Game Boy / Color (Mesen-S)</string>
 			<key>UTTypeIdentifier</key>
 			<string>com.haharsw.pudge.mesen-s</string>
