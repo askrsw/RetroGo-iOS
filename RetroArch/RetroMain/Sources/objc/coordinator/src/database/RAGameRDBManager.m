@@ -24,6 +24,7 @@
 //
 
 #import "RAGameRDBManager.h"
+#import "RALanguagePack.h"
 
 #include <sqlite3.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -171,6 +172,7 @@ static NSString *p_locNorm(NSString *s);
 @property (nonatomic, assign, readwrite)         NSInteger  platformId;
 @property (nonatomic, copy, readwrite)           NSString  *name;
 @property (nonatomic, copy, nullable, readwrite) NSString  *localizedName;
+@property (nonatomic, copy, nullable, readwrite) NSString  *localizationLanguage;
 @property (nonatomic, assign, readwrite)         NSInteger  localizationSource;
 @property (nonatomic, assign, readwrite, getter=isLocalizationReference) BOOL localizationReference;
 @property (nonatomic, copy, nullable, readwrite) NSString  *groupName;
@@ -207,7 +209,10 @@ static NSString *p_locNorm(NSString *s);
 @implementation RAGameRDBManager {
     NSString        *d_dbPath;
     sqlite3         *d_db;
+    // A language pack attached as `lang` (game_name table); nil = English only.
     BOOL             d_hasLocalization;
+    NSString        *d_languagePackPath;
+    NSString        *d_languagePackLanguage;
 
     // 所有 SQLite 操作在此串行队列执行，保证线程安全
     dispatch_queue_t d_dbQueue;
@@ -225,15 +230,68 @@ static NSString *p_locNorm(NSString *s);
 }
 
 - (void)initialize:(NSString *)dbPath completion:(nullable void (^)(void))completion {
-    d_dbPath  = [dbPath copy];
-    d_dbQueue = dispatch_queue_create("com.retrogame.rardbs", DISPATCH_QUEUE_SERIAL);
-
+    NSString *path = [dbPath copy];
+    [self p_ensureQueue];
+    // Calling it again (after the prebuilt file was replaced) reopens the database.
     dispatch_async(d_dbQueue, ^{
+        self->d_dbPath = path;
         [self p_openAndSetup];
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), completion);
         }
     });
+}
+
+- (void)p_ensureQueue {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        self->d_dbQueue = dispatch_queue_create("com.retrogame.rardbs", DISPATCH_QUEUE_SERIAL);
+    });
+}
+
+- (void)setLanguagePackPath:(nullable NSString *)path completion:(nullable void (^)(void))completion {
+    NSString *next = [path copy];
+    [self p_ensureQueue];
+    dispatch_async(d_dbQueue, ^{
+        self->d_languagePackPath = next;
+        if (self->d_db) {
+            [self p_attachLanguagePack];
+        }
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), completion);
+        }
+    });
+}
+
+/// (Re)attaches d_languagePackPath as `lang`, replacing any attached pack.
+/// Runs on d_dbQueue with the database open.
+- (void)p_attachLanguagePack {
+    if (d_hasLocalization) {
+        sqlite3_exec(d_db, "DETACH DATABASE lang;", NULL, NULL, NULL);
+        d_hasLocalization = NO;
+    }
+    d_languagePackLanguage = nil;
+    NSString *path = d_languagePackPath;
+    if (path.length == 0 || ![NSFileManager.defaultManager fileExistsAtPath:path]) {
+        return;
+    }
+    NSString *uri = [[[NSURL fileURLWithPath:path] absoluteString] stringByAppendingString:@"?mode=ro&immutable=1"];
+    NSString *escaped = [uri stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
+    NSString *sql = [NSString stringWithFormat:@"ATTACH DATABASE '%@' AS lang;", escaped];
+    if (sqlite3_exec(d_db, sql.UTF8String, NULL, NULL, NULL) != SQLITE_OK) {
+        RETROGO_LOGE(DATABASE, "Failed to attach language pack: %{public}s", sqlite3_errmsg(d_db));
+        return;
+    }
+    NSString *language = RALanguagePackLanguage(d_db, "lang");
+    if (!language) {
+        sqlite3_exec(d_db, "DETACH DATABASE lang;", NULL, NULL, NULL);
+        return;
+    }
+    sqlite3_exec(d_db, "PRAGMA lang.cache_size=-2048;", NULL, NULL, NULL);
+    sqlite3_exec(d_db, "PRAGMA lang.mmap_size=67108864;", NULL, NULL, NULL);
+    d_hasLocalization = YES;
+    d_languagePackLanguage = language;
+    RETROGO_LOGI(DATABASE, "Attached %{public}@ language pack to the game database", language);
 }
 
 - (void)dealloc {
@@ -336,9 +394,8 @@ static NSString *p_locNorm(NSString *s);
                 "       g.rom_name, g.crc32, g.md5, g.sha1, g.file_size, "
                 "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
                 "FROM game g "
-                "LEFT JOIN loc.name_loc l ON l.platform_id = g.platform_id "
-                "                         AND l.group_name = g.group_name "
-                "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+                "LEFT JOIN lang.game_name l ON l.platform_id = g.platform_id "
+                "                          AND l.group_name = g.group_name "
                 "WHERE g.platform_id = ? "
                 "ORDER BY g.name COLLATE NOCASE ASC "
                 "LIMIT ? OFFSET ?;";
@@ -417,9 +474,8 @@ static NSString *p_locNorm(NSString *s);
                 "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
                 "FROM game_group gg "
                 "INNER JOIN game g ON g.id = gg.representative_game_id "
-                "LEFT JOIN loc.name_loc l ON l.platform_id = gg.platform_id "
-                "                         AND l.group_name = gg.group_name "
-                "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+                "LEFT JOIN lang.game_name l ON l.platform_id = gg.platform_id "
+                "                          AND l.group_name = gg.group_name "
                 "WHERE gg.platform_id = ? "
                 "ORDER BY gg.group_name COLLATE NOCASE ASC "
                 "LIMIT ? OFFSET ?;";
@@ -469,9 +525,8 @@ static NSString *p_locNorm(NSString *s);
             "       g.rom_name, g.crc32, g.md5, g.sha1, g.file_size, "
             "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
             "FROM game g "
-            "LEFT JOIN loc.name_loc l ON l.platform_id = g.platform_id "
-            "                         AND l.group_name = g.group_name "
-            "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+            "LEFT JOIN lang.game_name l ON l.platform_id = g.platform_id "
+            "                          AND l.group_name = g.group_name "
             "WHERE g.platform_id = ? AND g.group_name = ? "
             "ORDER BY g.name COLLATE NOCASE ASC;";
         sqlite3_stmt *stmt = NULL;
@@ -532,9 +587,8 @@ static NSString *p_locNorm(NSString *s);
                 "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
                 "FROM game_group gg "
                 "INNER JOIN game g ON g.id = gg.representative_game_id "
-                "LEFT JOIN loc.name_loc l ON l.platform_id = gg.platform_id "
-                "                         AND l.group_name = gg.group_name "
-                "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+                "LEFT JOIN lang.game_name l ON l.platform_id = gg.platform_id "
+                "                          AND l.group_name = gg.group_name "
                 "INNER JOIN ( "
                 "   SELECT gg2.id AS gid, MIN(fts.rank) AS r "
                 "   FROM game_fts fts "
@@ -572,9 +626,8 @@ static NSString *p_locNorm(NSString *s);
                 "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
                 "FROM game_group gg "
                 "INNER JOIN game g ON g.id = gg.representative_game_id "
-                "LEFT JOIN loc.name_loc l ON l.platform_id = gg.platform_id "
-                "                         AND l.group_name = gg.group_name "
-                "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+                "LEFT JOIN lang.game_name l ON l.platform_id = gg.platform_id "
+                "                          AND l.group_name = gg.group_name "
                 "INNER JOIN ( "
                 "   SELECT gg2.id AS gid, MIN(fts.rank) AS r "
                 "   FROM game_fts fts "
@@ -633,10 +686,10 @@ static NSString *p_locNorm(NSString *s);
                     "       g.franchise, g.description, g.serial, g.max_users, "
                     "       g.rom_name, g.crc32, g.md5, g.sha1, g.file_size, "
                     "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
-                    "FROM loc.name_loc l "
+                    "FROM lang.game_name l "
                     "INNER JOIN game_group gg ON gg.platform_id = l.platform_id AND gg.group_name = l.group_name "
                     "INNER JOIN game g ON g.id = gg.representative_game_id "
-                    "WHERE l.lang = 'zh' AND l.is_primary = 1 AND l.name_norm LIKE ? "
+                    "WHERE l.name_norm LIKE ? "
                     "ORDER BY l.name COLLATE NOCASE ASC LIMIT ?;";
                 const char *locSQLPlatform =
                     "SELECT gg.representative_game_id, gg.platform_id, gg.group_name, gg.variant_count, "
@@ -644,10 +697,10 @@ static NSString *p_locNorm(NSString *s);
                     "       g.franchise, g.description, g.serial, g.max_users, "
                     "       g.rom_name, g.crc32, g.md5, g.sha1, g.file_size, "
                     "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
-                    "FROM loc.name_loc l "
+                    "FROM lang.game_name l "
                     "INNER JOIN game_group gg ON gg.platform_id = l.platform_id AND gg.group_name = l.group_name "
                     "INNER JOIN game g ON g.id = gg.representative_game_id "
-                    "WHERE l.lang = 'zh' AND l.is_primary = 1 AND l.platform_id = ? AND l.name_norm LIKE ? "
+                    "WHERE l.platform_id = ? AND l.name_norm LIKE ? "
                     "ORDER BY l.name COLLATE NOCASE ASC LIMIT ?;";
                 sqlite3_stmt *locStmt = NULL;
                 const char *locSQL = platformId == -1 ? locSQLAll : locSQLPlatform;
@@ -685,8 +738,28 @@ static NSString *p_locNorm(NSString *s);
 // MARK: CRC 精确查询
 
 - (nullable RAGameEntry *)findGameByCRC32:(NSString *)crc32 {
+    RAGameEntry *entry = nil;
+    [self lookupGameByCRC32:crc32 game:&entry error:NULL];
+    return entry;
+}
+
+- (BOOL)lookupGameByCRC32:(NSString *)crc32
+                     game:(RAGameEntry * _Nullable * _Nonnull)game
+                    error:(NSError **)error {
+    *game = nil;
+    if (!d_dbQueue) {
+        if (error) {
+            *error = [self p_errorWithCode:RARDBErrorCodeOpenFailed reason:@"game database is not initialized"];
+        }
+        return NO;
+    }
     __block RAGameEntry *entry = nil;
+    __block NSError *failure = nil;
     dispatch_sync(d_dbQueue, ^{
+        if (!d_db) {
+            failure = [self p_errorWithCode:RARDBErrorCodeOpenFailed reason:@"game database is not open"];
+            return;
+        }
         const char *sqlPlain =
             "SELECT id, platform_id, name, developer, publisher, "
             "       release_year, release_month, genre, region, "
@@ -702,22 +775,33 @@ static NSString *p_locNorm(NSString *s);
             "       g.rom_name, g.crc32, g.md5, g.sha1, g.file_size, g.group_name, "
             "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
             "FROM game g "
-            "LEFT JOIN loc.name_loc l ON l.platform_id = g.platform_id "
-            "                         AND l.group_name = g.group_name "
-            "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+            "LEFT JOIN lang.game_name l ON l.platform_id = g.platform_id "
+            "                          AND l.group_name = g.group_name "
             "WHERE g.crc32 = ? "
             "LIMIT 1;";
         sqlite3_stmt *stmt = NULL;
         const char *sql = d_hasLocalization ? sqlLoc : sqlPlain;
-        if (sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, crc32.UTF8String, -1, SQLITE_TRANSIENT);
-            if (sqlite3_step(stmt) == SQLITE_ROW) {
-                entry = [self p_gameEntryFromStmt:stmt];
-            }
+        if (sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+            RETROGO_LOGE(DATABASE, "CRC32 lookup prepare failed: %{public}s", sqlite3_errmsg(d_db));
+            failure = [self p_errorWithCode:RARDBErrorCodeQueryFailed reason:@"CRC32 lookup prepare failed"];
+            return;
+        }
+        sqlite3_bind_text(stmt, 1, crc32.UTF8String, -1, SQLITE_TRANSIENT);
+        int rc = sqlite3_step(stmt);
+        if (rc == SQLITE_ROW) {
+            entry = [self p_gameEntryFromStmt:stmt];
+        } else if (rc != SQLITE_DONE) {
+            RETROGO_LOGE(DATABASE, "CRC32 lookup step failed (%d): %{public}s", rc, sqlite3_errmsg(d_db));
+            failure = [self p_errorWithCode:RARDBErrorCodeQueryFailed reason:@"CRC32 lookup failed"];
         }
         sqlite3_finalize(stmt);
     });
-    return entry;
+    if (failure) {
+        if (error) { *error = failure; }
+        return NO;
+    }
+    *game = entry;
+    return YES;
 }
 
 // ===========================================================================
@@ -735,7 +819,12 @@ static NSString *p_locNorm(NSString *s);
 ///   - 不启用 WAL / 外键约束（都只服务于写操作）。
 /// 建库 DDL 与 user_version 的写入都集中在离线导出阶段完成。
 - (BOOL)p_openAndSetup {
+    if (d_db) {
+        sqlite3_close(d_db);
+        d_db = NULL;
+    }
     d_hasLocalization = NO;
+    d_languagePackLanguage = nil;
     // 用 NSURL 生成正确百分号转义的 file URI（路径含空格如 "Application Support" 时必需），
     // 再追加 immutable=1。配合 SQLITE_OPEN_URI 生效。
     NSString *uri = [[[NSURL fileURLWithPath:d_dbPath] absoluteString]
@@ -766,22 +855,7 @@ static NSString *p_locNorm(NSString *s);
               (long)storedVersion, (long)self.currentDBVersion);
     }
 
-    NSString *locPath = [[d_dbPath stringByDeletingLastPathComponent]
-                         stringByAppendingPathComponent:@"gameloc.sqlite"];
-    if ([NSFileManager.defaultManager fileExistsAtPath:locPath]) {
-        NSString *locURI = [[[NSURL fileURLWithPath:locPath] absoluteString]
-                            stringByAppendingString:@"?mode=ro&immutable=1"];
-        NSString *escaped = [locURI stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
-        NSString *sql = [NSString stringWithFormat:@"ATTACH DATABASE '%@' AS loc;", escaped];
-        if (sqlite3_exec(d_db, sql.UTF8String, NULL, NULL, NULL) == SQLITE_OK) {
-            d_hasLocalization = YES;
-            sqlite3_exec(d_db, "PRAGMA loc.cache_size=-2048;", NULL, NULL, NULL);
-            sqlite3_exec(d_db, "PRAGMA loc.mmap_size=67108864;", NULL, NULL, NULL);
-            RETROGO_LOGI(DATABASE, "Attached game name localization database");
-        } else {
-            RETROGO_LOGE(DATABASE, "Failed to attach game name localization database: %@", locPath);
-        }
-    }
+    [self p_attachLanguagePack];
     sqlite3_exec(d_db, "PRAGMA query_only=ON;", NULL, NULL, NULL);
     return YES;
 }
@@ -1246,6 +1320,9 @@ static NSString *p_locNorm(NSString *s);
         entry.localizationSource = (NSInteger)sqlite3_column_int64(stmt, 20);
         entry.localizationReference = entry.localizationSource == 5;
     }
+    if (entry.localizedName) {
+        entry.localizationLanguage = d_languagePackLanguage;
+    }
     return entry;
 }
 
@@ -1279,6 +1356,9 @@ static NSString *p_locNorm(NSString *s);
         entry.localizedName = p_colText(stmt, 19);
         entry.localizationSource = (NSInteger)sqlite3_column_int64(stmt, 20);
         entry.localizationReference = entry.localizationSource == 5;
+    }
+    if (entry.localizedName) {
+        entry.localizationLanguage = d_languagePackLanguage;
     }
     return entry;
 }
@@ -1370,25 +1450,7 @@ static inline void p_bindInt64(sqlite3_stmt *stmt, int col, NSInteger val) {
 }
 
 static NSString *p_locNorm(NSString *s) {
-    static NSCharacterSet *keep = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSMutableCharacterSet *set = [NSMutableCharacterSet decimalDigitCharacterSet];
-        [set formUnionWithCharacterSet:[NSCharacterSet lowercaseLetterCharacterSet]];
-        [set formUnionWithCharacterSet:[NSCharacterSet uppercaseLetterCharacterSet]];
-        [set addCharactersInRange:NSMakeRange(0x4E00, 0x9FFF - 0x4E00 + 1)];
-        [set addCharactersInRange:NSMakeRange(0x3400, 0x4DBF - 0x3400 + 1)];
-        keep = [set copy];
-    });
-    NSMutableString *out = [NSMutableString string];
-    NSString *lower = s.lowercaseString ?: @"";
-    for (NSUInteger i = 0; i < lower.length; i++) {
-        unichar c = [lower characterAtIndex:i];
-        if ([keep characterIsMember:c]) {
-            [out appendFormat:@"%C", c];
-        }
-    }
-    return out;
+    return RALanguagePackSearchNorm(s);
 }
 
 @end

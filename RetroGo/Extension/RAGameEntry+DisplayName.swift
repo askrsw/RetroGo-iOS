@@ -31,17 +31,21 @@ extension RAGameEntry {
 
     /// English RDB/No-Intro name remains the canonical name for matching,
     /// cover cache keys and ROM metadata. Only UI labels should use this value.
+    /// The translated name is used only while it comes from the language pack
+    /// of the current App language, so entries fetched before a language
+    /// switch fall back to English instead of showing another language.
     var localizedDisplayName: String {
-        guard Bundle.currentSimpleLanguageKey() == "zh",
-              let localizedName,
-              !localizedName.isEmpty
+        guard let localizedName,
+              !localizedName.isEmpty,
+              let language = localizationLanguage,
+              language == OnDemandResourceLoader.shared.activeLanguage
         else {
             return name
         }
         return localizedName
     }
 
-    /// Variant rows share one localized group name in gameloc.sqlite. When a
+    /// Variant rows share one localized group name in the language pack. When a
     /// concrete variant is shown, preserve the authoritative RDB suffix so
     /// "(USA) (Proto) (Level 3)" and similar variants remain distinguishable.
     var localizedDisplayNameWithVariantSuffix: String {
@@ -60,8 +64,8 @@ extension RAGameEntry {
         return "\(displayName) \(suffix)"
     }
 
-    /// Secondary title for detail surfaces. Chinese UI shows the authoritative
-    /// English name when the primary title has been localized.
+    /// Secondary title for detail surfaces: the authoritative English name when
+    /// the primary title has been localized.
     var authoritativeEnglishNameForDisplay: String? {
         guard localizedDisplayName != name else { return nil }
         return name

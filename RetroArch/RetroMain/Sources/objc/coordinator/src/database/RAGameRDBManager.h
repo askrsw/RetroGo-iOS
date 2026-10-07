@@ -71,10 +71,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// 注意：分组查询(fetchGroups / 搜索)返回的代表条目，此字段为干净的分组名(如 "Super Mario World")。
 @property (nonatomic, copy, readonly)           NSString  *name;
 
-/// 当前中文本地化名（若已 attach gameloc.sqlite 且有命中）。英文权威名仍在 name。
+/// Name from the attached language pack (game_name), when it has one. The
+/// authoritative English name stays in `name`.
 @property (nonatomic, copy, nullable, readonly) NSString  *localizedName;
+/// BCP-47 language of the pack `localizedName` came from (e.g. "zh-Hans");
+/// nil when there is no localized name. UI shows the name only while this
+/// matches the language pack of the current App language.
+@property (nonatomic, copy, nullable, readonly) NSString  *localizationLanguage;
 
-/// gameloc source 枚举：1=en-cjk, 2=wikidata, 3=deepseek-chat, 4=deepseek-chat-pass2, 5=deepseek-loose。
+/// language pack game_name.source 枚举：1=en-cjk, 2=wikidata, 3=deepseek-chat, 4=deepseek-chat-pass2, 5=deepseek-loose。
 @property (nonatomic, assign, readonly)         NSInteger  localizationSource;
 
 /// YES 表示 source=5(deepseek-loose)，UI 应显示"仅供参考"标记。
@@ -189,6 +194,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (NSArray<RAPlatformItem *> *)allPlatforms;
 
+/// Attaches the language pack at `path` (nil = English only) for localized
+/// names and localized search, replacing the previous one. Takes effect for
+/// queries issued after it; may be called before or after initialize.
+- (void)setLanguagePackPath:(nullable NSString *)path
+                 completion:(nullable void (^)(void))completion
+    NS_SWIFT_NAME(setLanguagePack(path:completion:));
+
 #if DEBUG
 // MARK: 离线导出（DEBUG）
 
@@ -296,6 +308,13 @@ NS_ASSUME_NONNULL_BEGIN
  * @return 匹配到的游戏条目；若无匹配返回 nil。返回值包含英文 name 与英文 groupName。
  */
 - (nullable RAGameEntry *)findGameByCRC32:(NSString *)crc32 NS_SWIFT_NAME(findGame(byCRC32:));
+
+/// Like findGameByCRC32:, but tells "no such game" (YES, *game = nil) apart
+/// from a failed query (NO + error). Synchronous; never call on the main thread.
+- (BOOL)lookupGameByCRC32:(NSString *)crc32
+                     game:(RAGameEntry * _Nullable * _Nonnull)game
+                    error:(NSError **)error
+    NS_SWIFT_NAME(lookupGame(byCRC32:game:));
 
 @end
 

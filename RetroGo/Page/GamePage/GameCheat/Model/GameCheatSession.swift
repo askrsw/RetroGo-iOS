@@ -25,6 +25,7 @@
 
 import SQLite
 import RACoordinator
+import os
 
 enum GameCheatTemplateBindingOrigin: Int {
     case automatic = 0
@@ -40,9 +41,22 @@ struct GameCheatTemplateBinding {
     let catalogPlatformId: Int?
     let catalogGroupName: String?
     let catalogGameName: String?
+    /// cheat.sqlite db_version the binding was made against (the column keeps
+    /// its old name; before v5 it held PRAGMA user_version).
     let cheatDBUserVersion: Int
 
     var isBound: Bool { status == 1 }
+
+    /// Persisted template switches are keyed by the cheat's cht index from
+    /// catalog version 5 on, by catalog cheat id before (ids shift when the
+    /// catalog is rebuilt; the auto-binder re-keys old rows once).
+    var statesKeyedByCheatIndex: Bool {
+        cheatDBUserVersion >= GameCheatSession.templateStateIndexKeyVersion
+    }
+
+    func stateKey(for cheat: RACheatItem) -> Int {
+        statesKeyedByCheatIndex ? cheat.catalogIndex : cheat.catalogId
+    }
 
     func matches(catalogGame: RAGameEntry) -> Bool {
         catalogGameId == catalogGame.gameId &&
@@ -55,6 +69,10 @@ struct GameCheatTemplateBinding {
 /// system template binding/state live in separate template tables. Swift/SQLite
 /// is the source of truth and the engine receives only an execution snapshot.
 final class GameCheatSession {
+    /// First cheat.sqlite db_version whose bindings key template switches by
+    /// cheat_index instead of catalog cheat id.
+    static let templateStateIndexKeyVersion = 5
+
     let game: RetroRomFileItem
     let core: EmuCoreInfoItem
     let autoEnableCheatsOnLaunch: Bool
@@ -161,7 +179,7 @@ final class GameCheatSession {
         guard Self.upsertTemplateState(
             romKey: game.key,
             coreId: core.coreId,
-            catalogCheatId: item.catalogId,
+            catalogCheatId: templateBinding?.stateKey(for: item) ?? item.catalogIndex,
             enabled: enabled
         ) else { return false }
         pushToEngine()
@@ -207,6 +225,7 @@ final class GameCheatSession {
         guard let binding = templateBinding,
               binding.isBound,
               let gameId = binding.catalogGameId else {
+            RetroGoLogger.cheat.debug("Template reload: no bound template for core \(self.core.coreId, privacy: .public)")
             templateItems = []
             pushToEngine()
             completion()
@@ -216,28 +235,39 @@ final class GameCheatSession {
         initializeCheatCatalog { [weak self] ready in
             guard let self else { return }
             guard ready else {
+                RetroGoLogger.cheat.error("Template reload: cheat catalog not ready")
                 self.templateItems = []
                 self.pushToEngine()
                 completion()
                 return
             }
-            RACheatCatalogManager.shared().fetchCheats(forGameId: gameId) { [weak self] cheats, _ in
+            RACheatCatalogManager.shared().fetchCheats(forGameId: gameId) { [weak self] cheats, error in
                 guard let self else { return }
-                let states: [Int: Bool]
+                if let error {
+                    // Keep what is loaded (and applied) rather than dropping the
+                    // template because of a read failure.
+                    RetroGoLogger.cheat.error("Template reload: fetching cheats of catalog game \(gameId) failed: \(error.localizedDescription, privacy: .public)")
+                    completion()
+                    return
+                }
+                RetroGoLogger.cheat.debug("Template reload: catalog game \(gameId) has \(cheats.count) cheats")
                 if self.autoEnableCheatsOnLaunch {
-                    states = Self.loadTemplateStates(romKey: self.game.key, coreId: self.core.coreId)
+                    let states = Self.loadTemplateStates(romKey: self.game.key, coreId: self.core.coreId)
+                    for cheat in cheats {
+                        // System templates are opt-in: missing state means disabled.
+                        cheat.enabled = states[binding.stateKey(for: cheat)] ?? false
+                    }
                 } else {
                     // Same safety fuse for system templates. Preserve switches
                     // toggled manually during this running session, but do not
                     // resurrect persisted enabled states just by opening a game.
-                    states = Dictionary(
+                    let states = Dictionary(
                         self.templateItems.map { ($0.catalogId, $0.enabled) },
                         uniquingKeysWith: { current, _ in current }
                     )
-                }
-                for cheat in cheats {
-                    // System templates are opt-in: missing state means disabled.
-                    cheat.enabled = states[cheat.catalogId] ?? false
+                    for cheat in cheats {
+                        cheat.enabled = states[cheat.catalogId] ?? false
+                    }
                 }
                 self.templateItems = cheats
                 self.pushToEngine()
@@ -255,7 +285,7 @@ final class GameCheatSession {
         guard catalogGame.gameId > 0 else {
             return false
         }
-        let version = RACheatCatalogManager.shared().currentDBUserVersion
+        let version = RACheatCatalogManager.shared().currentDBVersion
         guard Self.upsertTemplateBinding(
             romKey: game.key,
             coreId: core.coreId,
@@ -284,7 +314,7 @@ final class GameCheatSession {
     /// a fresh lookup. User-created cheats are untouched.
     @discardableResult
     func unbindTemplate() -> Bool {
-        let version = RACheatCatalogManager.shared().currentDBUserVersion
+        let version = RACheatCatalogManager.shared().currentDBVersion
         guard Self.upsertTemplateUnbind(
             romKey: game.key,
             coreId: core.coreId,
@@ -409,25 +439,7 @@ final class GameCheatSession {
     }
 
     private func initializeCheatCatalog(completion: @escaping (Bool) -> Void) {
-        guard let cheat = OnDemandResourceLoader.resource(id: "cheat") else {
-            completion(false)
-            return
-        }
-        switch OnDemandResourceLoader.shared.state(for: cheat) {
-        case .ready, .outdated:
-            break
-        default:
-            completion(false)
-            return
-        }
-        let loader = OnDemandResourceLoader.shared
-        let locPath = OnDemandResourceLoader.resource(id: "gameloc").map { loader.targetPath($0) }
-        RACheatCatalogManager.shared().initialize(
-            withCheatPath: loader.targetPath(cheat),
-            localizationPath: locPath
-        ) {
-            completion(RACheatCatalogManager.shared().isDatabaseReady)
-        }
+        OnDemandResourceLoader.shared.openCheatCatalog(completion: completion)
     }
 }
 
@@ -567,6 +579,29 @@ extension GameCheatSession {
             return true
         } catch {
             return false
+        }
+    }
+
+    /// Re-keys one ROM/core's template switches from catalog cheat ids to cht
+    /// indexes (`cheatIndexById`). Rows without a mapping are dropped.
+    static func rekeyTemplateStates(romKey: String, coreId: String, cheatIndexById: [Int: Int]) throws {
+        let db = RetroRomPersistence.sqlite
+        let rows = templateStateTable.filter(self.romKey == romKey && self.coreId == coreId)
+        try db.transaction {
+            let old = try db.prepare(rows).map { ($0[catalogCheatId], $0[enabled], $0[createAt]) }
+            try db.run(rows.delete())
+            let now = Date()
+            for (cheatId, isOn, created) in old {
+                guard let index = cheatIndexById[cheatId] else { continue }
+                try db.run(templateStateTable.insert(or: .replace,
+                    self.romKey <- romKey,
+                    self.coreId <- coreId,
+                    self.catalogCheatId <- index,
+                    self.enabled <- isOn,
+                    self.createAt <- created,
+                    self.updateAt <- now
+                ))
+            }
         }
     }
 

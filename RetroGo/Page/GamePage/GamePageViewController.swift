@@ -382,7 +382,9 @@ extension GamePageViewController {
     }
 }
 
-private enum GameLaunchBackgroundPreparation {
+/// Serial queue for CRC32 + cheat-template binding work, shared by game launch
+/// and the cheat page so two bindings for one game never run at once.
+enum GameLaunchBackgroundPreparation {
     static let queue = DispatchQueue(label: "com.retrogo.game-launch.preparation", qos: .utility)
 }
 

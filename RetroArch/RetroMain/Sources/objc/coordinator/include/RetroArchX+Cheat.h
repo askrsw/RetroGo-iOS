@@ -59,7 +59,7 @@ typedef NS_ENUM(NSUInteger, RACheatHandler) {
 @property(nonatomic, assign) NSInteger catalogIndex;
 @property(nonatomic, assign) NSInteger catalogDescId;
 @property(nonatomic, copy, nullable) NSString *descEnglish;
-@property(nonatomic, assign) NSInteger descSource; // desc_i18n source enum, 0 when not localized
+@property(nonatomic, assign) NSInteger descSource; // language pack cheat_desc.source, 0 when not localized
 
 // EMU
 @property(nonatomic, copy)   NSString      *code;

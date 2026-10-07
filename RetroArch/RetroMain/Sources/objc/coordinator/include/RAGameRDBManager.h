@@ -48,9 +48,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, readonly)         NSInteger  gameId;
 @property (nonatomic, assign, readonly)         NSInteger  platformId;
 @property (nonatomic, copy, readonly)           NSString  *name;
-/// 当前中文本地化名（若已 attach gameloc.sqlite 且有命中）。英文权威名仍在 name。
+/// Name from the attached language pack (game_name), when it has one. The
+/// authoritative English name stays in `name`.
 @property (nonatomic, copy, nullable, readonly) NSString  *localizedName;
-/// gameloc source 枚举：1=en-cjk, 2=wikidata, 3=deepseek-chat, 4=deepseek-chat-pass2, 5=deepseek-loose。
+/// BCP-47 language of the pack `localizedName` came from (e.g. "zh-Hans");
+/// nil when there is no localized name. UI shows the name only while this
+/// matches the language pack of the current App language.
+@property (nonatomic, copy, nullable, readonly) NSString  *localizationLanguage;
+/// language pack game_name.source 枚举：1=en-cjk, 2=wikidata, 3=deepseek-chat, 4=deepseek-chat-pass2, 5=deepseek-loose。
 @property (nonatomic, assign, readonly)         NSInteger  localizationSource;
 /// YES 表示 source=5(deepseek-loose)，UI 应显示"仅供参考"标记。
 @property (nonatomic, assign, readonly, getter=isLocalizationReference) BOOL localizationReference;
@@ -90,6 +95,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)initialize:(NSString *)dbPath completion:(nullable void (^)(void))completion;
 - (NSArray<RAPlatformItem *> *)allPlatforms;
 
+/// Attaches the language pack at `path` (nil = English only) for localized
+/// names and localized search, replacing the previous one. Takes effect for
+/// queries issued after it; may be called before or after initialize.
+- (void)setLanguagePackPath:(nullable NSString *)path
+                 completion:(nullable void (^)(void))completion
+    NS_SWIFT_NAME(setLanguagePack(path:completion:));
+
 #if DEBUG
 /// DEBUG 专用：从一组 .rdb 文件离线构建成品合并数据库，落地为单个 .db 文件。
 /// 产物与设备端逐个 import 的结果完全一致（同 schema、同 user_version、含已建好的 FTS5），
@@ -126,6 +138,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// FTS5 search. Results are collapsed to groups (one representative per matched group).
 - (void)searchGamesWithKeyword:(NSString *)keyword platformId:(NSInteger)platformId completion:(void (^)(NSArray<RAGameEntry *> *games, NSError  * _Nullable    error))completion;
 - (nullable RAGameEntry *)findGameByCRC32:(NSString *)crc32 NS_SWIFT_NAME(findGame(byCRC32:));
+
+/// Like findGameByCRC32:, but tells "no such game" (YES, *game = nil) apart
+/// from a failed query (NO + error). Synchronous; never call on the main thread.
+- (BOOL)lookupGameByCRC32:(NSString *)crc32
+                     game:(RAGameEntry * _Nullable * _Nonnull)game
+                    error:(NSError **)error
+    NS_SWIFT_NAME(lookupGame(byCRC32:game:));
 @end
 
 NS_ASSUME_NONNULL_END

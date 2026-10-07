@@ -24,19 +24,50 @@
 //
 
 #import "RACheatCatalogManager.h"
-#import <Foundation+Extensions.h>
+#import "RALanguagePack.h"
 
 #include <sqlite3.h>
 #include <utils/retrogo_log.h>
 
 static NSString * const kRACheatErrorDomain = @"com.retrogame.cheatcatalog";
 
+/// Schema (PRAGMA user_version) of the cheat.sqlite files this code reads.
+/// v5: English only, game.first_cheat_id/cheat_count, sparse cheat_ext,
+/// desc_string.text_key. Older files are refused and must be downloaded again.
+static const int kRACheatSchemaVersion = 5;
+
+/// Identity (inode/size/mtime) of the last cheat.sqlite that passed
+/// quick_check, so the full check runs once per installed file.
+static NSString * const kRACheatVerifiedFileKey = @"RACheatCatalogVerifiedFile";
+
+// Game columns of every catalog game query, in p_gameFromStmt order.
+#define RA_CHEAT_GAME_COLUMNS "g.id, g.platform_id, g.game_name, g.group_name, g.cheat_count"
+#define RA_CHEAT_GAME_COLUMNS_LOC RA_CHEAT_GAME_COLUMNS ", l.name, COALESCE(l.source, 0)"
+#define RA_CHEAT_GAME_COLUMNS_PLAIN RA_CHEAT_GAME_COLUMNS ", NULL, 0"
+#define RA_CHEAT_LANG_JOIN "LEFT JOIN lang.game_name l ON l.platform_id = g.platform_id AND l.group_name = g.group_name "
+
+// Cheat columns, in p_cheatFromStmt order. A game's cheats are the id range
+// first_cheat_id .. first_cheat_id + cheat_count - 1. cheat_ext only has the
+// rows whose RETRO/rumble fields differ from RetroArch's defaults; for the
+// others the e.* columns are NULL and p_cheatFromStmt applies the defaults.
+#define RA_CHEAT_COLUMNS_HEAD "ch.id, g.id, ch.cheat_index, COALESCE(ch.desc_id, 0), ds.text, "
+#define RA_CHEAT_COLUMNS_TAIL ", ch.code, ch.handler, e.cheat_id, e.enable, e.memory_search_size, e.cheat_type, " \
+    "e.value, e.address, e.address_mask, e.big_endian, e.repeat_count, e.repeat_add_to_value, " \
+    "e.repeat_add_to_address, e.rumble_type, e.rumble_value, e.rumble_port, " \
+    "e.rumble_primary_strength, e.rumble_primary_duration, e.rumble_secondary_strength, " \
+    "e.rumble_secondary_duration "
+#define RA_CHEAT_FROM "FROM game g " \
+    "JOIN cheat ch ON ch.id BETWEEN g.first_cheat_id AND g.first_cheat_id + g.cheat_count - 1 " \
+    "LEFT JOIN cheat_ext e ON e.cheat_id = ch.id " \
+    "LEFT JOIN desc_string ds ON ds.id = ch.desc_id "
+
 static NSString * _Nullable p_colText(sqlite3_stmt *stmt, int col);
 static NSString *p_groupNameFromGameName(NSString *name);
-static NSString *p_cheatDescriptionLanguage(void);
 static NSArray<NSString *> *p_regionPreferences(NSString *name);
 static BOOL p_nameContainsRegion(NSString *name, NSString *region);
 static BOOL p_isSpecialTemplateName(NSString *name);
+static NSString * _Nullable p_fileIdentity(NSString *path);
+static NSString *p_placeholders(NSUInteger count);
 
 @interface RAGameEntry(RACheatCatalogPrivate)
 @property (nonatomic, assign, readwrite) NSInteger gameId;
@@ -44,22 +75,27 @@ static BOOL p_isSpecialTemplateName(NSString *name);
 @property (nonatomic, copy, readwrite) NSString *name;
 @property (nonatomic, copy, nullable, readwrite) NSString *groupName;
 @property (nonatomic, copy, nullable, readwrite) NSString *localizedName;
+@property (nonatomic, copy, nullable, readwrite) NSString *localizationLanguage;
 @property (nonatomic, assign, readwrite) NSInteger localizationSource;
 @property (nonatomic, assign, readwrite, getter=isLocalizationReference) BOOL localizationReference;
 @property (nonatomic, assign, readwrite) NSInteger cheatCount;
 @end
 
 @interface RACheatCatalogManager()
-@property (nonatomic, assign, readwrite) NSInteger currentDBUserVersion;
+@property (nonatomic, assign, readwrite) NSInteger currentDBVersion;
 @property (nonatomic, assign, readwrite, getter=isDatabaseReady) BOOL databaseReady;
 @end
 
 @implementation RACheatCatalogManager
 {
     NSString *d_cheatPath;
-    NSString *d_localizationPath;
+    NSString *d_languagePackPath;
     sqlite3 *d_db;
-    BOOL d_hasLocalization;
+    // The language pack attached as `lang`; nil language = English only.
+    BOOL d_hasLanguagePack;
+    NSString *d_languagePackLanguage;
+    NSString *d_openedFileIdentity;
+    NSString *d_openedPackIdentity;
     dispatch_queue_t d_dbQueue;
 }
 
@@ -81,24 +117,33 @@ static BOOL p_isSpecialTemplateName(NSString *name);
 }
 
 - (void)initializeWithCheatPath:(NSString *)cheatPath
-               localizationPath:(nullable NSString *)localizationPath
+               languagePackPath:(nullable NSString *)languagePackPath
                      completion:(nullable void (^)(void))completion {
     NSString *nextCheatPath = [cheatPath copy];
-    NSString *nextLocalizationPath = [localizationPath copy];
+    NSString *nextPackPath = languagePackPath.length > 0 ? [languagePackPath copy] : nil;
     dispatch_async(d_dbQueue, ^{
-        BOOL samePath = d_db &&
-            ((d_cheatPath == nextCheatPath) || [d_cheatPath isEqualToString:nextCheatPath]) &&
-            ((d_localizationPath == nextLocalizationPath) ||
-             (!d_localizationPath.length && !nextLocalizationPath.length) ||
-             [d_localizationPath isEqualToString:nextLocalizationPath]);
-        if (!samePath) {
+        BOOL samePaths = d_db &&
+            [d_cheatPath isEqualToString:nextCheatPath] &&
+            ((d_languagePackPath == nil && nextPackPath == nil) || [d_languagePackPath isEqualToString:nextPackPath]);
+        // The same path may now hold a different file (re-downloaded or
+        // deleted); an immutable handle would keep reading the old one.
+        BOOL sameFiles = samePaths &&
+            [d_openedFileIdentity isEqualToString:p_fileIdentity(nextCheatPath) ?: @""] &&
+            [(d_openedPackIdentity ?: @"") isEqualToString:(nextPackPath ? p_fileIdentity(nextPackPath) : nil) ?: @""];
+        if (!sameFiles) {
             d_cheatPath = nextCheatPath;
-            d_localizationPath = nextLocalizationPath;
+            d_languagePackPath = nextPackPath;
             [self p_open];
         }
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), completion);
         }
+    });
+}
+
+- (void)closeDatabase {
+    dispatch_async(d_dbQueue, ^{
+        [self p_close];
     });
 }
 
@@ -109,20 +154,7 @@ static BOOL p_isSpecialTemplateName(NSString *name);
     }
 }
 
-- (void)fetchGamesForPlatformId:(NSInteger)platformId
-                          offset:(NSInteger)offset
-                           limit:(NSInteger)limit
-                 knownTotalCount:(NSInteger)knownTotalCount
-                      completion:(void (^)(NSArray<RAGameEntry *> *games,
-                                           NSInteger totalCount,
-                                           NSError * _Nullable error))completion {
-    [self fetchGamesForPlatformIds:@[@(platformId)]
-                            keyword:@""
-                             offset:offset
-                              limit:limit
-                    knownTotalCount:knownTotalCount
-                         completion:completion];
-}
+// MARK: - Catalog games
 
 - (void)fetchGamesForPlatformIds:(NSArray<NSNumber *> *)platformIds
                           keyword:(NSString *)keyword
@@ -141,107 +173,67 @@ static BOOL p_isSpecialTemplateName(NSString *name);
     dispatch_async(d_dbQueue, ^{
         NSError *error = nil;
         NSInteger totalCount = knownTotalCount;
-        NSMutableString *placeholders = [NSMutableString string];
-        for (NSUInteger i = 0; i < ids.count; i++) {
-            if (i > 0) { [placeholders appendString:@","]; }
-            [placeholders appendString:@"?"];
-        }
-
         BOOL hasKeyword = trimmed.length > 0;
-        NSString *wherePlain = [NSString stringWithFormat:@"g.platform_id IN (%@)", placeholders];
-        NSString *whereLoc = wherePlain;
+        BOOL loc = d_hasLanguagePack;
+        NSMutableString *where = [NSMutableString stringWithFormat:@"g.platform_id IN (%@)", p_placeholders(ids.count)];
         if (hasKeyword) {
-            wherePlain = [wherePlain stringByAppendingString:
-                          @" AND (g.game_name LIKE ? COLLATE NOCASE OR g.group_name LIKE ? COLLATE NOCASE)"];
-            whereLoc = [whereLoc stringByAppendingString:
-                        @" AND (g.game_name LIKE ? COLLATE NOCASE OR g.group_name LIKE ? COLLATE NOCASE OR l.name LIKE ?)"];
+            [where appendString:loc
+                ? @" AND (g.game_name LIKE ? OR g.group_name LIKE ? OR l.name LIKE ?)"
+                : @" AND (g.game_name LIKE ? OR g.group_name LIKE ?)"];
         }
+        NSString *join = loc ? @RA_CHEAT_LANG_JOIN : @"";
+        NSString *like = [NSString stringWithFormat:@"%%%@%%", trimmed];
+        void (^bindFilter)(sqlite3_stmt *, int *) = ^(sqlite3_stmt *stmt, int *bind) {
+            for (NSNumber *pid in ids) {
+                sqlite3_bind_int64(stmt, (*bind)++, (sqlite3_int64)pid.integerValue);
+            }
+            if (hasKeyword) {
+                for (int i = 0; i < (loc ? 3 : 2); i++) {
+                    sqlite3_bind_text(stmt, (*bind)++, like.UTF8String, -1, SQLITE_TRANSIENT);
+                }
+            }
+        };
 
         if (totalCount <= 0) {
-            NSString *countPlain = [NSString stringWithFormat:
-                @"SELECT COUNT(*) FROM ("
-                @"  SELECT 1 FROM game g "
-                @"  WHERE %@ "
-                @"  GROUP BY g.id"
-                @");", wherePlain];
-            NSString *countLoc = [NSString stringWithFormat:
-                @"SELECT COUNT(*) FROM ("
-                @"  SELECT 1 FROM game g "
-                @"  LEFT JOIN loc.name_loc l ON l.platform_id = g.platform_id "
-                @"                         AND l.group_name = g.group_name "
-                @"                         AND l.lang = 'zh' AND l.is_primary = 1 "
-                @"  WHERE %@ "
-                @"  GROUP BY g.id"
-                @");", whereLoc];
+            NSString *countSQL = [NSString stringWithFormat:@"SELECT COUNT(*) FROM game g %@WHERE %@;", join, where];
             sqlite3_stmt *stmt = NULL;
-            const char *countSQL = (d_hasLocalization ? countLoc : countPlain).UTF8String;
-            if (d_db && sqlite3_prepare_v2(d_db, countSQL, -1, &stmt, NULL) == SQLITE_OK) {
+            if (d_db && sqlite3_prepare_v2(d_db, countSQL.UTF8String, -1, &stmt, NULL) == SQLITE_OK) {
                 int bind = 1;
-                for (NSNumber *pid in ids) {
-                    sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)pid.integerValue);
-                }
-                if (hasKeyword) {
-                    NSString *like = [NSString stringWithFormat:@"%%%@%%", trimmed];
-                    sqlite3_bind_text(stmt, bind++, like.UTF8String, -1, SQLITE_TRANSIENT);
-                    sqlite3_bind_text(stmt, bind++, like.UTF8String, -1, SQLITE_TRANSIENT);
-                    if (d_hasLocalization) {
-                        sqlite3_bind_text(stmt, bind++, like.UTF8String, -1, SQLITE_TRANSIENT);
-                    }
-                }
-                if (sqlite3_step(stmt) == SQLITE_ROW) {
+                bindFilter(stmt, &bind);
+                int rc = sqlite3_step(stmt);
+                if (rc == SQLITE_ROW) {
                     totalCount = (NSInteger)sqlite3_column_int64(stmt, 0);
+                } else {
+                    error = [self p_stepFailed:rc context:"cheat game count"];
                 }
             } else {
-                error = [self p_error:@"cheat game count prepare failed"];
+                error = [self p_prepareFailed:"cheat game count"];
             }
             sqlite3_finalize(stmt);
         }
 
         NSMutableArray<RAGameEntry *> *games = [NSMutableArray array];
         if (!error) {
-            NSString *sqlPlain = [NSString stringWithFormat:
-                @"SELECT g.id, g.platform_id, g.platform, g.game_name, g.group_name, "
-                @"       NULL AS loc_name, 0 AS loc_source, COUNT(ch.id) AS cheat_count "
-                @"FROM game g "
-                @"JOIN cheat ch ON ch.game_id = g.id "
-                @"WHERE %@ "
-                @"GROUP BY g.id "
+            NSString *sql = [NSString stringWithFormat:
+                @"SELECT %s FROM game g %@WHERE %@ "
                 @"ORDER BY g.platform_id ASC, g.group_name COLLATE NOCASE ASC, g.game_name COLLATE NOCASE ASC "
-                @"LIMIT ? OFFSET ?;", wherePlain];
-            NSString *sqlLoc = [NSString stringWithFormat:
-                @"SELECT g.id, g.platform_id, g.platform, g.game_name, g.group_name, "
-                @"       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source, COUNT(ch.id) AS cheat_count "
-                @"FROM game g "
-                @"JOIN cheat ch ON ch.game_id = g.id "
-                @"LEFT JOIN loc.name_loc l ON l.platform_id = g.platform_id "
-                @"                         AND l.group_name = g.group_name "
-                @"                         AND l.lang = 'zh' AND l.is_primary = 1 "
-                @"WHERE %@ "
-                @"GROUP BY g.id "
-                @"ORDER BY g.platform_id ASC, g.group_name COLLATE NOCASE ASC, g.game_name COLLATE NOCASE ASC "
-                @"LIMIT ? OFFSET ?;", whereLoc];
+                @"LIMIT ? OFFSET ?;",
+                loc ? RA_CHEAT_GAME_COLUMNS_LOC : RA_CHEAT_GAME_COLUMNS_PLAIN, join, where];
             sqlite3_stmt *stmt = NULL;
-            const char *sql = (d_hasLocalization ? sqlLoc : sqlPlain).UTF8String;
-            if (d_db && sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
+            if (d_db && sqlite3_prepare_v2(d_db, sql.UTF8String, -1, &stmt, NULL) == SQLITE_OK) {
                 int bind = 1;
-                for (NSNumber *pid in ids) {
-                    sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)pid.integerValue);
-                }
-                if (hasKeyword) {
-                    NSString *like = [NSString stringWithFormat:@"%%%@%%", trimmed];
-                    sqlite3_bind_text(stmt, bind++, like.UTF8String, -1, SQLITE_TRANSIENT);
-                    sqlite3_bind_text(stmt, bind++, like.UTF8String, -1, SQLITE_TRANSIENT);
-                    if (d_hasLocalization) {
-                        sqlite3_bind_text(stmt, bind++, like.UTF8String, -1, SQLITE_TRANSIENT);
-                    }
-                }
+                bindFilter(stmt, &bind);
                 sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)limit);
                 sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)offset);
-                while (sqlite3_step(stmt) == SQLITE_ROW) {
+                int rc;
+                while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
                     [games addObject:[self p_gameFromStmt:stmt]];
                 }
+                if (rc != SQLITE_DONE) {
+                    error = [self p_stepFailed:rc context:"cheat game page"];
+                }
             } else {
-                error = [self p_error:@"cheat game page prepare failed"];
+                error = [self p_prepareFailed:"cheat game page"];
             }
             sqlite3_finalize(stmt);
         }
@@ -265,41 +257,17 @@ static BOOL p_isSpecialTemplateName(NSString *name);
     NSArray<NSString *> *names = [gameNames copy];
     dispatch_async(d_dbQueue, ^{
         NSError *error = nil;
-        NSMutableString *pidPlaceholders = [NSMutableString string];
-        for (NSUInteger i = 0; i < ids.count; i++) {
-            if (i > 0) { [pidPlaceholders appendString:@","]; }
-            [pidPlaceholders appendString:@"?"];
-        }
-        NSMutableString *namePlaceholders = [NSMutableString string];
-        for (NSUInteger i = 0; i < names.count; i++) {
-            if (i > 0) { [namePlaceholders appendString:@","]; }
-            [namePlaceholders appendString:@"?"];
-        }
-
+        BOOL loc = d_hasLanguagePack;
         // game_name is unique within the featured set, so look results up by
         // name and re-emit in the caller's order (SQL IN(...) loses order).
         NSMutableDictionary<NSString *, RAGameEntry *> *byName =
             [NSMutableDictionary dictionaryWithCapacity:names.count];
-        NSString *sqlPlain = [NSString stringWithFormat:
-            @"SELECT g.id, g.platform_id, g.platform, g.game_name, g.group_name, "
-            @"       NULL AS loc_name, 0 AS loc_source, COUNT(ch.id) AS cheat_count "
-            @"FROM game g "
-            @"JOIN cheat ch ON ch.game_id = g.id "
-            @"WHERE g.platform_id IN (%@) AND g.game_name IN (%@) "
-            @"GROUP BY g.id;", pidPlaceholders, namePlaceholders];
-        NSString *sqlLoc = [NSString stringWithFormat:
-            @"SELECT g.id, g.platform_id, g.platform, g.game_name, g.group_name, "
-            @"       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source, COUNT(ch.id) AS cheat_count "
-            @"FROM game g "
-            @"JOIN cheat ch ON ch.game_id = g.id "
-            @"LEFT JOIN loc.name_loc l ON l.platform_id = g.platform_id "
-            @"                         AND l.group_name = g.group_name "
-            @"                         AND l.lang = 'zh' AND l.is_primary = 1 "
-            @"WHERE g.platform_id IN (%@) AND g.game_name IN (%@) "
-            @"GROUP BY g.id;", pidPlaceholders, namePlaceholders];
+        NSString *sql = [NSString stringWithFormat:
+            @"SELECT %s FROM game g %@WHERE g.platform_id IN (%@) AND g.game_name IN (%@);",
+            loc ? RA_CHEAT_GAME_COLUMNS_LOC : RA_CHEAT_GAME_COLUMNS_PLAIN,
+            loc ? @RA_CHEAT_LANG_JOIN : @"", p_placeholders(ids.count), p_placeholders(names.count)];
         sqlite3_stmt *stmt = NULL;
-        const char *sql = (d_hasLocalization ? sqlLoc : sqlPlain).UTF8String;
-        if (d_db && sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
+        if (d_db && sqlite3_prepare_v2(d_db, sql.UTF8String, -1, &stmt, NULL) == SQLITE_OK) {
             int bind = 1;
             for (NSNumber *pid in ids) {
                 sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)pid.integerValue);
@@ -307,14 +275,18 @@ static BOOL p_isSpecialTemplateName(NSString *name);
             for (NSString *name in names) {
                 sqlite3_bind_text(stmt, bind++, name.UTF8String, -1, SQLITE_TRANSIENT);
             }
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
+            int rc;
+            while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
                 RAGameEntry *entry = [self p_gameFromStmt:stmt];
                 if (entry.name.length > 0) {
                     byName[entry.name] = entry;
                 }
             }
+            if (rc != SQLITE_DONE) {
+                error = [self p_stepFailed:rc context:"cheat featured games"];
+            }
         } else {
-            error = [self p_error:@"cheat featured games prepare failed"];
+            error = [self p_prepareFailed:"cheat featured games"];
         }
         sqlite3_finalize(stmt);
 
@@ -325,7 +297,6 @@ static BOOL p_isSpecialTemplateName(NSString *name);
                 if (entry) { [games addObject:entry]; }
             }
         }
-
         NSArray *copy = [games copy];
         dispatch_async(dispatch_get_main_queue(), ^{
             completion(copy, error);
@@ -333,52 +304,7 @@ static BOOL p_isSpecialTemplateName(NSString *name);
     });
 }
 
-- (void)fetchCheatsForPlatformId:(NSInteger)platformId
-                       groupName:(NSString *)groupName
-                      completion:(void (^)(NSArray<RACheatItem *> *cheats,
-                                           NSError * _Nullable error))completion {
-    if (groupName.length == 0) {
-        completion(@[], nil);
-        return;
-    }
-    dispatch_async(d_dbQueue, ^{
-        NSError *error = nil;
-        NSMutableArray<RACheatItem *> *cheats = [NSMutableArray array];
-        NSString *descriptionLanguage = p_cheatDescriptionLanguage();
-        const char *sql =
-            "SELECT ch.id, ch.game_id, ch.cheat_index, COALESCE(ch.desc_id, 0), "
-            "       ds.text AS desc_en, COALESCE(di.text, ds.text) AS desc_show, COALESCE(di.source, 0), "
-            "       ch.code, ch.handler, ch.enable, ch.memory_search_size, ch.cheat_type, "
-            "       ch.value, ch.address, ch.address_mask, ch.big_endian, "
-            "       ch.repeat_count, ch.repeat_add_to_value, ch.repeat_add_to_address, "
-            "       ch.rumble_type, ch.rumble_value, ch.rumble_port, "
-            "       ch.rumble_primary_strength, ch.rumble_primary_duration, "
-            "       ch.rumble_secondary_strength, ch.rumble_secondary_duration "
-            "FROM cheat ch "
-            "JOIN game g ON g.id = ch.game_id "
-            "LEFT JOIN desc_string ds ON ds.id = ch.desc_id "
-            "LEFT JOIN desc_i18n di ON di.desc_id = ch.desc_id AND di.lang = ? "
-            "WHERE g.platform_id = ? AND g.group_name = ? "
-            "ORDER BY ch.cheat_index ASC;";
-        sqlite3_stmt *stmt = NULL;
-        if (d_db && sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, descriptionLanguage.UTF8String, -1, SQLITE_TRANSIENT);
-            sqlite3_bind_int64(stmt, 2, (sqlite3_int64)platformId);
-            sqlite3_bind_text(stmt, 3, groupName.UTF8String, -1, SQLITE_TRANSIENT);
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
-                [cheats addObject:[self p_cheatFromStmt:stmt]];
-            }
-        } else {
-            error = [self p_error:@"fetch cheats prepare failed"];
-        }
-        sqlite3_finalize(stmt);
-
-        NSArray *copy = [cheats copy];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completion(copy, error);
-        });
-    });
-}
+// MARK: - Cheats
 
 - (void)fetchCheatsForGameId:(NSInteger)gameId
                   completion:(void (^)(NSArray<RACheatItem *> *cheats,
@@ -390,30 +316,26 @@ static BOOL p_isSpecialTemplateName(NSString *name);
     dispatch_async(d_dbQueue, ^{
         NSError *error = nil;
         NSMutableArray<RACheatItem *> *cheats = [NSMutableArray array];
-        NSString *descriptionLanguage = p_cheatDescriptionLanguage();
-        const char *sql =
-            "SELECT ch.id, ch.game_id, ch.cheat_index, COALESCE(ch.desc_id, 0), "
-            "       ds.text AS desc_en, COALESCE(di.text, ds.text) AS desc_show, COALESCE(di.source, 0), "
-            "       ch.code, ch.handler, ch.enable, ch.memory_search_size, ch.cheat_type, "
-            "       ch.value, ch.address, ch.address_mask, ch.big_endian, "
-            "       ch.repeat_count, ch.repeat_add_to_value, ch.repeat_add_to_address, "
-            "       ch.rumble_type, ch.rumble_value, ch.rumble_port, "
-            "       ch.rumble_primary_strength, ch.rumble_primary_duration, "
-            "       ch.rumble_secondary_strength, ch.rumble_secondary_duration "
-            "FROM cheat ch "
-            "LEFT JOIN desc_string ds ON ds.id = ch.desc_id "
-            "LEFT JOIN desc_i18n di ON di.desc_id = ch.desc_id AND di.lang = ? "
-            "WHERE ch.game_id = ? "
-            "ORDER BY ch.cheat_index ASC;";
+        // RACheatItem.desc is the UI/apply-facing text: the pack's translation
+        // when there is one, else the English original (also in descEnglish).
+        const char *sql = d_hasLanguagePack
+            ? "SELECT " RA_CHEAT_COLUMNS_HEAD "COALESCE(lc.text, ds.text), COALESCE(lc.source, 0)" RA_CHEAT_COLUMNS_TAIL
+              RA_CHEAT_FROM "LEFT JOIN lang.cheat_desc lc ON lc.text_key = ds.text_key "
+              "WHERE g.id = ? ORDER BY ch.cheat_index ASC;"
+            : "SELECT " RA_CHEAT_COLUMNS_HEAD "ds.text, 0" RA_CHEAT_COLUMNS_TAIL
+              RA_CHEAT_FROM "WHERE g.id = ? ORDER BY ch.cheat_index ASC;";
         sqlite3_stmt *stmt = NULL;
         if (d_db && sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, descriptionLanguage.UTF8String, -1, SQLITE_TRANSIENT);
-            sqlite3_bind_int64(stmt, 2, (sqlite3_int64)gameId);
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
+            sqlite3_bind_int64(stmt, 1, (sqlite3_int64)gameId);
+            int rc;
+            while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
                 [cheats addObject:[self p_cheatFromStmt:stmt]];
             }
+            if (rc != SQLITE_DONE) {
+                error = [self p_stepFailed:rc context:"fetch cheats by game id"];
+            }
         } else {
-            error = [self p_error:@"fetch cheats by game id prepare failed"];
+            error = [self p_prepareFailed:"fetch cheats by game id"];
         }
         sqlite3_finalize(stmt);
 
@@ -424,21 +346,72 @@ static BOOL p_isSpecialTemplateName(NSString *name);
     });
 }
 
-- (nullable RAGameEntry *)findGameForPlatformIds:(NSArray<NSNumber *> *)platformIds
-                                     englishName:(NSString *)englishName {
-    if (platformIds.count == 0 || englishName.length == 0) {
+- (nullable NSDictionary<NSNumber *, NSNumber *> *)cheatIndexesForCheatIds:(NSArray<NSNumber *> *)cheatIds
+                                                                    gameId:(NSInteger)gameId
+                                                                     error:(NSError **)error {
+    __block NSMutableDictionary<NSNumber *, NSNumber *> *result = [NSMutableDictionary dictionary];
+    __block NSError *failure = nil;
+    if (cheatIds.count == 0 || gameId <= 0) {
+        return result;
+    }
+    NSArray<NSNumber *> *ids = [cheatIds copy];
+    dispatch_sync(d_dbQueue, ^{
+        if (!d_db) {
+            failure = [self p_error:@"cheat catalog is not open"];
+            return;
+        }
+        NSString *sql = [NSString stringWithFormat:
+            @"SELECT ch.id, ch.cheat_index FROM game g "
+            @"JOIN cheat ch ON ch.id BETWEEN g.first_cheat_id AND g.first_cheat_id + g.cheat_count - 1 "
+            @"WHERE g.id = ? AND ch.id IN (%@);", p_placeholders(ids.count)];
+        sqlite3_stmt *stmt = NULL;
+        if (sqlite3_prepare_v2(d_db, sql.UTF8String, -1, &stmt, NULL) != SQLITE_OK) {
+            failure = [self p_prepareFailed:"cheat indexes"];
+            return;
+        }
+        int bind = 1;
+        sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)gameId);
+        for (NSNumber *cheatId in ids) {
+            sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)cheatId.integerValue);
+        }
+        int rc;
+        while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+            result[@(sqlite3_column_int64(stmt, 0))] = @(sqlite3_column_int64(stmt, 1));
+        }
+        if (rc != SQLITE_DONE) {
+            failure = [self p_stepFailed:rc context:"cheat indexes"];
+        }
+        sqlite3_finalize(stmt);
+    });
+    if (failure) {
+        if (error) { *error = failure; }
         return nil;
+    }
+    return result;
+}
+
+// MARK: - Lookups (auto-binding)
+
+- (BOOL)lookupGameForPlatformIds:(NSArray<NSNumber *> *)platformIds
+                     englishName:(NSString *)englishName
+                            game:(RAGameEntry * _Nullable * _Nonnull)game
+                           error:(NSError **)error {
+    *game = nil;
+    if (platformIds.count == 0 || englishName.length == 0) {
+        return YES;
     }
 
     NSArray<NSNumber *> *ids = [platformIds copy];
     NSString *name = [englishName stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet] ?: @"";
     if (name.length == 0) {
-        return nil;
+        return YES;
     }
 
     __block RAGameEntry *result = nil;
+    __block NSError *failure = nil;
     dispatch_sync(d_dbQueue, ^{
         if (!d_db) {
+            failure = [self p_error:@"cheat catalog is not open"];
             return;
         }
 
@@ -449,29 +422,35 @@ static BOOL p_isSpecialTemplateName(NSString *name);
         }
 
         NSString *exactSQL = [NSString stringWithFormat:
-            @"SELECT g.id, g.platform_id, g.platform, g.game_name, g.group_name, "
-            @"       NULL AS loc_name, 0 AS loc_source, COUNT(ch.id) AS cheat_count "
+            @"SELECT " RA_CHEAT_GAME_COLUMNS_PLAIN " "
             @"FROM game g "
-            @"JOIN cheat ch ON ch.game_id = g.id "
             @"WHERE g.platform_id IN (%@) "
             @"  AND g.game_name = ? COLLATE NOCASE "
-            @"GROUP BY g.id "
             @"ORDER BY g.platform_id ASC, g.game_name COLLATE NOCASE ASC "
             @"LIMIT 2;", placeholders];
 
         sqlite3_stmt *stmt = NULL;
         NSMutableArray<RAGameEntry *> *matches = [NSMutableArray arrayWithCapacity:2];
-        if (sqlite3_prepare_v2(d_db, exactSQL.UTF8String, -1, &stmt, NULL) == SQLITE_OK) {
-            int bind = 1;
-            for (NSNumber *pid in ids) {
-                sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)pid.integerValue);
-            }
-            sqlite3_bind_text(stmt, bind++, name.UTF8String, -1, SQLITE_TRANSIENT);
-            while (sqlite3_step(stmt) == SQLITE_ROW && matches.count < 2) {
-                [matches addObject:[self p_gameFromStmt:stmt]];
-            }
+        if (sqlite3_prepare_v2(d_db, exactSQL.UTF8String, -1, &stmt, NULL) != SQLITE_OK) {
+            failure = [self p_prepareFailed:"find game by name"];
+            return;
+        }
+        int bind = 1;
+        for (NSNumber *pid in ids) {
+            sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)pid.integerValue);
+        }
+        sqlite3_bind_text(stmt, bind++, name.UTF8String, -1, SQLITE_TRANSIENT);
+        int rc = SQLITE_DONE;
+        while (matches.count < 2 && (rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+            [matches addObject:[self p_gameFromStmt:stmt]];
+        }
+        if (matches.count < 2 && rc != SQLITE_DONE) {
+            failure = [self p_stepFailed:rc context:"find game by name"];
         }
         sqlite3_finalize(stmt);
+        if (failure) {
+            return;
+        }
         if (matches.count == 1) {
             result = matches.firstObject;
             return;
@@ -483,32 +462,38 @@ static BOOL p_isSpecialTemplateName(NSString *name);
         }
 
         NSString *groupSQL = [NSString stringWithFormat:
-            @"SELECT g.id, g.platform_id, g.platform, g.game_name, g.group_name, "
-            @"       NULL AS loc_name, 0 AS loc_source, COUNT(ch.id) AS cheat_count "
+            @"SELECT " RA_CHEAT_GAME_COLUMNS_PLAIN " "
             @"FROM game g "
-            @"JOIN cheat ch ON ch.game_id = g.id "
             @"WHERE g.platform_id IN (%@) "
             @"  AND g.group_name = ? COLLATE NOCASE "
-            @"GROUP BY g.id "
             @"ORDER BY g.platform_id ASC, g.game_name COLLATE NOCASE ASC "
             @"LIMIT 20;", placeholders];
 
         [matches removeAllObjects];
-        if (sqlite3_prepare_v2(d_db, groupSQL.UTF8String, -1, &stmt, NULL) == SQLITE_OK) {
-            int bind = 1;
-            for (NSNumber *pid in ids) {
-                sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)pid.integerValue);
+        stmt = NULL;
+        if (sqlite3_prepare_v2(d_db, groupSQL.UTF8String, -1, &stmt, NULL) != SQLITE_OK) {
+            failure = [self p_prepareFailed:"find game by group"];
+            return;
+        }
+        bind = 1;
+        for (NSNumber *pid in ids) {
+            sqlite3_bind_int64(stmt, bind++, (sqlite3_int64)pid.integerValue);
+        }
+        sqlite3_bind_text(stmt, bind++, groupName.UTF8String, -1, SQLITE_TRANSIENT);
+        while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+            RAGameEntry *candidate = [self p_gameFromStmt:stmt];
+            if (!p_isSpecialTemplateName(name) && p_isSpecialTemplateName(candidate.name)) {
+                continue;
             }
-            sqlite3_bind_text(stmt, bind++, groupName.UTF8String, -1, SQLITE_TRANSIENT);
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
-                RAGameEntry *candidate = [self p_gameFromStmt:stmt];
-                if (!p_isSpecialTemplateName(name) && p_isSpecialTemplateName(candidate.name)) {
-                    continue;
-                }
-                [matches addObject:candidate];
-            }
+            [matches addObject:candidate];
+        }
+        if (rc != SQLITE_DONE) {
+            failure = [self p_stepFailed:rc context:"find game by group"];
         }
         sqlite3_finalize(stmt);
+        if (failure) {
+            return;
+        }
 
         if (matches.count == 1) {
             result = matches.firstObject;
@@ -543,137 +528,289 @@ static BOOL p_isSpecialTemplateName(NSString *name);
             }
         }
     });
-    return result;
+    if (failure) {
+        if (error) { *error = failure; }
+        return NO;
+    }
+    *game = result;
+    return YES;
 }
 
-- (nullable RAGameEntry *)findGameForPlatformId:(NSInteger)platformId
-                                      groupName:(NSString *)groupName {
-    if (platformId <= 0 || groupName.length == 0) {
-        return nil;
-    }
-
-    NSString *name = [groupName stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet] ?: @"";
-    if (name.length == 0) {
-        return nil;
-    }
-
-    __block RAGameEntry *result = nil;
-    dispatch_sync(d_dbQueue, ^{
-        if (!d_db) {
-            return;
-        }
-
-        const char *sql =
-            "SELECT g.id, g.platform_id, g.platform, g.game_name, g.group_name, "
-            "       NULL AS loc_name, 0 AS loc_source, COUNT(ch.id) AS cheat_count "
-            "FROM game g "
-            "JOIN cheat ch ON ch.game_id = g.id "
-            "WHERE g.platform_id = ? AND g.group_name = ? "
-            "GROUP BY g.id "
-            "ORDER BY g.game_name COLLATE NOCASE ASC "
-            "LIMIT 2;";
-        sqlite3_stmt *stmt = NULL;
-        NSMutableArray<RAGameEntry *> *matches = [NSMutableArray arrayWithCapacity:2];
-        if (sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(stmt, 1, (sqlite3_int64)platformId);
-            sqlite3_bind_text(stmt, 2, name.UTF8String, -1, SQLITE_TRANSIENT);
-            while (sqlite3_step(stmt) == SQLITE_ROW && matches.count < 2) {
-                [matches addObject:[self p_gameFromStmt:stmt]];
-            }
-        }
-        sqlite3_finalize(stmt);
-        if (matches.count == 1) {
-            result = matches.firstObject;
-        }
-    });
-    return result;
-}
-
-- (nullable RAGameEntry *)findGameForGameId:(NSInteger)gameId {
+- (BOOL)lookupGameForGameId:(NSInteger)gameId
+                       game:(RAGameEntry * _Nullable * _Nonnull)game
+                      error:(NSError **)error {
+    *game = nil;
     if (gameId <= 0) {
-        return nil;
+        return YES;
     }
+    return [self p_lookupSingleGame:"SELECT " RA_CHEAT_GAME_COLUMNS_PLAIN " FROM game g WHERE g.id = ? LIMIT 1;"
+                            context:"find game by id"
+                               bind:^(sqlite3_stmt *stmt) {
+        sqlite3_bind_int64(stmt, 1, (sqlite3_int64)gameId);
+    } game:game error:error];
+}
 
+- (BOOL)lookupGameForPlatformId:(NSInteger)platformId
+                      exactName:(NSString *)gameName
+                           game:(RAGameEntry * _Nullable * _Nonnull)game
+                          error:(NSError **)error {
+    *game = nil;
+    if (platformId <= 0 || gameName.length == 0) {
+        return YES;
+    }
+    NSString *name = [gameName copy];
+    return [self p_lookupSingleGame:"SELECT " RA_CHEAT_GAME_COLUMNS_PLAIN " FROM game g "
+                                    "WHERE g.platform_id = ? AND g.game_name = ? ORDER BY g.id ASC LIMIT 1;"
+                            context:"find game by exact name"
+                               bind:^(sqlite3_stmt *stmt) {
+        sqlite3_bind_int64(stmt, 1, (sqlite3_int64)platformId);
+        sqlite3_bind_text(stmt, 2, name.UTF8String, -1, SQLITE_TRANSIENT);
+    } game:game error:error];
+}
+
+/// Runs a query expected to return at most one game row. Returns NO only when
+/// the query itself failed; "no such game" is YES with *game left nil.
+- (BOOL)p_lookupSingleGame:(const char *)sql
+                   context:(const char *)context
+                      bind:(void (^)(sqlite3_stmt *stmt))bind
+                      game:(RAGameEntry * _Nullable * _Nonnull)game
+                     error:(NSError **)error {
     __block RAGameEntry *result = nil;
+    __block NSError *failure = nil;
     dispatch_sync(d_dbQueue, ^{
         if (!d_db) {
+            failure = [self p_error:@"cheat catalog is not open"];
             return;
         }
-
-        const char *sql =
-            "SELECT g.id, g.platform_id, g.platform, g.game_name, g.group_name, "
-            "       NULL AS loc_name, 0 AS loc_source, COUNT(ch.id) AS cheat_count "
-            "FROM game g "
-            "JOIN cheat ch ON ch.game_id = g.id "
-            "WHERE g.id = ? "
-            "GROUP BY g.id "
-            "LIMIT 1;";
         sqlite3_stmt *stmt = NULL;
-        if (sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(stmt, 1, (sqlite3_int64)gameId);
-            if (sqlite3_step(stmt) == SQLITE_ROW) {
-                result = [self p_gameFromStmt:stmt];
-            }
+        if (sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+            failure = [self p_prepareFailed:context];
+            return;
+        }
+        bind(stmt);
+        int rc = sqlite3_step(stmt);
+        if (rc == SQLITE_ROW) {
+            result = [self p_gameFromStmt:stmt];
+        } else if (rc != SQLITE_DONE) {
+            failure = [self p_stepFailed:rc context:context];
         }
         sqlite3_finalize(stmt);
     });
-    return result;
+    if (failure) {
+        if (error) { *error = failure; }
+        return NO;
+    }
+    *game = result;
+    return YES;
 }
 
-- (BOOL)p_open {
+// MARK: - Open / verify
+
+- (void)p_close {
     if (d_db) {
         sqlite3_close(d_db);
         d_db = NULL;
     }
-    d_hasLocalization = NO;
-    self.currentDBUserVersion = 0;
+    d_hasLanguagePack = NO;
+    d_languagePackLanguage = nil;
+    d_openedFileIdentity = nil;
+    d_openedPackIdentity = nil;
+    self.currentDBVersion = 0;
     self.databaseReady = NO;
+}
+
+- (BOOL)p_open {
+    [self p_close];
+    NSString *identity = p_fileIdentity(d_cheatPath);
+    if (!identity) {
+        RETROGO_LOGI(CHEAT, "Cheat catalog not installed");
+        return NO;
+    }
     NSString *uri = [[[NSURL fileURLWithPath:d_cheatPath] absoluteString]
                      stringByAppendingString:@"?immutable=1"];
     int rc = sqlite3_open_v2(uri.UTF8String, &d_db,
                              SQLITE_OPEN_READONLY | SQLITE_OPEN_URI, NULL);
     if (rc != SQLITE_OK) {
         RETROGO_LOGE(CHEAT, "Failed to open cheat catalog database (%d): %@", rc, d_cheatPath);
-        if (d_db) {
-            sqlite3_close(d_db);
-            d_db = NULL;
-        }
+        [self p_close];
         return NO;
     }
+    int schema = -1;
+    sqlite3_stmt *stmt = NULL;
+    if (sqlite3_prepare_v2(d_db, "PRAGMA user_version;", -1, &stmt, NULL) == SQLITE_OK &&
+        sqlite3_step(stmt) == SQLITE_ROW) {
+        schema = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+    if (schema != kRACheatSchemaVersion) {
+        // A catalog from an older App: the queries below don't fit it.
+        RETROGO_LOGN(CHEAT, "Cheat catalog has schema %d, expected %d; it needs to be downloaded again", schema, kRACheatSchemaVersion);
+        [self p_close];
+        return NO;
+    }
+    stmt = NULL;
+    if (sqlite3_prepare_v2(d_db, "SELECT value FROM meta WHERE key = 'db_version';", -1, &stmt, NULL) == SQLITE_OK &&
+        sqlite3_step(stmt) == SQLITE_ROW) {
+        self.currentDBVersion = (NSInteger)sqlite3_column_int64(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+    if (![self p_verifyOpenedDatabase:identity]) {
+        [self p_close];
+        return NO;
+    }
+    [self p_attachLanguagePack];
+    d_openedFileIdentity = identity;
     self.databaseReady = YES;
-    // Each manager owns its SQLite connection. gameloc.sqlite is attached here
-    // as read-only lookup data instead of sharing RAGameRDBManager's handle.
-    if (d_localizationPath.length > 0 &&
-        [NSFileManager.defaultManager fileExistsAtPath:d_localizationPath]) {
-        NSString *escaped = [d_localizationPath stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
-        NSString *sql = [NSString stringWithFormat:@"ATTACH DATABASE '%@' AS loc;", escaped];
-        if (sqlite3_exec(d_db, sql.UTF8String, NULL, NULL, NULL) == SQLITE_OK) {
-            d_hasLocalization = YES;
-        } else {
-            RETROGO_LOGE(CHEAT, "Failed to attach game localization database to cheat catalog: %@", d_localizationPath);
-        }
-    }
-    sqlite3_stmt *versionStmt = NULL;
-    if (sqlite3_prepare_v2(d_db, "PRAGMA user_version;", -1, &versionStmt, NULL) == SQLITE_OK &&
-        sqlite3_step(versionStmt) == SQLITE_ROW) {
-        self.currentDBUserVersion = (NSInteger)sqlite3_column_int64(versionStmt, 0);
-    }
-    sqlite3_finalize(versionStmt);
     return YES;
 }
+
+/// Each manager owns its connection; the pack is attached here as read-only
+/// lookup data instead of sharing RAGameRDBManager's handle.
+- (void)p_attachLanguagePack {
+    NSString *path = d_languagePackPath;
+    NSString *identity = path ? p_fileIdentity(path) : nil;
+    if (!identity) {
+        return;
+    }
+    NSString *uri = [[[NSURL fileURLWithPath:path] absoluteString] stringByAppendingString:@"?mode=ro&immutable=1"];
+    NSString *escaped = [uri stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
+    NSString *sql = [NSString stringWithFormat:@"ATTACH DATABASE '%@' AS lang;", escaped];
+    if (sqlite3_exec(d_db, sql.UTF8String, NULL, NULL, NULL) != SQLITE_OK) {
+        RETROGO_LOGE(CHEAT, "Failed to attach language pack to cheat catalog: %{public}s", sqlite3_errmsg(d_db));
+        return;
+    }
+    NSString *language = RALanguagePackLanguage(d_db, "lang");
+    if (!language) {
+        sqlite3_exec(d_db, "DETACH DATABASE lang;", NULL, NULL, NULL);
+        return;
+    }
+    d_hasLanguagePack = YES;
+    d_languagePackLanguage = language;
+    d_openedPackIdentity = identity;
+}
+
+/// Cheap health check of a freshly opened catalog. A file that cannot be read
+/// must not look like an empty catalog: callers would show no templates and
+/// the auto-binder would record "no match". The full page scan (quick_check)
+/// is done once per file by +verifyCatalogFileAtPath:, off the UI path.
+- (BOOL)p_verifyOpenedDatabase:(NSString *)identity {
+    long long gameCount = -1, cheatCount = -1;
+    sqlite3_stmt *stmt = NULL;
+    if (sqlite3_prepare_v2(d_db, "SELECT (SELECT COUNT(*) FROM game), (SELECT COUNT(*) FROM cheat);", -1, &stmt, NULL) != SQLITE_OK) {
+        [self p_prepareFailed:"row count"];
+        return NO;
+    }
+    int rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW) {
+        gameCount = sqlite3_column_int64(stmt, 0);
+        cheatCount = sqlite3_column_int64(stmt, 1);
+    } else {
+        [self p_stepFailed:rc context:"row count"];
+    }
+    sqlite3_finalize(stmt);
+    if (gameCount <= 0 || cheatCount <= 0) {
+        RETROGO_LOGE(CHEAT, "Cheat catalog is empty or unreadable (%lld games, %lld cheats)", gameCount, cheatCount);
+        return NO;
+    }
+    RETROGO_LOGI(CHEAT, "Opened cheat catalog: db_version %ld, %lld games, %lld cheats, verified %d",
+                 (long)self.currentDBVersion, gameCount, cheatCount,
+                 [[NSUserDefaults.standardUserDefaults stringForKey:kRACheatVerifiedFileKey] isEqualToString:identity]);
+    return YES;
+}
+
++ (BOOL)isCatalogFileVerifiedAtPath:(NSString *)path {
+    NSString *identity = p_fileIdentity(path);
+    return identity && [[NSUserDefaults.standardUserDefaults stringForKey:kRACheatVerifiedFileKey] isEqualToString:identity];
+}
+
++ (BOOL)verifyCatalogFileAtPath:(NSString *)path {
+    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+    NSString *identity = p_fileIdentity(path);
+    if (!identity) {
+        return NO;
+    }
+    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
+    NSString *uri = [[[NSURL fileURLWithPath:path] absoluteString] stringByAppendingString:@"?immutable=1"];
+    sqlite3 *db = NULL;
+    BOOL ok = NO;
+    if (sqlite3_open_v2(uri.UTF8String, &db, SQLITE_OPEN_READONLY | SQLITE_OPEN_URI, NULL) == SQLITE_OK) {
+        sqlite3_stmt *stmt = NULL;
+        if (sqlite3_prepare_v2(db, "PRAGMA quick_check(5);", -1, &stmt, NULL) == SQLITE_OK) {
+            ok = YES;
+            int rc;
+            while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+                const char *result = (const char *)sqlite3_column_text(stmt, 0);
+                if (!result || strcmp(result, "ok") != 0) {
+                    RETROGO_LOGE(CHEAT, "Cheat catalog quick_check: %{public}s", result ? result : "(null)");
+                    ok = NO;
+                }
+            }
+            if (rc != SQLITE_DONE) {
+                RETROGO_LOGE(CHEAT, "Cheat catalog quick_check step failed (%d): %{public}s", rc, sqlite3_errmsg(db));
+                ok = NO;
+            }
+        } else {
+            RETROGO_LOGE(CHEAT, "Cheat catalog quick_check prepare failed: %{public}s", sqlite3_errmsg(db));
+        }
+        sqlite3_finalize(stmt);
+        if (ok) {
+            stmt = NULL;
+            ok = NO;
+            if (sqlite3_prepare_v2(db, "SELECT (SELECT COUNT(*) FROM game) > 0 AND (SELECT COUNT(*) FROM cheat) > 0;", -1, &stmt, NULL) == SQLITE_OK &&
+                sqlite3_step(stmt) == SQLITE_ROW) {
+                ok = sqlite3_column_int(stmt, 0) != 0;
+            }
+            sqlite3_finalize(stmt);
+            if (!ok) {
+                RETROGO_LOGE(CHEAT, "Cheat catalog has no games or cheats");
+            }
+        }
+    } else {
+        RETROGO_LOGE(CHEAT, "Failed to open cheat catalog for verification: %{public}s", db ? sqlite3_errmsg(db) : "out of memory");
+    }
+    if (db) {
+        sqlite3_close(db);
+    }
+    if (ok) {
+        [defaults setObject:identity forKey:kRACheatVerifiedFileKey];
+        RETROGO_LOGI(CHEAT, "Cheat catalog verified in %.2fs", CFAbsoluteTimeGetCurrent() - start);
+    } else {
+        [defaults removeObjectForKey:kRACheatVerifiedFileKey];
+    }
+    return ok;
+}
+
+- (NSError *)p_prepareFailed:(const char *)context {
+    const char *message = d_db ? sqlite3_errmsg(d_db) : "no database";
+    RETROGO_LOGE(CHEAT, "Cheat catalog %{public}s prepare failed: %{public}s", context, message);
+    return [self p_error:[NSString stringWithFormat:@"%s prepare failed: %s", context, message]];
+}
+
+/// sqlite3_step failures used to end the row loop silently and look like an
+/// empty result. Log them and turn them into an error for the caller.
+- (NSError *)p_stepFailed:(int)rc context:(const char *)context {
+    const char *message = d_db ? sqlite3_errmsg(d_db) : "no database";
+    RETROGO_LOGE(CHEAT, "Cheat catalog %{public}s step failed (%d): %{public}s", context, rc, message);
+    return [self p_error:[NSString stringWithFormat:@"%s failed: %s", context, message]];
+}
+
+// MARK: - Rows
 
 - (RAGameEntry *)p_gameFromStmt:(sqlite3_stmt *)stmt {
     RAGameEntry *game = [[RAGameEntry alloc] init];
     game.gameId = (NSInteger)sqlite3_column_int64(stmt, 0);
     game.platformId = (NSInteger)sqlite3_column_int64(stmt, 1);
-    NSString *groupName = p_colText(stmt, 4);
-    NSString *gameName = p_colText(stmt, 3);
+    NSString *gameName = p_colText(stmt, 2);
+    NSString *groupName = p_colText(stmt, 3);
     game.name = gameName ?: (groupName ?: @"");
     game.groupName = groupName;
+    game.cheatCount = (NSInteger)sqlite3_column_int64(stmt, 4);
     game.localizedName = p_colText(stmt, 5);
+    if (game.localizedName) {
+        game.localizationLanguage = d_languagePackLanguage;
+    }
     game.localizationSource = (NSInteger)sqlite3_column_int64(stmt, 6);
     game.localizationReference = game.localizationSource == 5;
-    game.cheatCount = (NSInteger)sqlite3_column_int64(stmt, 7);
     return game;
 }
 
@@ -684,29 +821,48 @@ static BOOL p_isSpecialTemplateName(NSString *name);
     item.catalogIndex = (NSInteger)sqlite3_column_int64(stmt, 2);
     item.catalogDescId = (NSInteger)sqlite3_column_int64(stmt, 3);
     item.descEnglish = p_colText(stmt, 4);
-    // RACheatItem.desc is the UI/apply-facing text. Non-zh languages bind a
-    // missing i18n language and naturally fall back to descEnglish.
     item.desc = p_colText(stmt, 5) ?: @"";
     item.descSource = (NSInteger)sqlite3_column_int64(stmt, 6);
     item.code = p_colText(stmt, 7) ?: @"";
     item.handler = (RACheatHandler)sqlite3_column_int64(stmt, 8);
-    item.enabled = sqlite3_column_int64(stmt, 9) != 0;
-    item.memorySearchSize = (NSInteger)sqlite3_column_int64(stmt, 10);
-    item.cheatType = (NSInteger)sqlite3_column_int64(stmt, 11);
-    item.value = (NSInteger)sqlite3_column_int64(stmt, 12);
-    item.address = (NSInteger)sqlite3_column_int64(stmt, 13);
-    item.addressMask = (NSInteger)sqlite3_column_int64(stmt, 14);
-    item.bigEndian = (NSInteger)sqlite3_column_int64(stmt, 15);
-    item.repeatCount = (NSInteger)sqlite3_column_int64(stmt, 16);
-    item.repeatAddToValue = (NSInteger)sqlite3_column_int64(stmt, 17);
-    item.repeatAddToAddress = (NSInteger)sqlite3_column_int64(stmt, 18);
-    item.rumbleType = (NSInteger)sqlite3_column_int64(stmt, 19);
-    item.rumbleValue = (NSInteger)sqlite3_column_int64(stmt, 20);
-    item.rumblePort = (NSInteger)sqlite3_column_int64(stmt, 21);
-    item.rumblePrimaryStrength = (NSInteger)sqlite3_column_int64(stmt, 22);
-    item.rumblePrimaryDuration = (NSInteger)sqlite3_column_int64(stmt, 23);
-    item.rumbleSecondaryStrength = (NSInteger)sqlite3_column_int64(stmt, 24);
-    item.rumbleSecondaryDuration = (NSInteger)sqlite3_column_int64(stmt, 25);
+    if (sqlite3_column_type(stmt, 9) == SQLITE_NULL) {
+        // No cheat_ext row: every field is at the cheat_manager.c default.
+        item.enabled = NO;
+        item.memorySearchSize = 3;
+        item.cheatType = 1;
+        item.value = 0;
+        item.address = 0;
+        item.addressMask = 0;
+        item.bigEndian = 0;
+        item.repeatCount = 1;
+        item.repeatAddToValue = 0;
+        item.repeatAddToAddress = 1;
+        item.rumbleType = 0;
+        item.rumbleValue = 0;
+        item.rumblePort = 0;
+        item.rumblePrimaryStrength = 0;
+        item.rumblePrimaryDuration = 0;
+        item.rumbleSecondaryStrength = 0;
+        item.rumbleSecondaryDuration = 0;
+        return item;
+    }
+    item.enabled = sqlite3_column_int64(stmt, 10) != 0;
+    item.memorySearchSize = (NSInteger)sqlite3_column_int64(stmt, 11);
+    item.cheatType = (NSInteger)sqlite3_column_int64(stmt, 12);
+    item.value = (NSInteger)sqlite3_column_int64(stmt, 13);
+    item.address = (NSInteger)sqlite3_column_int64(stmt, 14);
+    item.addressMask = (NSInteger)sqlite3_column_int64(stmt, 15);
+    item.bigEndian = (NSInteger)sqlite3_column_int64(stmt, 16);
+    item.repeatCount = (NSInteger)sqlite3_column_int64(stmt, 17);
+    item.repeatAddToValue = (NSInteger)sqlite3_column_int64(stmt, 18);
+    item.repeatAddToAddress = (NSInteger)sqlite3_column_int64(stmt, 19);
+    item.rumbleType = (NSInteger)sqlite3_column_int64(stmt, 20);
+    item.rumbleValue = (NSInteger)sqlite3_column_int64(stmt, 21);
+    item.rumblePort = (NSInteger)sqlite3_column_int64(stmt, 22);
+    item.rumblePrimaryStrength = (NSInteger)sqlite3_column_int64(stmt, 23);
+    item.rumblePrimaryDuration = (NSInteger)sqlite3_column_int64(stmt, 24);
+    item.rumbleSecondaryStrength = (NSInteger)sqlite3_column_int64(stmt, 25);
+    item.rumbleSecondaryDuration = (NSInteger)sqlite3_column_int64(stmt, 26);
     return item;
 }
 
@@ -721,6 +877,27 @@ static NSString * _Nullable p_colText(sqlite3_stmt *stmt, int col) {
     return text ? [NSString stringWithUTF8String:(const char *)text] : nil;
 }
 
+static NSString *p_placeholders(NSUInteger count) {
+    NSMutableString *placeholders = [NSMutableString stringWithCapacity:count * 2];
+    for (NSUInteger i = 0; i < count; i++) {
+        [placeholders appendString:i > 0 ? @",?" : @"?"];
+    }
+    return placeholders;
+}
+
+static NSString * _Nullable p_fileIdentity(NSString *path) {
+    if (path.length == 0) {
+        return nil;
+    }
+    NSDictionary *attrs = [NSFileManager.defaultManager attributesOfItemAtPath:path error:NULL];
+    if (!attrs) {
+        return nil;
+    }
+    return [NSString stringWithFormat:@"%@-%llu-%.3f",
+            attrs[NSFileSystemFileNumber], attrs.fileSize,
+            attrs.fileModificationDate.timeIntervalSince1970];
+}
+
 static NSString *p_groupNameFromGameName(NSString *name) {
     if (name.length == 0) {
         return @"";
@@ -730,11 +907,6 @@ static NSString *p_groupNameFromGameName(NSString *name) {
     NSString *base = range.location != NSNotFound ? [name substringToIndex:range.location] : name;
     base = [base stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
     return base.length > 0 ? base : name;
-}
-
-static NSString *p_cheatDescriptionLanguage(void) {
-    NSString *key = [NSBundle currentSimpleLanguageKey];
-    return [key isEqualToString:@"zh"] ? @"zh" : @"en";
 }
 
 static NSArray<NSString *> *p_regionPreferences(NSString *name) {

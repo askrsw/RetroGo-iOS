@@ -11,7 +11,7 @@
 		AB0A1DD52FB71C7800503077 /* GamePauseCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */; };
 		AB0AF4BD2FD9B74400257A18 /* ODRResourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */; };
 		AB0AF4BF2FD9BA1700257A18 /* cheat.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = AB0AF4BE2FD9BA1700257A18 /* cheat.sqlite */; settings = {ASSET_TAGS = ("cheat-db", ); }; };
-		AB0AF4C12FD9BA2000257A18 /* gameloc.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = AB0AF4C02FD9BA2000257A18 /* gameloc.sqlite */; settings = {ASSET_TAGS = ("gameloc-db", ); }; };
+		AB0AF4C12FD9BA2000257A18 /* lang-zh-Hans.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = AB0AF4C02FD9BA2000257A18 /* lang-zh-Hans.sqlite */; settings = {ASSET_TAGS = ("lang-zh-Hans", ); }; };
 		AB11A55F2F9941BF00C32E39 /* emu.dosbox-pure.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC12F5E5504007E1669 /* emu.dosbox-pure.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB11A5612F9941BF00C32E39 /* emu.gambatte.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC32F5E5504007E1669 /* emu.gambatte.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AB11A5622F9941BF00C32E39 /* emu.gearboy.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = ABBC8AC42F5E5504007E1669 /* emu.gearboy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -52,7 +52,6 @@
 		AB2CEBA0D8D18388F8A56549 /* MameCheatListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2C055A34283EA05508F3CD /* MameCheatListViewController.swift */; };
 		AB2DBDFC781583F3EABCB0A2 /* MameGameNameLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2DF9FB03F29ED480AF4BC5 /* MameGameNameLocalizer.swift */; };
 		AB2E7E143CA6CD5397F2CE38 /* MameCheatTexts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB2E039F1D6369D09F6EC688 /* MameCheatTexts.swift */; };
-		AB2F5C11C0DC1EE1557FA9CF /* mame_cheat_i18n.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = AB2F6A69E2A6008DDE97DB10 /* mame_cheat_i18n.sqlite */; settings = {ASSET_TAGS = ("mame-cheat-i18n", ); }; };
 		AB38A12E2FB519D4009E3915 /* AppStoreProFeatureGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38A12D2FB519D4009E3915 /* AppStoreProFeatureGate.swift */; };
 		AB38A1F02FC0000000000001 /* GameFreePlayQuota.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38A1F12FC0000000000001 /* GameFreePlayQuota.swift */; };
 		AB38A1F02FC0000000000002 /* AppStoreWelcomeOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB38A1F12FC0000000000002 /* AppStoreWelcomeOffer.swift */; };
@@ -260,7 +259,7 @@
 		AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePauseCoordinator.swift; sourceTree = "<group>"; };
 		AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ODRResourceViewController.swift; sourceTree = "<group>"; };
 		AB0AF4BE2FD9BA1700257A18 /* cheat.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = cheat.sqlite; sourceTree = "<group>"; };
-		AB0AF4C02FD9BA2000257A18 /* gameloc.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = gameloc.sqlite; sourceTree = "<group>"; };
+		AB0AF4C02FD9BA2000257A18 /* lang-zh-Hans.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = "lang-zh-Hans.sqlite"; sourceTree = "<group>"; };
 		AB12C2332F503262000B07BF /* RetroRomCoreListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomCoreListViewController.swift; sourceTree = "<group>"; };
 		AB12C2352F503FB5000B07BF /* RetroRomCoreItemTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomCoreItemTableViewCell.swift; sourceTree = "<group>"; };
 		AB19A0022FE9000000A1B2C3 /* MameRomSetPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameRomSetPersistence.swift; sourceTree = "<group>"; };
@@ -288,7 +287,6 @@
 		AB2CCAC3FEC52086E7E512E5 /* MameCheatLibraryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameCheatLibraryViewController.swift; sourceTree = "<group>"; };
 		AB2DF9FB03F29ED480AF4BC5 /* MameGameNameLocalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameGameNameLocalizer.swift; sourceTree = "<group>"; };
 		AB2E039F1D6369D09F6EC688 /* MameCheatTexts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MameCheatTexts.swift; sourceTree = "<group>"; };
-		AB2F6A69E2A6008DDE97DB10 /* mame_cheat_i18n.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = mame_cheat_i18n.sqlite; sourceTree = "<group>"; };
 		AB38A12D2FB519D4009E3915 /* AppStoreProFeatureGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreProFeatureGate.swift; sourceTree = "<group>"; };
 		AB38A1F12FC0000000000001 /* GameFreePlayQuota.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameFreePlayQuota.swift; sourceTree = "<group>"; };
 		AB38A1F12FC0000000000002 /* AppStoreWelcomeOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreWelcomeOffer.swift; sourceTree = "<group>"; };
@@ -894,8 +892,7 @@
 			isa = PBXGroup;
 			children = (
 				AB0AF4BE2FD9BA1700257A18 /* cheat.sqlite */,
-				AB2F6A69E2A6008DDE97DB10 /* mame_cheat_i18n.sqlite */,
-				AB0AF4C02FD9BA2000257A18 /* gameloc.sqlite */,
+				AB0AF4C02FD9BA2000257A18 /* lang-zh-Hans.sqlite */,
 				ABC1EF142FD89D0000D73BDD /* gamerdb.sqlite */,
 			);
 			path = OnDemandRes;
@@ -1120,8 +1117,7 @@
 				KnownAssetTags = (
 					"cheat-db",
 					"game-db",
-					"gameloc-db",
-					"mame-cheat-i18n",
+					"lang-zh-Hans",
 					"rdb-DOS",
 					"rdb-FDS",
 					"rdb-GB",
@@ -1178,14 +1174,13 @@
 			files = (
 				ABC1EF152FD89D0000D73BDD /* gamerdb.sqlite in Resources */,
 				AB7CA06F2F3B067400EFACA9 /* Localizable.strings in Resources */,
-				AB0AF4C12FD9BA2000257A18 /* gameloc.sqlite in Resources */,
+				AB0AF4C12FD9BA2000257A18 /* lang-zh-Hans.sqlite in Resources */,
 				ABB34DCA2F5DDD5C001A91C8 /* PrivacyInfo.xcprivacy in Resources */,
 				AB7CA0662F3B057100EFACA9 /* Data in Resources */,
 				AB7CA06A2F3B05F000EFACA9 /* InfoPlist.strings in Resources */,
 				ABD42B882F3A66E7008B1771 /* Assets.xcassets in Resources */,
 				ABD42B892F3A66E7008B1771 /* LaunchScreen.storyboard in Resources */,
 				AB0AF4BF2FD9BA1700257A18 /* cheat.sqlite in Resources */,
-				AB2F5C11C0DC1EE1557FA9CF /* mame_cheat_i18n.sqlite in Resources */,
 				AB997ED02F4AEC00009F47AC /* Localizable.stringsdict in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
