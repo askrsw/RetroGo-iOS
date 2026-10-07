@@ -86,6 +86,7 @@
 		AB55BC762F3B8AEC00569A84 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC752F3B8AEB00569A84 /* AppConfig.swift */; };
 		AB55BC782F3B8B4300569A84 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC772F3B8B4200569A84 /* AppSettings.swift */; };
 		AB55BC7C2F3B8BC400569A84 /* GamePageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC7B2F3B8BC200569A84 /* GamePageViewController.swift */; };
+		AB5A7B052FA1C00000E5A7B0 /* CoreBiosLaunchCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB5A7B062FA1C00000E5A7B0 /* CoreBiosLaunchCheck.swift */; };
 		AB55BC802F3B8D5500569A84 /* RetroRomBaseItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC7F2F3B8D5400569A84 /* RetroRomBaseItem.swift */; };
 		AB55BC8A2F3BA0B500569A84 /* RetroRomFolderItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC892F3BA0B400569A84 /* RetroRomFolderItem.swift */; };
 		AB5A7B012FA1C00000E5A7B0 /* emu.mednafen-saturn.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AB5A7B022FA1C00000E5A7B0 /* emu.mednafen-saturn.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -323,6 +324,7 @@
 		AB55BC752F3B8AEB00569A84 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		AB55BC772F3B8B4200569A84 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		AB55BC7B2F3B8BC200569A84 /* GamePageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePageViewController.swift; sourceTree = "<group>"; };
+		AB5A7B062FA1C00000E5A7B0 /* CoreBiosLaunchCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreBiosLaunchCheck.swift; sourceTree = "<group>"; };
 		AB55BC7F2F3B8D5400569A84 /* RetroRomBaseItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomBaseItem.swift; sourceTree = "<group>"; };
 		AB55BC892F3BA0B400569A84 /* RetroRomFolderItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderItem.swift; sourceTree = "<group>"; };
 		AB5A7B022FA1C00000E5A7B0 /* emu.mednafen-saturn.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = "emu.mednafen-saturn.framework"; sourceTree = "<group>"; };
@@ -1009,6 +1011,7 @@
 		ABDAD27F2F3BB543004100A9 /* CorePage */ = {
 			isa = PBXGroup;
 			children = (
+				AB5A7B072FA1C00000E5A7B0 /* Model */,
 				ABDAD2802F3BB54C004100A9 /* View */,
 				ABDAD28B2F3BB5E1004100A9 /* RetroRomCoreInfoViewController.swift */,
 				ABDAD28D2F3BB606004100A9 /* RetroRomCoreLicenseViewController.swift */,
@@ -1016,6 +1019,14 @@
 				AB12C2332F503262000B07BF /* RetroRomCoreListViewController.swift */,
 			);
 			path = CorePage;
+			sourceTree = "<group>";
+		};
+		AB5A7B072FA1C00000E5A7B0 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				AB5A7B062FA1C00000E5A7B0 /* CoreBiosLaunchCheck.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 		ABDAD2802F3BB54C004100A9 /* View */ = {
@@ -1363,6 +1374,7 @@
 				AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */,
 				AC2309260000000000000001 /* GameOverlayArcadeLayoutButton.swift in Sources */,
 				AB55BC7C2F3B8BC400569A84 /* GamePageViewController.swift in Sources */,
+				AB5A7B052FA1C00000E5A7B0 /* CoreBiosLaunchCheck.swift in Sources */,
 				ABCAFE010000000000000002 /* GameToolbarAction.swift in Sources */,
 				ABCAFE010000000000000011 /* GameNetplayViewController.swift in Sources */,
 				ABCAFE010000000000000004 /* GameToolbarLayoutViewController.swift in Sources */,

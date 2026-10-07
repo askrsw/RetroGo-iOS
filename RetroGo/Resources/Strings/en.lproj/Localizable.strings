@@ -142,6 +142,11 @@
 "mame_check_chd" = "This game also needs a CHD disc image: %@.";
 "mame_check_driver_warning" = "This game is marked as not working in the current MAME core.";
 "mame_check_launch_anyway" = "Launch Anyway";
+"bios_check_title" = "BIOS Missing";
+"bios_check_message" = "%1$@ needs a BIOS to run games, but the core's BIOS folder has none of these files:\n%2$@";
+"bios_check_region_hint" = "These are BIOS files for different regions; usually only the one for the game's region is needed.";
+"bios_check_add_hint" = "To add a BIOS, open this core from Settings › Core List.";
+"bios_check_launch_anyway" = "Launch Anyway";
 "homepage_import_incomplete_groups_title" = "Incomplete Game Files";
 "homepage_import_incomplete_groups_message" = "The selected folder contains incomplete multi-file games.\n\n%@\n\nSkip these items or cancel the import?";
 "homepage_import_incomplete_files_title" = "Incomplete Game Files";

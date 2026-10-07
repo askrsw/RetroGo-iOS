@@ -397,19 +397,23 @@ enum GameLaunchBackgroundPreparation {
 extension RetroArchX {
     static func playGame(romUrl: URL?, core: EmuCoreInfoItem) {
         guard MainActor.assumeIsolated({ GameFreePlayQuota.allowLaunch(core: core) }) else { return }
-        guard let currentViewController = UIViewController.currentActive() else {
-            return
+        CoreBiosLaunchCheck.run(core: core) {
+            guard let currentViewController = UIViewController.currentActive() else {
+                return
+            }
+            let controller = GamePageViewController(romUrl: romUrl, core: core)
+            controller.modalPresentationStyle = .fullScreen
+            currentViewController.present(controller, animated: true)
         }
-        let controller = GamePageViewController(romUrl: romUrl, core: core)
-        controller.modalPresentationStyle = .fullScreen
-        currentViewController.present(controller, animated: true)
     }
 
     static func playGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
         guard MainActor.assumeIsolated({ GameFreePlayQuota.allowLaunch(core: core) }) else { return }
-        // MAME sets are checked for missing files first; other cores launch directly.
-        MameLaunchCheck.run(game: romItem, core: core) {
-            presentGame(romItem: romItem, core: core)
+        // Cores that need a BIOS are checked for it, MAME sets for missing files.
+        CoreBiosLaunchCheck.run(core: core) {
+            MameLaunchCheck.run(game: romItem, core: core) {
+                presentGame(romItem: romItem, core: core)
+            }
         }
     }
 
