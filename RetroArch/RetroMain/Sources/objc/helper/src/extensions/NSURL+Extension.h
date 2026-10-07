@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURL (Extension)
 
-/// 计算文件的 SHA256 哈希值（十六进制字符串），低内存占用
+/// Computes the file's SHA256 hash (hex string) with low memory use
 - (nullable NSString *)computeSHA256String:(NSError **)error;
 - (nullable NSString *)computeCRC32String:(NSError **)error;
 

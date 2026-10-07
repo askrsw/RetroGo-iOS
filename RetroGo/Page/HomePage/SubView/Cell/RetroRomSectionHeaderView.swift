@@ -175,10 +175,10 @@ final class RetroRomSectionHeaderView: UICollectionReusableView {
         super.apply(layoutAttributes)
         guard let headerAttr = layoutAttributes as? RetroRomHeaderLayoutAttributes, let param = param else { return }
 
-        // 1. 核心逻辑：只有【钉住】+【展开】+【有货】才应该显示模糊
+        // 1. Core logic: show the blur only when pinned + expanded + non-empty
         let shouldShowBlurNow: Bool = headerAttr.isPinned && param.expanded && param.itemCount > 0
 
-        // 2. 只有状态变化时才执行动画
+        // 2. Animate only when the state changes
         if self.isCurrentlyBlured != shouldShowBlurNow {
             self.isCurrentlyBlured = shouldShowBlurNow
 
@@ -295,14 +295,14 @@ extension RetroRomSectionHeaderView {
             make.trailing.lessThanOrEqualTo(countLabel.snp.leading).offset(-8)
         }
 
-        // 设置抗压缩优先级：确保 countLabel 不会被长标题挤没
+        // Compression resistance: make sure countLabel is not squeezed out by a long title
         countLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        // 设置抗拉伸优先级：标题可以变长，但 countLabel 紧随其后
+        // Hugging priority: the title can grow, but countLabel follows right after it
         countLabel.setContentHuggingPriority(.required, for: .horizontal)
 
         blurEffectView.frame = self.bounds
-        blurEffectView.alpha = 0 // 默认隐藏
+        blurEffectView.alpha = 0 // Hidden by default
         self.insertSubview(blurEffectView, at: 0)
 
         self.backgroundColor = .clear
@@ -312,42 +312,42 @@ extension RetroRomSectionHeaderView {
     private func tapAction(_ tap: UITapGestureRecognizer) {
         Vibration.selection.vibrate()
 
-        // 1. 获取要做动画的 View (通常是 self)
+        // 1. Get the view to animate (usually self)
         let targetView = self
 
-        // 2. 创建一个覆盖整个视图的临时 View
+        // 2. Create a temporary view covering the whole view
         var overlayRect = targetView.bounds
         overlayRect = overlayRect.inset(by: .init(top: 0, left: -20, bottom: 10, right: -20))
         let overlay = UIView(frame: overlayRect)
 
-        // 3. 设置高亮颜色（推荐用黑色或白色的半透明，这样能适配任何底色）
-        // 0.1 ~ 0.2 的透明度通常比较合适
+        // 3. Set the highlight color (translucent black or white works on any background)
+        // An alpha of 0.1 ~ 0.2 usually works well
         overlay.backgroundColor = UIColor.label.withAlphaComponent(0.2)
 
-        // 4.如果你原来的 View 有圆角，这里最好同步一下，否则高亮层会是直角的
+        // 4. If the original view has rounded corners, match them here, or the highlight layer will be square
         overlay.layer.cornerRadius = targetView.layer.cornerRadius
-        // 如果 layer 是连续圆角，可以使用 cornerCurve
+        // If the layer uses continuous corners, set cornerCurve too
         if #available(iOS 13.0, *) {
             overlay.layer.cornerCurve = targetView.layer.cornerCurve
         }
         overlay.clipsToBounds = true
 
-        // 5. 禁用交互，防止阻挡其他事件（虽然生命周期很短）
+        // 5. Disable interaction so it doesn't block other events (even though it is short-lived)
         overlay.isUserInteractionEnabled = false
 
-        // 6. 添加到视图层级
+        // 6. Add it to the view hierarchy
         targetView.addSubview(overlay)
 
-        // 7. 执行“立即出现，缓慢消失”的动画
+        // 7. Run the "appear instantly, fade out slowly" animation
         UIView.animate(withDuration: 0.6, delay: 0, options: [.curveEaseOut], animations: {
-            // 动画目标：透明度变为 0
+            // Animation target: alpha goes to 0
             overlay.alpha = 0.0
         }, completion: { _ in
-            // 动画结束：从父视图移除，释放内存
+            // Animation done: remove from the superview to free memory
             overlay.removeFromSuperview()
         })
 
-        // 8. 实际执行的动作
+        // 8. Perform the actual action
         expandSection()
     }
 
@@ -389,14 +389,14 @@ extension RetroRomSectionHeaderView {
 class RetroRomHeaderLayoutAttributes: UICollectionViewLayoutAttributes {
     var isPinned: Bool = false
 
-    // 必须重写此方法以支持拷贝
+    // Must override to support copying
     override func copy(with zone: NSZone? = nil) -> Any {
         let copy = super.copy(with: zone) as! RetroRomHeaderLayoutAttributes
         copy.isPinned = self.isPinned
         return copy
     }
 
-    // 必须重写此方法用于比较，决定是否需要更新视图
+    // Must override for comparison, which decides whether the view needs updating
     override func isEqual(_ object: Any?) -> Bool {
         guard let other = object as? RetroRomHeaderLayoutAttributes else { return false }
         return super.isEqual(object) && other.isPinned == self.isPinned
@@ -404,26 +404,26 @@ class RetroRomHeaderLayoutAttributes: UICollectionViewLayoutAttributes {
 }
 
 class StickyHeaderLayout: UICollectionViewCompositionalLayout {
-    // 必须重写此方法，否则系统不会使用自定义的 Attributes 类
+    // Must override, or the system won't use the custom attributes class
     override class var layoutAttributesClass: AnyClass {
         return RetroRomHeaderLayoutAttributes.self
     }
 
     override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-        return true // 保证滚动时不断重新计算属性
+        return true // Keep recalculating attributes while scrolling
     }
 
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         let attributes = super.layoutAttributesForElements(in: rect)
 
         attributes?.forEach { attr in
-            // 只处理我们的 Section Header
+            // Only handle our section headers
             if attr.representedElementKind == RetroRomSectionHeaderView.sectionHeaderElementKind,
                let headerAttr = attr as? RetroRomHeaderLayoutAttributes {
 
                 guard let cv = collectionView else { return }
 
-                // 关键判断：如果 Header 的视觉位置 y 等于 contentOffset + 边距，说明它被 Pin 住了
+                // Key check: if the header's visual y equals contentOffset + inset, it is pinned
                 let contentOffsetY = cv.contentOffset.y + cv.adjustedContentInset.top
                 headerAttr.isPinned = attr.frame.origin.y <= contentOffsetY + 1
             }

@@ -114,14 +114,14 @@ extension RetroRomMameFirmwareTipViewCell {
         label.numberOfLines = 0
         label.textContainerInset = .init(top: 4, left: 0, bottom: 4, right: 0)
 
-        // 建议：给 Cell 加一个淡淡的背景色或边框，使其看起来像一个 Tip 提示框
+        // Suggestion: give the cell a light background or border so it looks like a tip box
         contentView.backgroundColor = .secondarySystemBackground
         contentView.layer.cornerRadius = 8
         contentView.clipsToBounds = true
 
         contentView.addSubview(label)
         label.snp.makeConstraints { make in
-            // 增加左右缩进，使 Tip 看起来不那么拥挤
+            // Add horizontal insets so the tip feels less cramped
             make.edges.equalToSuperview().inset(UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16))
         }
     }

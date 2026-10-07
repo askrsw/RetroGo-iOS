@@ -125,18 +125,18 @@ static NSString *kUserSetLanguageKey = @"user_set_language";
 }
 
 + (NSString *)localizedStringForKey:(NSString *)key count:(NSInteger)count {
-    // 1. 获取手动指定的 Bundle
+    // 1. Get the manually specified bundle
     NSBundle *bundle = [self localizedBundle];
     if (!bundle) {
-        return key; // 退回 key 本身
+        return key; // Fall back to the key itself
     }
 
-    // 2. 获取格式化模板
+    // 2. Get the format template
     NSString *format = [bundle localizedStringForKey:key value:nil table:nil];
 
-    // 3. 获取对应语言的 Locale
-    // 这一点至关重要：即使系统是中文，如果你切到了英文，locale 必须是 en
-    // 优化：缓存 Locale，只有当语言切换时才更新
+    // 3. Get the locale for the language
+    // This matters: even if the system is in Chinese, the locale must be en after switching to English
+    // Optimization: cache the locale and update it only when the language changes
     static NSLocale *cachedLocale = nil;
     static NSString *cachedLang = nil;
     @synchronized (self) {
@@ -147,8 +147,8 @@ static NSString *kUserSetLanguageKey = @"user_set_language";
         }
     }
 
-    // 4. 格式化
-    // 使用变量参数列表的初始化方法，确保 count 能被正确填入 %d 位置
+    // 4. Format
+    // Use the va_list initializer so count is filled into the %d placeholder correctly
     return [[NSString alloc] initWithFormat:format locale:cachedLocale, (long)count];
 }
 

@@ -96,17 +96,17 @@ extension RetroRomCoreInfoViewCell {
         label.preferredMaxLayoutWidth = contentView.width - 32
         let fullString = NSMutableAttributedString()
 
-        // --- Tip 部分 ---
+        // --- Tip ---
         let tipAttr = NSMutableAttributedString(string: "\(tip) ", attributes: tipAttributes)
         fullString.append(tipAttr)
 
-        // 计算悬挂缩进
+        // Compute the hanging indent
         let tipRect = tipAttr.boundingRect(with: CGSize(width: label.preferredMaxLayoutWidth, height: CGFloat.greatestFiniteMagnitude), options: .usesLineFragmentOrigin, context: nil)
         let style = paragraphStyle.mutableCopy() as! NSMutableParagraphStyle
         style.headIndent = tipRect.size.width
         style.firstLineHeadIndent = 0
 
-        // 1. 应用基础样式与缩进 — license name acts as a tappable link,
+        // 1. Apply the base style and indent — license name acts as a tappable link,
         //    so it adopts the iOS link blue + matching underline.
         var linkAttr = self.normalAttributes
         linkAttr[.foregroundColor] = UIColor.link
@@ -119,17 +119,17 @@ extension RetroRomCoreInfoViewCell {
         separatorAttr[.paragraphStyle] = style.copy() as! NSParagraphStyle
         separatorAttr[.baselineOffset] = 2
 
-        // --- Value 部分 (复古链接风格) ---
+        // --- Value (retro link style) ---
         for i in 0 ..< licenses.count {
             let license = licenses[i]
 
             let valueAttr = NSMutableAttributedString(string: license.showName, attributes: linkAttr)
 
-            // 设置下划线样式 (使用 YYTextDecoration)
+            // Set the underline style (via YYTextDecoration)
             let underline = YYTextDecoration(style: .single, width: 1, color: .link)
             valueAttr.setTextUnderline(underline, range: valueAttr.rangeOfAll())
 
-            // 3. 核心功能：点击高亮与 Action
+            // 3. Core feature: tap highlight and action
             let highlight = YYTextHighlight()
             let highlightUnderline = YYTextDecoration(style: .single, width: 1, color: .mainColor)
             highlight.attributes = [
@@ -159,30 +159,30 @@ extension RetroRomCoreInfoViewCell {
         label.preferredMaxLayoutWidth = contentView.width - 32
         let fullString = NSMutableAttributedString()
 
-        // --- Tip 部分 ---
+        // --- Tip ---
         let tipAttr = NSMutableAttributedString(string: "\(tip) ", attributes: tipAttributes)
 
-        // 计算悬挂缩进
+        // Compute the hanging indent
         let tipRect = tipAttr.boundingRect(with: CGSize(width: label.preferredMaxLayoutWidth, height: CGFloat.greatestFiniteMagnitude), options: .usesLineFragmentOrigin, context: nil)
         let style = paragraphStyle.mutableCopy() as! NSMutableParagraphStyle
         style.headIndent = tipRect.size.width
         style.firstLineHeadIndent = 0
 
-        // --- Value 部分 (复古链接风格) ---
+        // --- Value (retro link style) ---
         let valueAttr = NSMutableAttributedString(string: value)
 
-        // 1. 应用基础样式与缩进
+        // 1. Apply the base style and indent
         var normalAttr = self.normalAttributes
         normalAttr[.foregroundColor] = UIColor.link
         normalAttr[.paragraphStyle] = style.copy() as! NSParagraphStyle
         normalAttr[.baselineOffset] = 2
         valueAttr.addAttributes(normalAttr, range: valueAttr.rangeOfAll())
 
-        // 设置下划线样式 (使用 YYTextDecoration)
+        // Set the underline style (via YYTextDecoration)
         let underline = YYTextDecoration(style: .single, width: 1, color: .link)
         valueAttr.setTextUnderline(underline, range: valueAttr.rangeOfAll())
 
-        // 3. 核心功能：点击高亮与 Action
+        // 3. Core feature: tap highlight and action
         let highlight = YYTextHighlight()
         let highlightUnderline = YYTextDecoration(style: .single, width: 1, color: .mainColor)
         highlight.attributes = [
@@ -195,7 +195,7 @@ extension RetroRomCoreInfoViewCell {
         }
         valueAttr.setTextHighlight(highlight, range: valueAttr.rangeOfAll())
 
-        // --- 合并 ---
+        // --- Combine ---
         fullString.append(tipAttr)
         fullString.append(valueAttr)
 
@@ -251,7 +251,7 @@ extension RetroRomCoreInfoViewCell {
 
         let fullString = NSMutableAttributedString()
 
-        // Tip (标题风格)
+        // Tip (title style)
         let tipAttr = NSMutableAttributedString(string: "\(tip) ", attributes: tipAttributes)
 
         let tipRect = tipAttr.boundingRect(with: .zero, options: .usesLineFragmentOrigin, context: nil)
@@ -259,7 +259,7 @@ extension RetroRomCoreInfoViewCell {
         style.headIndent = tipRect.size.width
         style.firstLineHeadIndent = tipRect.size.width
 
-        // Value (内容风格)
+        // Value (content style)
         var normalAttributes = self.normalAttributes
         normalAttributes[.paragraphStyle] = style.copy() as! NSParagraphStyle
 
@@ -268,11 +268,11 @@ extension RetroRomCoreInfoViewCell {
         fullString.append(tipAttr)
         fullString.append(valueAttr)
 
-        // 设置行间距等排版样式
+        // Set line spacing and other paragraph styles
         fullString.lineSpacing = 8
 
-        // 2. 利用 YYTextLayout 进行预计算（如果需要极致性能）
-        // 在 List 模式下，直接赋值给 YYLabel，它会自动根据约束更新高度
+        // 2. Precompute with YYTextLayout (if every bit of performance matters)
+        // In List mode, just assign to the YYLabel; it updates its height from the constraints
         label.attributedText = fullString
     }
 
@@ -285,10 +285,10 @@ extension RetroRomCoreInfoViewCell {
 
         let fullString = NSMutableAttributedString()
 
-        // 1. 配置基础样式
-        let tagFont = UIFont.systemFont(ofSize: UIFont.labelFontSize - 2) // 标签通常稍微小一点更美观
+        // 1. Configure the base style
+        let tagFont = UIFont.systemFont(ofSize: UIFont.labelFontSize - 2) // Tags look better slightly smaller
 
-        // 2. 拼接 Tip 前缀
+        // 2. Append the Tip prefix
         let tipAttr = NSMutableAttributedString(string: "\(tip) ", attributes: tipAttributes)
         fullString.append(tipAttr)
 
@@ -319,45 +319,45 @@ extension RetroRomCoreInfoViewCell {
             return .mainColor
         }()
 
-        // 3. 循环添加 Extensions 气泡
+        // 3. Append the extension badges in a loop
         for ext in extensions {
-            // 创建标签文本
-            let tagString = NSMutableAttributedString(string: "\(ext)", attributes: normalAttributes) // 前后留白
+            // Create the tag text
+            let tagString = NSMutableAttributedString(string: "\(ext)", attributes: normalAttributes) // Padding on both sides
 
-            // 创建气泡背景 (Border)
+            // Create the badge background (border)
             let border = YYTextBorder()
             border.fillColor = tagFill
-            border.cornerRadius = 6               // 圆角
-            border.insets = UIEdgeInsets(top: -2, left: -6, bottom: -2, right: -6) // 调整气泡高度
+            border.cornerRadius = 6               // Corner radius
+            border.insets = UIEdgeInsets(top: -2, left: -6, bottom: -2, right: -6) // Adjust the badge height
 
-            // 将背景应用到整个 tagString 范围
+            // Apply the background to the whole tagString range
             tagString.setTextBackgroundBorder(border, range: tagString.rangeOfAll())
 
-            // 拼接标签
+            // Append the tag
 
             fullString.append(tagString)
 
-            // 拼接标签间的间距（不带背景的空格）
+            // Append the spacing between tags (a space without background)
             let space = NSMutableAttributedString(string: "      ")
             fullString.append(space)
         }
 
-        // 4. 设置行间距
+        // 4. Set the line spacing
         fullString.lineSpacing = 14
 
-        // 5. 赋值
+        // 5. Assign
         label.attributedText = fullString
     }
 
     private func configViews() {
-        // 配置 label 属性
+        // Configure the label
         label.numberOfLines = 0
         label.textContainerInset = .init(top: 4, left: 0, bottom: 4, right: 0)
 
         contentView.addSubview(label)
 
         label.snp.makeConstraints { make in
-            // 重点：上下左右边距决定了 Cell 的高度自适应起点和终点
+            // Key: the top/bottom/leading/trailing insets set where the cell's self-sizing starts and ends
             make.edges.equalToSuperview().inset(UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16))
         }
     }

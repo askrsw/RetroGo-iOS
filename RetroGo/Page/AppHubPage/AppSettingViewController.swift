@@ -80,9 +80,9 @@ extension AppSettingViewController {
     enum Item: Hashable {
 
         // main section
-        case systemHomepage // 系统首页开关
-        case languageFollowSystem // 跟随系统语言开关
-        case language(String, String) // 语言选项（key, displayName）
+        case systemHomepage // System home page switch
+        case languageFollowSystem // Follow system language switch
+        case language(String, String) // Language option (key, displayName)
         case uiHaptic
 
         // game section

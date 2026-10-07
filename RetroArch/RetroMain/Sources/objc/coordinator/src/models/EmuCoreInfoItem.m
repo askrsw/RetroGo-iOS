@@ -94,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
             _firmwares = [self loadMameFirmwares];
         }
 
-        // 如果 ppsspp 的 ppge_atlas.zim 不存在，则认为 ppsspp 的 assets 还没有被提取。
+        // If ppsspp's ppge_atlas.zim doesn't exist, ppsspp's assets are assumed not to be extracted yet.
         if([_coreId isEqualToString:@"ppsspp"] && ![_firmwares.firstObject fileExists]) {
             [self extractPPSSPPAssets];
         }
@@ -344,11 +344,11 @@ NS_ASSUME_NONNULL_BEGIN
 
     NSFileManager *manager = [NSFileManager defaultManager];
 
-    // 判断是否存在
+    // Check whether it exists
     if ([manager fileExistsAtPath:stagingDir.path]) {
         NSError *error = nil;
-        // 注意：removeItemAtURL 删除目录时，会递归删除里面的所有内容
-        // 对于硬链接，这只会删除“链接”，绝对不会影响 Documents 里的源文件，非常安全。
+        // Note: when removeItemAtURL removes a directory, it recursively removes everything inside
+        // For hard links this only removes the "link" and never touches the source files in Documents, so it is perfectly safe.
         [manager removeItemAtURL:stagingDir error:&error];
 
         if (error) {
@@ -411,46 +411,46 @@ NS_ASSUME_NONNULL_BEGIN
     return [obj boolValue];
 }
 
-// 完整的解压回调，支持空文件夹创建和父目录自动补全
+// Full extraction callback, supporting empty folder creation and automatic parent directory creation
 static int file_archive_extract_cb(const char *name, const char *valid_exts, const uint8_t *cdata, unsigned cmode, uint32_t csize, uint32_t size, uint32_t crc32, struct archive_extract_userdata *userdata) {
 
     char out_path[PATH_MAX_LENGTH];
 
-    // 1. 拼接完整绝对路径
+    // 1. Build the full absolute path
     if (userdata->extraction_directory) {
         fill_pathname_join(out_path, userdata->extraction_directory, name, sizeof(out_path));
     } else {
         strlcpy(out_path, name, sizeof(out_path));
     }
 
-    // 2. 判断是否为目录条目 (以 / 或 \ 结尾)
+    // 2. Check whether this is a directory entry (ends with / or \)
     size_t len = strlen(name);
     bool is_directory = (len > 0 && (name[len-1] == '/' || name[len-1] == '\\'));
 
     if (is_directory) {
-        // [关键点] 如果是文件夹条目，直接创建目录
-        // 这样就能保留空文件夹了
+        // [Key point] For a folder entry, create the directory directly
+        // so empty folders are preserved
         if (!path_is_directory(out_path)) {
             path_mkdir(out_path);
         }
-        return 1; // 继续处理下一个，不执行后面的写文件逻辑
+        return 1; // Move on to the next entry, skipping the file writing below
     }
 
-    // 3. 处理文件条目
+    // 3. Handle file entries
 
-    // 3.1 防御性编程：检查父目录是否存在
-    // 虽然上面处理了目录条目，但有些 ZIP 可能会省略父目录条目直接给文件，
-    // 或者乱序，所以每次写文件前检查父目录是必要的保险。
+    // 3.1 Defensive: check that the parent directory exists
+    // Directory entries are handled above, but some ZIPs omit the parent directory entry and give the file directly,
+    // or list entries out of order, so checking the parent before each write is a necessary safeguard.
     char parent_dir[PATH_MAX_LENGTH];
     fill_pathname_parent_dir_name(parent_dir, out_path, sizeof(parent_dir));
 
     if (!path_is_directory(parent_dir)) {
-        // 尝试创建父目录
+        // Try to create the parent directory
         path_mkdir(parent_dir);
     }
 
-    // 3.2 写入文件数据
-    // file_archive_perform_mode 负责将内存中的 cdata 写入磁盘
+    // 3.2 Write the file data
+    // file_archive_perform_mode writes the in-memory cdata to disk
     bool success = file_archive_perform_mode(out_path, valid_exts, cdata, cmode, csize, size, crc32, userdata);
 
     return success ? 1 : 0;
@@ -468,22 +468,22 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
         destPath = [destPath stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:docsPath];
     }
 
-    // 1. 准备 C 风格字符串
+    // 1. Prepare the C strings
     const char *cZipPath = [assetsPath fileSystemRepresentation];
     const char *cDestDir = [destPath fileSystemRepresentation];
 
-    // 2. 初始化 userdata
-    // struct archive_extract_userdata 是传给回调函数的数据结构
-    // file_archive_perform_mode 会利用这个结构体中的 extraction_directory 来决定文件写到哪
+    // 2. Initialize userdata
+    // struct archive_extract_userdata is the data structure passed to the callback
+    // file_archive_perform_mode uses its extraction_directory to decide where files are written
     struct archive_extract_userdata userdata;
     memset(&userdata, 0, sizeof(userdata));
     userdata.extraction_directory = cDestDir;
 
-    // [推荐] 将 zip 路径复制到 userdata 中，某些 callback 可能会用到
-    // 注意：archive_path 是定长数组，需使用 strlcpy
+    // [Recommended] Copy the zip path into userdata; some callbacks may use it
+    // Note: archive_path is a fixed-size array, so use strlcpy
     strlcpy(userdata.archive_path, cZipPath, sizeof(userdata.archive_path));
 
-    // 3. 初始化传输状态
+    // 3. Initialize the transfer state
     file_archive_transfer_t state;
     memset(&state, 0, sizeof(state));
     state.type = ARCHIVE_TRANSFER_INIT;
@@ -492,18 +492,18 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
     int ret = 0;
 
     do {
-        // 3. 路径是在这里作为第三个参数 (cZipPath) 传入的
+        // 3. The path is passed in here as the third argument (cZipPath)
         ret = file_archive_parse_file_iterate(
             &state,
             &success,
-            cZipPath,   // <--- 这里才是传入路径的地方
+            cZipPath,   // <--- This is where the path is actually passed in
             NULL,       // valid_exts
             file_archive_extract_cb,
             &userdata
         );
 
-        // ret == 0 : 继续迭代
-        // ret == 1 : 完成
+        // ret == 0 : keep iterating
+        // ret == 1 : done
     } while (ret == 0);
 
     file_archive_parse_file_iterate_stop(&state);
@@ -511,7 +511,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
     if (!success) {
         return NO;
     } else {
-        // --- 补充：动态生成合规声明文件 ---
+        // --- Also: generate the compliance notice file dynamically ---
         NSString *readmePath = [destPath stringByAppendingPathComponent:@"README.txt"];
         NSString *readmeContent = @"RetroGo - PPSSPP Assets Setup:\n\n"
             "These UI assets are extracted from the official PPSSPP project. "
@@ -603,25 +603,25 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
 - (NSURL *)prepareMameStagingDirectoryForGame:(NSURL *)gameURL stagedName:(nullable NSString *)stagedName biosFiles:(NSArray<NSURL *> *)biosFiles links:(nullable NSDictionary<NSString *, NSString *> *)links error:(NSError **)error {
     NSFileManager *manager = [NSFileManager defaultManager];
 
-    // 1. 在临时目录创建一个专门的文件夹，例如 tmp/MameSession
+    // 1. Create a dedicated folder in the temporary directory, e.g. tmp/MameSession
     NSString *tempDir = NSTemporaryDirectory();
     NSURL *stagingDir = [NSURL fileURLWithPath:[tempDir stringByAppendingPathComponent:@"MameSession"]];
 
-    // 2. 清理旧的会话目录（确保环境干净）
+    // 2. Clean up the old session directory (to start from a clean state)
     if ([manager fileExistsAtPath:stagingDir.path]) {
         [manager removeItemAtURL:stagingDir error:nil];
     }
     [manager createDirectoryAtURL:stagingDir withIntermediateDirectories:YES attributes:nil error:error];
 
-    // 3. 将目标游戏 ROM 硬链接到该目录
+    // 3. Hard-link the target game ROM into that directory
     NSURL *stagedGameURL = [stagingDir URLByAppendingPathComponent:stagedName.length > 0 ? stagedName : gameURL.lastPathComponent];
-    // 注意：linkItemAtURL 创建的是硬链接
+    // Note: linkItemAtURL creates a hard link
     if (![manager linkItemAtURL:gameURL toURL:stagedGameURL error:error]) {
         RETROGO_LOGE(MAME, "Failed to link game ROM: %@", *error);
         return nil;
     }
 
-    // 4. 将所有 BIOS 文件硬链接到该目录
+    // 4. Hard-link all BIOS files into that directory
 
     for (NSURL *biosFile in biosFiles) {
         if (![manager fileExistsAtPath:biosFile.path]) {
@@ -630,7 +630,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
 
         NSURL *destination = [stagingDir URLByAppendingPathComponent:biosFile.lastPathComponent];
 
-        // 忽略错误（比如文件已存在），继续链接下一个
+        // Ignore errors (e.g. the file already exists) and go on to the next link
         [manager linkItemAtURL:biosFile toURL:destination error:nil];
     }
 
@@ -653,7 +653,7 @@ static int file_archive_extract_cb(const char *name, const char *valid_exts, con
 
     RETROGO_LOGI(MAME, "Session staging complete at %@", stagingDir.path);
 
-    // 5. 返回位于临时目录中的游戏 ROM 路径给核心使用
+    // 5. Return the game ROM path in the temporary directory for the core to use
     return stagedGameURL;
 }
 

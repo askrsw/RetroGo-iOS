@@ -179,7 +179,7 @@ final class GameNetplayViewController: UIViewController {
 
     // MARK: - Nickname
 
-    /// A tappable card: squircle icon + "昵称" caption + the current value + a pencil.
+    /// A tappable card: squircle icon + "Nickname" caption + the current value + a pencil.
     /// Tapping anywhere (card or pencil) opens an alert to edit it.
     private func makeNicknameCard() -> UIView {
         let card = UIView()

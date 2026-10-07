@@ -36,8 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly)   NSString  *rdbName;
 @property (nonatomic, copy, readonly)   NSString  *displayName;
 @property (nonatomic, copy, readonly)   NSString  *manufacturer;
-@property (nonatomic, assign, readonly) NSInteger  gameCount;   // 变体总数
-@property (nonatomic, assign, readonly) NSInteger  groupCount;  // 去重分组数(列表分页用)
+@property (nonatomic, assign, readonly) NSInteger  gameCount;   // Total number of variants
+@property (nonatomic, assign, readonly) NSInteger  groupCount;  // Number of deduplicated groups (for list paging)
 @end
 
 // ---------------------------------------------------------------------------
@@ -55,15 +55,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// nil when there is no localized name. UI shows the name only while this
 /// matches the language pack of the current App language.
 @property (nonatomic, copy, nullable, readonly) NSString  *localizationLanguage;
-/// language pack game_name.source 枚举：1=en-cjk, 2=wikidata, 3=deepseek-chat, 4=deepseek-chat-pass2, 5=deepseek-loose。
+/// language pack game_name.source values: 1=en-cjk, 2=wikidata, 3=deepseek-chat, 4=deepseek-chat-pass2, 5=deepseek-loose.
 @property (nonatomic, assign, readonly)         NSInteger  localizationSource;
-/// YES 表示 source=5(deepseek-loose)，UI 应显示"仅供参考"标记。
+/// YES means source=5 (deepseek-loose); the UI should show a "for reference only" mark.
 @property (nonatomic, assign, readonly, getter=isLocalizationReference) BOOL localizationReference;
-/// 分组键(第一个括号前的前缀)。分组查询和 CRC 精确查询会赋值。
+/// Group key (the prefix before the first parenthesis). Set by group queries and the exact CRC lookup.
 @property (nonatomic, copy, nullable, readonly) NSString  *groupName;
-/// 该组变体数。仅分组查询结果会赋值；逐条查询时为 0。
+/// Number of variants in the group. Set only for group query results; 0 for per-entry queries.
 @property (nonatomic, assign, readonly)         NSInteger  variantCount;
-/// 该游戏在 cheat.sqlite 中的作弊条数。普通游戏库查询为 0，仅作弊库目录查询赋值。
+/// Number of cheats this game has in cheat.sqlite. 0 for regular game library queries; set only by cheat catalog queries.
 @property (nonatomic, assign, readonly)         NSInteger  cheatCount;
 @property (nonatomic, copy, nullable, readonly) NSString  *developer;
 @property (nonatomic, copy, nullable, readonly) NSString  *publisher;
@@ -91,7 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)shared;
 - (instancetype)init NS_UNAVAILABLE;
 
-/// 以只读方式打开预制游戏数据库（成品 sqlite，运行时只查不写）。
+/// Opens the prebuilt game database read-only (a finished sqlite, only queried at runtime, never written).
 - (void)initialize:(NSString *)dbPath completion:(nullable void (^)(void))completion;
 - (NSArray<RAPlatformItem *> *)allPlatforms;
 
@@ -103,9 +103,9 @@ NS_ASSUME_NONNULL_BEGIN
     NS_SWIFT_NAME(setLanguagePack(path:completion:));
 
 #if DEBUG
-/// DEBUG 专用：从一组 .rdb 文件离线构建成品合并数据库，落地为单个 .db 文件。
-/// 产物与设备端逐个 import 的结果完全一致（同 schema、同 user_version、含已建好的 FTS5），
-/// 用于打包进 App 作为预制库，从而免去用户端再解析 .rdb。
+/// DEBUG only: builds a finished merged database offline from a set of .rdb files, written as a single .db file.
+/// The output is identical to importing each file on the device (same schema, same user_version, FTS5 already built),
+/// and is bundled in the App as the prebuilt database, so users no longer have to parse .rdb files.
 - (void)exportCombinedDatabaseToPath:(NSString *)destPath
                         fromRdbPaths:(NSArray<NSString *> *)rdbPaths
                           completion:(void (^)(NSInteger totalGames, NSError * _Nullable error))completion;

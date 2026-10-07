@@ -191,7 +191,7 @@ extension RetroRomCoreInfoViewController {
         }
 
         ds.supplementaryViewProvider = { (collectionView, kind, indexPath) in
-            // 判断 kind 类型
+            // Check the kind
             if kind == UICollectionView.elementKindSectionHeader {
                 return collectionView.dequeueConfiguredReusableSupplementary(using: headerReg, for: indexPath)
             } else if kind == UICollectionView.elementKindSectionFooter {
@@ -569,31 +569,31 @@ extension RetroRomCoreInfoViewController: UIDocumentPickerDelegate {
                     if match {
                         var snapshot = dataSource.snapshot()
 
-                        // 关键点：使用 reconfigureItems (iOS 15+) 或 reloadItems
-                        // reconfigureItems 不会重新创建 Cell，只是重新触发 cellProvider 逻辑，性能更好
+                        // Key point: use reconfigureItems (iOS 15+) or reloadItems
+                        // reconfigureItems doesn't recreate the cell, it just reruns the cellProvider, which is faster
                         if #available(iOS 15.0, *) {
                             snapshot.reconfigureItems(firmwareItems)
                         } else {
                             snapshot.reloadItems(firmwareItems)
                         }
 
-                        // 应用快照，系统会自动计算差异并执行动画
+                        // Apply the snapshot; the system diffs it and animates the changes
                         dataSource.apply(snapshot, animatingDifferences: true)
                     } else {
-                        // 获取当前的全局快照
+                        // Get the current full snapshot
                         var snapshot = dataSource.snapshot()
 
-                        // 1. 获取该 Section 目前已有的所有 Items（旧数据）
+                        // 1. Get all items currently in the section (old data)
                         let oldFirmwareItems = snapshot.itemIdentifiers(inSection: .firmware)
 
-                        // 2. 准备新的 Items
+                        // 2. Prepare the new items
                         let newItems = updatedFirmwares.map({ Item.firmware(data: $0) })
 
-                        // 3. 将新 Items 追加到 Section 中
+                        // 3. Append the new items to the section
                         snapshot.appendItems(newItems, toSection: .firmware)
 
-                        // 4. 关键：刷新该 Section 下的所有 Items (包括旧的和刚加进去的)
-                        // 注意：如果你只想刷新旧的，就传 oldFirmwareItems；如果要全刷，就传两者之和
+                        // 4. Key: refresh all items in the section (both old and newly added)
+                        // Note: to refresh only the old ones, pass oldFirmwareItems; to refresh everything, pass both
                         let allFirmwareItems = oldFirmwareItems + newItems
 
                         if #available(iOS 15.0, *) {
@@ -602,7 +602,7 @@ extension RetroRomCoreInfoViewController: UIDocumentPickerDelegate {
                             snapshot.reloadItems(allFirmwareItems)
                         }
 
-                        // 5. 统一应用变更
+                        // 5. Apply the changes together
                         dataSource.apply(snapshot, animatingDifferences: true)
                     }
 

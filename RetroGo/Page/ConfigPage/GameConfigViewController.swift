@@ -50,7 +50,7 @@ final class GameConfigViewController: UIViewController {
         self.configData = session.makeConfigData()
         super.init(nibName: nil, bundle: nil)
 
-        // 只在真实游戏运行时 pause；dummy 场景绝不 pause
+        // Pause only while a real game is running; never pause the dummy scene
         let ra = RetroArchX.shared()
         openedWhileGameRunning = (ra.currentCoreItem != nil) && !ra.dummyCoreRunning
     }
@@ -156,7 +156,7 @@ extension GameConfigViewController {
     func prepareInputRuntimeIfNeeded() {
         let ra = RetroArchX.shared()
 
-        // 非游戏运行场景：启动 dummy；游戏中不启动 dummy
+        // Outside a game: start the dummy; during a game: don't
         guard !openedWhileGameRunning else { return }
         guard ra.currentCoreItem == nil else { return }
         guard !ra.dummyCoreRunning else { return }

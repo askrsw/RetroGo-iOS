@@ -78,16 +78,16 @@ extension RetroRomCoreFrimwareViewCell {
             return nameLabel.attributedText = nil
         }
 
-        // 1. 设置最大宽度（保持你原有的逻辑）
+        // 1. Set the max width (keep the existing logic)
         nameLabel.preferredMaxLayoutWidth = contentView.width - nameTipLabel.width - 16 - 10 - 16
 
-        // 2. 创建基础名称字符串
+        // 2. Create the base name string
         let fullString = NSMutableAttributedString(string: firmware.name, attributes: valueAttributes)
 
         if !firmware.fileExists {
-            // 3. 文件不存在：显示 “必须/可选” 气泡
-            //    必须 → 红（警示），可选 → 中性灰（仅信息标识，不是警告）。
-            //    "缺失"/"无效" 这两个真正的状态告警保留 红/橙 配色。
+            // 3. File missing: show a "Required/Optional" badge
+            //    Required → red (warning), Optional → neutral gray (just informational, not a warning).
+            //    The real status alerts "Missed"/"Invalid" keep their red/orange colors.
             let isRequired = !firmware.optional
             let tagText = isRequired ? Bundle.localizedString(forKey: "coreinfo_firmware_required") : Bundle.localizedString(forKey: "coreinfo_firmware_optional")
             let tagColor = isRequired ? UIColor.systemRed : UIColor.systemGray
@@ -96,32 +96,32 @@ extension RetroRomCoreFrimwareViewCell {
             // MAME BIOS archive lacking required files: games using it can't start.
             appendTag(to: fullString, text: Bundle.localizedString(forKey: "coreinfo_mame_bios_incomplete"), color: .systemOrange)
         } else if !firmware.isValid {
-            // 4. 文件存在但 MD5 无效：显示 “无效” 气泡
+            // 4. File present but MD5 invalid: show an "Invalid" badge
             let isRequired = !firmware.optional
             let tagText = Bundle.localizedString(forKey: "coreinfo_firmware_invalid")
             let tagColor = isRequired ? UIColor.systemRed : UIColor.systemOrange
             appendTag(to: fullString, text: tagText, color: tagColor)
         } else {
-            // 5. 文件存在且有效
+            // 5. File present and valid
             let iconSize: CGFloat = 20
             let config = UIImage.SymbolConfiguration(pointSize: iconSize, weight: .medium)
 
-            // 1. 获取原始图标
+            // 1. Get the original icon
             if let symbolImage = UIImage(systemName: "checkmark.circle.fill", withConfiguration: config)?.withTintColor(.systemGreen, renderingMode: .alwaysOriginal) {
-                // 2. 关键：将矢量图绘制成位图 (Bitmap)
+                // 2. Key: render the vector image into a bitmap
                 let renderer = UIGraphicsImageRenderer(size: symbolImage.size)
                 let bitmapImage = renderer.image { context in
                     symbolImage.draw(in: CGRect(origin: .zero, size: symbolImage.size))
                 }
 
-                // 3. 插入 YYText 附件
+                // 3. Insert the YYText attachment
                 let attachment = NSMutableAttributedString.attachmentString(withContent: bitmapImage, contentMode: .center, attachmentSize: bitmapImage.size, alignTo: UIFont.systemFont(ofSize: iconSize), alignment: .center)
                 fullString.append(NSAttributedString(string: "  "))
                 fullString.append(attachment)
             }
         }
 
-        // 6. 赋值
+        // 6. Assign
         nameLabel.attributedText = fullString
     }
 
@@ -135,19 +135,19 @@ extension RetroRomCoreFrimwareViewCell {
         // The path is tappable — tapping opens a file picker for the user
         // to import the firmware. Render it as a real iOS link (blue text +
         // matching underline) so the affordance is consistent with other
-        // tappable text on this page (源码地址 / 开源协议).
+        // tappable text on this page (Source Code / Licenses).
         let fullString = NSMutableAttributedString(string: firmware.path, attributes: valueAttributes)
         let allRange = fullString.rangeOfAll()
         fullString.addAttribute(.foregroundColor, value: UIColor.link, range: allRange)
 
-        // 1. 设置普通状态下的下划线 (link 蓝)
+        // 1. Underline for the normal state (link blue)
         let normalUnderline = YYTextDecoration(style: .single, width: 1, color: .link)
         fullString.setTextUnderline(normalUnderline, range: allRange)
 
-        // 2. 配置高亮状态
+        // 2. Configure the highlighted state
         let highlight = YYTextHighlight()
 
-        // 高亮时的下划线颜色 (关键：通过 attributes 设置高亮时的下划线样式)
+        // Underline color when highlighted (key: the highlighted underline style is set through attributes)
         let highlightUnderline = YYTextDecoration(style: .single, width: 1, color: .mainColor)
         highlight.attributes = [
             NSAttributedString.Key.foregroundColor.rawValue: UIColor.mainColor,
@@ -159,11 +159,11 @@ extension RetroRomCoreFrimwareViewCell {
             self?.loadFirmwareFile()
         }
 
-        // 3. 应用高亮
+        // 3. Apply the highlight
         fullString.setTextHighlight(highlight, range: allRange)
 
         if !firmware.fileExists {
-            // 4. 文件不存在：显示 “缺失” 气泡
+            // 4. File missing: show a "Missed" badge
             let isRequired = !firmware.optional
             let tagText = Bundle.localizedString(forKey: "coreinfo_firmware_missed")
             let tagColor = isRequired ? UIColor.systemRed : UIColor.systemOrange
@@ -172,7 +172,7 @@ extension RetroRomCoreFrimwareViewCell {
             let tagText = String(format: Bundle.localizedString(forKey: "coreinfo_mame_bios_missing_count"), missing.count)
             appendTag(to: fullString, text: tagText, color: .systemOrange)
         } else if firmware.isValid {
-            // 5. 文件存在且有效
+            // 5. File present and valid
             let tagText = Bundle.localizedString(forKey: "coreinfo_firmware_ready")
             let tagColor = UIColor.systemGreen
             appendTag(to: fullString, text: tagText, color: tagColor)
@@ -184,23 +184,23 @@ extension RetroRomCoreFrimwareViewCell {
     private func loadFirmwareFile() {
         guard let firmware = firmware, let controller = UIViewController.currentActive() else { return }
 
-        // 1. 获取固件后缀 (例如 "bin" 或 "rom")
+        // 1. Get the firmware extension (e.g. "bin" or "rom")
         let fileExtension = (firmware.name as NSString).pathExtension
 
-        // 2. 根据后缀创建 UTType
+        // 2. Create a UTType from the extension
         let contentTypes: [UTType]
         if let customType = UTType(filenameExtension: fileExtension) {
             contentTypes = [customType]
         } else {
-            contentTypes = [.data] // 兜底使用通用二进制类型
+            contentTypes = [.data] // Fall back to the generic binary type
         }
 
-        // 3. 初始化选择器
+        // 3. Create the picker
         let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: contentTypes, asCopy: true)
         documentPicker.delegate = self
-        documentPicker.allowsMultipleSelection = false // 禁用多选
+        documentPicker.allowsMultipleSelection = false // No multiple selection
 
-        // 4. (可选) 设置选择器的标题，提醒用户要找哪个文件
+        // 4. (Optional) Set the picker title to tell the user which file to look for
         documentPicker.title = "请选择: \(firmware.name)"
 
         controller.present(documentPicker, animated: true)
@@ -212,20 +212,20 @@ extension RetroRomCoreFrimwareViewCell {
         let hPadding: CGFloat = 4
         let vPadding: CGFloat = 2
 
-        // 1. 精确计算文字高度 (CapHeight 更准确)
+        // 1. Compute the text height precisely (capHeight is more accurate)
         let textAttributes: [NSAttributedString.Key: Any] = [.font: font]
         let textSize = (text as NSString).size(withAttributes: textAttributes)
 
-        // 2. 容器尺寸
+        // 2. Container size
         let layerSize = CGSize(width: textSize.width + hPadding * 2, height: textSize.height + vPadding * 2)
 
-        // 3. 创建容器 Layer (负责背景色和圆角)
+        // 3. Create the container layer (background color and corners)
         let containerLayer = CALayer()
         containerLayer.backgroundColor = color.cgColor
         containerLayer.cornerRadius = 6
         containerLayer.frame = CGRect(origin: .zero, size: layerSize)
 
-        // 4. 创建文字 Layer (负责渲染文字)
+        // 4. Create the text layer (renders the text)
         let textLayer = CATextLayer()
         textLayer.string = text
         textLayer.font = font
@@ -234,16 +234,16 @@ extension RetroRomCoreFrimwareViewCell {
         textLayer.alignmentMode = .center
         textLayer.contentsScale = UIScreen.main.scale
 
-        // 关键点：手动计算 Y 轴偏移，实现垂直居中
-        // 计算公式：(容器总高 - 文字实际高) / 2
-        // 注意：某些字体由于有 descent，可能需要微调 -1 或 -0.5
+        // Key point: compute the Y offset by hand to center vertically
+        // Formula: (container height - actual text height) / 2
+        // Note: some fonts have a descent and may need a -1 or -0.5 nudge
         let yOffset = (layerSize.height - textSize.height) / 2
         textLayer.frame = CGRect(x: 0, y: yOffset, width: layerSize.width, height: textSize.height)
 
         containerLayer.addSublayer(textLayer)
 
-        // 5. 转换为属性字符串
-        // alignTo: 传入主行的字体，alignment: .center 会让附件中心对齐文字中心
+        // 5. Convert to an attributed string
+        // alignTo: pass the main line's font; alignment: .center centers the attachment on the text
         let tagAttachment = NSMutableAttributedString.attachmentString(
             withContent: containerLayer,
             contentMode: .center,
@@ -316,8 +316,8 @@ extension RetroRomCoreFrimwareViewCell: UIDocumentPickerDelegate {
                 // updateNameLabel()
                 // updatePathLabel()
 
-                // 直接调用 updateNameLabel 和 updatePathLabel，排版会发生错误
-                // 从 data source 更新整个 cell。
+                // Calling updateNameLabel and updatePathLabel directly breaks the layout,
+                // so update the whole cell from the data source.
                 holder?.updateFirmware(firmware)
             }
         } else {

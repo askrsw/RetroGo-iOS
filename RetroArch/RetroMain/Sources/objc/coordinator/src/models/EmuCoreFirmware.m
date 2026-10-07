@@ -64,21 +64,21 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)isValid {
-    // 1. 检查文件是否存在
+    // 1. Check whether the file exists
     if (![self fileExists]) {
         return NO;
     }
 
-    // 2. 如果 md5 为空，按要求直接返回 YES
+    // 2. If md5 is empty, return YES as required
     if (_md5 == nil || _md5.length == 0) {
         return YES;
     }
 
 
-    // 3. 计算实际文件的 MD5
+    // 3. Compute the actual file's MD5
     NSString *actualMD5 = [self calculateFileMD5];
 
-    // 4. 忽略大小写进行比较
+    // 4. Compare case-insensitively
     return [[actualMD5 lowercaseString] isEqualToString:[_md5 lowercaseString]];
 }
 
@@ -86,16 +86,16 @@ NS_ASSUME_NONNULL_BEGIN
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSString *destPath = self.fullPath;
 
-    // 1. 确保目标文件夹存在
+    // 1. Make sure the destination folder exists
     NSString *folderPath = [destPath stringByDeletingLastPathComponent];
     if (![fileManager fileExistsAtPath:folderPath]) {
         [fileManager createDirectoryAtPath:folderPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
 
-    // 2. 开启安全访问权限 (必须，否则无法读取沙盒外文件)
+    // 2. Start security-scoped access (required, or files outside the sandbox can't be read)
     BOOL accessGranted = [url startAccessingSecurityScopedResource];
 
-    // 3. 执行替换式拷贝
+    // 3. Copy, replacing the existing file
     if ([fileManager fileExistsAtPath:destPath]) {
         [fileManager removeItemAtPath:destPath error:nil];
     }
@@ -103,7 +103,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSError *error = nil;
     BOOL success = [fileManager copyItemAtPath:url.path toPath:destPath error:&error];
 
-    // 4. 释放权限
+    // 4. Release the access
     if (accessGranted) {
         [url stopAccessingSecurityScopedResource];
     }
@@ -119,13 +119,13 @@ NS_ASSUME_NONNULL_BEGIN
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSString *destPath = self.fullPath;
 
-    // 1. 检查文件是否存在 (可选，为了防止对不存在的文件报错)
+    // 1. Check whether the file exists (optional, to avoid errors on a missing file)
     if (![fileManager fileExistsAtPath:destPath]) {
         RETROGO_LOGN(IMPORT, "Firmware delete skipped: file not found at %@", destPath);
         return YES;
     }
 
-    // 2. 执行删除
+    // 2. Delete it
     NSError *error = nil;
     BOOL success = [fileManager removeItemAtPath:destPath error:&error];
 
@@ -137,7 +137,7 @@ NS_ASSUME_NONNULL_BEGIN
     return YES;
 }
 
-// 辅助方法：高效计算文件 MD5
+// Helper: compute a file's MD5 efficiently
 - (NSString *)calculateFileMD5 {
     NSString *filePath = self.fullPath;
 
@@ -150,7 +150,7 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL done = NO;
     while (!done) {
         @autoreleasepool {
-            NSData *fileData = [handle readDataOfLength:256 * 1024]; // 每次读取 256KB
+            NSData *fileData = [handle readDataOfLength:256 * 1024]; // Read 256KB at a time
             if (fileData.length > 0) {
                 CC_MD5_Update(&md5, fileData.bytes, (CC_LONG)fileData.length);
             } else {

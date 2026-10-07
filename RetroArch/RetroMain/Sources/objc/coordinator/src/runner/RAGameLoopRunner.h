@@ -42,11 +42,11 @@ typedef NSObject *_Nullable(^RAGameLoopSyncBlock)(void);
 - (BOOL)reset;
 
 /*
- * 控制是否启用倍速，以及启用时使用的倍率。
+ * Controls whether fast-forward is on and, when on, which multiplier it uses.
  *
- * 设计约束：
- * - 关闭倍速时会忽略 multiplier，并恢复到 core 原始 fps 对应的调度间隔。
- * - 开启倍速时 runner 应使用 multiplier 缩短逻辑帧间隔，而不是修改 core 本身的 timing 元数据。
+ * Design constraints:
+ * - When fast-forward is off, multiplier is ignored and the schedule interval goes back to the one for the core's original fps.
+ * - When fast-forward is on, the runner should use multiplier to shorten the logic frame interval instead of changing the core's own timing metadata.
  */
 - (void)setFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier;
 - (void)setFastForwardMultiplier:(double)multiplier;

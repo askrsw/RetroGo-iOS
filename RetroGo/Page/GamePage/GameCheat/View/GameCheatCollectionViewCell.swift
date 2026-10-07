@@ -98,7 +98,7 @@ final class GameCheatCollectionViewCell: UICollectionViewListCell {
         accessories = rowAccessories
     }
 
-    /// EMU rows show the raw code; RETRO rows show a compact `地址 05C6  值 02`
+    /// EMU rows show the raw code; RETRO rows show a compact `Address 05C6  Value 02`
     /// (value width follows the memory size), matching the reference NES app.
     static func subtitle(for item: GameCheatItem) -> String {
         switch item.handler {

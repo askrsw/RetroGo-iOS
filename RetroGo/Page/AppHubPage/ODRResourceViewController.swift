@@ -202,7 +202,7 @@ final class ODRResourceViewController: UIViewController {
 
     private func downloadingText(_ fraction: Double) -> String {
         let pct = Int((fraction * 100).rounded())
-        let fmt = Bundle.localizedString(forKey: "odr_downloading_fmt") // "下载中 %d%%"
+        let fmt = Bundle.localizedString(forKey: "odr_downloading_fmt") // "Downloading %d%%"
         return String(format: fmt, pct)
     }
 

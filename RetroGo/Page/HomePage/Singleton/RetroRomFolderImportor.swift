@@ -758,18 +758,18 @@ extension RetroRomFolderImportor {
     private func deleteFolderFiles() {
         let fileManager = FileManager.default
 
-        // 1. 删除本次拷贝过去的文件
+        // 1. Delete the files copied in this run
         for file in fileItemPaths {
             let fullPath = destinationRootPath + file
             try? fileManager.removeItem(atPath: fullPath)
         }
 
-        // 2. 删除本次新建的文件夹（必须从深到浅删除）
+        // 2. Delete the folders created in this run (must go from deepest to shallowest)
         for folderPath in folderItemPaths.reversed() {
-            // 核心判断：如果这个路径是“重用”的，说明是合并模式下的旧文件夹，不能删
-            // 需要通过路径匹配来找到对应的 item 是否在 reusedFolders 中
+            // Key check: a "reused" path is an old folder in merge mode and must not be deleted
+            // Match by path to find whether the item is in reusedFolders
             let isReused = reusedFolders.contains { item in
-                // 这里假设你的 folderItems 存储的是全路径 key
+                // Assumes folderItems stores full-path keys
                 return folderItems[folderPath]?.key == item.key
             }
 

@@ -756,11 +756,11 @@ extension OnDemandResourceLoader {
 }
 
 #if DEBUG
-// MARK: - DEBUG：从 Bundle 内的 .rdb 离线生成预制库
+// MARK: - DEBUG: build the prebuilt database offline from the .rdb files in the bundle
 
 extension OnDemandResourceLoader {
 
-    /// 用于离线导出的 .rdb 资源名（Bundle 资源名，不含扩展名）。
+    /// .rdb resource names used for the offline export (bundle resource names, without extension).
     static let debugRdbNames: [String] = [
         "DOS",
         "Nintendo - Family Computer Disk System",
@@ -788,11 +788,11 @@ extension OnDemandResourceLoader {
         "Sega - SG-1000",
     ]
 
-    /// DEBUG：把 Bundle 内的 .rdb 合并构建成成品预制库，
-    /// 落地到 <Documents>/gamerdb.sqlite，并把路径回调出来供从模拟器容器取出。
+    /// DEBUG: merge the .rdb files in the bundle into a finished prebuilt database,
+    /// write it to <Documents>/gamerdb.sqlite and pass the path back so it can be pulled from the simulator container.
     func debugExportCombinedDatabase(completion: @escaping (String?, Error?) -> Void) {
-        // Resources/Data 是蓝色 folder reference，保留层级打进包，
-        // 故 rdb 运行时位于 <bundle>/Data/rdb/，必须带 subdirectory 才能定位。
+        // Resources/Data is a blue folder reference, packaged with its hierarchy,
+        // so the rdb files live in <bundle>/Data/rdb/ at runtime and need the subdirectory to be found.
         let rdbPaths: [String] = OnDemandResourceLoader.debugRdbNames.compactMap {
             Bundle.main.url(forResource: $0,
                             withExtension: "rdb",

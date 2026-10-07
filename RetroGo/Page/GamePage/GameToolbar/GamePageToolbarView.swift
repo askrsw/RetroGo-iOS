@@ -168,8 +168,8 @@ extension GamePageToolbarView {
 
         moreButton.tintColor = .label
         moreButton.setImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
-        // custom-type 按钮不走 .system 的 SF Symbol 自动缩放管线，glyph 会偏小。
-        // 22pt 是和周围 .system circle 按钮目测协调的尺寸。
+        // Custom-type buttons skip the SF Symbol auto-scaling of .system, so the glyph comes out small.
+        // 22pt visually matches the surrounding .system circle buttons.
         moreButton.setPreferredSymbolConfiguration(
             UIImage.SymbolConfiguration(pointSize: 22, weight: .regular),
             forImageIn: .normal

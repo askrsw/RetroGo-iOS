@@ -219,7 +219,7 @@ final class DiscoverGameListViewController: UIViewController {
         isLoadingPage = true
         let offset    = browseOffset
 
-        // 列表展示去重后的「分组」，而非每个变体，避免 MAME 等平台数万条同名变体刷屏。
+        // The list shows deduplicated groups rather than every variant, so platforms like MAME aren't flooded with tens of thousands of same-name variants.
         RAGameRDBManager.shared().fetchGroups(
             forPlatformId:  platform.platformId,
             offset:         offset,

@@ -340,13 +340,13 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 }
 
 - (void)beginCoreTeardownGuard {
-    // 1) 不再接收“配置页按键捕获”
+    // 1) Stop receiving "config page key capture"
     self.physicalSourcePressHandler = nil;
 
-    // 2) 清理运行态，确保没有按下残留（turbo/fast-forward 持续态）
+    // 2) Clear the runtime state so no presses linger (turbo/fast-forward held states)
     [self resetRuntimeState:YES];
 
-    // 3) 彻底静默 mfi 回调，避免 core unload 期间并发输入
+    // 3) Fully silence the mfi callbacks to avoid concurrent input while the core unloads
     mfi_joypad_set_axis_suppression_callback(NULL, NULL);
     mfi_joypad_set_button_suppression_callback(NULL, NULL);
     mfi_joypad_set_axis_event_callback(NULL, NULL);
@@ -355,7 +355,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 }
 
 - (void)endCoreTeardownGuard {
-    // 恢复 mfi 回调链，供下次开局使用
+    // Restore the mfi callback chain for the next game
     mfi_joypad_set_button_event_callback(RAInputActionManagerMFIButtonEventCallback, (__bridge void *)self);
     mfi_joypad_set_axis_event_callback(RAInputActionManagerMFIAxisEventCallback, (__bridge void *)self);
     mfi_joypad_set_button_suppression_callback(RAInputActionManagerMFIButtonSuppressionCallback, (__bridge void *)self);
@@ -1127,12 +1127,12 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 }
 
 - (void)markPendingReconcile {
-    // 任意线程可调用：设置“需要重收敛”
+    // Callable from any thread: mark "needs reconverging"
     atomic_store_explicit(&d_pendingReconcile, true, memory_order_release);
 }
 
 - (BOOL)consumePendingReconcile {
-    // 仅 tickFrame 线程消费：若为 true 则原子清零并返回 true
+    // Consumed only on the tickFrame thread: if true, atomically clear it and return true
     return atomic_exchange_explicit(&d_pendingReconcile, false, memory_order_acq_rel);
 }
 
@@ -1145,14 +1145,14 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 
         unsigned p = (unsigned)port;
 
-        // 1) 清该 player 的 native 显式覆盖，回到 auto-bind baseline
+        // 1) Clear this player's explicit native overrides and go back to the auto-bind baseline
         for (unsigned code = 0; code < RARCH_FIRST_CUSTOM_BIND; code++) {
             input_config_binds[p][code].joykey  = NO_BTN;
             input_config_binds[p][code].joyaxis = AXIS_NONE;
             input_config_binds[p][code].valid   = true;
         }
 
-        // 2) 清该 player 的扩展 action 绑定（只清 overlay/persisted/default:auto，保留其它玩家）
+        // 2) Clear this player's extended action bindings (only overlay/persisted/default:auto; other players are kept)
         NSMutableArray<NSString *> *toRemove = [NSMutableArray array];
 
         NSString *overlayPrefix   = [NSString stringWithFormat:@"player:%d:overlay:", port];
@@ -1169,7 +1169,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             [self removeActionDescriptorForIdentifier:actionId useLock:NO];
         }
 
-        // 3) 按当前核心能力补默认 XY->turbo（如果允许）
+        // 3) Add the default XY->turbo for the current core's capabilities (if allowed)
         RAInputCoreCapabilities *caps = d_activeCoreCapabilities;
         if (caps == nil) {
             caps = [RAInputCoreCapabilities new];
@@ -1263,7 +1263,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                 NSString *overlayPrefix   = [NSString stringWithFormat:@"player:%ld:overlay:", (long)port];
                 BOOL isOverlay   = [actionId hasPrefix:overlayPrefix];
 
-                // overlay 只导出“扩展动作”：fast-forward / combo / turbo(含单键 turbo)
+                // The overlay only exports "extended actions": fast-forward / combo / turbo (including single-key turbo)
                 BOOL shouldExportOverlay = NO;
                 if (isOverlay) {
                     if (descriptor.kind == RAInputActionKindFastForward) {
@@ -1352,7 +1352,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 
         const unsigned p = (unsigned)port;
 
-        // 1) 检查 native bind 是否有显式覆盖（偏离 auto baseline）
+        // 1) Check whether the native bind has explicit overrides (deviating from the auto baseline)
         for (unsigned code = 0; code < RARCH_FIRST_CUSTOM_BIND; code++) {
             const struct retro_keybind *bind = &input_config_binds[p][code];
             if (!bind->valid) continue;
@@ -1362,7 +1362,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             }
         }
 
-        // 2) 检查扩展 action 绑定（只看该 player 相关，排除 default:auto）
+        // 2) Check the extended action bindings (only this player's, excluding default:auto)
         NSString *prefixOverlay = [NSString stringWithFormat:@"player:%d:overlay:", port];
 
         for (NSString *actionId in self.actionDescriptors) {
@@ -1392,19 +1392,19 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             capabilities = [RAInputCoreCapabilities new];
         }
 
-        // Core capability -> axis suppression policy (统一在这里收敛)
+        // Core capability -> axis suppression policy (converged here in one place)
         self.allowsAxisSuppression = !capabilities.supportsAnalog;
 
-        // 1) 清理运行态，避免按压残留
+        // 1) Clear the runtime state so no presses linger
         [self resetRuntimeState:NO];
 
-        // 2) 清理上一局自动扩展绑定（只清 default:auto:*）
+        // 2) Clear the previous game's automatic extended bindings (only default:auto:*)
         [self ra_removeAutoExtendedBindings:NO];
 
-        // 3) 重置 native 显式覆盖层，让 auto bind 成为 baseline
+        // 3) Reset the explicit native override layer so auto bind becomes the baseline
         [self ra_resetJoypadOverridesToAutoBindBaseline:NO];
 
-        // 4) 清理并重建扩展动作绑定（persisted 由当前 profile 重新注入）
+        // 4) Clear and rebuild the extended action bindings (persisted ones are re-injected from the current profile)
         [self removeAllBindings:NO];
 
         for (RAInputPlayerBinding *player in profile.players) {
@@ -1460,7 +1460,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 
                 case RAInputBindingTargetKindSystemAction: {
                     if (target.systemActionCode == RAInputSystemActionCodeFastForward) {
-                        // 规则：只允许 player 1 (port 0)
+                        // Rule: only player 1 (port 0) is allowed
                         if (port != 0) {
                             break;
                         }
@@ -1474,7 +1474,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                         [self setActionDescriptor:descriptor useLock:NO];
                         [self bindPhysicalSource:source toActionIdentifier:descriptor.identifier useLock:NO];
                     } else if (target.systemActionCode == RAInputSystemActionCodeMute) {
-                        // 预留：后续可接 mute descriptor
+                        // Reserved: a mute descriptor can be wired up later
                     }
                     break;
                 }
@@ -1487,7 +1487,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             }
         }
 
-        // 5) 最后收敛默认 XY->turbo（只补缺，不覆盖用户配置）
+        // 5) Finally converge the default XY->turbo (fill gaps only, never override the user's config)
         [self ra_reconcileDefaultTurboXYWithCapabilities:capabilities useLock:NO];
     } @finally {
         [self ra_unlockState:useLock];
@@ -1497,7 +1497,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 - (void)ra_resetJoypadOverridesToAutoBindBaseline:(BOOL)useLock {
     [self ra_lockState:useLock];
     @try {
-        // 保留 valid=true，仅清 joykey/joyaxis 显式覆盖，使 auto bind 生效
+        // Keep valid=true and clear only the explicit joykey/joyaxis overrides so auto bind takes effect
         for (unsigned p = 0; p < MAX_USERS; p++) {
             for (unsigned code = 0; code < RARCH_FIRST_CUSTOM_BIND; code++) {
                 input_config_binds[p][code].joykey  = NO_BTN;
@@ -1527,7 +1527,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 - (void)ra_reconcileDefaultTurboXYWithCapabilities:(RAInputCoreCapabilities *)capabilities useLock:(BOOL)useLock {
     [self ra_lockState:useLock];
     @try {
-        // 先清理所有端口的 default:auto turbo 绑定，避免跨游戏/跨核心残留
+        // First clear the default:auto turbo bindings on every port to avoid leftovers across games/cores
         for (unsigned port = 0; port < MAX_USERS; port++) {
             NSString *turboAId = [NSString stringWithFormat:@"default:auto:p%u:turbo:a", port];
             NSString *turboBId = [NSString stringWithFormat:@"default:auto:p%u:turbo:b", port];
@@ -1539,7 +1539,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             return;
         }
 
-        // 对每个 player 独立补位 XY->turbo AB
+        // Fill the XY->turbo AB slots for each player independently
         for (unsigned port = 0; port < MAX_USERS; port++) {
             NSString *turboAId = [NSString stringWithFormat:@"default:auto:p%u:turbo:a", port];
             NSString *turboBId = [NSString stringWithFormat:@"default:auto:p%u:turbo:b", port];
@@ -1550,7 +1550,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             uint16_t joykeyX = [self joykeyForPhysicalSourceIdentifier:srcX];
             uint16_t joykeyY = [self joykeyForPhysicalSourceIdentifier:srcY];
 
-            /* 默认 XY->turbo 的补位阶段，只检查“显式 native override”，不看 auto bind。 */
+            /* When filling the default XY->turbo, only "explicit native overrides" are checked, not auto bind. */
             BOOL xUsedByExplicitNative = NO;
             BOOL yUsedByExplicitNative = NO;
             for (unsigned code = 0; code < RARCH_FIRST_CUSTOM_BIND; code++) {
@@ -1573,7 +1573,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                 }
             }
 
-            /* action 占用：允许 default:auto 自己，不允许其它 action 占用。 */
+            /* Action occupancy: default:auto itself is allowed, no other action may occupy it. */
             NSString *xActionId = [self actionIdentifierForPhysicalSourceIdentifier:srcX useLock:NO];
             NSString *yActionId = [self actionIdentifierForPhysicalSourceIdentifier:srcY useLock:NO];
             BOOL xUsedByExplicitAction = (xActionId.length > 0 && ![xActionId isEqualToString:turboAId]);

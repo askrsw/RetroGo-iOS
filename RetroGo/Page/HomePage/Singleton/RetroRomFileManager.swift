@@ -548,7 +548,7 @@ extension RetroRomFileManager {
         guard fileManager.fileExists(atPath: legacyDataRoot) else { return }
         if isSymbolicLink(at: legacyDataRoot) { return }
 
-        // 定义迁移映射关系：[旧子目录 : 新子目录]
+        // Migration mapping: [old subdirectory : new subdirectory]
         let migrationMap: [String: String] = [
             legacyDataRoot + "/states": AppConfig.shared.statesFolder,
             legacyDataRoot + "/database": (AppConfig.shared.romDatabasePath as NSString).deletingLastPathComponent,
@@ -560,7 +560,7 @@ extension RetroRomFileManager {
             migrateSubFolderContent(from: oldDir, to: newDir)
         }
 
-        // 检查 legacyDataRoot 是否已经搬空，如果空了再删，如果不空说明有用户自定义数据，留着
+        // Remove legacyDataRoot only once it is empty; if not, it holds user data, so keep it
         if let contents = try? fileManager.contentsOfDirectory(atPath: legacyDataRoot), contents.isEmpty {
             try? fileManager.removeItem(atPath: legacyDataRoot)
         }
@@ -575,7 +575,7 @@ extension RetroRomFileManager {
         URL(fileURLWithPath: path).resolvingSymlinksInPath().standardizedFileURL.path
     }
 
-    // 核心：逐个文件移动，不破坏目录结构
+    // Core: move files one by one without breaking the directory structure
     private func migrateSubFolderContent(from oldDir: String, to newDir: String) {
         let fileManager = FileManager.default
         guard fileManager.pathIsDirectory(oldDir) else { return }
@@ -589,14 +589,14 @@ extension RetroRomFileManager {
                 let newPath = newDir + "/" + fileName
 
                 if !fileManager.fileExists(atPath: newPath) {
-                    // 使用 moveItem，因为同一个沙盒内这是移动指针，极快且省空间
+                    // Use moveItem: within the same sandbox this just moves a pointer, fast and space-free
                     try fileManager.moveItem(atPath: oldPath, toPath: newPath)
                 } else {
-                    // 如果目标已存在（说明之前迁移过一半中断了），安全起见可以 removeItem 旧的
+                    // If the destination exists (an earlier migration was interrupted halfway), removing the old item is the safe choice
                     try? fileManager.removeItem(atPath: oldPath)
                 }
             }
-            // 尝试删除已经搬空的旧子目录
+            // Try to remove old subdirectories that are now empty
             try? fileManager.removeItem(atPath: oldDir)
         } catch {
             RetroGoLogger.library.error("Migration failed at \(oldDir): \(String(describing: error))")

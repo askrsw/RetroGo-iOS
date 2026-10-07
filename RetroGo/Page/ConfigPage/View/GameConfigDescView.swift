@@ -55,10 +55,10 @@ final class GameConfigDescView: UIView {
         backgroundColor = .clear
         addSubview(label)
 
-        // 开始监听设备方向的改变
+        // Start observing device orientation changes
         UIDevice.current.beginGeneratingDeviceOrientationNotifications()
 
-        // 添加设备方向改变的通知
+        // Add the device orientation change notification
         NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
     }
 
@@ -67,10 +67,10 @@ final class GameConfigDescView: UIView {
     }
 
     deinit {
-        // 停止监听设备方向的改变
+        // Stop observing device orientation changes
         UIDevice.current.endGeneratingDeviceOrientationNotifications()
 
-        // 移除设备方向改变的通知
+        // Remove the device orientation change notification
         NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
     }
 
