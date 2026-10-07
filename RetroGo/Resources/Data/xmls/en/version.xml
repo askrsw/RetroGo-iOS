@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.12.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.12.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>October 9, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.12.0" style="number">
+            <p-item>Added the <b>Beetle Saturn</b> core as a second core for the Sega <b>Saturn</b>. It is far more accurate than Yabause, with more reliable graphics, music and save states: Legend of Sword and Fairy, for example, shows every scene and keeps its music after loading a save. In return it needs a faster CPU and a BIOS (sega_101.bin for Japanese games, mpr-17933.bin for US and European games). It comes with a curated set of Beetle Saturn <b>core options</b>.</p-item>
+            <p-item>Disc games in <b>mds/mdf format</b> now also run in cores that don't read that format, such as Beetle Saturn and Beetle PSX. They're converted when the game starts, and your game files are left untouched.</p-item>
+            <p-item>When a core that needs a BIOS (such as Beetle PSX or Beetle Saturn) has none added, you're <b>told which files are missing</b> before the game starts, and you can cancel or launch anyway.</p-item>
+            <p-item>The cheat template library is <b>much smaller</b>, 85 MB instead of 131 MB, and faster to browse.</p-item>
+            <p-item>Offline resources download more reliably: an <b>App update no longer downloads them again</b> unless they changed, and failed downloads are retried and resume when the network comes back.</p-item>
+            <p-item>Fixed being unable to delete a game, or the folder holding it, after its game file was already gone.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.11.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.11.0</p-title>
         <p-paragraph fontsize="13">
