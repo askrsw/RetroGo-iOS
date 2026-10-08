@@ -92,6 +92,7 @@ static char coreOptionConfigurationKey;
         objc_setAssociatedObject(self, &coreOptionConfigurationKey, pending, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     [self p_enforceBuiltinTurboDisabled];
+    [self p_enforceFrontendOwnsPause];
 
     // Cores read the frontend language when they load (option labels, BIOS
     // language defaults); follow the App language, which may differ from the
@@ -375,6 +376,20 @@ static char coreOptionConfigurationKey;
     input_driver_state_t *input_st = input_state_get_ptr();
     if (input_st != NULL) {
         memset(&input_st->turbo_btns, 0, sizeof(input_st->turbo_btns));
+    }
+}
+
+- (void)p_enforceFrontendOwnsPause {
+    settings_t *settings = config_get_ptr();
+    if(settings != nil) {
+        // RetroGo pauses and resumes the game itself (GamePauseCoordinator, App
+        // lifecycle). RetroArch pausing on its own when the video driver loses focus
+        // (App inactive, or a frame that failed to draw) leaves the runner thinking the
+        // game runs while runloop_iterate waits on the main thread for every
+        // video_alive call; a blocking pause from the main thread then deadlocks. It
+        // also unpauses on its own when focus comes back, behind the runner's back.
+        settings->bools.pause_nonactive     = false;
+        settings->bools.pause_on_disconnect = false;
     }
 }
 

@@ -540,7 +540,20 @@ typedef _Atomic double atomic_double;
     [d_commandLock unlock];
 
     if (useBlockingSemaphore) {
-        dispatch_semaphore_wait(command.semaphore, DISPATCH_TIME_FOREVER);
+        if ([NSThread isMainThread]) {
+            /*
+             * The logic thread can be inside runloop_iterate() waiting for the main thread to answer a
+             * video packet (video_alive while RetroArch is paused, for one) before it ever reaches this
+             * command. Waiting forever here would leave both threads stuck, so keep answering video
+             * packets between short waits, as the display link would.
+             */
+            const int64_t sliceNanos = 2 * NSEC_PER_MSEC;
+            while (dispatch_semaphore_wait(command.semaphore, dispatch_time(DISPATCH_TIME_NOW, sliceNanos)) != 0) {
+                virtual_video_service_main_thread();
+            }
+        } else {
+            dispatch_semaphore_wait(command.semaphore, DISPATCH_TIME_FOREVER);
+        }
         return command.result;
     }
 
