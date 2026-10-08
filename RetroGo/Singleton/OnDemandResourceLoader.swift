@@ -42,6 +42,9 @@ extension Notification.Name {
     /// can't be downloaded because RetroGo isn't allowed to use the network.
     /// `object` = [ODRResource] still missing.
     static let odrNetworkAccessDenied = Notification.Name("RetroGoODRNetworkAccessDenied")
+    /// Posted (on main) when the network becomes usable again, so a denied
+    /// alert that is still on screen can go away.
+    static let odrNetworkAccessRestored = Notification.Name("RetroGoODRNetworkAccessRestored")
 }
 
 /// One downloadable On-Demand Resource: a prebuilt SQLite file shipped as an ODR
@@ -207,6 +210,11 @@ final class OnDemandResourceLoader: NSObject {
     private var lastPathStatus: NWPath.Status?
     private var networkAccessDenied = false
     private var reportedNetworkDenied = false
+    /// A denied report is waiting for its check (see reportNetworkDeniedIfNeeded).
+    private var deniedReportPending = false
+    private var deniedReportWaitsForActive = false
+    /// Time for the path to update after the system permission alert closes.
+    private static let deniedReportDelay: TimeInterval = 2
 
     private var databaseFolder: String {
         (AppConfig.shared.gameRdbDatabasePath as NSString).deletingLastPathComponent + "/"
@@ -493,12 +501,17 @@ final class OnDemandResourceLoader: NSObject {
             reportNetworkDeniedIfNeeded()
         } else if status == .satisfied, previous != nil, previous != .satisfied {
             RetroGoLogger.odr.info("Network is available again")
+            NotificationCenter.default.post(name: .odrNetworkAccessRestored, object: nil)
             retryAutomaticDownloads()
         }
     }
 
     @objc private func appDidBecomeActive() {
         retryAutomaticDownloads()
+        if deniedReportWaitsForActive {
+            deniedReportWaitsForActive = false
+            scheduleDeniedReportCheck()
+        }
     }
 
     /// Main thread. Restart the automatic downloads that failed, for resources
@@ -518,12 +531,35 @@ final class OnDemandResourceLoader: NSObject {
 
     /// Main thread. Once per launch, when the network is denied while resources
     /// the App downloads on its own are still missing, let the UI explain it.
+    /// On first launch the path reads as denied while the system's network
+    /// permission alert is still unanswered (the App is inactive then), so the
+    /// decision waits until the App is active again and the path had a moment
+    /// to update; a user who allows access sees no false alarm.
     private func reportNetworkDeniedIfNeeded() {
-        guard networkAccessDenied, !reportedNetworkDenied else { return }
-        let missing = Self.resources.filter { pendingAutomaticDownloads.contains($0.id) && !isUsable($0) }
-        guard !missing.isEmpty else { return }
-        reportedNetworkDenied = true
-        NotificationCenter.default.post(name: .odrNetworkAccessDenied, object: missing)
+        guard networkAccessDenied, !reportedNetworkDenied, !deniedReportPending,
+              !missingAutomaticResources.isEmpty else { return }
+        deniedReportPending = true
+        scheduleDeniedReportCheck()
+    }
+
+    private func scheduleDeniedReportCheck() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.deniedReportDelay) { [weak self] in
+            guard let self else { return }
+            guard UIApplication.shared.applicationState == .active else {
+                self.deniedReportWaitsForActive = true
+                return
+            }
+            self.deniedReportPending = false
+            let missing = self.missingAutomaticResources
+            guard self.networkAccessDenied, !self.reportedNetworkDenied, !missing.isEmpty else { return }
+            self.reportedNetworkDenied = true
+            NotificationCenter.default.post(name: .odrNetworkAccessDenied, object: missing)
+        }
+    }
+
+    /// Resources whose automatic download failed and that can't be used yet.
+    private var missingAutomaticResources: [ODRResource] {
+        Self.resources.filter { pendingAutomaticDownloads.contains($0.id) && !isUsable($0) }
     }
 
     /// Main thread. The current App language's pack: update it when installed
