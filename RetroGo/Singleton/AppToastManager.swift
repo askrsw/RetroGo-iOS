@@ -34,7 +34,7 @@ enum AppToastLevel {
     case error
     case success
 
-    // 将颜色和图标逻辑直接封装在这里，让 View 变得极简
+    // Keep the color and icon logic here so the view stays minimal
     var themeColor: UIColor {
         switch self {
         case .info:    return .systemBlue
@@ -65,29 +65,29 @@ final class AppToastManager {
     private func show(_ msg: String, level: AppToastLevel, shouldVibrate: Bool = true) {
         guard let window = UIWindow.currentKey() else { return }
 
-        // 1. 如果 View 还没有添加到 Window 上，或者父视图不是当前 Window
+        // 1. If the view isn't in the window yet, or its superview isn't the current window
         if infoView.superview == nil || infoView.superview != window {
             window.addSubview(infoView)
 
-            // 2. 设置在 Window 上的位置 (底部居中)
+            // 2. Position it in the window (bottom center)
             infoView.snp.remakeConstraints { make in
                 make.centerX.equalToSuperview()
-                // 距离底部安全区域一定距离 (例如 80pt)
+                // Some distance above the bottom safe area (e.g. 80pt)
                 make.bottom.equalTo(window.safeAreaLayoutGuide.snp.bottom).offset(-50)
-                // 限制最大宽度，防止太宽
+                // Cap the max width so it isn't too wide
                 make.width.lessThanOrEqualTo(window).offset(-32)
-                // 限制最小宽度，美观
+                // Set a min width so it looks right
                 make.width.greaterThanOrEqualTo(120)
             }
         }
 
-        // 3. 将 View 移到最上层，防止被其他 View 遮挡
+        // 3. Bring the view to the front so other views don't cover it
         window.bringSubviewToFront(infoView)
 
-        // 4. 显示内容
+        // 4. Show the content
         infoView.showMessage(msg, level: level)
 
-        // 5. 震动反馈
+        // 5. Haptic feedback
         if shouldVibrate {
             switch level {
                 case .success: Vibration.success.vibrate()
@@ -114,14 +114,14 @@ fileprivate final class AppToastView: UIView {
     private let messageLabel = YYLabel()
     private let iconImageView = UIImageView()
     private let backgroundBlurView: UIVisualEffectView = {
-        let effect = UIBlurEffect(style: .dark) // 使用深色磨砂背景让白色文字更清晰
+        let effect = UIBlurEffect(style: .dark) // A dark frosted background makes the white text clearer
         let view = UIVisualEffectView(effect: effect)
         view.layer.cornerRadius = 12
         view.clipsToBounds = true
         return view
     }()
 
-    // Timer 用于自动隐藏
+    // Timer for auto-hiding
     private var timer: Timer?
 
     // MARK: - Init
@@ -136,16 +136,16 @@ fileprivate final class AppToastView: UIView {
 
     // MARK: - Setup UI & SnapKit
     private func setupUI() {
-        // 1. 设置基础属性
-        self.isUserInteractionEnabled = false // 允许点击穿透
+        // 1. Base properties
+        self.isUserInteractionEnabled = false // Let touches pass through
 
-        // 2. 添加背景 (毛玻璃效果)
+        // 2. Add the background (frosted glass)
         addSubview(backgroundBlurView)
         backgroundBlurView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
 
-        // 3. 配置 Icon
+        // 3. Configure the icon
         iconImageView.contentMode = .scaleAspectFit
         addSubview(iconImageView)
         iconImageView.snp.makeConstraints { make in
@@ -154,49 +154,49 @@ fileprivate final class AppToastView: UIView {
             make.size.equalTo(20)
         }
 
-        // 4. 配置 Label
-        // 关键：numberOfLines = 0 允许换行，配合约束撑开高度
+        // 4. Configure the label
+        // Key: numberOfLines = 0 allows wrapping, and the constraints grow the height
         messageLabel.numberOfLines = 0
         messageLabel.textAlignment = .left
         messageLabel.textVerticalAlignment = .center
-        messageLabel.displaysAsynchronously = false // 简单文本建议关闭异步绘制避免闪烁
+        messageLabel.displaysAsynchronously = false // Turn off async drawing for simple text to avoid flicker
         addSubview(messageLabel)
 
         messageLabel.snp.makeConstraints { make in
             make.left.equalTo(iconImageView.snp.right).offset(8)
             make.right.equalToSuperview().offset(-12)
-            // 关键点：Label 的上下边距决定了整个 View 的高度
+            // Key point: the label's top/bottom insets decide the height of the whole view
             make.top.equalToSuperview().offset(10)
             make.bottom.equalToSuperview().offset(-10)
         }
 
-        // 初始隐藏
+        // Hidden initially
         self.alpha = 0
         self.isHidden = true
     }
 
     // MARK: - Public Methods
     func showMessage(_ msg: String, level: AppToastLevel) {
-        // 1. 设置内容
+        // 1. Set the content
         let icon = getIcon(for: level)
         let attributes = makeTextAttributes(color: .label)
 
         iconImageView.image = icon
         messageLabel.attributedText = NSAttributedString(string: msg, attributes: attributes)
 
-        // 2. 处理显示逻辑
+        // 2. Handle showing
         self.isHidden = false
-        // 动画显示
+        // Animate in
         UIView.animate(withDuration: 0.25) {
             self.alpha = 1.0
         }
 
-        // 3. 重置计时器
+        // 3. Reset the timer
         timer?.invalidate()
         timer = Timer.scheduledTimer(timeInterval: 3.5, target: self, selector: #selector(hideTimerAction), userInfo: nil, repeats: false)
 
-        // 4. 如果是 YYLabel，为了更精准的高度计算，可以设置 preferredMaxLayoutWidth
-        // 这里假设屏幕宽度减去左右边距 (例如 32 + 32) 和 内部 Padding
+        // 4. For a YYLabel, setting preferredMaxLayoutWidth gives a more accurate height
+        // Assumes the screen width minus the side margins (e.g. 32 + 32) and the inner padding
         let maxLabelWidth = UIScreen.main.bounds.width - 64 - 20 - 12 - 8 - 12
         messageLabel.preferredMaxLayoutWidth = maxLabelWidth
     }
@@ -231,8 +231,8 @@ fileprivate final class AppToastView: UIView {
 
     private func makeTextAttributes(color: UIColor) -> [NSAttributedString.Key: Any] {
         let style = NSMutableParagraphStyle()
-        style.lineSpacing = 4 // 增加一点行间距
-        style.lineBreakMode = .byWordWrapping // 允许换行
+        style.lineSpacing = 4 // A bit more line spacing
+        style.lineBreakMode = .byWordWrapping // Allow wrapping
         return [
             .font: UIFont.systemFont(ofSize: 14, weight: .medium),
             .foregroundColor: color,

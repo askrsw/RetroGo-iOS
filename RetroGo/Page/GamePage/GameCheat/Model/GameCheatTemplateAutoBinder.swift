@@ -26,6 +26,7 @@
 import Foundation
 import SQLite
 import RACoordinator
+import os
 
 /// Launch-time best-effort binder for system cheat templates.
 ///
@@ -36,6 +37,12 @@ import RACoordinator
 ///   cheat.sqlite exact English match. User-editable ROM names are ignored.
 /// - `no_match` rows are versioned by cheat.sqlite `PRAGMA user_version` and
 ///   retried automatically when a future catalog version ships more templates.
+/// - a catalog that cannot be read never produces a binding row: a failed query
+///   throws instead of looking like "no template", so it can't become a lasting
+///   no-match.
+/// - when the catalog version changes, automatic bindings are re-derived from
+///   the ROM's CRC32 and manual ones are re-located by (platform, exact name).
+///   Catalog ids are not trusted across versions.
 final class GameCheatTemplateAutoBinder {
     static let shared = GameCheatTemplateAutoBinder()
 
@@ -51,6 +58,7 @@ final class GameCheatTemplateAutoBinder {
         let catalogGameId: Int?
         let catalogPlatformId: Int?
         let catalogGroupName: String?
+        let catalogGameName: String?
     }
 
     private init() {}
@@ -58,54 +66,78 @@ final class GameCheatTemplateAutoBinder {
     func prepareBindingIfNeeded(game: RetroRomFileItem, core: EmuCoreInfoItem) throws {
         guard !Thread.isMainThread else { return }
         guard OnDemandResourceLoader.shared.rdbReady else { return }
-        guard let cheatResource = OnDemandResourceLoader.resource(id: "cheat"),
-              isInstalled(cheatResource) else {
+        let loader = OnDemandResourceLoader.shared
+        guard loader.isUsable(OnDemandResourceLoader.cheat) else {
+            RetroGoLogger.cheat.debug("Auto-bind skipped: cheat catalog not installed")
             return
         }
-        guard let gamerdbResource = OnDemandResourceLoader.resource(id: "gamerdb"),
-              isInstalled(gamerdbResource) else {
-            return
-        }
+        guard loader.isUsable(OnDemandResourceLoader.gamerdb) else { return }
 
         let platformIds = core.cheatCatalogPlatformIds
         guard !platformIds.isEmpty else { return }
 
-        var cheatDBVersion: Int?
-        if let binding = try loadBinding(romKey: game.key, coreId: core.coreId) {
-            initializeCheatCatalog(cheatResource: cheatResource)
-            let version = RACheatCatalogManager.shared().currentDBUserVersion
-            cheatDBVersion = version
-            switch binding.status {
-            case .bound:
-                guard binding.cheatDBUserVersion < version else {
-                    return
-                }
-                if let refreshed = refreshedTemplate(for: binding) {
-                    try saveBound(refreshed, romKey: game.key, coreId: core.coreId, cheatDBVersion: version, origin: binding.origin)
-                    return
-                }
-                try deleteBindingAndStates(romKey: game.key, coreId: core.coreId)
-            case .noMatch:
-                guard binding.cheatDBUserVersion < version else {
-                    return
-                }
-                try deleteBindingAndStates(romKey: game.key, coreId: core.coreId)
+        guard openCheatCatalog() else {
+            RetroGoLogger.cheat.error("Auto-bind skipped: cheat catalog could not be opened")
+            return
+        }
+        let version = RACheatCatalogManager.shared().currentDBVersion
+
+        let existing = try loadBinding(romKey: game.key, coreId: core.coreId)
+        if let existing {
+            guard existing.cheatDBUserVersion < version else { return }
+            RetroGoLogger.cheat.info("Auto-bind: catalog version \(existing.cheatDBUserVersion) -> \(version), rechecking binding status \(existing.status.rawValue)")
+            if existing.status == .bound,
+               existing.cheatDBUserVersion < GameCheatSession.templateStateIndexKeyVersion,
+               version >= GameCheatSession.templateStateIndexKeyVersion,
+               let gameId = existing.catalogGameId {
+                try rekeyTemplateStates(romKey: game.key, coreId: core.coreId, gameId: gameId)
+            }
+            if existing.status == .bound, existing.origin == .manual {
+                try refreshManualBinding(existing, romKey: game.key, coreId: core.coreId, cheatDBVersion: version)
+                return
             }
         }
 
-        if cheatDBVersion == nil {
-            initializeCheatCatalog(cheatResource: cheatResource)
-            cheatDBVersion = RACheatCatalogManager.shared().currentDBUserVersion
-        }
-        guard let cheatDBVersion else { return }
-        guard RACheatCatalogManager.shared().isDatabaseReady else { return }
-
         _ = try game.ensureCRC32()
         let candidates = game.crc32LookupCandidates()
-        guard !candidates.isEmpty else { return }
+        guard !candidates.isEmpty else {
+            // Nothing to match with: keep an existing template, moved to this
+            // catalog version (its switches may have just been re-keyed).
+            if let existing, existing.status == .bound, let gameId = existing.catalogGameId {
+                var refreshed: RAGameEntry?
+                try RACheatCatalogManager.shared().lookupGame(gameId: gameId, game: &refreshed)
+                if let refreshed {
+                    try saveBound(refreshed, romKey: game.key, coreId: core.coreId, cheatDBVersion: version, origin: existing.origin)
+                } else {
+                    try deleteBindingAndStates(romKey: game.key, coreId: core.coreId)
+                }
+            }
+            return
+        }
 
+        let template = try matchTemplate(candidates: candidates, platformIds: platformIds)
+        if let existing, existing.status == .bound,
+           existing.catalogPlatformId != template?.platformId || existing.catalogGameName != template?.name {
+            // The old per-cheat switches belong to another template now.
+            _ = GameCheatSession.deleteTemplateStates(romKey: game.key, coreId: core.coreId)
+        }
+        guard let template else {
+            RetroGoLogger.cheat.info("Auto-bind: no template, recorded at catalog version \(version)")
+            try saveNoMatch(romKey: game.key, coreId: core.coreId, cheatDBVersion: version)
+            return
+        }
+        RetroGoLogger.cheat.info("Auto-bind: bound catalog game \(template.gameId) \"\(template.name, privacy: .public)\"")
+        try saveBound(template, romKey: game.key, coreId: core.coreId, cheatDBVersion: version)
+    }
+
+    /// CRC32 -> gamerdb -> catalog. Throws when either database query fails, so
+    /// a read failure is never mistaken for "no template".
+    private func matchTemplate(candidates: [String], platformIds: [NSNumber]) throws -> RAGameEntry? {
         for crc32 in candidates {
-            guard let entry = RAGameRDBManager.shared().findGame(byCRC32: crc32) else {
+            var entry: RAGameEntry?
+            try RAGameRDBManager.shared().lookupGame(byCRC32: crc32, game: &entry)
+            guard let entry else {
+                RetroGoLogger.cheat.debug("Auto-bind: CRC32 \(crc32, privacy: .public) not in gamerdb")
                 continue
             }
             let entryPlatformIds: [NSNumber]
@@ -114,38 +146,59 @@ final class GameCheatTemplateAutoBinder {
             } else {
                 entryPlatformIds = platformIds
             }
-            guard let template = RACheatCatalogManager.shared().findGame(
+            var template: RAGameEntry?
+            try RACheatCatalogManager.shared().lookupGame(
                 forPlatformIds: entryPlatformIds,
-                englishName: entry.name
-            ) else {
-                continue
+                englishName: entry.name,
+                game: &template
+            )
+            if let template {
+                return template
             }
-            try saveBound(template, romKey: game.key, coreId: core.coreId, cheatDBVersion: cheatDBVersion)
-            return
+            RetroGoLogger.cheat.debug("Auto-bind: no template for \"\(entry.name, privacy: .public)\" on platforms \(entryPlatformIds, privacy: .public)")
         }
-
-        try saveNoMatch(romKey: game.key, coreId: core.coreId, cheatDBVersion: cheatDBVersion)
+        return nil
     }
 
-    private func initializeCheatCatalog(cheatResource: ODRResource) {
-        let loader = OnDemandResourceLoader.shared
-        let cheatPath = loader.targetPath(cheatResource)
-        let localizationPath = OnDemandResourceLoader.resource(id: "gameloc").map { loader.targetPath($0) }
-        let semaphore = DispatchSemaphore(value: 0)
+    /// Switches saved before catalog v5 are keyed by cheat id. The v5 catalog
+    /// keeps the v4 ids (checked when it is built), so it can translate them to
+    /// cht indexes, which stay valid when later catalogs renumber.
+    private func rekeyTemplateStates(romKey: String, coreId: String, gameId: Int) throws {
+        let cheatIds = Array(GameCheatSession.loadTemplateStates(romKey: romKey, coreId: coreId).keys)
+        guard !cheatIds.isEmpty else { return }
+        let indexes = try RACheatCatalogManager.shared().cheatIndexes(
+            forCheatIds: cheatIds.map { NSNumber(value: $0) }, gameId: gameId)
+        let mapping = Dictionary(uniqueKeysWithValues: indexes.map { ($0.key.intValue, $0.value.intValue) })
+        try GameCheatSession.rekeyTemplateStates(romKey: romKey, coreId: coreId, cheatIndexById: mapping)
+        RetroGoLogger.cheat.info("Auto-bind: re-keyed \(mapping.count) of \(cheatIds.count) template switches by cheat index")
+    }
 
-        RACheatCatalogManager.shared().initialize(
-            withCheatPath: cheatPath,
-            localizationPath: localizationPath
-        ) {
+    /// A user's own choice survives catalog rebuilds by name, not by id: ids
+    /// shift when platforms are added or removed.
+    private func refreshManualBinding(_ binding: Binding, romKey: String, coreId: String, cheatDBVersion: Int) throws {
+        var refreshed: RAGameEntry?
+        if let platformId = binding.catalogPlatformId, let name = binding.catalogGameName {
+            try RACheatCatalogManager.shared().lookupGame(platformId: platformId, exactName: name, game: &refreshed)
+        }
+        guard let refreshed else {
+            RetroGoLogger.cheat.notice("Auto-bind: manually bound template is gone from the catalog, unbinding")
+            try deleteBindingAndStates(romKey: romKey, coreId: coreId)
+            return
+        }
+        // Same template by name; its switches are keyed by cht index and stay.
+        try saveBound(refreshed, romKey: romKey, coreId: coreId, cheatDBVersion: cheatDBVersion, origin: .manual)
+    }
+
+    /// Blocks the calling (background) thread until the catalog is open.
+    private func openCheatCatalog() -> Bool {
+        let semaphore = DispatchSemaphore(value: 0)
+        var ready = false
+        OnDemandResourceLoader.shared.openCheatCatalog { isReady in
+            ready = isReady
             semaphore.signal()
         }
         semaphore.wait()
-    }
-
-    private func isInstalled(_ resource: ODRResource) -> Bool {
-        let installed = UserDefaults.standard.integer(forKey: resource.installedVersionKey)
-        return installed >= resource.bundledVersion &&
-            FileManager.default.fileExists(atPath: OnDemandResourceLoader.shared.targetPath(resource))
+        return ready
     }
 
     private func loadBinding(romKey: String, coreId: String) throws -> Binding? {
@@ -164,15 +217,9 @@ final class GameCheatTemplateAutoBinder {
             origin: GameCheatTemplateBindingOrigin(rawValue: row[GameCheatSession.templateBindingOrigin]) ?? .automatic,
             catalogGameId: row[GameCheatSession.catalogGameId],
             catalogPlatformId: row[GameCheatSession.catalogPlatformId],
-            catalogGroupName: row[GameCheatSession.catalogGroupName]
+            catalogGroupName: row[GameCheatSession.catalogGroupName],
+            catalogGameName: row[GameCheatSession.catalogGameName]
         )
-    }
-
-    private func refreshedTemplate(for binding: Binding) -> RAGameEntry? {
-        guard let gameId = binding.catalogGameId else {
-            return nil
-        }
-        return RACheatCatalogManager.shared().findGame(gameId: gameId)
     }
 
     private func deleteBindingAndStates(romKey: String, coreId: String) throws {

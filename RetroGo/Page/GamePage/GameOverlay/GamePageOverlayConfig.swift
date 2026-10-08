@@ -126,8 +126,8 @@ struct GamePageOverlayInsets: Codable, Equatable {
     let left: Double?
     let bottom: Double?
     let right: Double?
-    let centerX: Double?    // 元素左侧距离中心 X 的距离
-    let centerY: Double?    // 元素底部距离中心 Y 的距离
+    let centerX: Double?    // Distance from the element's left edge to the center X
+    let centerY: Double?    // Distance from the element's bottom edge to the center Y
 }
 
 struct GamePageOverlayPolar: Codable, Equatable {

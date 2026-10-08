@@ -50,7 +50,7 @@ enum DebugDataLink {
                     fileURLWithPath: target,
                     relativeTo: linkURL.deletingLastPathComponent()
                 ).standardizedFileURL
-                if targetURL.path == appSupport.standardizedFileURL.path { return } // 已正确
+                if targetURL.path == appSupport.standardizedFileURL.path { return } // Already correct
                 try fm.removeItem(at: linkURL)
             } else if fm.fileExists(atPath: linkURL.path) {
                 try fm.removeItem(at: linkURL)
@@ -63,7 +63,7 @@ enum DebugDataLink {
         #else
         do {
             if symlinkDestination(at: linkURL, fileManager: fm) != nil {
-                try fm.removeItem(at: linkURL) // Release 下删除
+                try fm.removeItem(at: linkURL) // Removed in Release
             }
         } catch {
             RetroGoLogger.general.error("Failed to remove debug data symlink: \(String(describing: error))")

@@ -142,6 +142,11 @@
 "mame_check_chd" = "This game also needs a CHD disc image: %@.";
 "mame_check_driver_warning" = "This game is marked as not working in the current MAME core.";
 "mame_check_launch_anyway" = "Launch Anyway";
+"bios_check_title" = "BIOS Missing";
+"bios_check_message" = "%1$@ needs a BIOS to run games, but the core's BIOS folder has none of these files:\n%2$@";
+"bios_check_region_hint" = "These are BIOS files for different regions; usually only the one for the game's region is needed.";
+"bios_check_add_hint" = "To add a BIOS, open this core from Settings › Core List.";
+"bios_check_launch_anyway" = "Launch Anyway";
 "homepage_import_incomplete_groups_title" = "Incomplete Game Files";
 "homepage_import_incomplete_groups_message" = "The selected folder contains incomplete multi-file games.\n\n%@\n\nSkip these items or cancel the import?";
 "homepage_import_incomplete_files_title" = "Incomplete Game Files";
@@ -556,11 +561,9 @@
 /* ODR resource management */
 "appsetting_odr_resources"      = "Offline Resources";
 "odr_page_title"                = "Offline Resources";
-"odr_page_footer"               = "Keep the app in the foreground while downloading. The game database and Chinese names are required; the cheat library is optional and can be re-downloaded anytime after deletion.";
+"odr_page_footer"               = "Keep the app in the foreground while downloading. The game database is required. The cheat library is optional: it downloads the first time you open cheat templates and can be deleted and downloaded again anytime.";
 "odr_gamerdb_title"             = "Game Database";
 "odr_gamerdb_desc"              = "Game metadata, cover matching and the Discover page.";
-"odr_gameloc_title"             = "Chinese Game Names";
-"odr_gameloc_desc"              = "Adds Chinese names and Chinese search for games.";
 "odr_cheat_title"               = "Cheat Library";
 "odr_cheat_desc"                = "RetroArch's offline cheat code database, matched per game.";
 "odr_status_ready"              = "Ready";
@@ -579,6 +582,20 @@
 "odr_cache_footer"              = "Cover cache is temporary and can be regenerated. Clearing it does not delete games or databases.";
 "odr_cache_delete_confirm_title" = "Clear cover cache?";
 "odr_cache_delete_confirm_msg"  = "Downloaded cover images will be removed to free up space. They will be downloaded again when needed.";
+"odr_section_base"               = "Base Resources";
+"odr_section_langpack"           = "Language Packs";
+"odr_section_cache"              = "Cache";
+"odr_langpack_desc"              = "Game names, cheat descriptions and arcade cheat translations in this language.";
+"odr_langpack_recommended"       = "Recommended";
+"odr_langpack_footer"            = "The language pack for the app language downloads automatically. Without it, game names and cheats appear in English. A pack you delete is not downloaded again automatically.";
+"langpack_offer_title_fmt"       = "Download the %@ Language Pack?";
+"langpack_offer_msg_fmt"         = "It adds game names, cheat descriptions and arcade cheat translations in this language (%@). Without it, they appear in English.";
+"langpack_offer_download"        = "Download";
+"langpack_offer_later"           = "Not Now";
+"odr_network_denied_title"       = "Can't Download Offline Resources";
+"odr_network_denied_msg_fmt"     = "RetroGo can't use the network, so these resources can't be downloaded yet: %@. Discover, translated game names and other features that need them are unavailable until then. Allow RetroGo to use WLAN & Cellular Data in Settings, and the download starts automatically.";
+"odr_network_denied_settings"    = "Open Settings";
+"odr_list_separator"             = ", ";
 
 /* Netplay */
 "netplay_host"                       = "Host";
@@ -731,11 +748,8 @@
 "mame_cheat_last_used" = "Last used";
 "mame_cheat_restore_last" = "Restore Last Cheats (%d)";
 "mame_cheat_restore_note" = "Arcade cheats are off every time the machine boots. Wait until MAME has finished its self-test and the game is running, then restore them. Cheats turned on during the self-test can stop the game from starting.";
-"odr_mame_cheat_i18n_title" = "Arcade Cheat Translations";
-"odr_mame_cheat_i18n_desc" = "Translated names and notes for the arcade cheats you import.";
 "mame_health_name_section" = "Library Name";
 "mame_health_name_english" = "English (MAME)";
-"mame_health_name_chinese" = "Chinese";
 "mame_health_name_footer" = "Choose the name this game shows in your Library.";
 "mame_cheat_library_release" = "Collection Release";
 "mame_cheat_library_notes" = "Credits & Notes";

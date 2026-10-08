@@ -59,6 +59,7 @@ final class GameCheatListViewController: UIViewController {
     private var dataSource: UICollectionViewDiffableDataSource<Section, RowID>!
     private let tipLabel = UILabel(frame: .zero)
     private var catalogDownloadInProgress = false
+    private var checkedCatalogUpgrade = false
 
     init(session: GameCheatSession, showClose: Bool = true) {
         self.session = session
@@ -138,6 +139,22 @@ final class GameCheatListViewController: UIViewController {
         super.viewDidAppear(animated)
         attachGamePauseLeaseToPresentation(gamePauseLease)
         scrollToPendingUserCheatIfNeeded()
+        replaceOldCheatCatalogIfNeeded()
+    }
+
+    /// A cheat library installed by an older App (another schema) can't be read
+    /// by this one, so bound games would show no templates. The user chose to
+    /// have the library: replace it as soon as the cheat page opens, once per
+    /// page. The auto-binder then re-checks this game's binding.
+    private func replaceOldCheatCatalogIfNeeded() {
+        guard !checkedCatalogUpgrade else { return }
+        checkedCatalogUpgrade = true
+        let cheat = OnDemandResourceLoader.cheat
+        let loader = OnDemandResourceLoader.shared
+        guard case .outdated = loader.state(for: cheat), !loader.isUsable(cheat) else { return }
+        RetroGoLogger.cheat.info("Installed cheat catalog is from an older App, downloading the current one")
+        loader.delete(cheat)
+        downloadCheatCatalog(cheat) {}
     }
 
     /// Called by the template detail page after it copies a system cheat into the
@@ -541,21 +558,42 @@ extension GameCheatListViewController {
     }
 
     private func ensureCheatCatalogReady(_ completion: @escaping () -> Void) {
-        guard let cheat = OnDemandResourceLoader.resource(id: "cheat") else { return }
+        let cheat = OnDemandResourceLoader.cheat
         let loader = OnDemandResourceLoader.shared
         switch loader.state(for: cheat) {
         case .ready:
-            initializeCheatCatalog(completion)
-            return
+            initializeCheatCatalog { [weak self] ready in
+                if ready {
+                    completion()
+                } else {
+                    self?.replaceUnreadableCheatCatalog(cheat, completion: completion)
+                }
+            }
         case .downloading:
             return
         case .outdated:
-            initializeCheatCatalog(completion)
-            downloadCheatCatalogUpdate(cheat)
-            return
+            initializeCheatCatalog { [weak self] ready in
+                if ready {
+                    completion()
+                    self?.downloadCheatCatalogUpdate(cheat)
+                } else {
+                    self?.replaceUnreadableCheatCatalog(cheat, completion: completion)
+                }
+            }
         case .notDownloaded:
-            break
+            downloadCheatCatalog(cheat, completion: completion)
         }
+    }
+
+    /// The installed file exists but can't be read (incomplete or damaged):
+    /// remove it and download a fresh copy instead of showing an empty catalog.
+    private func replaceUnreadableCheatCatalog(_ cheat: ODRResource, completion: @escaping () -> Void) {
+        RetroGoLogger.cheat.error("Installed cheat catalog is unreadable, downloading it again")
+        OnDemandResourceLoader.shared.delete(cheat)
+        downloadCheatCatalog(cheat, completion: completion)
+    }
+
+    private func downloadCheatCatalog(_ cheat: ODRResource, completion: @escaping () -> Void) {
         guard !catalogDownloadInProgress else { return }
         catalogDownloadInProgress = true
 
@@ -563,7 +601,7 @@ extension GameCheatListViewController {
         let activity = RetroRomActivityView(mainTitle: title)
         activity.install()
         activity.activeMessage(downloadingText(0), title: title)
-        loader.startDownload(cheat, progress: { [weak self, weak activity] progress in
+        OnDemandResourceLoader.shared.startDownload(cheat, progress: { [weak self, weak activity] progress in
             activity?.activeMessage(self?.downloadingText(progress) ?? "", title: title)
         }, completion: { [weak self, weak activity] ok, error in
             guard let self else { return }
@@ -573,7 +611,11 @@ extension GameCheatListViewController {
                     Bundle.localizedString(forKey: "odr_download_done"),
                     title: title,
                     canDismiss: true)
-                self.initializeCheatCatalog(completion)
+                self.initializeCheatCatalog { [weak self] ready in
+                    guard ready else { return }
+                    self?.bindTemplateAfterCatalogInstall()
+                    completion()
+                }
             } else {
                 let message = Bundle.localizedString(forKey: "odr_download_failed")
                     + (error.map { "\n\($0.localizedDescription)" } ?? "")
@@ -590,7 +632,9 @@ extension GameCheatListViewController {
             guard let self else { return }
             self.catalogDownloadInProgress = false
             if ok {
-                self.initializeCheatCatalog {}
+                self.initializeCheatCatalog { [weak self] ready in
+                    if ready { self?.bindTemplateAfterCatalogInstall() }
+                }
             } else {
                 let msg = Bundle.localizedString(forKey: "cheat_catalog_update_failed")
                 let activity = RetroRomActivityView(mainTitle: "")
@@ -600,14 +644,23 @@ extension GameCheatListViewController {
         })
     }
 
-    private func initializeCheatCatalog(_ completion: @escaping () -> Void) {
-        guard let cheat = OnDemandResourceLoader.resource(id: "cheat") else { return }
-        let loader = OnDemandResourceLoader.shared
-        let locPath = OnDemandResourceLoader.resource(id: "gameloc").map { loader.targetPath($0) }
-        RACheatCatalogManager.shared().initialize(
-            withCheatPath: loader.targetPath(cheat),
-            localizationPath: locPath,
-            completion: completion)
+    /// Launch-time auto-binding needs an installed catalog. When it arrives
+    /// during this game, bind now instead of on the next launch.
+    private func bindTemplateAfterCatalogInstall() {
+        let game = session.game
+        let core = session.core
+        GameLaunchBackgroundPreparation.queue.async { [weak self] in
+            do {
+                try GameCheatTemplateAutoBinder.shared.prepareBindingIfNeeded(game: game, core: core)
+            } catch {
+                RetroGoLogger.cheat.error("Auto-bind after catalog install failed: \(String(describing: error))")
+            }
+            DispatchQueue.main.async { self?.reloadTemplateSection() }
+        }
+    }
+
+    private func initializeCheatCatalog(_ completion: @escaping (Bool) -> Void) {
+        OnDemandResourceLoader.shared.openCheatCatalog(completion: completion)
     }
 
     private func downloadingText(_ fraction: Double) -> String {

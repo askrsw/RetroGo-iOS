@@ -88,10 +88,10 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
         if _latinFileName == nil {
             let name = NSMutableString(string: itemName) as CFMutableString
 
-            // 将阿拉伯语字符转换为拉丁字母
+            // Transliterate Arabic characters into Latin letters
             CFStringTransform(name, nil, kCFStringTransformToLatin, false)
 
-            // 将字符串转换为小写
+            // Lowercase the string
             CFStringTransform(name, nil, kCFStringTransformStripDiacritics, false)
 
             _latinFileName = (name as String).lowercased()
@@ -121,7 +121,7 @@ class RetroRomBaseItem: NSObject, RetroRomArraySortFunction {
         RetroRomFileManager.shared.folderItem(key: parent)
     }
 
-    // 在父目录下的文件（夹）名
+    // Name of the file (or folder) within its parent directory
     var baseName: String {
         rawName
     }

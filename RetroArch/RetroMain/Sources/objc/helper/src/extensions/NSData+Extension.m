@@ -30,18 +30,18 @@
 @implementation NSData (Extension)
 
 - (NSString *)sha256Hash {
-    // 创建 SHA256 上下文
+    // Create the SHA256 context
     CC_SHA256_CTX context;
     CC_SHA256_Init(&context);
 
-    // 更新上下文，处理数据
+    // Update the context with the data
     CC_SHA256_Update(&context, self.bytes, (CC_LONG)self.length);
 
-    // 计算 SHA256 摘要
+    // Compute the SHA256 digest
     unsigned char digest[CC_SHA256_DIGEST_LENGTH];
     CC_SHA256_Final(digest, &context);
 
-    // 转换为十六进制字符串
+    // Convert to a hex string
     NSMutableString *hashString = [NSMutableString stringWithCapacity:CC_SHA256_DIGEST_LENGTH * 2];
     for (int i = 0; i < CC_SHA256_DIGEST_LENGTH; i++) {
         [hashString appendFormat:@"%02x", digest[i]];

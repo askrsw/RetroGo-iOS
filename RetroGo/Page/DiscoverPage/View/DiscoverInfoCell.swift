@@ -93,7 +93,7 @@ final class DiscoverInfoCell: UITableViewCell {
 // ---------------------------------------------------------------------------
 // MARK: - DiscoverDescriptionCell
 //
-// Full-width cell for the game description (可能很长).
+// Full-width cell for the game description (may be very long).
 // ---------------------------------------------------------------------------
 
 final class DiscoverDescriptionCell: UITableViewCell {

@@ -1,8 +1,8 @@
 //
-//  NSURL+Extension.h
+//  RATextKey.h
 //  RetroGo
 //
-//  Created by haharsw on 2026/2/11.
+//  Created by haharsw on 2026/10/7.
 //  Copyright © 2026 haharsw. All rights reserved.
 //
 //  ---------------------------------------------------------------------------------
@@ -27,11 +27,18 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSURL (Extension)
+/// Stable key of an English source text, used to look up its translation in
+/// a language pack. key = first 8 bytes of SHA-256(UTF-8(text)), big-endian,
+/// as a signed 64-bit integer (an SQLite INTEGER). The text is hashed exactly
+/// as given: no trimming, case folding or Unicode normalization. The database
+/// build scripts (Tools/cheat_db/scripts/text_key.py) use the same algorithm;
+/// both are checked against one set of test vectors.
+@interface RATextKey : NSObject
 
-/// Computes the file's SHA256 hash (hex string) with low memory use
-- (nullable NSString *)computeSHA256String:(NSError **)error;
-- (nullable NSString *)computeCRC32String:(NSError **)error;
+- (instancetype)init NS_UNAVAILABLE;
+
+/// Returns 0 for text that cannot be encoded as UTF-8 (lone surrogates).
++ (int64_t)keyForText:(NSString *)text NS_SWIFT_NAME(key(for:));
 
 @end
 

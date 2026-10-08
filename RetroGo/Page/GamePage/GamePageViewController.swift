@@ -87,7 +87,13 @@ final class GamePageViewController: RAGameViewController {
     init(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
         let configSession = GameConfigSession(scope: .game, core: core, game: romItem)
         self.romItem   = romItem
-        self.romUrl    = URL(fileURLWithPath: romItem.entryPath!)
+        let entryPath = romItem.entryPath!
+        if RetroRomMdsCueSheet.isNeeded(entryPath: entryPath, core: core),
+           let cuePath = RetroRomMdsCueSheet.make(mdsPath: entryPath, key: romItem.key) {
+            self.romUrl = URL(fileURLWithPath: cuePath)
+        } else {
+            self.romUrl = URL(fileURLWithPath: entryPath)
+        }
         self.startTime = Date()
         self.configSession = configSession
         if core.coreId == MameImportScreener.mameCoreId {
@@ -382,26 +388,32 @@ extension GamePageViewController {
     }
 }
 
-private enum GameLaunchBackgroundPreparation {
+/// Serial queue for CRC32 + cheat-template binding work, shared by game launch
+/// and the cheat page so two bindings for one game never run at once.
+enum GameLaunchBackgroundPreparation {
     static let queue = DispatchQueue(label: "com.retrogo.game-launch.preparation", qos: .utility)
 }
 
 extension RetroArchX {
     static func playGame(romUrl: URL?, core: EmuCoreInfoItem) {
         guard MainActor.assumeIsolated({ GameFreePlayQuota.allowLaunch(core: core) }) else { return }
-        guard let currentViewController = UIViewController.currentActive() else {
-            return
+        CoreBiosLaunchCheck.run(core: core) {
+            guard let currentViewController = UIViewController.currentActive() else {
+                return
+            }
+            let controller = GamePageViewController(romUrl: romUrl, core: core)
+            controller.modalPresentationStyle = .fullScreen
+            currentViewController.present(controller, animated: true)
         }
-        let controller = GamePageViewController(romUrl: romUrl, core: core)
-        controller.modalPresentationStyle = .fullScreen
-        currentViewController.present(controller, animated: true)
     }
 
     static func playGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
         guard MainActor.assumeIsolated({ GameFreePlayQuota.allowLaunch(core: core) }) else { return }
-        // MAME sets are checked for missing files first; other cores launch directly.
-        MameLaunchCheck.run(game: romItem, core: core) {
-            presentGame(romItem: romItem, core: core)
+        // Cores that need a BIOS are checked for it, MAME sets for missing files.
+        CoreBiosLaunchCheck.run(core: core) {
+            MameLaunchCheck.run(game: romItem, core: core) {
+                presentGame(romItem: romItem, core: core)
+            }
         }
     }
 

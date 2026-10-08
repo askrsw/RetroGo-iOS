@@ -39,7 +39,7 @@ public enum Vibration {
     case selection
     case oldSchool
 
-    // 映射到系统类型
+    // Map to the system type
     public func vibrate() {
         guard AppSettings.shared.isUIFeedbackEnabled else { return }
 
@@ -73,7 +73,7 @@ private class FeedbackHelper {
     static let notification = UINotificationFeedbackGenerator()
     static let selection = UISelectionFeedbackGenerator()
 
-    // 缓存不同风格的 ImpactGenerator
+    // Cache an ImpactGenerator per style
     private static var impactGenerators: [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator] = [:]
 
     static func impact(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
@@ -81,7 +81,7 @@ private class FeedbackHelper {
             impactGenerators[style] = UIImpactFeedbackGenerator(style: style)
         }
         let generator = impactGenerators[style]
-        generator?.prepare() // 预热
+        generator?.prepare() // Warm up
         generator?.impactOccurred()
     }
 }

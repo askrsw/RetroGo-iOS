@@ -35,19 +35,22 @@ private enum ODRAccessoryKind {
     case loading
 }
 
-/// Lists the app's On-Demand Resources (prebuilt game DB / cheat library /
-/// localization DB, and future filter packs) with their size, install state and
-/// a download / delete action. The big optional cheat library (~130 MB) is the
-/// main reason this page exists — users see it, and opt in.
+/// Lists the app's On-Demand Resources in three groups: the English base
+/// databases (game database, optional cheat library), the language packs
+/// (translations for one App language each; the one of the current App
+/// language is marked recommended), and the cover cache. Each row shows size
+/// and state with a download / update / delete action.
 final class ODRResourceViewController: UIViewController {
 
     private enum Section: Int, CaseIterable {
-        case resources
+        case base
+        case languagePacks
         case cache
     }
 
     private let loader = OnDemandResourceLoader.shared
-    private let resources = OnDemandResourceLoader.resources
+    private let baseResources = OnDemandResourceLoader.baseResources
+    private let languagePacks = OnDemandResourceLoader.languagePacks
     private lazy var tableView = configUI()
     private var coverCacheSize: Int64?
 
@@ -63,6 +66,9 @@ final class ODRResourceViewController: UIViewController {
         NotificationCenter.default.addObserver(
             self, selector: #selector(stateChanged(_:)),
             name: .odrResourceStateDidChange, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(stateChanged(_:)),
+            name: .activeLanguagePackDidChange, object: nil)
     }
 
     deinit { NotificationCenter.default.removeObserver(self) }
@@ -95,23 +101,33 @@ final class ODRResourceViewController: UIViewController {
         DispatchQueue.main.async { [weak self] in self?.tableView.reloadData() }
     }
 
-    // MARK: - Cell content
-
-    private func iconSymbol(for id: String) -> String {
-        switch id {
-        case "gamerdb": return "gamecontroller.fill"
-        case "gameloc": return "character.book.closed.fill"
-        case "cheat":   return "star.circle.fill"
-        default:        return "externaldrive.fill"
+    private func resource(at indexPath: IndexPath) -> ODRResource? {
+        switch Section(rawValue: indexPath.section) {
+        case .base:          return baseResources[indexPath.row]
+        case .languagePacks: return languagePacks[indexPath.row]
+        default:             return nil
         }
     }
 
-    private func iconColor(for id: String) -> UIColor {
-        switch id {
+    // MARK: - Cell content
+
+    private func title(for r: ODRResource) -> String {
+        r.nativeName ?? Bundle.localizedString(forKey: r.titleKey)
+    }
+
+    private func iconSymbol(for r: ODRResource) -> String {
+        switch r.id {
+        case "gamerdb": return "gamecontroller.fill"
+        case "cheat":   return "star.circle.fill"
+        default:        return r.kind == .languagePack ? "character.book.closed.fill" : "externaldrive.fill"
+        }
+    }
+
+    private func iconColor(for r: ODRResource) -> UIColor {
+        switch r.id {
         case "gamerdb": return .systemBlue
-        case "gameloc": return .systemIndigo
         case "cheat":   return UIColor(red: 0.78, green: 0.56, blue: 0.06, alpha: 1.0)
-        default:        return .systemGray
+        default:        return r.kind == .languagePack ? .systemIndigo : .systemGray
         }
     }
 
@@ -127,12 +143,17 @@ final class ODRResourceViewController: UIViewController {
     }
 
     private func statusString(for r: ODRResource) -> String {
+        var parts = [sizeString(r.approxByteSize)]
         switch loader.state(for: r) {
-        case .ready:         return Bundle.localizedString(forKey: "odr_status_ready")
-        case .outdated:      return Bundle.localizedString(forKey: "odr_status_outdated")
-        case .notDownloaded: return Bundle.localizedString(forKey: "odr_status_not_downloaded")
-        case .downloading:   return Bundle.localizedString(forKey: "odr_status_downloading")
+        case .ready:         parts.append(Bundle.localizedString(forKey: "odr_status_ready"))
+        case .outdated:      parts.append(Bundle.localizedString(forKey: "odr_status_outdated"))
+        case .notDownloaded: parts.append(Bundle.localizedString(forKey: "odr_status_not_downloaded"))
+        case .downloading:   parts.append(Bundle.localizedString(forKey: "odr_status_downloading"))
         }
+        if r.kind == .languagePack, r == loader.currentLanguagePack {
+            parts.append(Bundle.localizedString(forKey: "odr_langpack_recommended"))
+        }
+        return parts.joined(separator: " · ")
     }
 
     private func accessoryKind(for r: ODRResource) -> ODRAccessoryKind {
@@ -144,11 +165,19 @@ final class ODRResourceViewController: UIViewController {
         }
     }
 
+    private func isDeletable(_ r: ODRResource) -> Bool {
+        guard !r.isRequired else { return false }
+        switch loader.state(for: r) {
+        case .ready, .outdated: return true
+        case .notDownloaded, .downloading: return false
+        }
+    }
+
     // MARK: - Actions
 
     private func download(_ r: ODRResource) {
         if case .downloading = loader.state(for: r) { return }
-        let title = Bundle.localizedString(forKey: r.titleKey)
+        let title = title(for: r)
         let activity = RetroRomActivityView(mainTitle: title)
         activity.install()
         activity.activeMessage(downloadingText(0), title: title)
@@ -168,19 +197,19 @@ final class ODRResourceViewController: UIViewController {
             }
             self?.tableView.reloadData()
         })
+        tableView.reloadData()
     }
 
     private func downloadingText(_ fraction: Double) -> String {
         let pct = Int((fraction * 100).rounded())
-        let fmt = Bundle.localizedString(forKey: "odr_downloading_fmt") // "下载中 %d%%"
+        let fmt = Bundle.localizedString(forKey: "odr_downloading_fmt") // "Downloading %d%%"
         return String(format: fmt, pct)
     }
 
     private func confirmDelete(_ r: ODRResource) {
-        let title = Bundle.localizedString(forKey: r.titleKey)
         let alert = UIAlertController(
             title: Bundle.localizedString(forKey: "odr_delete_confirm_title"),
-            message: String(format: Bundle.localizedString(forKey: "odr_delete_confirm_msg_fmt"), title),
+            message: String(format: Bundle.localizedString(forKey: "odr_delete_confirm_msg_fmt"), title(for: r)),
             preferredStyle: .alert)
         alert.addAction(UIAlertAction(
             title: Bundle.localizedString(forKey: "cancel"), style: .cancel))
@@ -227,31 +256,29 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        guard let section = Section(rawValue: section) else { return 0 }
-        switch section {
-        case .resources: return resources.count
-        case .cache:     return 1
+        switch Section(rawValue: section) {
+        case .base:          return baseResources.count
+        case .languagePacks: return languagePacks.count
+        case .cache:         return 1
+        case nil:            return 0
         }
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard Section(rawValue: indexPath.section) == .resources else {
+        guard let r = resource(at: indexPath) else {
             return cacheCell(tableView, indexPath: indexPath)
         }
-        let r = resources[indexPath.row]
         let cell = tableView.dequeueReusableCell(
             withIdentifier: ODRResourceCell.reuseID,
             for: indexPath) as! ODRResourceCell
-        let iconSize = CGSize(width: 28, height: 28)
-        let status = sizeString(r.approxByteSize) + " · " + statusString(for: r)
         cell.configure(
             icon: IconRender.shared.settingsIcon(
-                symbol: iconSymbol(for: r.id),
-                background: iconColor(for: r.id),
-                size: iconSize),
-            title: Bundle.localizedString(forKey: r.titleKey),
+                symbol: iconSymbol(for: r),
+                background: iconColor(for: r),
+                size: CGSize(width: 28, height: 28)),
+            title: title(for: r),
             desc: Bundle.localizedString(forKey: r.descKey),
-            status: status,
+            status: statusString(for: r),
             accessory: accessoryKind(for: r))
         return cell
     }
@@ -275,13 +302,12 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard Section(rawValue: indexPath.section) == .resources else {
+        guard let r = resource(at: indexPath) else {
             guard (coverCacheSize ?? 0) > 0 else { return }
             Vibration.selection.vibrate()
             confirmClearCoverCache()
             return
         }
-        let r = resources[indexPath.row]
         switch loader.state(for: r) {
         case .notDownloaded, .outdated:
             Vibration.selection.vibrate()
@@ -291,10 +317,10 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
         }
     }
 
-    /// Swipe-to-delete only for optional, already-installed resources.
+    /// Swipe-to-delete for installed optional resources and the cover cache.
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
     -> UISwipeActionsConfiguration? {
-        guard Section(rawValue: indexPath.section) == .resources else {
+        guard let r = resource(at: indexPath) else {
             guard (coverCacheSize ?? 0) > 0 else { return nil }
             let action = UIContextualAction(
                 style: .destructive,
@@ -304,8 +330,7 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
                 }
             return UISwipeActionsConfiguration(actions: [action])
         }
-        let r = resources[indexPath.row]
-        guard !r.isRequired, case .ready = loader.state(for: r) else { return nil }
+        guard isDeletable(r) else { return nil }
         let action = UIContextualAction(
             style: .destructive,
             title: Bundle.localizedString(forKey: "odr_action_delete")) { [weak self] _, _, done in
@@ -315,39 +340,40 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
         return UISwipeActionsConfiguration(actions: [action])
     }
 
-    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        guard let section = Section(rawValue: section) else { return nil }
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let key: String
-        switch section {
-        case .resources: key = "odr_page_footer"
-        case .cache:     key = "odr_cache_footer"
+        switch Section(rawValue: section) {
+        case .base:          key = "odr_section_base"
+        case .languagePacks: key = "odr_section_langpack"
+        case .cache:         key = "odr_section_cache"
+        case nil:            return nil
         }
-        return makeFooterView(Bundle.localizedString(forKey: key))
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
+            ?? RGSectionHeaderView(reuseIdentifier: RGSectionHeaderView.className)
+        view.text = Bundle.localizedString(forKey: key)
+        return view
     }
 
-    private func makeFooterView(_ text: String) -> RGSectionFooterView {
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        UITableView.automaticDimension
+    }
+
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let key: String
+        switch Section(rawValue: section) {
+        case .base:          key = "odr_page_footer"
+        case .languagePacks: key = "odr_langpack_footer"
+        case .cache:         key = "odr_cache_footer"
+        case nil:            return nil
+        }
         let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionFooterView.className) as? RGSectionFooterView
             ?? RGSectionFooterView(reuseIdentifier: RGSectionFooterView.className)
-        view.text = text
+        view.text = Bundle.localizedString(forKey: key)
         return view
     }
 
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         UITableView.automaticDimension
-    }
-
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        switch section {
-            case 1: return 30
-            default: return 0
-        }
-    }
-
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard Section(rawValue: section) == .cache else { return nil }
-        let spacer = UIView()
-        spacer.backgroundColor = .clear
-        return spacer
     }
 }
 

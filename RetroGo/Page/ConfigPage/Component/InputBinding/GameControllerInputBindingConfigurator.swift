@@ -82,7 +82,7 @@ final class GameControllerInputBindingConfigurator: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        // 只在真正离开本页面时保存一次
+        // Save once, only when really leaving this page
         guard (isMovingFromParent || isBeingDismissed), !didPersistOnExit else { return }
         didPersistOnExit = true
         persistBindingProfileIfNeeded()
@@ -128,7 +128,7 @@ extension GameControllerInputBindingConfigurator {
             RetroGoLogger.game.debug("Saving default input binding (no profile)")
         }
     #endif // DEBUG
-        _ = session.saveInputBindingProfile(profile) // profile 为 nil 时会写 NULL
+        _ = session.saveInputBindingProfile(profile) // Writes NULL when profile is nil
     }
 
     private func configSKView() -> SKView {

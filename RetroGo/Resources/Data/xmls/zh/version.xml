@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.12.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.12.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 10 月 9 日</i>。
+        </p-paragraph>
+        <p-list id="v1.12.0" style="number">
+            <p-item>新增 <b>Beetle Saturn</b> 核心，作为世嘉土星（Saturn）的第二个核心。它的模拟精度远高于 Yabause，画面、音乐和即时存档都更稳定，例如《仙剑奇侠传》在 Beetle Saturn 上画面完整，读档后音乐也正常；代价是对 CPU 要求更高，且必须提供 BIOS（日版游戏需要 sega_101.bin，美版和欧版游戏需要 mpr-17933.bin）。同时提供精选的 Beetle Saturn <b>核心选项</b>，已全部中文化。</p-item>
+            <p-item><b>mds/mdf 格式</b>的光盘游戏现在也能用 Beetle Saturn、Beetle PSX 等原本不支持该格式的核心运行，启动时自动转换，不会改动你的游戏文件。</p-item>
+            <p-item>使用需要 BIOS 的核心（如 Beetle PSX、Beetle Saturn）时，如果没有添加 BIOS，启动游戏前会<b>提示缺少哪些文件</b>，可以取消，也可以仍然启动。</p-item>
+            <p-item>新增<b>中文语言包</b>，包含游戏的中文名称和金手指的中文说明，App 语言为中文时会自动下载，切换到中文时也会提示下载。金手指模版库从 131 MB 缩小到 85 MB，浏览模版也更快。</p-item>
+            <p-item>离线资源下载更可靠：<b>App 更新后不再重复下载</b>没有变化的资源，下载失败会自动重试，网络恢复后继续下载。</p-item>
+            <p-item>修复游戏文件已不存在时，无法删除该游戏及其所在文件夹的问题。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.11.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.11.0</p-title>
         <p-paragraph fontsize="13">

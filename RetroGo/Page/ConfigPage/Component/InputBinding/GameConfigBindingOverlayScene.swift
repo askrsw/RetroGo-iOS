@@ -377,12 +377,12 @@ private extension GameConfigBindingOverlayScene {
                 return nil
             }
 
-            // 已绑定物理键：显示物理键名
+            // Bound to a physical key: show the physical key name
             if let displayName = inputActionManager.physicalSourceDisplayName(forActionIdentifier: descriptor.identifier, useLock: true) {
                 return shortBindingDisplay(displayName, fallbackCode: .none)
             }
 
-            // 未绑定：显示复合语义 R2+R3
+            // Unbound: show the combined meaning R2+R3
             let labels = element.binds
                 .map(\.code)
                 .filter { $0 != .none }

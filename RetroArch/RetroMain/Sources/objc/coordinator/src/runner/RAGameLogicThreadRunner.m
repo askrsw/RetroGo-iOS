@@ -257,25 +257,25 @@ typedef _Atomic double atomic_double;
 }
 
 /*
- * 倍速只影响 GameLogicThread 的调度间隔，不修改 core 原始 timing 元数据。
+ * Fast-forward only changes the GameLogicThread schedule interval, never the core's original timing metadata.
  *
- * 实现要点：
- * - base timing 始终来自 av_info.timing.fps，反映 core 的真实基准帧率
- * - effective timing 在 base timing 的基础上按倍率缩短间隔
- * - 这里只更新原子状态；真正的生效 timing 由逻辑线程在安全点调用 updateLogicTiming 计算
+ * Implementation notes:
+ * - base timing always comes from av_info.timing.fps and reflects the core's real base frame rate
+ * - effective timing shortens the base timing interval by the multiplier
+ * - only the atomic state is updated here; the logic thread computes the effective timing by calling updateLogicTiming at a safe point
  */
 - (void)setFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier {
     double sanitizedMultiplier = enabled ? [self sanitizedFastForwardMultiplier:multiplier] : 1.0;
 
     /*
-     * 这里只更新 runner 的原子状态还不够。RetroArch 的 fastmotion / audio / video /
-     * input 状态都属于运行中的 emu 线程域，必须和 runloop_iterate() 放在同一条
-     * logic thread 上同步修改，否则主线程会和核心线程并发读写同一批状态。
+     * Updating the runner's atomic state alone isn't enough. RetroArch's fastmotion / audio / video /
+     * input state all belong to the running emu thread and must be changed on the same
+     * logic thread as runloop_iterate(), or the main thread and the core thread read and write the same state concurrently.
      *
-     * 这个同步块既要支持：
-     * - 游戏运行中动态开启 / 关闭 fast-forward
-     * - 游戏运行中动态切换倍率
-     * - 从 logic thread 或外部线程进入
+     * This sync block has to support:
+     * - turning fast-forward on / off while a game is running
+     * - changing the multiplier while a game is running
+     * - being entered from the logic thread or from another thread
      */
     [self performLogicBlockSync:^NSObject * _Nullable{
         [self maybeLogStatsWithForce:YES reason:"fast_forward_toggle"];
@@ -307,8 +307,8 @@ typedef _Atomic double atomic_double;
             }
 
             /*
-             * RetroArch 的 fast-forward 依赖 input nonblocking 来解除常规阻塞路径，
-             * driver_set_nonblock_state() 会进一步把 audio/video driver 切到对应状态。
+             * RetroArch's fast-forward relies on input nonblocking to lift the regular blocking path;
+             * driver_set_nonblock_state() then switches the audio/video drivers to the matching state.
              */
             if (input_st != NULL) {
                 if (enabled) {
@@ -333,8 +333,8 @@ typedef _Atomic double atomic_double;
         }
 
         /*
-         * runner 自己的调度间隔也和 RetroArch 内部状态在同一个线程里一起更新，
-         * 这样倍率切换从下一帧开始就是一致的。
+         * The runner's own schedule interval is updated on the same thread as RetroArch's internal state,
+         * so a multiplier change is consistent from the next frame on.
          */
         [self updateLogicTiming];
         return nil;
@@ -350,11 +350,11 @@ typedef _Atomic double atomic_double;
     double sanitizedMultiplier = [self sanitizedFastForwardMultiplier:multiplier];
 
     /*
-     * 允许在 fast-forward 已开启时单独调整倍率。
-     * 为了避免跨线程并发修改 runloop/audio/video 状态，仍然统一切到 logic thread 生效。
+     * Allows changing the multiplier on its own while fast-forward is already on.
+     * To avoid changing runloop/audio/video state concurrently across threads, it still takes effect on the logic thread.
      *
-     * 如果当前没有开启 fast-forward，则只更新“下次启用时使用的倍率”即可，
-     * 不主动改动 RetroArch 的 fastmotion/nonblock 状态。
+     * If fast-forward is currently off, only "the multiplier to use next time it is turned on" is updated,
+     * and RetroArch's fastmotion/nonblock state is left alone.
      */
     [self performLogicBlockSync:^NSObject * _Nullable{
         [self maybeLogStatsWithForce:YES reason:"fast_forward_multiplier_changing"];
@@ -384,17 +384,17 @@ typedef _Atomic double atomic_double;
 }
 
 /*
- * 只供内部流程使用的“临时挂起 + 执行同步任务”入口。
+ * An internal-only entry point for "temporarily suspend + run a synchronous task".
  *
- * 使用约束：
- * - 这里对应的是 save/load state、启动阶段恢复状态等内部时序控制；
- * - pause/resume 必须使用非 semaphore 模式，避免和 video init / render reply /
- *   main-thread pumping 形成强同步等待环；
- * - 因为这里本身就是复杂流程中的嵌套控制点，优先保证“不死锁”，其次才是“立即返回”。
+ * Usage constraints:
+ * - this is for internal sequencing such as save/load state and restoring state at startup;
+ * - pause/resume must use the non-semaphore mode, to avoid a hard wait cycle with video init / render reply /
+ *   main-thread pumping;
+ * - since this is itself a nested control point inside a complex flow, "never deadlock" comes first and "return immediately" second.
  *
- * 与之相对：
- * - 用户可感知的外部 pause/resume（进入后台、打开设置页等）仍然走 semaphore
- *   模式，保持明确的完成语义。
+ * By contrast:
+ * - user-visible external pause/resume (going to the background, opening the settings page, etc.) still uses
+ *   the semaphore mode to keep clear completion semantics.
  */
 - (NSObject *_Nullable)suspendGameLoopAndPerformSync:(RAGameLoopSyncBlock)block runOnLogicThread:(BOOL)runOnLogicThread {
     if (![self pause: NO]) {
@@ -433,11 +433,11 @@ typedef _Atomic double atomic_double;
 
 - (BOOL)pause:(BOOL)useBlockingSemaphore {
     /*
-     * pause 的两种等待模式有明确分工：
+     * pause has two wait modes with clearly separate roles:
      * - useBlockingSemaphore == YES
-     *   用于用户触发的外部控制流，调用方需要拿到“已完成暂停”的强语义。
+     *   For user-triggered external control flow, where the caller needs the strong "pause has completed" semantics.
      * - useBlockingSemaphore == NO
-     *   仅用于内部 suspend 包装流程，避免在复杂初始化/状态恢复链路中形成等待环。
+     *   Only for the internal suspend wrapper, to avoid wait cycles in complex init/state-restore chains.
      */
     NSAssert([NSThread isMainThread] || [NSThread currentThread] == d_thread,
              @"pause must be called on main thread or logic thread");
@@ -470,9 +470,9 @@ typedef _Atomic double atomic_double;
 
 - (BOOL)resume:(BOOL)useBlockingSemaphore {
     /*
-     * 与 pause 一样，resume 也分两类：
-     * - 外部用户控制流：使用 semaphore 强同步恢复；
-     * - 内部 suspend 包装：使用轮询完成，避免 startup / load-state 等阶段的互等。
+     * Like pause, resume comes in two kinds:
+     * - external user control flow: resume with strong semaphore synchronization;
+     * - internal suspend wrapper: complete by polling, to avoid mutual waits during startup / load-state, etc.
      */
     NSAssert([NSThread isMainThread] || [NSThread currentThread] == d_thread,
              @"resume must be called on main thread or logic thread");
@@ -545,9 +545,9 @@ typedef _Atomic double atomic_double;
     }
 
     /*
-     * 非 semaphore 模式只用于内部“避免等待环”的场景。
-     * 这里保持短间隔轮询，同时输出慢等待日志，便于观察启动阶段、
-     * load-state、video init 等链路是否出现异常阻塞。
+     * The non-semaphore mode is only for internal "avoid a wait cycle" cases.
+     * Poll at short intervals here and log slow waits, so we can see whether the startup,
+     * load-state, video init and similar chains block abnormally.
      */
     uint64_t waitStartMach = mach_absolute_time();
     uint64_t nextLogAfterUsec = 100000;
@@ -584,8 +584,8 @@ typedef _Atomic double atomic_double;
 
         while (!atomic_load(&d_shouldStop)) {
             /*
-             * 每一帧开始前都刷新一次 timing。
-             * 这样倍速开关和倍率修改不需要额外中断逻辑线程，下一帧就会自然生效。
+             * Refresh the timing before every frame.
+             * That way turning fast-forward on/off or changing the multiplier needs no extra interruption of the logic thread; it takes effect on the next frame.
              */
             [self updateLogicTiming];
             [self drainPendingCommands];
@@ -601,8 +601,8 @@ typedef _Atomic double atomic_double;
             }
 
             /*
-             * 使用绝对 deadline 调度，而不是“这一帧跑完再 sleep 剩余时间”。
-             * 这样可以避免 sleep 抖动逐帧累积，降低音频 burst / underrun 风险。
+             * Schedule against an absolute deadline rather than "finish this frame, then sleep for the rest".
+             * This keeps sleep jitter from accumulating frame by frame and lowers the risk of audio bursts / underruns.
              */
             uint64_t frameStartMach = mach_absolute_time();
             [self recordJitterWithActualFrameStart:frameStartMach expectedFrameStart:expectedFrameStart];
@@ -612,9 +612,9 @@ typedef _Atomic double atomic_double;
             virtual_joypad_commit_frame_state();
 
             /*
-             * 单独统计 runloop_iterate() 的执行耗时。
-             * jitter 反映的是“这一帧是否按时开始”，而这里反映的是“这一帧具体跑了多久”。
-             * 两者结合起来，才能区分是调度抖动导致的音频问题，还是核心执行时间本身过长。
+             * Measure the time spent in runloop_iterate() separately.
+             * Jitter shows "whether this frame started on time", while this shows "how long this frame actually ran".
+             * Together they tell whether an audio problem comes from scheduling jitter or from the core simply running too long.
              */
             uint64_t runloopStartMach = mach_absolute_time();
             int ret = runloop_iterate();
@@ -640,8 +640,8 @@ typedef _Atomic double atomic_double;
             uint64_t nextExpectedFrameStart = expectedFrameStart + d_intervalMachTime;
 
             /*
-             * 如果当前帧已经错过了下一帧 deadline，就重置调度基线。
-             * 这比盲目“补帧赶进度”更稳，能减少连续抖动导致的音频杂音。
+             * If the current frame has already missed the next frame's deadline, reset the scheduling baseline.
+             * This is steadier than blindly "catching up on frames" and reduces audio noise from repeated jitter.
              */
             if (frameEndMach >= nextExpectedFrameStart) {
                 d_deadlineMissCount++;
@@ -695,9 +695,9 @@ typedef _Atomic double atomic_double;
     double fastForwardMultiplier = [self sanitizedFastForwardMultiplier:atomic_load(&d_fastForwardMultiplier)];
 
     /*
-     * effective timing 才是调度真正使用的值。
-     * 开启倍速时只缩短逻辑帧间隔，让 runloop_iterate() 更频繁地推进模拟；
-     * base timing 仍然保留，便于日志、调试和后续回退到 1x。
+     * effective timing is the value the scheduler actually uses.
+     * With fast-forward on, only the logic frame interval is shortened so runloop_iterate() advances emulation more often;
+     * base timing is kept for logging, debugging and falling back to 1x later.
      */
     if (fastForwardEnabled && fastForwardMultiplier > 1) {
         d_fps = d_baseFPS * fastForwardMultiplier;
@@ -721,44 +721,44 @@ typedef _Atomic double atomic_double;
 }
 
 /*
- * 等待直到指定的绝对 mach deadline。
+ * Waits until the given absolute mach deadline.
  *
- * 这是 GameLogicThread 帧调度的核心等待函数，用来替代简单的
- * NSThread sleepForTimeInterval，从而降低帧间隔抖动。
+ * This is the core wait function of GameLogicThread frame scheduling, replacing a plain
+ * NSThread sleepForTimeInterval to reduce frame interval jitter.
  *
- * 设计目标：
- * - 尽量在目标 deadline 附近被唤醒
- * - 避免普通 sleep 带来的较大尾部误差
- * - 同时控制 CPU 开销，不做整段忙等
+ * Design goals:
+ * - wake up as close to the target deadline as possible
+ * - avoid the large tail error of a plain sleep
+ * - keep CPU cost in check without busy-waiting the whole time
  *
- * 实现策略：两段式等待
+ * Strategy: a two-phase wait
  *
- * 1. 粗等待（coarse wait）
- *    - 如果距离 deadline 还比较远，就使用 mach_wait_until()
- *    - 这是内核级的绝对时间等待，精度通常比 NSThread sleep 更高
- *    - 可以显著减少长时间 busy-wait 带来的 CPU 浪费
+ * 1. Coarse wait
+ *    - while the deadline is still far away, use mach_wait_until()
+ *    - it is a kernel-level absolute-time wait, usually more precise than NSThread sleep
+ *    - it greatly cuts the CPU wasted by a long busy-wait
  *
- * 2. 细等待（fine wait）
- *    - 当只剩最后一个很小的时间窗口时，不再继续用 mach_wait_until()
- *    - 因为越接近 deadline，普通阻塞等待的唤醒误差越容易超过剩余时间本身
- *    - 所以改用短轮询 + sched_yield() 逼近 deadline
+ * 2. Fine wait
+ *    - once only a small window is left, stop using mach_wait_until()
+ *    - because closer to the deadline, the wake-up error of a blocking wait easily exceeds the remaining time itself
+ *    - so switch to short polling + sched_yield() to close in on the deadline
  *
- * 为什么需要 spinThreshold：
- * - 如果从很早就开始 busy-wait，会浪费 CPU
- * - 如果一直用阻塞等待到最后，唤醒点又可能偏晚
- * - 所以这里用一个阈值（当前是约 300 微秒）做折中：
- *   前面节能，最后精调
+ * Why spinThreshold is needed:
+ * - busy-waiting from too early wastes CPU
+ * - blocking until the very end may wake up too late
+ * - so a threshold (currently about 300 microseconds) is the compromise:
+ *   save power first, fine-tune at the end
  *
- * 注意：
- * - 这个函数并不能提供硬实时保证
- * - 系统调度、QoS、其他线程竞争仍然会影响实际唤醒时间
- * - 但相比单纯 sleep，它能明显改善 frame pacing 稳定性，从而减少音频杂音
+ * Note:
+ * - this function gives no hard real-time guarantee
+ * - system scheduling, QoS and other threads still affect the actual wake-up time
+ * - but compared with a plain sleep it clearly improves frame pacing stability, which reduces audio noise
  */
 - (void)waitUntilMachDeadline:(uint64_t)deadline {
     /*
-     * 两段式等待：
-     * 1. 距离 deadline 还远时，使用 mach_wait_until 做粗等待，降低 CPU 占用。
-     * 2. 剩余最后一小段时间时，使用短轮询逼近 deadline，减少 sleep 唤醒抖动。
+     * Two-phase wait:
+     * 1. While the deadline is far away, use mach_wait_until for a coarse wait to keep CPU use low.
+     * 2. For the last short stretch, poll at short intervals to close in on the deadline and reduce sleep wake-up jitter.
      */
     const uint64_t spinThresholdMach = [self nanosToMach:(300 * NSEC_PER_USEC)];
 
@@ -782,39 +782,39 @@ typedef _Atomic double atomic_double;
 }
 
 /*
- * 记录逻辑线程帧开始时刻的抖动（jitter）统计信息。
+ * Records jitter statistics for the logic thread's frame start time.
  *
- * 为什么要记录 jitter，而不是只看平均 FPS：
- * - 平均 FPS 只能说明“长期平均速度”是否接近目标
- * - 但音频杂音、爆音、卡顿往往不是由平均值引起的
- * - 真正的问题通常来自少数几帧：
- *   它们开始得过晚、间隔抖动过大，导致音频缓冲供给不连续
+ * Why record jitter instead of just looking at the average FPS:
+ * - average FPS only shows whether the "long-term average speed" is close to the target
+ * - but audio noise, pops and stutters usually aren't caused by the average
+ * - the real problem usually comes from a few frames:
+ *   they start too late or their intervals jitter too much, so the audio buffer isn't fed steadily
  *
- * 所以这里统计的重点是：
- * - 实际帧开始时间 actualFrameStart
- * - 相对于理想 deadline / 期望开始时间 expectedFrameStart 的偏差
+ * So the statistics focus on:
+ * - the actual frame start time actualFrameStart
+ * - its deviation from the ideal deadline / expected start time expectedFrameStart
  *
- * 统计项包括：
- * - sample count：累计样本数
- * - accumulated jitter：累计抖动，便于算平均值
- * - max jitter：观察最坏情况，定位长尾帧
- * - missed deadlines：记录已经晚到超过 deadline 的次数
+ * The statistics include:
+ * - sample count: total number of samples
+ * - accumulated jitter: total jitter, for computing the average
+ * - max jitter: shows the worst case and locates long-tail frames
+ * - missed deadlines: how many times a frame started later than its deadline
  *
- * 为什么使用绝对偏差：
- * - 无论是“早到”还是“晚到”，本质上都说明 pacing 不稳定
- * - 对音频来说，尤其要关注晚到，但整体稳定性也可以先看绝对偏差
+ * Why the absolute deviation:
+ * - whether a frame is "early" or "late", both mean pacing is unstable
+ * - for audio, late frames matter most, but the absolute deviation is a good first look at overall stability
  *
- * 日志策略：
- * - 每 600 帧输出一次，避免每帧打日志影响性能
- * - 这些日志主要用于对比：
+ * Logging strategy:
+ * - log once every 600 frames, to avoid hurting performance with per-frame logs
+ * - these logs are mainly for comparing:
  *   GameLogicThread vs CADisplayLink
- * - 如果 avg_jitter / max_jitter / missed_deadlines 明显下降，
- *   一般也会伴随音频稳定性改善
+ * - if avg_jitter / max_jitter / missed_deadlines drop noticeably,
+ *   audio stability usually improves too
  *
- * 注意：
- * - 这里记录的是“帧起点调度抖动”
- * - 它不等同于 runloop_iterate() 的执行耗时
- * - 如果后面还要进一步诊断，可以再单独统计 core run time / runloop_iterate() duration
+ * Note:
+ * - this records "frame start scheduling jitter"
+ * - it is not the same as the time spent in runloop_iterate()
+ * - for further diagnosis, core run time / runloop_iterate() duration can be measured separately
  */
 - (void)recordJitterWithActualFrameStart:(uint64_t)actualFrameStart expectedFrameStart:(uint64_t)expectedFrameStart {
     uint64_t actualNanos = [self machToNanos:actualFrameStart];
@@ -828,28 +828,28 @@ typedef _Atomic double atomic_double;
 }
 
 /*
- * 记录 runloop_iterate() 的执行耗时统计。
+ * Records timing statistics for runloop_iterate().
  *
- * 为什么要单独统计这个 method：
- * - jitter 只能告诉我们“帧开始时间准不准”
- * - 但如果 runloop_iterate() 自身偶尔跑得很久，音频同样会断续或爆音
- * - 因此这里单独观察逻辑帧的执行成本，用来定位 core / task queue / 渲染协同带来的长尾帧
+ * Why measure this method separately:
+ * - jitter only tells us "whether the frame started on time"
+ * - but if runloop_iterate() itself occasionally runs long, audio still stutters or pops
+ * - so the cost of each logic frame is observed separately, to locate long-tail frames caused by the core / task queue / render coordination
  *
- * 统计项包括：
- * - sample count：累计多少帧参与了 runloop 耗时统计
- * - accumulated usec：累计执行耗时，用于计算平均值
- * - max usec：记录最慢的一帧，方便定位偶发长尾
+ * The statistics include:
+ * - sample count: how many frames took part in the runloop timing
+ * - accumulated usec: total run time, for computing the average
+ * - max usec: the slowest frame, to locate occasional long tails
  *
- * 日志策略：
- * - 默认按时间窗口输出：每 30 秒输出一次
- * - 当 fast-forward 开关变化或 multiplier 变化时，会立即输出一次
- * - 立即输出后会重置统计窗口，后续重新开始 30 秒计时
- * - 一次性同时输出 jitter 和 runloop 的窗口平均值 / 全局最大值，便于直接对比
+ * Logging strategy:
+ * - by default logs per time window: once every 30 seconds
+ * - logs immediately when fast-forward is toggled or the multiplier changes
+ * - an immediate log resets the window, and the 30-second count starts over
+ * - jitter and runloop window averages / global maximums are logged together for direct comparison
  *
- * 解释方式：
- * - avg/max jitter 高：通常是调度或等待机制不稳
- * - avg/max runloop 高：通常是单帧模拟、任务处理或图形协同过重
- * - missed_deadlines 高：说明已经实质性错过目标帧起点
+ * How to read it:
+ * - high avg/max jitter: usually unstable scheduling or waiting
+ * - high avg/max runloop: usually a single frame's emulation, task processing or graphics coordination is too heavy
+ * - high missed_deadlines: target frame starts are actually being missed
  */
 - (void)recordRunloopDurationUsec:(uint64_t)durationUsec {
     d_runloopSampleCount++;
@@ -859,19 +859,19 @@ typedef _Atomic double atomic_double;
 }
 
 /*
- * 统一的统计输出入口。
+ * The single entry point for logging statistics.
  *
- * 输出时机：
- * - force == NO：按 30 秒窗口输出一次（周期统计）
- * - force == YES：立即输出一次（用于 fast-forward 状态变化）
+ * When it logs:
+ * - force == NO: once per 30-second window (periodic statistics)
+ * - force == YES: immediately (for fast-forward state changes)
  *
- * 窗口语义：
- * - 日志中的 avg/fps/frames/missed_deadlines 都是“自上次输出以来”的窗口增量
- * - max_jitter / max_runloop 目前保持全局最大值，便于观察整个运行期的最坏情况
+ * Window semantics:
+ * - avg/fps/frames/missed_deadlines in the log are window deltas "since the last log"
+ * - max_jitter / max_runloop currently stay global maximums, to show the worst case over the whole run
  *
- * 首次调用行为：
- * - 第一次进入时只建立统计基线
- * - 如果 force==YES，会在建立基线后立即输出一次
+ * First call:
+ * - the first call only sets up the statistics baseline
+ * - if force==YES, it logs once right after setting up the baseline
  */
 - (void)maybeLogStatsWithForce:(BOOL)force reason:(const char *)reason {
     BOOL isPauseReason = (reason != NULL && strcmp(reason, "pause") == 0);
@@ -943,25 +943,25 @@ typedef _Atomic double atomic_double;
 }
 
 /*
- * 将 mach_absolute_time() 返回的原始时钟单位转换为纳秒。
+ * Converts the raw clock units returned by mach_absolute_time() to nanoseconds.
  *
- * 背景：
- * - mach_absolute_time() 返回的不是“纳秒”或“微秒”，而是机器相关的硬件时钟 tick。
- * - 这个 tick 的时间基准在不同设备上并不固定，因此不能直接拿来当真实时间单位使用。
+ * Background:
+ * - mach_absolute_time() returns neither "nanoseconds" nor "microseconds" but machine-dependent hardware clock ticks.
+ * - The tick time base isn't fixed across devices, so it can't be used directly as a real time unit.
  *
- * 为什么需要转换：
- * - 我们要统计 frame jitter、deadline 偏差、等待时长时，必须使用统一且可读的时间单位。
- * - 纳秒是最合适的中间单位，后面可以再方便地换算成微秒或毫秒。
+ * Why convert:
+ * - Measuring frame jitter, deadline deviation and wait durations needs a uniform, readable time unit.
+ * - Nanoseconds are the best intermediate unit and convert easily to microseconds or milliseconds.
  *
- * 实现方式：
- * - mach_timebase_info() 会返回 numer/denom，用于把 mach tick 映射到纳秒：
+ * Implementation:
+ * - mach_timebase_info() returns numer/denom, which map mach ticks to nanoseconds:
  *     nanoseconds = machTime * numer / denom
- * - 这个 timebase 在当前设备上是固定的，所以只需要查询一次。
- * - 这里用 dispatch_once 缓存 timebase，避免每帧重复调用系统接口。
+ * - This timebase is fixed on a given device, so it only needs to be queried once.
+ * - dispatch_once caches the timebase here to avoid calling the system API every frame.
  *
- * 注意：
- * - 这个函数本身不做睡眠，也不保证实时性，它只是时间单位换算。
- * - 统计抖动时我们依赖这个函数，把实际帧开始时间与期望 deadline 都转换到统一单位。
+ * Note:
+ * - This function doesn't sleep and makes no real-time guarantee; it only converts time units.
+ * - Jitter statistics rely on it to bring the actual frame start time and the expected deadline into the same unit.
  */
 - (uint64_t)machToNanos:(uint64_t) machTime {
     static mach_timebase_info_data_t timebaseInfo;
@@ -974,33 +974,33 @@ typedef _Atomic double atomic_double;
 }
 
 /*
- * 将纳秒转换回 mach_absolute_time() / mach_wait_until() 所使用的 mach 时钟单位。
+ * Converts nanoseconds back to the mach clock units used by mach_absolute_time() / mach_wait_until().
  *
- * 背景：
- * - mach_wait_until() 接收的参数不是纳秒，而是 mach 绝对时钟单位。
- * - 因此如果我们先按“纳秒”计算好了目标 deadline，真正调用 mach_wait_until() 前，
- *   还必须把纳秒转换回 mach tick。
+ * Background:
+ * - mach_wait_until() takes mach absolute clock units, not nanoseconds.
+ * - So if the target deadline is first computed in "nanoseconds", it must be converted back
+ *   to mach ticks before actually calling mach_wait_until().
  *
- * 为什么需要这个函数：
- * - 我们的逻辑帧间隔（例如 16.67ms）更适合先按微秒/纳秒计算；
- * - 但等待 API 使用的是 mach tick；
- * - 所以调度路径里需要一对可逆的换算函数：
+ * Why this function is needed:
+ * - Our logic frame interval (e.g. 16.67ms) is easier to compute in microseconds/nanoseconds first;
+ * - but the wait API uses mach ticks;
+ * - so the scheduling path needs a pair of inverse conversion functions:
  *     mach -> nanos
  *     nanos -> mach
  *
- * 实现方式：
- * - 根据同一个 timebase 做反向换算：
+ * Implementation:
+ * - Convert back using the same timebase:
  *     mach = nanoseconds * denom / numer
- * - 同样使用 dispatch_once 缓存 timebase，避免高频路径重复获取。
+ * - It also caches the timebase with dispatch_once to avoid fetching it repeatedly on a hot path.
  *
- * 典型用途：
- * - 把 d_intervalUsec 换算成 d_intervalMachTime
- * - 计算绝对 deadline
- * - 传给 mach_wait_until() 做高精度等待
+ * Typical uses:
+ * - converting d_intervalUsec to d_intervalMachTime
+ * - computing the absolute deadline
+ * - passing it to mach_wait_until() for a high-precision wait
  *
- * 注意：
- * - 因为是整数换算，会有极小的舍入误差；
- * - 但相比 NSThread sleepForTimeInterval 的调度抖动，这个误差可以忽略。
+ * Note:
+ * - Integer conversion introduces a tiny rounding error;
+ * - but compared with the scheduling jitter of NSThread sleepForTimeInterval, it is negligible.
  */
 - (uint64_t)nanosToMach:(uint64_t)nanos {
     static mach_timebase_info_data_t timebaseInfo;
@@ -1013,8 +1013,8 @@ typedef _Atomic double atomic_double;
 }
 
 /*
- * 只允许协议定义的几档倍速。
- * 这样 runner 内部不会出现任意值，日志节奏、UI 选项和调度间隔都能保持一致。
+ * Only the multiplier steps defined by the protocol are allowed.
+ * That way the runner never sees arbitrary values, and the log cadence, UI options and schedule intervals stay consistent.
  */
 - (double)sanitizedFastForwardMultiplier:(double)multiplier {
     if (!isfinite(multiplier)) {

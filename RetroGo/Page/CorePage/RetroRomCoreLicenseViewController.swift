@@ -64,21 +64,21 @@ final class RetroRomCoreLicenseViewController: UIViewController {
             make.edges.equalToSuperview()
         }
 
-        // Native UITextView 配置
-        // 1. 设置等宽字体，适合代码/协议展示
+        // Native UITextView setup
+        // 1. Monospaced font, suited to code/license text
         textView.font = UIFont.monospacedSystemFont(ofSize: 13, weight: .regular)
         textView.textColor = .label
 
-        // 2. 交互属性
-        textView.isEditable = false       // 不可编辑
-        textView.isSelectable = true      // 可选中复制
+        // 2. Interaction
+        textView.isEditable = false       // Read-only
+        textView.isSelectable = true      // Selectable for copying
 
-        // 3. 布局属性
+        // 3. Layout
         textView.textContainerInset = UIEdgeInsets(top: 16, left: 16, bottom: 32, right: 16)
         textView.showsVerticalScrollIndicator = true
-        textView.backgroundColor = .clear // 跟随 self.view
+        textView.backgroundColor = .clear // Follows self.view
 
-        // 4. 自动高亮链接 (原生支持)
+        // 4. Auto-detect links (built in)
         textView.dataDetectorTypes = .link
     }
 

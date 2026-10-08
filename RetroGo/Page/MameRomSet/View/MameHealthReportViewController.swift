@@ -455,8 +455,9 @@ final class MameHealthDetailViewController: UITableViewController {
         if let english = machine.description {
             options.append((Bundle.localizedString(forKey: "mame_health_name_english"), english))
         }
-        if let chinese = MameGameNameLocalizer.shared.chineseName(for: machine), chinese != machine.description {
-            options.append((Bundle.localizedString(forKey: "mame_health_name_chinese"), chinese))
+        if let localized = MameGameNameLocalizer.shared.localizedName(for: machine), localized != machine.description,
+           let language = OnDemandResourceLoader.shared.currentLanguagePack?.nativeName {
+            options.append((language, localized))
         }
         return options
     }

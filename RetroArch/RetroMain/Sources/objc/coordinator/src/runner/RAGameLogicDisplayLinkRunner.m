@@ -110,7 +110,7 @@ static inline double RASanitizeFastForwardMultiplier(double multiplier) {
         }
         [d_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
 
-        // 开启音频延时逻辑
+        // Turn on the audio latency logic
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
             command_event(CMD_EVENT_AUDIO_START, NULL);
         });
@@ -325,9 +325,9 @@ static inline double RASanitizeFastForwardMultiplier(double multiplier) {
     }
 
     /*
-     * fast-forward 策略：
-     * - 在当前 display tick 内“尽量多跑” runloop_iterate()
-     * - 一旦接近本帧时间预算边界就停止，不跨帧追赶，避免拖慢下一次 step 回调
+     * fast-forward strategy:
+     * - run runloop_iterate() "as many times as possible" within the current display tick
+     * - stop as soon as the frame's time budget is nearly used up; never catch up across frames, so the next step callback isn't delayed
      */
     CFTimeInterval stepStart = target.timestamp;
     CFTimeInterval stepDuration = target.targetTimestamp - target.timestamp;

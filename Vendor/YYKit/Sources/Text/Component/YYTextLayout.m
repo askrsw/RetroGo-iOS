@@ -1650,10 +1650,10 @@ fail:
         }*/
 
         if (isVertical) {
-            // 比较 Y 轴距离：如果距离 left 更近，位置取 prev；否则取 next
+            // Compare the Y distance: if closer to left, take prev; otherwise take next
             position = (fabs(left - point.y) < fabs(right - point.y)) ? prev : next;
         } else {
-            // 比较 X 轴距离：如果距离 left 更近，位置取 prev；否则取 next
+            // Compare the X distance: if closer to left, take prev; otherwise take next
             position = (fabs(left - point.x) < fabs(right - point.x)) ? prev : next;
         }
     }];
@@ -1667,10 +1667,10 @@ fail:
         }*/
 
         if (isVertical) {
-            // 比较 Y 轴距离：如果离 top/left 近，取 prev；否则取 next
+            // Compare the Y distance: if closer to top/left, take prev; otherwise take next
             position = (fabs(left - point.y) < fabs(right - point.y)) ? prev : next;
         } else {
-            // 比较 X 轴距离：如果离 left 近，取 prev；否则取 next
+            // Compare the X distance: if closer to left, take prev; otherwise take next
             position = (fabs(left - point.x) < fabs(right - point.x)) ? prev : next;
         }
     }];

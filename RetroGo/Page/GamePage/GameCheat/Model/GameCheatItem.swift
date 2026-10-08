@@ -36,9 +36,9 @@ enum GameCheatHandler: Int {
 /// The user-facing kind of cheat. This is the editor's top-level choice and the
 /// stored identity. Two kinds are EMU (a code string the core parses) and differ
 /// only in format/authoring; the third is RETRO (structured memory write):
-/// - `numeric` (数值): an `address:value` code, e.g. `05C6:02`.
-/// - `secret`  (秘籍): an encrypted letter code — Game Genie / PAR / GameShark.
-/// - `memory`  (内存): structured address/value with write mode, size, etc.
+/// - `numeric` (Numeric): an `address:value` code, e.g. `05C6:02`.
+/// - `secret`  (Secret): an encrypted letter code — Game Genie / PAR / GameShark.
+/// - `memory`  (Memory): structured address/value with write mode, size, etc.
 ///
 /// `numeric` and `memory` are numerically equivalent (address+value) and the
 /// editor links them; `secret` cannot be decoded to an address, so it never links.

@@ -26,58 +26,57 @@
 import SQLite
 import Foundation
 import ObjcHelper
+import RACoordinator
 import os
 
-/// RetroGo's translations of the texts in Pugsy's MAME cheats: the on-demand resource
-/// "mamecheat-i18n" (`text(en, lang, text)`, every language in one file), looked up by the
-/// exact English text. Only the UI uses them; the engine and the index/description checks
-/// always use the English original. Falls back to English while the resource is missing.
+/// RetroGo's translations of the texts in Pugsy's MAME cheats: the mame_cheat_text table of
+/// the language pack of the App language, keyed by RATextKey of the exact English text. Only
+/// the UI uses them; the engine and the index/description checks always use the English
+/// original. The user's cheat XML may be newer than the pack, and the App language may have
+/// no pack at all: untranslated texts stay English.
 final class MameCheatTexts {
     static let shared = MameCheatTexts()
 
     private let lock = NSLock()
     private var db: Connection?
+    private var dbPath: String?
     private var cache: [String: String] = [:]
-    private var loggedMissing = false
 
     private init() {
-        NotificationCenter.default.addObserver(forName: .odrResourceStateDidChange, object: nil, queue: nil) { [weak self] note in
-            guard (note.object as? String) == Self.resourceId, let self else { return }
+        NotificationCenter.default.addObserver(forName: .activeLanguagePackDidChange, object: nil, queue: nil) { [weak self] _ in
+            guard let self else { return }
             self.lock.lock()
             self.db = nil
+            self.dbPath = nil
             self.cache = [:]
             self.lock.unlock()
         }
     }
 
-    private static let resourceId = "mamecheat-i18n"
-
     /// The text in the app language when translated, otherwise `english`.
     func localized(_ english: String) -> String {
-        let lang = Bundle.currentSimpleLanguageKey()
-        guard !english.isEmpty, lang != "en" else { return english }
+        guard !english.isEmpty, let packPath = OnDemandResourceLoader.shared.activeLanguagePackPath else { return english }
         lock.lock(); defer { lock.unlock() }
         if let hit = cache[english] { return hit }
-        guard let db = openIfNeeded() else { return english }
-        let text = ((try? db.scalar("SELECT text FROM text WHERE en = ? AND lang = ?", english, lang)) as? String) ?? english
+        guard let db = openIfNeeded(packPath) else { return english }
+        let key = RATextKey.key(for: english)
+        let text = ((try? db.scalar("SELECT text FROM mame_cheat_text WHERE text_key = ?", key)) as? String) ?? english
         cache[english] = text
         return text
     }
 
-    private func openIfNeeded() -> Connection? {
-        if let db { return db }
-        guard let resource = OnDemandResourceLoader.resource(id: Self.resourceId) else { return nil }
-        let path = OnDemandResourceLoader.shared.targetPath(resource)
-        guard FileManager.default.fileExists(atPath: path), let db = try? Connection(path, readonly: true) else {
-            if !loggedMissing {
-                loggedMissing = true
-                RetroGoLogger.mame.info("Cheat translations not installed yet (\(path))")
-            }
+    private func openIfNeeded(_ path: String) -> Connection? {
+        if let db, dbPath == path { return db }
+        db = nil
+        cache = [:]
+        guard let opened = try? Connection(path, readonly: true) else {
+            RetroGoLogger.mame.error("Failed to open the language pack for cheat texts")
             return nil
         }
-        let count = (try? db.scalar("SELECT count(*) FROM text")) as? Int64 ?? 0
-        RetroGoLogger.mame.info("Cheat translations opened: \(count) texts, app language \(Bundle.currentSimpleLanguageKey(), privacy: .public)")
-        self.db = db
-        return db
+        let count = (try? opened.scalar("SELECT count(*) FROM mame_cheat_text")) as? Int64 ?? 0
+        RetroGoLogger.mame.info("Cheat translations opened: \(count) texts, language \(OnDemandResourceLoader.shared.activeLanguage ?? "none", privacy: .public)")
+        db = opened
+        dbPath = path
+        return opened
     }
 }

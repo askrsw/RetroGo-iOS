@@ -93,7 +93,7 @@
                     (unsigned long)(white * 255)];
         }
     }
-    return @"#00000000"; // 默认返回透明黑色
+    return @"#00000000"; // Defaults to transparent black
 }
 
 - (UInt32)hexInteger {
@@ -112,7 +112,7 @@
                    ((UInt32)(white * 255));
         }
     }
-    return 0x00000000; // 默认返回透明黑色
+    return 0x00000000; // Defaults to transparent black
 }
 
 @end

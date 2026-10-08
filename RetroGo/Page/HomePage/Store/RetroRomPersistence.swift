@@ -146,22 +146,22 @@ final class RetroRomPersistence {
     func getFileItems(in keys: [String]) -> [RetroRomFileItem]? {
         guard !keys.isEmpty else { return [] }
 
-        // 1. 设置合理的步长。200 是一个兼顾性能与解析开销的黄金值
+        // 1. Pick a sensible batch size. 200 is a sweet spot between performance and parsing overhead
         let chunkSize = 200
         var allItems: [RetroRomFileItem] = []
 
         do {
             let db = Self.sqlite
 
-            // 2. 将 keys 按照步长切分
+            // 2. Split the keys into batches
             for i in stride(from: 0, to: keys.count, by: chunkSize) {
                 let end = min(i + chunkSize, keys.count)
                 let chunk = Array(keys[i..<end])
 
-                // 3. 构建当前批次的查询语句
+                // 3. Build the query for the current batch
                 let query = Self.romTagInfoView.where(chunk.contains(Self.key))
 
-                // 4. 执行当前批次的查询并填充数据
+                // 4. Run the batch query and fill in the data
                 for row in try db.prepare(query) {
                     let item = RetroRomFileItem(
                         key: row[Self.key],
@@ -193,7 +193,7 @@ final class RetroRomPersistence {
         }
     }
 
-    // 辅助方法：解析标签字符串
+    // Helper: parse the tag string
     private func parseTagIds(_ text: String?) -> [Int] {
         guard let text = text, !text.isEmpty else { return [] }
         return text.split(separator: ",").compactMap { Int($0) }
@@ -245,22 +245,22 @@ final class RetroRomPersistence {
     func getFolderItems(in keys: [String]) -> [RetroRomFolderItem]? {
         guard !keys.isEmpty else { return [] }
 
-        // 1. 设置合理的步长。200 是一个兼顾性能与解析开销的黄金值
+        // 1. Pick a sensible batch size. 200 is a sweet spot between performance and parsing overhead
         let chunkSize = 200
         var allItems: [RetroRomFolderItem] = []
 
         do {
             let db = Self.sqlite
 
-            // 2. 将 keys 按照步长切分
+            // 2. Split the keys into batches
             for i in stride(from: 0, to: keys.count, by: chunkSize) {
                 let end = min(i + chunkSize, keys.count)
                 let chunk = Array(keys[i..<end])
 
-                // 3. 构建当前批次的查询语句
+                // 3. Build the query for the current batch
                 let query = Self.folderChildrenInfoView.where(chunk.contains(Self.key))
 
-                // 4. 执行当前批次的查询并填充数据
+                // 4. Run the batch query and fill in the data
                 for row in try db.prepare(query) {
                     let item = RetroRomFolderItem(
                         key: row[Self.key],
@@ -985,22 +985,22 @@ final class RetroRomPersistence {
     func getFileTags(in idArray: [Int]) -> [RetroRomFileTag]? {
         guard !idArray.isEmpty else { return [] }
 
-        // 1. 设置合理的步长。200 是一个兼顾性能与解析开销的黄金值
+        // 1. Pick a sensible batch size. 200 is a sweet spot between performance and parsing overhead
         let chunkSize = 200
         var allTags: [RetroRomFileTag] = []
 
         do {
             let db = Self.sqlite
 
-            // 2. 将 keys 按照步长切分
+            // 2. Split the keys into batches
             for i in stride(from: 0, to: idArray.count, by: chunkSize) {
                 let end = min(i + chunkSize, idArray.count)
                 let chunk = Array(idArray[i..<end])
 
-                // 3. 构建当前批次的查询语句
+                // 3. Build the query for the current batch
                 let query = Self.romTagTable.where(chunk.contains(Self.id))
 
-                // 4. 执行当前批次的查询并填充数据
+                // 4. Run the batch query and fill in the data
                 for row in try db.prepare(query) {
                     let tag = RetroRomFileTag(
                         id: row[Self.id],

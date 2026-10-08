@@ -1,8 +1,8 @@
 //
-//  NSURL+Extension.h
+//  RATextKey.m
 //  RetroGo
 //
-//  Created by haharsw on 2026/2/11.
+//  Created by haharsw on 2026/10/7.
 //  Copyright © 2026 haharsw. All rights reserved.
 //
 //  ---------------------------------------------------------------------------------
@@ -23,16 +23,24 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#import <Foundation/Foundation.h>
+#import "RATextKey.h"
 
-NS_ASSUME_NONNULL_BEGIN
+#include <CommonCrypto/CommonDigest.h>
 
-@interface NSURL (Extension)
+@implementation RATextKey
 
-/// Computes the file's SHA256 hash (hex string) with low memory use
-- (nullable NSString *)computeSHA256String:(NSError **)error;
-- (nullable NSString *)computeCRC32String:(NSError **)error;
++ (int64_t)keyForText:(NSString *)text {
+    NSData *utf8 = [text dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
+    if (!utf8) {
+        return 0;
+    }
+    unsigned char digest[CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256(utf8.length > 0 ? utf8.bytes : "", (CC_LONG)utf8.length, digest);
+    uint64_t value = 0;
+    for (int i = 0; i < 8; i++) {
+        value = (value << 8) | digest[i];
+    }
+    return (int64_t)value;
+}
 
 @end
-
-NS_ASSUME_NONNULL_END

@@ -94,10 +94,10 @@ struct AppStoreProductInfo {
     let price: Decimal
     let isPurchased: Bool
 
-    // 订阅试用信息
+    // Subscription trial info
     let hasFreeTrial: Bool
     let freeTrialDisplayText: String?          // e.g. "7-day free trial"
-    let isEligibleForIntroOffer: Bool          // 当前 Apple ID 是否可用试用
+    let isEligibleForIntroOffer: Bool          // Whether the current Apple ID can use the trial
 }
 
 struct AppStoreProEntitlementInfo {
@@ -234,7 +234,7 @@ final class AppStorePurchaseManager: ObservableObject {
     }
 
     func ensureBootstrapped() {
-        guard bootstrapState != .ready, bootstrapTask == nil else { return } // 幂等
+        guard bootstrapState != .ready, bootstrapTask == nil else { return } // Idempotent
         bootstrapTask = Task { [weak self] in
             await self?.bootstrap()
         }

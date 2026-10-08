@@ -143,6 +143,11 @@
 "mame_check_chd" = "该游戏还需要 CHD 光盘镜像：%@。";
 "mame_check_driver_warning" = "该游戏在当前 MAME 核心中被标记为无法正常运行。";
 "mame_check_launch_anyway" = "仍然启动";
+"bios_check_title" = "缺少 BIOS";
+"bios_check_message" = "%1$@ 需要 BIOS 才能运行游戏，但核心的 BIOS 中没有以下文件：\n%2$@";
+"bios_check_region_hint" = "这些是不同地区的 BIOS，通常只需要游戏所属地区的那一个。";
+"bios_check_add_hint" = "可以在「设置」›「核心列表」中打开该核心添加 BIOS。";
+"bios_check_launch_anyway" = "仍然启动";
 "homepage_import_incomplete_groups_title" = "游戏文件不完整";
 "homepage_import_incomplete_groups_message" = "所选文件夹中包含不完整的多文件游戏。\n\n%@\n\n跳过这些项目还是取消导入？";
 "homepage_import_incomplete_files_title" = "游戏文件不完整";
@@ -558,11 +563,9 @@
 /* ODR 离线资源管理 */
 "appsetting_odr_resources"      = "离线资源";
 "odr_page_title"                = "离线资源";
-"odr_page_footer"               = "下载过程中请保持 App 在前台。游戏数据库与中文名称为必需项，金手指码库为可选，删除后可随时重新下载。";
+"odr_page_footer"               = "下载过程中请保持 App 在前台。游戏数据库为必需项；金手指码库为可选项，首次打开金手指模板时下载，删除后可随时重新下载。";
 "odr_gamerdb_title"             = "游戏数据库";
 "odr_gamerdb_desc"              = "游戏信息、封面匹配与发现页所需。";
-"odr_gameloc_title"             = "中文游戏名称";
-"odr_gameloc_desc"              = "为游戏提供中文名称与中文搜索。";
 "odr_cheat_title"               = "金手指码库";
 "odr_cheat_desc"                = "RetroArch 官方金手指离线码库，按游戏匹配可用金手指。";
 "odr_status_ready"              = "已就绪";
@@ -581,6 +584,20 @@
 "odr_cache_footer"              = "封面缓存属于临时数据，可重新生成；清理不会删除游戏或数据库。";
 "odr_cache_delete_confirm_title" = "清理封面缓存？";
 "odr_cache_delete_confirm_msg"  = "将删除已下载的游戏封面图片以释放空间，需要时会重新下载。";
+"odr_section_base"               = "基础资源";
+"odr_section_langpack"           = "语言包";
+"odr_section_cache"              = "缓存";
+"odr_langpack_desc"              = "该语言的游戏名称、金手指描述与街机金手指译文。";
+"odr_langpack_recommended"       = "推荐";
+"odr_langpack_footer"            = "App 语言对应的语言包会自动下载；未安装时，游戏名称与金手指显示为英文。手动删除的语言包不会再自动下载。";
+"langpack_offer_title_fmt"       = "下载「%@」语言包？";
+"langpack_offer_msg_fmt"         = "语言包包含该语言的游戏名称、金手指描述与街机金手指译文，大小约 %@。不下载时，这些内容显示为英文。";
+"langpack_offer_download"        = "下载";
+"langpack_offer_later"           = "以后再说";
+"odr_network_denied_title"       = "无法下载离线资源";
+"odr_network_denied_msg_fmt"     = "RetroGo 目前无法联网，以下资源暂时无法下载：%@。发现页、游戏中文名等依赖它们的功能在下载完成前不可用。请在「设置」中允许 RetroGo 使用无线局域网与蜂窝网络，允许后会自动开始下载。";
+"odr_network_denied_settings"    = "前往设置";
+"odr_list_separator"             = "、";
 
 /* Netplay 联机 */
 "netplay_host"                       = "开始房间";
@@ -733,11 +750,8 @@
 "mame_cheat_last_used" = "上次使用";
 "mame_cheat_restore_last" = "恢复上次的金手指（%d 条）";
 "mame_cheat_restore_note" = "街机每次开机时金手指都会关闭。请等 MAME 完成开机自检、游戏运行起来后再恢复。自检期间开启金手指可能导致游戏无法启动。";
-"odr_mame_cheat_i18n_title" = "街机金手指译文";
-"odr_mame_cheat_i18n_desc" = "导入的街机金手指的中文名称与说明。";
 "mame_health_name_section" = "游戏库名称";
 "mame_health_name_english" = "英文名（MAME）";
-"mame_health_name_chinese" = "中文名";
 "mame_health_name_footer" = "选择这个游戏在游戏库中显示的名称。";
 "mame_cheat_library_release" = "合集版本";
 "mame_cheat_library_notes" = "致谢与说明";

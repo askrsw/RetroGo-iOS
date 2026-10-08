@@ -80,9 +80,9 @@ extension AppSettingViewController {
     enum Item: Hashable {
 
         // main section
-        case systemHomepage // 系统首页开关
-        case languageFollowSystem // 跟随系统语言开关
-        case language(String, String) // 语言选项（key, displayName）
+        case systemHomepage // System home page switch
+        case languageFollowSystem // Follow system language switch
+        case language(String, String) // Language option (key, displayName)
         case uiHaptic
 
         // game section
@@ -521,6 +521,7 @@ extension AppSettingViewController {
             dataSource.apply(snapshot, animatingDifferences: false)
 
             NotificationCenter.default.post(name: .languageChanged, object: nil)
+            offerLanguagePackIfNeeded()
         }
     }
 
@@ -562,6 +563,7 @@ extension AppSettingViewController {
             snapshot.reconfigureItems(allItems)
             dataSource.apply(snapshot, animatingDifferences: false)
             NotificationCenter.default.post(name: .languageChanged, object: nil)
+            offerLanguagePackIfNeeded()
         }
     }
 
@@ -746,5 +748,49 @@ extension AppSettingViewController: MFMailComposeViewControllerDelegate {
                 AppToastManager.shared.toast(info, context: .ui, level: .error)
             default: break
         }
+    }
+}
+
+// MARK: - Language pack offer
+
+extension AppSettingViewController {
+    /// After a language switch: when the new App language has a language pack
+    /// that is not installed, ask before downloading it. Declining is
+    /// remembered, so it is not downloaded automatically later either.
+    fileprivate func offerLanguagePackIfNeeded() {
+        let loader = OnDemandResourceLoader.shared
+        guard let pack = loader.languagePackToOffer(), let name = pack.nativeName else { return }
+        let size = ByteCountFormatter.string(fromByteCount: pack.approxByteSize, countStyle: .file)
+        let alert = UIAlertController(
+            title: String(format: Bundle.localizedString(forKey: "langpack_offer_title_fmt"), name),
+            message: String(format: Bundle.localizedString(forKey: "langpack_offer_msg_fmt"), size),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "langpack_offer_later"), style: .cancel) { _ in
+            loader.declineLanguagePack(pack)
+        })
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "langpack_offer_download"), style: .default) { _ in
+            Self.downloadLanguagePack(pack, title: name)
+        })
+        present(alert, animated: true)
+    }
+
+    private static func downloadLanguagePack(_ pack: ODRResource, title: String) {
+        let activity = RetroRomActivityView(mainTitle: title)
+        activity.install()
+        let progressText: (Double) -> String = { fraction in
+            String(format: Bundle.localizedString(forKey: "odr_downloading_fmt"), Int((fraction * 100).rounded()))
+        }
+        activity.activeMessage(progressText(0), title: title)
+        OnDemandResourceLoader.shared.startDownload(pack, progress: { [weak activity] p in
+            activity?.activeMessage(progressText(p), title: title)
+        }, completion: { [weak activity] ok, error in
+            if ok {
+                activity?.successMessage(Bundle.localizedString(forKey: "odr_download_done"), title: title, canDismiss: true)
+            } else {
+                let message = Bundle.localizedString(forKey: "odr_download_failed")
+                    + (error.map { "\n\($0.localizedDescription)" } ?? "")
+                activity?.errorMessage(message, title: title, canDismiss: true)
+            }
+        })
     }
 }

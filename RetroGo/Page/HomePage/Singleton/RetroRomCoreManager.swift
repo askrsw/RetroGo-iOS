@@ -37,57 +37,57 @@ final class RetroRomCoreManager {
     private(set) lazy var cores: [String: EmuCoreInfoItem] = Dictionary(uniqueKeysWithValues: allCores.map { ($0.coreId, $0) })
     private(set) lazy var systems: [String: [EmuCoreInfoItem]] = Dictionary(grouping: allCores, by: { $0.systemID ?? "none" })
 
-    // 每个核心独特的文件扩展名
+    // File extensions unique to each core
     private(set) lazy var coreUnqueExtensions: [String: Set<String>] = { [unowned self] in
         var result: [String: Set<String>] = [:]
         let allExtensions = cores.mapValues { Set($0.extensions ?? []) }
         for (key, exts) in allExtensions {
-            // 计算所有其他 core 的扩展名集合
+            // Collect the extensions of all other cores
             let otherExts = allExtensions
                 .filter { $0.key != key }
                 .reduce(into: Set<String>()) { $0.formUnion($1.value) }
-            // 当前 core 独有的扩展名
+            // Extensions unique to the current core
             let unique = exts.subtracting(otherExts)
             result[key] = unique
         }
         return result
     }()
 
-    // 每个系统独特的文件扩展名
+    // File extensions unique to each system
     private(set) lazy var systemUnqueExtensions: [String: Set<String>] = { [unowned self] in
         var result: [String: Set<String>] = [:]
-        // 每个 systemID 下所有扩展名集合
+        // All extensions under each systemID
         let systemExtensions = systems.mapValues { cores in
             Set(cores.flatMap { $0.extensions ?? [] })
         }
         for (systemID, exts) in systemExtensions {
-            // 其他 systemID 的所有扩展名集合
+            // All extensions of the other systemIDs
             let otherExts = systemExtensions
                 .filter { $0.key != systemID }
                 .reduce(into: Set<String>()) { $0.formUnion($1.value) }
-            // 当前 systemID 独有的扩展名
+            // Extensions unique to the current systemID
             let unique = exts.subtracting(otherExts)
             result[systemID] = unique
         }
         return result
     }()
 
-    // Core Info 中注册的可以打开某个类型文件的核心数组
+    // Cores registered in Core Info that can open a given file type
     private(set) lazy var extensionCores: [String: [EmuCoreInfoItem]] = { [unowned self] in
         var result: [String: [EmuCoreInfoItem]] = [:]
 
-        // 1. 建立基础映射
+        // 1. Build the base mapping
         for core in cores.values {
             guard let extensions = core.extensions else { continue }
             for ext in extensions {
                 let lowExt = ext.lowercased()
-                // 使用 default 值简化插入逻辑
+                // Use a default value to simplify insertion
                 result[lowExt, default: []].append(core)
             }
         }
 
-        // 2. 按照 displayName 对每个扩展名下的数组进行升序排序
-        // 使用 mapValues 能够保持 Key 不变，仅处理 Value
+        // 2. Sort each extension's array by displayName in ascending order
+        // mapValues keeps the keys and only transforms the values
         let sortedResult = result.mapValues { coreList in
             coreList.sorted {
                 let name1 = $0.displayName
@@ -119,6 +119,17 @@ final class RetroRomCoreManager {
                 }
             }
             cores.removeAll(where: { notUniqueCores.contains($0 )})
+            if ext == "mds" {
+                // Cores of the same systems that read cue sheets can open mds/mdf
+                // images through RetroRomMdsCueSheet. They go after the cores that
+                // read mds directly, which stay the default (getRunningCore).
+                let systemIDs = Set(cores.compactMap(\.systemID))
+                let cueCores = allCores.filter { core in
+                    guard let systemID = core.systemID, systemIDs.contains(systemID), !cores.contains(core) else { return false }
+                    return (core.extensions ?? []).contains { $0.lowercased() == "cue" }
+                }
+                cores += cueCores.sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
+            }
             extensionOpenCores[ext] = cores
             return cores
         }

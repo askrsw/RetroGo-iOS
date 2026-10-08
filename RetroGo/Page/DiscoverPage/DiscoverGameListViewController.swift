@@ -57,6 +57,9 @@ final class DiscoverGameListViewController: UIViewController {
 
     private var isSearchActive:   Bool          = false
     private var searchResults:    [RAGameEntry] = []
+    /// Same group ids come back after a language pack change, so the diffable
+    /// snapshot alone would not redraw them with the new names.
+    private var redrawAfterFirstPage = false
     private var searchDebounce:   DispatchWorkItem?
 
     // MARK: - Notification token
@@ -149,6 +152,11 @@ final class DiscoverGameListViewController: UIViewController {
             selector: #selector(languageChanged),
             name: .languageChanged,
             object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(languagePackChanged),
+            name: .activeLanguagePackDidChange,
+            object: nil)
 
         loadFirstPage()
     }
@@ -211,7 +219,7 @@ final class DiscoverGameListViewController: UIViewController {
         isLoadingPage = true
         let offset    = browseOffset
 
-        // 列表展示去重后的「分组」，而非每个变体，避免 MAME 等平台数万条同名变体刷屏。
+        // The list shows deduplicated groups rather than every variant, so platforms like MAME aren't flooded with tens of thousands of same-name variants.
         RAGameRDBManager.shared().fetchGroups(
             forPlatformId:  platform.platformId,
             offset:         offset,
@@ -235,6 +243,10 @@ final class DiscoverGameListViewController: UIViewController {
             // Append-only: no animation on initial load, animate only when
             // adding subsequent pages (avoids visual jump on first render).
             self.applyBrowseSnapshot(animated: offset > 0)
+            if offset == 0, self.redrawAfterFirstPage {
+                self.redrawAfterFirstPage = false
+                self.tableView.reloadData()
+            }
         }
     }
 
@@ -280,6 +292,15 @@ final class DiscoverGameListViewController: UIViewController {
             refreshControl.endRefreshing()
             return
         }
+        loadFirstPage()
+    }
+
+    /// Localized names come from the attached language pack: after it changes
+    /// (installed, updated, deleted, or another App language) fetch the rows again.
+    @objc
+    private func languagePackChanged() {
+        guard !isSearchActive else { return }
+        redrawAfterFirstPage = true
         loadFirstPage()
     }
 

@@ -71,10 +71,10 @@
     iconView.clipsToBounds       = YES;
     iconView.translatesAutoresizingMaskIntoConstraints = NO;
 
-    // 用约束指定图标尺寸，Stack View 才会遵从。
-    // 优先级降为 DefaultHigh（750）而非 Required（1000），
-    // 避免导航栏标题控件（_UINavigationBarTitleControl，高度约 20.67pt）
-    // 空间不足时强行 break 约束并产生布局警告。
+    // Set the icon size with constraints so the stack view respects it.
+    // Lower the priority to DefaultHigh (750) instead of Required (1000)
+    // to avoid the navigation bar title control (_UINavigationBarTitleControl, about 20.67pt tall)
+    // forcibly breaking the constraint and logging layout warnings when space is short.
     NSLayoutConstraint *widthC  = [iconView.widthAnchor  constraintEqualToConstant:22];
     NSLayoutConstraint *heightC = [iconView.heightAnchor constraintEqualToConstant:22];
     widthC.priority  = UILayoutPriorityDefaultHigh;

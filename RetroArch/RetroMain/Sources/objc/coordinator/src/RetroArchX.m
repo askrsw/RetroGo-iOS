@@ -246,7 +246,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         BOOL load_ret = NO;
 
         if(finalRomPath != nil) {
-            // 这个函数内部包含了 dlopen 和大量的 IO 操作
+            // This function does a dlopen and a lot of IO internally
             load_ret = task_push_load_content_with_new_core_from_menu(corePath.UTF8String, finalRomPath.UTF8String, &content_info, CORE_TYPE_PLAIN, NULL, NULL);
         } else {
             path_clear(RARCH_PATH_CONTENT);
@@ -279,7 +279,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 }
 
 - (void)startDummyCoreIfNeeded:(nullable void (^)(BOOL success))completion {
-    // 已有真实游戏在跑时，不启动 dummy。
+    // Don't start the dummy while a real game is running.
     if (self.currentCoreItem != nil || d_gameLogicRuner != nil || d_dummyCoreRunning) {
         if (completion) {
             completion(YES);
@@ -317,7 +317,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         return YES;
     }
 
-    // 防止误停真实游戏
+    // Avoid stopping a real game by mistake
     if (self.currentCoreItem != nil) {
         return YES;
     }
@@ -335,7 +335,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 }
 
 - (BOOL)startInputDriverOnlyIfNeeded {
-    // 真实游戏或 dummy loop 运行时，不走 input-only
+    // Skip input-only while a real game or the dummy loop is running
     if (self.currentCoreItem != nil || d_dummyCoreRunning || d_gameLogicRuner != nil) {
         return YES;
     }
@@ -355,7 +355,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
 - (BOOL)stopInputDriverOnlyIfNeeded {
     if (!d_inputDriverOnlyRunning) return YES;
-    // 防误停：有真实游戏或 dummy loop 时不动
+    // Avoid stopping by mistake: leave things alone while a real game or the dummy loop is running
     if (self.currentCoreItem != nil || d_dummyCoreRunning || d_gameLogicRuner != nil) {
         return YES;
     }
@@ -389,15 +389,15 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
          internal input callback chain during core teardown.
         */
 
-        // A) 先静默输入，避免 teardown 期间收到 mfi 事件
+        // A) Silence input first so no mfi events arrive during teardown
         [[RAInputActionManager shared] beginCoreTeardownGuard];
 
-        // B) 尝试先 pause，让 runloop/render 进入稳定态
+        // B) Try to pause first so runloop/render settle down
         if (d_gameLogicRuner != nil) {
             [d_gameLogicRuner pause];
         }
 
-        // C) 给一小段静默窗口，尽量让 Vdp1DrawCommands 收尾
+        // C) Allow a short quiet window so Vdp1DrawCommands can finish
         if ([NSThread isMainThread]) {
             CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.08, false);
         } else {
@@ -413,7 +413,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     [runningCore cleanupMameSession];
 
     if (isYabause) {
-        // D) 恢复回调链，避免影响下次开局
+        // D) Restore the callback chain so the next game isn't affected
         [[RAInputActionManager shared] endCoreTeardownGuard];
     }
 

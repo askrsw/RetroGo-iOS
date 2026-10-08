@@ -55,10 +55,10 @@ enum DiscoverCoverNotificationKey {
 // Third-level page in the Discover flow.
 // Layout:
 //   tableHeaderView  → DiscoverGameHeaderView (cover art + game title + platform)
-//   Section 0        → 基本信息  (developer, publisher, year, genre, region, ...)
-//   Section 1        → 游戏简介  (description — only when non-empty)
-//   Section 2        → 更多信息  (franchise, serial, max players)
-//   Section 3        → ROM 信息  (file name, file size, CRC32, MD5, SHA1)
+//   Section 0        → Basic Info   (developer, publisher, year, genre, region, ...)
+//   Section 1        → Description  (description — only when non-empty)
+//   Section 2        → More Info    (franchise, serial, max players)
+//   Section 3        → ROM Info     (file name, file size, CRC32, MD5, SHA1)
 // ---------------------------------------------------------------------------
 
 final class DiscoverGameDetailViewController: UIViewController {
@@ -78,13 +78,13 @@ final class DiscoverGameDetailViewController: UIViewController {
     // MARK: - Data
 
     /// Currently displayed entry. Starts as the group's representative variant and
-    /// is swapped in place when the user picks another variant from the 变体 menu.
+    /// is swapped in place when the user picks another variant from the Variants menu.
     private var game: RAGameEntry
     let platform: RAPlatformItem
 
     /// Group context, captured once from the entry the page was opened with.
     /// Kept separate from `game` because after switching to a concrete variant
-    /// (variantCount == 0) we still need these to drive the 变体 menu.
+    /// (variantCount == 0) we still need these to drive the Variants menu.
     private let groupName:    String?
     private let variantCount: Int
 
@@ -193,7 +193,7 @@ final class DiscoverGameDetailViewController: UIViewController {
 
     // MARK: - Variant menu
 
-    /// Adds the top-right 变体 button only when this group has more than one variant.
+    /// Adds the top-right Variants button only when this group has more than one variant.
     /// The menu lazily loads the variant list when opened (UIDeferredMenuElement).
     private func setupVariantButton() {
         guard variantCount > 1, let group = groupName, !group.isEmpty else { return }
@@ -402,7 +402,7 @@ final class DiscoverGameDetailViewController: UIViewController {
     private func buildSections() {
         sections = []
 
-        // ── 基本信息 ──────────────────────────────────────────────────────────
+        // ── Basic Info ────────────────────────────────────────────────────────
         var basic: [InfoRow] = []
 
         if let englishName = game.authoritativeEnglishNameForDisplay {
@@ -440,7 +440,7 @@ final class DiscoverGameDetailViewController: UIViewController {
                 rows: basic))
         }
 
-        // ── 游戏简介 ──────────────────────────────────────────────────────────
+        // ── Description ───────────────────────────────────────────────────────
         if let desc = game.gameDescription, !desc.isEmpty {
             // Description uses a dedicated cell type; store a single row whose
             // value carries the full text. The delegate distinguishes it by section index.
@@ -449,7 +449,7 @@ final class DiscoverGameDetailViewController: UIViewController {
                 rows: [InfoRow(title: "", value: desc)]))
         }
 
-        // ── 更多信息 ──────────────────────────────────────────────────────────
+        // ── More Info ─────────────────────────────────────────────────────────
         var more: [InfoRow] = []
 
         if let franchise = game.franchise, !franchise.isEmpty {
@@ -471,7 +471,7 @@ final class DiscoverGameDetailViewController: UIViewController {
                 rows: more))
         }
 
-        // ── ROM 信息 ──────────────────────────────────────────────────────────
+        // ── ROM Info ──────────────────────────────────────────────────────────
         var rom: [InfoRow] = []
 
         if let romName = game.romName, !romName.isEmpty {

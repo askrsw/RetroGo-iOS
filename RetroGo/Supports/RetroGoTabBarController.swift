@@ -102,6 +102,7 @@ final class RetroGoTabBarController: UITabBarController {
         super.init(nibName: nil, bundle: nil)
         delegate = self
         NotificationCenter.default.addObserver(self, selector: #selector(languageChanged), name: .languageChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(networkAccessDenied(_:)), name: .odrNetworkAccessDenied, object: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -259,5 +260,32 @@ extension RetroGoTabBarController: UITabBarControllerDelegate {
         didSelect viewController: UIViewController
     ) {
         Vibration.selection.vibrate()
+    }
+}
+
+// MARK: - Offline resources without network access
+
+private extension RetroGoTabBarController {
+
+    /// RetroGo may not use the network (e.g. the system's WLAN & Cellular
+    /// permission was declined), so resources it needs can't be downloaded.
+    /// Name them, say what is unavailable, and offer the Settings app. The
+    /// downloads start on their own once access is allowed.
+    @objc
+    func networkAccessDenied(_ note: Notification) {
+        guard let missing = note.object as? [ODRResource], !missing.isEmpty else { return }
+        let names = missing.map { $0.nativeName ?? Bundle.localizedString(forKey: $0.titleKey) }
+            .joined(separator: Bundle.localizedString(forKey: "odr_list_separator"))
+        let alert = UIAlertController(
+            title: Bundle.localizedString(forKey: "odr_network_denied_title"),
+            message: String(format: Bundle.localizedString(forKey: "odr_network_denied_msg_fmt"), names),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .cancel))
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "odr_network_denied_settings"), style: .default) { _ in
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(url)
+            }
+        })
+        (UIViewController.currentActive() ?? self).present(alert, animated: true)
     }
 }

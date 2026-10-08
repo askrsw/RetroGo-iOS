@@ -1,8 +1,8 @@
 //
-//  NSURL+Extension.h
+//  RALanguagePack.h
 //  RetroGo
 //
-//  Created by haharsw on 2026/2/11.
+//  Created by haharsw on 2026/10/7.
 //  Copyright © 2026 haharsw. All rights reserved.
 //
 //  ---------------------------------------------------------------------------------
@@ -24,15 +24,21 @@
 //
 
 #import <Foundation/Foundation.h>
+#include <sqlite3.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NSURL (Extension)
+/// Schema (PRAGMA user_version) of the language pack files this code reads.
+/// A pack holds game_name, cheat_desc and mame_cheat_text; later translations
+/// arrive as new tables, so the version only changes if an existing table does.
+extern const int RALanguagePackSchemaVersion;
 
-/// Computes the file's SHA256 hash (hex string) with low memory use
-- (nullable NSString *)computeSHA256String:(NSError **)error;
-- (nullable NSString *)computeCRC32String:(NSError **)error;
+/// BCP-47 language of the pack attached to `db` under `schemaName`, or nil
+/// (logged) when it is not a language pack of RALanguagePackSchemaVersion.
+NSString * _Nullable RALanguagePackLanguage(sqlite3 *db, const char *schemaName);
 
-@end
+/// Search form of a name: lowercased, keeping only code points of Unicode
+/// categories L, M and N. Same rule as name_norm in build_langpack.py.
+NSString *RALanguagePackSearchNorm(NSString *text);
 
 NS_ASSUME_NONNULL_END

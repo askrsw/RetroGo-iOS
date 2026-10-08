@@ -30,8 +30,8 @@ import RACoordinator
 
 final class RetroRomCoreListViewController: UIViewController {
     enum Action {
-        case showCoreInfo      // 进入 RetroRomCoreInfoViewController
-        case configureCore     // 进入 GameConfigViewController（核心设置）
+        case showCoreInfo      // Opens RetroRomCoreInfoViewController
+        case configureCore     // Opens GameConfigViewController (core settings)
 
         var desc: String {
             switch self {

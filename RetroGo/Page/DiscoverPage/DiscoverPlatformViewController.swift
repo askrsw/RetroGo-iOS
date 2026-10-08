@@ -205,7 +205,7 @@ extension DiscoverPlatformViewController: UITableViewDelegate {
 }
 
 #if DEBUG
-// MARK: - DEBUG：离线生成预制 sqlite
+// MARK: - DEBUG: build the prebuilt sqlite offline
 
 extension DiscoverPlatformViewController {
 
@@ -216,7 +216,7 @@ extension DiscoverPlatformViewController {
         present(progress, animated: true)
 
         OnDemandResourceLoader.shared.debugExportCombinedDatabase { [weak self] path, error in
-            // completion 已在主线程回调
+            // completion is already called on the main thread
             progress.dismiss(animated: true) {
                 let title: String
                 let message: String

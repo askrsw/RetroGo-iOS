@@ -28,9 +28,11 @@ import Foundation
 import ObjcHelper
 import os
 
-/// Chinese names for arcade games, from the same data as Discover: gamerdb's MAME rows map
-/// `<set>.zip` to a game group, and gameloc names the group. Clones without a row of their
-/// own use their parent's group. The name is used once, when a game is added to the Library.
+/// Arcade game names in the App language, from the same data as Discover: gamerdb's MAME
+/// rows map `<set>.zip` to a game group, and the language pack's game_name names the group.
+/// Clones without a row of their own use their parent's group. The name is used once, when a
+/// game is added to the Library. Without a language pack for the App language, MAME's
+/// description is used.
 final class MameGameNameLocalizer {
     static let shared = MameGameNameLocalizer()
 
@@ -38,22 +40,31 @@ final class MameGameNameLocalizer {
     private static let platformRdbName = "MAME"
 
     private let lock = NSLock()
-    /// set name → localized group name; nil until both databases could be read.
+    /// set name → localized group name for `namesPackPath`; nil until both databases could be read.
     private var names: [String: String]?
+    private var namesPackPath: String?
 
-    private init() { }
-
-    /// Library name for a recognized game: the Chinese name in a Chinese app, otherwise (or
-    /// without one) MAME's description.
-    func displayName(for machine: MameMachineRecord) -> String? {
-        guard Bundle.currentSimpleLanguageKey() == "zh" else { return machine.description }
-        return chineseName(for: machine) ?? machine.description
+    private init() {
+        NotificationCenter.default.addObserver(forName: .activeLanguagePackDidChange, object: nil, queue: nil) { [weak self] _ in
+            guard let self else { return }
+            self.lock.lock()
+            self.names = nil
+            self.namesPackPath = nil
+            self.lock.unlock()
+        }
     }
 
-    /// Chinese name whatever the app language. Parents get the plain name (their parenthesized
-    /// part is mostly a cartridge id such as "(NGM-2560)"); clones share it, so they keep the
-    /// version part of MAME's description, e.g. "街头霸王II - 世界勇士 (Japan 910214)".
-    func chineseName(for machine: MameMachineRecord) -> String? {
+    /// Library name for a recognized game: its name in the App language when the language
+    /// pack has one, otherwise MAME's description.
+    func displayName(for machine: MameMachineRecord) -> String? {
+        localizedName(for: machine) ?? machine.description
+    }
+
+    /// Name from the language pack of the App language, nil without one. Parents get the
+    /// plain name (their parenthesized part is mostly a cartridge id such as "(NGM-2560)");
+    /// clones share it, so they keep the version part of MAME's description, e.g.
+    /// "街头霸王II - 世界勇士 (Japan 910214)".
+    func localizedName(for machine: MameMachineRecord) -> String? {
         guard let localized = localizedName(ofSet: machine.name) ?? machine.cloneOf.flatMap(localizedName(ofSet:)) else {
             return nil
         }
@@ -65,20 +76,20 @@ final class MameGameNameLocalizer {
     }
 
     private func localizedName(ofSet setName: String) -> String? {
+        guard let packPath = OnDemandResourceLoader.shared.activeLanguagePackPath else { return nil }
         lock.lock(); defer { lock.unlock() }
-        if names == nil {
-            names = Self.load()
+        if names == nil || namesPackPath != packPath {
+            names = Self.load(packPath: packPath)
+            namesPackPath = names == nil ? nil : packPath
         }
         return names?[setName.lowercased()]
     }
 
-    /// Reads both databases once. Nil (retried on the next lookup) while either on-demand
-    /// resource is not installed yet.
-    private static func load() -> [String: String]? {
+    /// Reads both databases once per language pack. Nil (retried on the next lookup) while the
+    /// game database is not installed yet.
+    private static func load(packPath: String) -> [String: String]? {
         let gamerdbPath = AppConfig.shared.gameRdbDatabasePath
-        guard let gameloc = OnDemandResourceLoader.resource(id: "gameloc") else { return nil }
-        let gamelocPath = OnDemandResourceLoader.shared.targetPath(gameloc)
-        guard FileManager.default.fileExists(atPath: gamerdbPath), FileManager.default.fileExists(atPath: gamelocPath) else {
+        guard FileManager.default.fileExists(atPath: gamerdbPath), FileManager.default.fileExists(atPath: packPath) else {
             return nil
         }
         let start = CFAbsoluteTimeGetCurrent()
@@ -87,14 +98,14 @@ final class MameGameNameLocalizer {
             guard let platformId = try rdb.scalar("SELECT id FROM platform WHERE rdb_name = ?", platformRdbName) as? Int64 else {
                 return nil
             }
-            let loc = try Connection(gamelocPath, readonly: true)
+            let pack = try Connection(packPath, readonly: true)
             var groupNames: [String: String] = [:]
-            for row in try loc.prepare("SELECT group_name, name FROM name_loc WHERE platform_id = ? AND lang = 'zh' AND is_primary = 1", platformId) {
+            for row in try pack.prepare("SELECT group_name, name FROM game_name WHERE platform_id = ?", platformId) {
                 if let group = row[0] as? String, let name = row[1] as? String, !name.isEmpty {
                     groupNames[group] = name
                 }
             }
-            guard !groupNames.isEmpty else { return nil }
+            guard !groupNames.isEmpty else { return [:] }
             var names: [String: String] = [:]
             for row in try rdb.prepare("SELECT rom_name, group_name FROM game WHERE platform_id = ? AND rom_name IS NOT NULL", platformId) {
                 guard let romName = row[0] as? String, let group = row[1] as? String, let name = groupNames[group] else { continue }

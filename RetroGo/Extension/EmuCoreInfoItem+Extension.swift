@@ -74,6 +74,7 @@ extension EmuCoreInfoItem {
         case "gambatte": return .gb
         case "gearboy": return .gbc
         case "mednafen-psx": return .psx
+        case "mednafen-saturn": return .saturn
         case "melondsds": return .ds
         case "mesen": return .nes
         case "mesen-s": return .snes

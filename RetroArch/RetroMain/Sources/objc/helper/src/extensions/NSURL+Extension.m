@@ -30,7 +30,7 @@
 @implementation NSURL (Extension)
 
 - (nullable NSString *)computeSHA256String:(NSError **)error {
-    // 确保是文件 URL
+    // Make sure it's a file URL
     if (!self.isFileURL) {
         if (error) {
             *error = [NSError errorWithDomain:@"NSURLSHA256ErrorDomain" code:1001 userInfo:@{NSLocalizedDescriptionKey: @"URL must be a file URL"}];
@@ -43,11 +43,11 @@
         return nil;
     }
 
-    // 初始化 SHA256 上下文
+    // Initialize the SHA256 context
     CC_SHA256_CTX ctx;
     CC_SHA256_Init(&ctx);
 
-    // 1MB 缓冲区
+    // 1MB buffer
     const NSUInteger bufferSize = 1024 * 1024;
     BOOL done = NO;
 
@@ -64,11 +64,11 @@
 
     [fileHandle closeFile];
 
-    // 获取最终摘要
+    // Get the final digest
     unsigned char digest[CC_SHA256_DIGEST_LENGTH];
     CC_SHA256_Final(digest, &ctx);
 
-    // 转为 Hex String
+    // Convert to a hex string
     NSMutableString *output = [NSMutableString stringWithCapacity:CC_SHA256_DIGEST_LENGTH * 2];
     for (int i = 0; i < CC_SHA256_DIGEST_LENGTH; i++) {
         [output appendFormat:@"%02x", digest[i]];

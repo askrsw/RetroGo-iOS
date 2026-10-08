@@ -29,11 +29,11 @@ import ObjcHelper
 import RACoordinator
 import XMLTextRenderKit
 
-/// Create or edit a single user cheat. The `类型 (Type)` row is the top-level
+/// Create or edit a single user cheat. The `Type` row is the top-level
 /// choice — three independent kinds (a cheat is exactly one):
-/// - **数值 (numeric, EMU)**: an `address:value` code string, e.g. `05C6:02`.
-/// - **秘籍 (secret, EMU)**: an encrypted letter code (Game Genie / PAR / GameShark).
-/// - **内存 (memory, RETRO)**: structured address/value with write mode, size, etc.
+/// - **Numeric (EMU)**: an `address:value` code string, e.g. `05C6:02`.
+/// - **Secret (EMU)**: an encrypted letter code (Game Genie / PAR / GameShark).
+/// - **Memory (RETRO)**: structured address/value with write mode, size, etc.
 ///
 /// numeric ⇄ memory are linked (both are address+value); secret never links. The
 /// `i` button explains the formats; the checkmark validates and persists.

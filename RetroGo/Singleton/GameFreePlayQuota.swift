@@ -46,6 +46,7 @@ enum GameFreePlayQuota {
         "nes": "fceumm",
         "game_boy": "gambatte",
         "playstation": "pcsx-rearmed",
+        "sega_saturn": "yabause",
     ]
 
     private static let dayKey = "free_play_day"

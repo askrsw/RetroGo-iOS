@@ -24,6 +24,7 @@
 //
 
 #import "RAGameRDBManager.h"
+#import "RALanguagePack.h"
 
 #include <sqlite3.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -33,7 +34,7 @@
 #include <utils/retrogo_log.h>
 
 // ---------------------------------------------------------------------------
-// MARK: - 内部常量
+// MARK: - Internal constants
 // ---------------------------------------------------------------------------
 
 static NSString * const kRARDBErrorDomain = @"com.retrogame.rardberror";
@@ -55,13 +56,13 @@ static const char * const kDDL_Platform =
     "  rdb_name     TEXT    NOT NULL UNIQUE,"
     "  display_name TEXT    NOT NULL,"
     "  manufacturer TEXT,"
-    "  game_count   INTEGER NOT NULL DEFAULT 0,"   // 该平台游戏(变体)总数
-    "  group_count  INTEGER NOT NULL DEFAULT 0,"   // 该平台去重分组后的数量(列表分页用)
+    "  game_count   INTEGER NOT NULL DEFAULT 0,"   // Total number of games (variants) for this platform
+    "  group_count  INTEGER NOT NULL DEFAULT 0,"   // Number of deduplicated groups for this platform (for list paging)
     "  imported_at  INTEGER NOT NULL"
     ");";
 
-// game 表保存每个 ROM 变体(CRC32/md5/sha1 按变体匹配，绝不可去重)。
-// group_name 为「分组键」：取游戏名第一个 ( 或 [ 之前的前缀，导入时算好。
+// The game table stores every ROM variant (CRC32/md5/sha1 match per variant, so never deduplicate).
+// group_name is the "group key": the prefix of the game name before the first ( or [, computed at import.
 static const char * const kDDL_Game =
     "CREATE TABLE IF NOT EXISTS game ("
     "  id            INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -85,8 +86,8 @@ static const char * const kDDL_Game =
     "  file_size     INTEGER"
     ");";
 
-// 物化的分组表：每个 (platform_id, group_name) 一行，记录代表变体与变体数。
-// 列表/分页直接读这张小表，避免在 5 万行的 game 上现算 GROUP BY。
+// Materialized group table: one row per (platform_id, group_name), recording the representative variant and variant count.
+// Lists/paging read this small table directly instead of running GROUP BY over 50k game rows.
 static const char * const kDDL_GameGroup =
     "CREATE TABLE IF NOT EXISTS game_group ("
     "  id                     INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -105,12 +106,12 @@ static const char * const kDDL_GameIndexCRC32 =
 static const char * const kDDL_GameIndexName =
     "CREATE INDEX IF NOT EXISTS idx_game_name ON game(name COLLATE NOCASE);";
 
-// 支持「按 (platform_id, group_name) 取某组全部变体」的等值查找（BINARY 比较，
-// 故索引不加 COLLATE NOCASE，保证 group_name = ? 能命中索引）。
+// Supports equality lookups of "all variants of a (platform_id, group_name) group" (BINARY comparison,
+// so the index has no COLLATE NOCASE and group_name = ? can use it).
 static const char * const kDDL_GameIndexGroup =
     "CREATE INDEX IF NOT EXISTS idx_game_group ON game(platform_id, group_name);";
 
-// 支持分组列表按 group_name 排序分页。
+// Supports sorting and paging the group list by group_name.
 static const char * const kDDL_GroupIndexPlatform =
     "CREATE INDEX IF NOT EXISTS idx_group_platform ON game_group(platform_id, group_name COLLATE NOCASE);";
 
@@ -124,15 +125,15 @@ static const char * const kDDL_GameFTS =
     ");";
 
 // ---------------------------------------------------------------------------
-// MARK: - 分组键
+// MARK: - Group key
 // ---------------------------------------------------------------------------
 
-/// 由游戏名计算「分组键」：取第一个 '(' 或 '[' 之前的前缀并去除尾随空白。
-/// 例：
+/// Computes the "group key" from a game name: the prefix before the first '(' or '[' with trailing whitespace removed.
+/// Examples:
 ///   "1 on 1 Government (Japan)"              → "1 on 1 Government"
 ///   "10 X 10 (Barcrest) (MPU4) (N25 0.3 AD)" → "10 X 10"
 ///   "005"                                    → "005"
-/// 前缀为空(名字以括号开头)时回退为原名，保证分组键非空。
+/// When the prefix is empty (the name starts with a bracket), falls back to the full name so the group key is never empty.
 static NSString *p_groupName(NSString *name) {
     if (name.length == 0) return name;
     NSRange r = [name rangeOfCharacterFromSet:
@@ -171,6 +172,7 @@ static NSString *p_locNorm(NSString *s);
 @property (nonatomic, assign, readwrite)         NSInteger  platformId;
 @property (nonatomic, copy, readwrite)           NSString  *name;
 @property (nonatomic, copy, nullable, readwrite) NSString  *localizedName;
+@property (nonatomic, copy, nullable, readwrite) NSString  *localizationLanguage;
 @property (nonatomic, assign, readwrite)         NSInteger  localizationSource;
 @property (nonatomic, assign, readwrite, getter=isLocalizationReference) BOOL localizationReference;
 @property (nonatomic, copy, nullable, readwrite) NSString  *groupName;
@@ -207,13 +209,16 @@ static NSString *p_locNorm(NSString *s);
 @implementation RAGameRDBManager {
     NSString        *d_dbPath;
     sqlite3         *d_db;
+    // A language pack attached as `lang` (game_name table); nil = English only.
     BOOL             d_hasLocalization;
+    NSString        *d_languagePackPath;
+    NSString        *d_languagePackLanguage;
 
-    // 所有 SQLite 操作在此串行队列执行，保证线程安全
+    // All SQLite work runs on this serial queue for thread safety
     dispatch_queue_t d_dbQueue;
 }
 
-// MARK: 初始化
+// MARK: Initialization
 
 + (instancetype)shared {
     static RAGameRDBManager *instance = nil;
@@ -225,15 +230,68 @@ static NSString *p_locNorm(NSString *s);
 }
 
 - (void)initialize:(NSString *)dbPath completion:(nullable void (^)(void))completion {
-    d_dbPath  = [dbPath copy];
-    d_dbQueue = dispatch_queue_create("com.retrogame.rardbs", DISPATCH_QUEUE_SERIAL);
-
+    NSString *path = [dbPath copy];
+    [self p_ensureQueue];
+    // Calling it again (after the prebuilt file was replaced) reopens the database.
     dispatch_async(d_dbQueue, ^{
+        self->d_dbPath = path;
         [self p_openAndSetup];
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), completion);
         }
     });
+}
+
+- (void)p_ensureQueue {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        self->d_dbQueue = dispatch_queue_create("com.retrogame.rardbs", DISPATCH_QUEUE_SERIAL);
+    });
+}
+
+- (void)setLanguagePackPath:(nullable NSString *)path completion:(nullable void (^)(void))completion {
+    NSString *next = [path copy];
+    [self p_ensureQueue];
+    dispatch_async(d_dbQueue, ^{
+        self->d_languagePackPath = next;
+        if (self->d_db) {
+            [self p_attachLanguagePack];
+        }
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), completion);
+        }
+    });
+}
+
+/// (Re)attaches d_languagePackPath as `lang`, replacing any attached pack.
+/// Runs on d_dbQueue with the database open.
+- (void)p_attachLanguagePack {
+    if (d_hasLocalization) {
+        sqlite3_exec(d_db, "DETACH DATABASE lang;", NULL, NULL, NULL);
+        d_hasLocalization = NO;
+    }
+    d_languagePackLanguage = nil;
+    NSString *path = d_languagePackPath;
+    if (path.length == 0 || ![NSFileManager.defaultManager fileExistsAtPath:path]) {
+        return;
+    }
+    NSString *uri = [[[NSURL fileURLWithPath:path] absoluteString] stringByAppendingString:@"?mode=ro&immutable=1"];
+    NSString *escaped = [uri stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
+    NSString *sql = [NSString stringWithFormat:@"ATTACH DATABASE '%@' AS lang;", escaped];
+    if (sqlite3_exec(d_db, sql.UTF8String, NULL, NULL, NULL) != SQLITE_OK) {
+        RETROGO_LOGE(DATABASE, "Failed to attach language pack: %{public}s", sqlite3_errmsg(d_db));
+        return;
+    }
+    NSString *language = RALanguagePackLanguage(d_db, "lang");
+    if (!language) {
+        sqlite3_exec(d_db, "DETACH DATABASE lang;", NULL, NULL, NULL);
+        return;
+    }
+    sqlite3_exec(d_db, "PRAGMA lang.cache_size=-2048;", NULL, NULL, NULL);
+    sqlite3_exec(d_db, "PRAGMA lang.mmap_size=67108864;", NULL, NULL, NULL);
+    d_hasLocalization = YES;
+    d_languagePackLanguage = language;
+    RETROGO_LOGI(DATABASE, "Attached %{public}@ language pack to the game database", language);
 }
 
 - (void)dealloc {
@@ -247,7 +305,7 @@ static NSString *p_locNorm(NSString *s);
     return 4;
 }
 
-// MARK: 平台查询
+// MARK: Platform queries
 
 - (NSArray<RAPlatformItem *> *)allPlatforms {
     __block NSMutableArray<RAPlatformItem *> *result = [NSMutableArray array];
@@ -268,14 +326,14 @@ static NSString *p_locNorm(NSString *s);
     return [result copy];
 }
 
-// MARK: 离线导出（DEBUG）
+// MARK: Offline export (DEBUG)
 
 #if DEBUG
 - (void)exportCombinedDatabaseToPath:(NSString *)destPath
                         fromRdbPaths:(NSArray<NSString *> *)rdbPaths
                           completion:(void (^)(NSInteger totalGames,
                                                NSError * _Nullable error))completion {
-    // 用独立的 utility 队列，使用独立的 sqlite 句柄，不触碰运行库 d_db。
+    // Use a separate utility queue and its own sqlite handle; never touch the runtime database d_db.
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         NSError *error = nil;
         NSInteger total = [self p_exportCombinedToPath:destPath
@@ -288,7 +346,7 @@ static NSString *p_locNorm(NSString *s);
 }
 #endif
 
-// MARK: 分页查询
+// MARK: Paged queries
 
 - (void)fetchGamesForPlatformId:(NSInteger)platformId
                          offset:(NSInteger)offset
@@ -301,7 +359,7 @@ static NSString *p_locNorm(NSString *s);
         NSError *error = nil;
         NSMutableArray<RAGameEntry *> *games = [NSMutableArray array];
 
-        // 1. 总数：knownTotalCount > 0 时由调用方提供，省去一次 COUNT(*) 查询。
+        // 1. Total: when knownTotalCount > 0 the caller provides it, saving a COUNT(*) query.
         NSInteger totalCount = knownTotalCount;
         if (totalCount <= 0) {
             const char *sql = "SELECT COUNT(*) FROM game WHERE platform_id = ?;";
@@ -318,7 +376,7 @@ static NSString *p_locNorm(NSString *s);
             sqlite3_finalize(stmt);
         }
 
-        // 2. 分页查询
+        // 2. Paged query
         if (!error) {
             const char *sqlPlain =
                 "SELECT id, platform_id, name, developer, publisher, "
@@ -336,9 +394,8 @@ static NSString *p_locNorm(NSString *s);
                 "       g.rom_name, g.crc32, g.md5, g.sha1, g.file_size, "
                 "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
                 "FROM game g "
-                "LEFT JOIN loc.name_loc l ON l.platform_id = g.platform_id "
-                "                         AND l.group_name = g.group_name "
-                "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+                "LEFT JOIN lang.game_name l ON l.platform_id = g.platform_id "
+                "                          AND l.group_name = g.group_name "
                 "WHERE g.platform_id = ? "
                 "ORDER BY g.name COLLATE NOCASE ASC "
                 "LIMIT ? OFFSET ?;";
@@ -366,7 +423,7 @@ static NSString *p_locNorm(NSString *s);
     });
 }
 
-// MARK: 分组分页查询
+// MARK: Grouped paged queries
 
 - (void)fetchGroupsForPlatformId:(NSInteger)platformId
                           offset:(NSInteger)offset
@@ -379,8 +436,8 @@ static NSString *p_locNorm(NSString *s);
         NSError *error = nil;
         NSMutableArray<RAGameEntry *> *groups = [NSMutableArray array];
 
-        // 1. 总数：knownTotalCount > 0 时由调用方提供（来自 RAPlatformItem.groupCount），
-        //    省去一次 COUNT(*)。
+        // 1. Total: when knownTotalCount > 0 the caller provides it (from RAPlatformItem.groupCount),
+        //    saving a COUNT(*).
         NSInteger totalCount = knownTotalCount;
         if (totalCount <= 0) {
             const char *sql = "SELECT COUNT(*) FROM game_group WHERE platform_id = ?;";
@@ -397,7 +454,7 @@ static NSString *p_locNorm(NSString *s);
             sqlite3_finalize(stmt);
         }
 
-        // 2. 分组分页：每组取代表变体的展示字段；entry.name 为干净的分组名。
+        // 2. Grouped paging: take the display fields of each group's representative variant; entry.name is the clean group name.
         if (!error) {
             const char *sqlPlain =
                 "SELECT gg.representative_game_id, gg.platform_id, gg.group_name, gg.variant_count, "
@@ -417,9 +474,8 @@ static NSString *p_locNorm(NSString *s);
                 "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
                 "FROM game_group gg "
                 "INNER JOIN game g ON g.id = gg.representative_game_id "
-                "LEFT JOIN loc.name_loc l ON l.platform_id = gg.platform_id "
-                "                         AND l.group_name = gg.group_name "
-                "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+                "LEFT JOIN lang.game_name l ON l.platform_id = gg.platform_id "
+                "                          AND l.group_name = gg.group_name "
                 "WHERE gg.platform_id = ? "
                 "ORDER BY gg.group_name COLLATE NOCASE ASC "
                 "LIMIT ? OFFSET ?;";
@@ -469,9 +525,8 @@ static NSString *p_locNorm(NSString *s);
             "       g.rom_name, g.crc32, g.md5, g.sha1, g.file_size, "
             "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
             "FROM game g "
-            "LEFT JOIN loc.name_loc l ON l.platform_id = g.platform_id "
-            "                         AND l.group_name = g.group_name "
-            "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+            "LEFT JOIN lang.game_name l ON l.platform_id = g.platform_id "
+            "                          AND l.group_name = g.group_name "
             "WHERE g.platform_id = ? AND g.group_name = ? "
             "ORDER BY g.name COLLATE NOCASE ASC;";
         sqlite3_stmt *stmt = NULL;
@@ -500,13 +555,13 @@ static NSString *p_locNorm(NSString *s);
     });
 }
 
-// MARK: 模糊搜索
+// MARK: Fuzzy search
 
 - (void)searchGamesWithKeyword:(NSString *)keyword
                     platformId:(NSInteger)platformId
                     completion:(void (^)(NSArray<RAGameEntry *> *games,
                                          NSError * _Nullable error))completion {
-    // 提前在主线程做参数校验
+    // Validate parameters on the main thread up front
     NSString *trimmed = [keyword stringByTrimmingCharactersInSet:
                          NSCharacterSet.whitespaceAndNewlineCharacterSet];
     if (trimmed.length == 0) {
@@ -520,8 +575,8 @@ static NSString *p_locNorm(NSString *s);
         NSMutableSet<NSString *> *seenGroupKeys = [NSMutableSet set];
         NSError *error = nil;
 
-        // 搜索命中的是变体行，但结果折叠成「分组」返回：先在 FTS 命中里按分组聚合、
-        // 取每组最佳 rank，再连回 game_group 取代表变体，按最佳 rank 排序。
+        // Search hits are variant rows, but results are folded into groups: first aggregate the FTS hits by group,
+        // take each group's best rank, then join back to game_group for the representative variant, sorted by best rank.
         const char *sql;
         if (platformId == -1) {
             sql = d_hasLocalization ?
@@ -532,9 +587,8 @@ static NSString *p_locNorm(NSString *s);
                 "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
                 "FROM game_group gg "
                 "INNER JOIN game g ON g.id = gg.representative_game_id "
-                "LEFT JOIN loc.name_loc l ON l.platform_id = gg.platform_id "
-                "                         AND l.group_name = gg.group_name "
-                "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+                "LEFT JOIN lang.game_name l ON l.platform_id = gg.platform_id "
+                "                          AND l.group_name = gg.group_name "
                 "INNER JOIN ( "
                 "   SELECT gg2.id AS gid, MIN(fts.rank) AS r "
                 "   FROM game_fts fts "
@@ -572,9 +626,8 @@ static NSString *p_locNorm(NSString *s);
                 "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
                 "FROM game_group gg "
                 "INNER JOIN game g ON g.id = gg.representative_game_id "
-                "LEFT JOIN loc.name_loc l ON l.platform_id = gg.platform_id "
-                "                         AND l.group_name = gg.group_name "
-                "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+                "LEFT JOIN lang.game_name l ON l.platform_id = gg.platform_id "
+                "                          AND l.group_name = gg.group_name "
                 "INNER JOIN ( "
                 "   SELECT gg2.id AS gid, MIN(fts.rank) AS r "
                 "   FROM game_fts fts "
@@ -633,10 +686,10 @@ static NSString *p_locNorm(NSString *s);
                     "       g.franchise, g.description, g.serial, g.max_users, "
                     "       g.rom_name, g.crc32, g.md5, g.sha1, g.file_size, "
                     "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
-                    "FROM loc.name_loc l "
+                    "FROM lang.game_name l "
                     "INNER JOIN game_group gg ON gg.platform_id = l.platform_id AND gg.group_name = l.group_name "
                     "INNER JOIN game g ON g.id = gg.representative_game_id "
-                    "WHERE l.lang = 'zh' AND l.is_primary = 1 AND l.name_norm LIKE ? "
+                    "WHERE l.name_norm LIKE ? "
                     "ORDER BY l.name COLLATE NOCASE ASC LIMIT ?;";
                 const char *locSQLPlatform =
                     "SELECT gg.representative_game_id, gg.platform_id, gg.group_name, gg.variant_count, "
@@ -644,10 +697,10 @@ static NSString *p_locNorm(NSString *s);
                     "       g.franchise, g.description, g.serial, g.max_users, "
                     "       g.rom_name, g.crc32, g.md5, g.sha1, g.file_size, "
                     "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
-                    "FROM loc.name_loc l "
+                    "FROM lang.game_name l "
                     "INNER JOIN game_group gg ON gg.platform_id = l.platform_id AND gg.group_name = l.group_name "
                     "INNER JOIN game g ON g.id = gg.representative_game_id "
-                    "WHERE l.lang = 'zh' AND l.is_primary = 1 AND l.platform_id = ? AND l.name_norm LIKE ? "
+                    "WHERE l.platform_id = ? AND l.name_norm LIKE ? "
                     "ORDER BY l.name COLLATE NOCASE ASC LIMIT ?;";
                 sqlite3_stmt *locStmt = NULL;
                 const char *locSQL = platformId == -1 ? locSQLAll : locSQLPlatform;
@@ -682,11 +735,31 @@ static NSString *p_locNorm(NSString *s);
     });
 }
 
-// MARK: CRC 精确查询
+// MARK: Exact CRC lookup
 
 - (nullable RAGameEntry *)findGameByCRC32:(NSString *)crc32 {
+    RAGameEntry *entry = nil;
+    [self lookupGameByCRC32:crc32 game:&entry error:NULL];
+    return entry;
+}
+
+- (BOOL)lookupGameByCRC32:(NSString *)crc32
+                     game:(RAGameEntry * _Nullable * _Nonnull)game
+                    error:(NSError **)error {
+    *game = nil;
+    if (!d_dbQueue) {
+        if (error) {
+            *error = [self p_errorWithCode:RARDBErrorCodeOpenFailed reason:@"game database is not initialized"];
+        }
+        return NO;
+    }
     __block RAGameEntry *entry = nil;
+    __block NSError *failure = nil;
     dispatch_sync(d_dbQueue, ^{
+        if (!d_db) {
+            failure = [self p_errorWithCode:RARDBErrorCodeOpenFailed reason:@"game database is not open"];
+            return;
+        }
         const char *sqlPlain =
             "SELECT id, platform_id, name, developer, publisher, "
             "       release_year, release_month, genre, region, "
@@ -702,49 +775,65 @@ static NSString *p_locNorm(NSString *s);
             "       g.rom_name, g.crc32, g.md5, g.sha1, g.file_size, g.group_name, "
             "       l.name AS loc_name, COALESCE(l.source, 0) AS loc_source "
             "FROM game g "
-            "LEFT JOIN loc.name_loc l ON l.platform_id = g.platform_id "
-            "                         AND l.group_name = g.group_name "
-            "                         AND l.lang = 'zh' AND l.is_primary = 1 "
+            "LEFT JOIN lang.game_name l ON l.platform_id = g.platform_id "
+            "                          AND l.group_name = g.group_name "
             "WHERE g.crc32 = ? "
             "LIMIT 1;";
         sqlite3_stmt *stmt = NULL;
         const char *sql = d_hasLocalization ? sqlLoc : sqlPlain;
-        if (sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, crc32.UTF8String, -1, SQLITE_TRANSIENT);
-            if (sqlite3_step(stmt) == SQLITE_ROW) {
-                entry = [self p_gameEntryFromStmt:stmt];
-            }
+        if (sqlite3_prepare_v2(d_db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+            RETROGO_LOGE(DATABASE, "CRC32 lookup prepare failed: %{public}s", sqlite3_errmsg(d_db));
+            failure = [self p_errorWithCode:RARDBErrorCodeQueryFailed reason:@"CRC32 lookup prepare failed"];
+            return;
+        }
+        sqlite3_bind_text(stmt, 1, crc32.UTF8String, -1, SQLITE_TRANSIENT);
+        int rc = sqlite3_step(stmt);
+        if (rc == SQLITE_ROW) {
+            entry = [self p_gameEntryFromStmt:stmt];
+        } else if (rc != SQLITE_DONE) {
+            RETROGO_LOGE(DATABASE, "CRC32 lookup step failed (%d): %{public}s", rc, sqlite3_errmsg(d_db));
+            failure = [self p_errorWithCode:RARDBErrorCodeQueryFailed reason:@"CRC32 lookup failed"];
         }
         sqlite3_finalize(stmt);
     });
-    return entry;
+    if (failure) {
+        if (error) { *error = failure; }
+        return NO;
+    }
+    *game = entry;
+    return YES;
 }
 
 // ===========================================================================
 // MARK: - Private
 // ===========================================================================
 
-/// 以【只读 + immutable】方式打开预制游戏数据库（在 dbQueue 上调用）。
+/// Opens the prebuilt game database **read-only + immutable** (called on dbQueue).
 ///
-/// 约定：App Store 包内的 sqlite 一律是离线预制好的成品（见 exportCombinedDatabase…），
-/// 运行时只查不写。因此这里：
-///   - 用 SQLITE_OPEN_READONLY 打开，绝不创建文件、绝不建表/迁移、绝不写 user_version；
-///   - 用 URI 参数 immutable=1：告诉 SQLite 文件不可变，**完全不创建也不使用
-///     -wal/-shm 边车**，无论该文件的 journal 模式是什么（这是发包只读库的标准开法，
-///     也彻底杜绝了"只读打开一个 WAL 模式旧库反而生出 -wal/-shm"的问题）；
-///   - 不启用 WAL / 外键约束（都只服务于写操作）。
-/// 建库 DDL 与 user_version 的写入都集中在离线导出阶段完成。
+/// Convention: the sqlite in the App Store build is always a finished, offline prebuilt database (see exportCombinedDatabase…),
+/// only queried at runtime, never written. So here:
+///   - open with SQLITE_OPEN_READONLY: never create the file, never build tables/migrate, never write user_version;
+///   - use the URI parameter immutable=1: tells SQLite the file never changes, so it **neither creates nor uses
+///     -wal/-shm sidecars**, whatever the file's journal mode (the standard way to open a shipped read-only database,
+///     which also rules out "opening an old WAL-mode database read-only spawns -wal/-shm");
+///   - don't enable WAL / foreign keys (both only serve writes).
+/// Building the DDL and writing user_version both happen in the offline export stage.
 - (BOOL)p_openAndSetup {
+    if (d_db) {
+        sqlite3_close(d_db);
+        d_db = NULL;
+    }
     d_hasLocalization = NO;
-    // 用 NSURL 生成正确百分号转义的 file URI（路径含空格如 "Application Support" 时必需），
-    // 再追加 immutable=1。配合 SQLITE_OPEN_URI 生效。
+    d_languagePackLanguage = nil;
+    // Use NSURL to build a properly percent-escaped file URI (required when the path has spaces, like "Application Support"),
+    // then append immutable=1. Takes effect together with SQLITE_OPEN_URI.
     NSString *uri = [[[NSURL fileURLWithPath:d_dbPath] absoluteString]
                      stringByAppendingString:@"?immutable=1"];
     int rc = sqlite3_open_v2(uri.UTF8String, &d_db,
                              SQLITE_OPEN_READONLY | SQLITE_OPEN_URI, NULL);
     if (rc != SQLITE_OK) {
-        // 正常流程下 OnDemandResourceLoader 会先把预制库拷贝就位再调用 initialize；
-        // 走到这里通常意味着拷贝失败 / 文件缺失，置空句柄，查询将安全地返回空结果。
+        // Normally OnDemandResourceLoader copies the prebuilt database into place before calling initialize;
+        // getting here usually means the copy failed / the file is missing, so clear the handle and queries safely return empty results.
         RETROGO_LOGE(DATABASE, "Failed to open game database read-only (%d): %@", rc, d_dbPath);
         if (d_db) {
             sqlite3_close(d_db);
@@ -759,34 +848,19 @@ static NSString *p_locNorm(NSString *s);
     sqlite3_exec(d_db, "PRAGMA cache_size=-8192;", NULL, NULL, NULL);
     sqlite3_exec(d_db, "PRAGMA mmap_size=268435456;", NULL, NULL, NULL);
 
-    // 仅做一次版本核对日志，便于发现预制库与代码 schema 期望不一致；不做任何写入。
+    // Check the version once in the log only, to catch a prebuilt database that doesn't match the code's schema; nothing is written.
     NSInteger storedVersion = [self p_readUserVersion];
     if (storedVersion != self.currentDBVersion) {
         RETROGO_LOGF(DATABASE, "Prebuilt game database user_version %ld does not match expected %ld; re-export the prebuilt database",
               (long)storedVersion, (long)self.currentDBVersion);
     }
 
-    NSString *locPath = [[d_dbPath stringByDeletingLastPathComponent]
-                         stringByAppendingPathComponent:@"gameloc.sqlite"];
-    if ([NSFileManager.defaultManager fileExistsAtPath:locPath]) {
-        NSString *locURI = [[[NSURL fileURLWithPath:locPath] absoluteString]
-                            stringByAppendingString:@"?mode=ro&immutable=1"];
-        NSString *escaped = [locURI stringByReplacingOccurrencesOfString:@"'" withString:@"''"];
-        NSString *sql = [NSString stringWithFormat:@"ATTACH DATABASE '%@' AS loc;", escaped];
-        if (sqlite3_exec(d_db, sql.UTF8String, NULL, NULL, NULL) == SQLITE_OK) {
-            d_hasLocalization = YES;
-            sqlite3_exec(d_db, "PRAGMA loc.cache_size=-2048;", NULL, NULL, NULL);
-            sqlite3_exec(d_db, "PRAGMA loc.mmap_size=67108864;", NULL, NULL, NULL);
-            RETROGO_LOGI(DATABASE, "Attached game name localization database");
-        } else {
-            RETROGO_LOGE(DATABASE, "Failed to attach game name localization database: %@", locPath);
-        }
-    }
+    [self p_attachLanguagePack];
     sqlite3_exec(d_db, "PRAGMA query_only=ON;", NULL, NULL, NULL);
     return YES;
 }
 
-/// 读取 SQLite 文件头中的 user_version（新建文件返回 0）
+/// Reads user_version from the SQLite file header (0 for a new file)
 - (NSInteger)p_readUserVersion {
     NSInteger version = 0;
     sqlite3_stmt *stmt = NULL;
@@ -799,15 +873,15 @@ static NSString *p_locNorm(NSString *s);
     return version;
 }
 
-/// 执行实际导入（在 dbQueue 上调用），返回导入条数。
-/// db 参数允许写入任意 SQLite 句柄：线上导入传入 d_db，
-/// DEBUG 离线导出时传入独立的临时句柄，从而不污染运行库。
+/// Does the actual import (called on dbQueue) and returns the number of entries imported.
+/// db can be any writable SQLite handle: the live import passes d_db,
+/// the DEBUG offline export passes its own temporary handle so the runtime database stays clean.
 - (NSInteger)p_doImportRdbAtPath:(NSString *)rdbPath
                          rdbName:(NSString *)rdbName
                         stableId:(NSInteger)stableId
                               db:(sqlite3 *)db
                            error:(NSError **)outError {
-    // --- 解析 displayName / manufacturer ---
+    // --- Parse displayName / manufacturer ---
     NSString *displayName  = rdbName;
     NSString *manufacturer = nil;
     NSRange range = [rdbName rangeOfString:@" - "];
@@ -816,7 +890,7 @@ static NSString *p_locNorm(NSString *s);
         displayName  = [rdbName substringFromIndex:range.location + range.length];
     }
 
-    // --- 打开 rdb ---
+    // --- Open the rdb ---
     libretrodb_t        *rdb    = libretrodb_new();
     libretrodb_cursor_t *cursor = libretrodb_cursor_new();
     if (!rdb || !cursor) {
@@ -846,11 +920,11 @@ static NSString *p_locNorm(NSString *s);
         return 0;
     }
 
-    // --- 开启事务 ---
+    // --- Begin transaction ---
     sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, NULL);
 
-    // --- 插入 platform ---
-    // stableId > 0 时显式指定 id，保证 platform_id 跨版本稳定。
+    // --- Insert the platform ---
+    // When stableId > 0, set the id explicitly so platform_id stays stable across versions.
     NSInteger platformId = 0;
     {
         const char *sql = (stableId > 0)
@@ -889,7 +963,7 @@ static NSString *p_locNorm(NSString *s);
         return 0;
     }
 
-    // --- 预编译 game / fts 插入语句 ---
+    // --- Prepare the game / fts insert statements ---
     const char *gameSQL =
         "INSERT INTO game("
         "  platform_id, name, group_name, developer, publisher, "
@@ -906,13 +980,13 @@ static NSString *p_locNorm(NSString *s);
     sqlite3_prepare_v2(db, gameSQL, -1, &gameStmt, NULL);
     sqlite3_prepare_v2(db, ftsSQL,  -1, &ftsStmt,  NULL);
 
-    // --- 逐条读取 rdb 并写入 ---
+    // --- Read the rdb entry by entry and write ---
     NSInteger count = 0;
     struct rmsgpack_dom_value item;
 
     while (libretrodb_cursor_read_item(cursor, &item) == 0) {
         if (item.type == RDT_MAP) {
-            // 从 map 中提取各字段
+            // Extract the fields from the map
             NSString *name         = nil;
             NSString *developer    = nil;
             NSString *publisher    = nil;
@@ -973,9 +1047,9 @@ static NSString *p_locNorm(NSString *s);
                 }
             }
 
-            // name 是必须字段，没有则跳过
+            // name is required; skip entries without one
             if (name.length > 0 && gameStmt && ftsStmt) {
-                // 插入 game
+                // Insert into game
                 sqlite3_reset(gameStmt);
                 sqlite3_bind_int64(gameStmt,  1, (sqlite3_int64)platformId);
                 p_bindText(gameStmt,  2, name);
@@ -999,7 +1073,7 @@ static NSString *p_locNorm(NSString *s);
 
                 NSInteger gameId = (NSInteger)sqlite3_last_insert_rowid(db);
 
-                // 插入 game_fts
+                // Insert into game_fts
                 sqlite3_reset(ftsStmt);
                 p_bindText(ftsStmt, 1, name);
                 p_bindText(ftsStmt, 2, developer);
@@ -1017,7 +1091,7 @@ static NSString *p_locNorm(NSString *s);
     sqlite3_finalize(gameStmt);
     sqlite3_finalize(ftsStmt);
 
-    // 更新 game_count
+    // Update game_count
     {
         const char *sql = "UPDATE platform SET game_count = ? WHERE id = ?;";
         sqlite3_stmt *stmt = NULL;
@@ -1031,7 +1105,7 @@ static NSString *p_locNorm(NSString *s);
 
     sqlite3_exec(db, "COMMIT;", NULL, NULL, NULL);
 
-    // 关闭 rdb
+    // Close the rdb
     libretrodb_cursor_close(cursor);
     libretrodb_cursor_free(cursor);
     libretrodb_close(rdb);
@@ -1041,14 +1115,14 @@ static NSString *p_locNorm(NSString *s);
 }
 
 #if DEBUG
-/// DEBUG 离线导出：从一组 .rdb 文件构建一个成品合并库，
-/// 产物与设备端 import 结果完全一致（同 schema、同 user_version、含已建好的 FTS5），
-/// 末尾 checkpoint + 关 WAL + VACUUM，落地为单个可直接打包的 .db 文件。
+/// DEBUG offline export: builds a finished merged database from a set of .rdb files.
+/// The output is identical to the import on the device (same schema, same user_version, FTS5 already built);
+/// it ends with a checkpoint + WAL off + VACUUM and is written as a single .db file ready to bundle.
 - (NSInteger)p_exportCombinedToPath:(NSString *)destPath
                            rdbPaths:(NSArray<NSString *> *)rdbPaths
                               error:(NSError **)outError {
     NSFileManager *fm = NSFileManager.defaultManager;
-    // 清掉旧产物及其 WAL/SHM 边车，保证从零开始
+    // Remove the old output and its WAL/SHM sidecars to start from scratch
     for (NSString *suffix in @[@"", @"-wal", @"-shm"]) {
         [fm removeItemAtPath:[destPath stringByAppendingString:suffix] error:NULL];
     }
@@ -1061,13 +1135,13 @@ static NSString *p_locNorm(NSString *s);
         return 0;
     }
 
-    // 仅导出（建库）阶段用 WAL 提升批量写入性能、用外键约束保证数据完整；
-    // 收尾会 checkpoint 并切回 DELETE journal，最终产物是干净的单文件。
-    // （注意：运行时打开预制库是只读的，不会再用到这两项。）
+    // Only the export (build) stage uses WAL for faster bulk writes and foreign keys for data integrity;
+    // the wrap-up checkpoints and switches back to the DELETE journal, so the final output is a clean single file.
+    // (Note: the prebuilt database is opened read-only at runtime and uses neither.)
     sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
     sqlite3_exec(db, "PRAGMA foreign_keys=ON;", NULL, NULL, NULL);
 
-    // 建表 / 建索引 / 建 FTS / 建分组表。运行时只读不建表，故 DDL 只在此导出阶段执行。
+    // Build tables / indexes / FTS / the group table. Runtime is read-only and never builds tables, so the DDL only runs in this export stage.
     const char *ddls[] = {
         kDDL_Platform,
         kDDL_Game,
@@ -1093,13 +1167,13 @@ static NSString *p_locNorm(NSString *s);
         }
     }
 
-    // 对齐 user_version，使运行时 open 时跳过 DDL
+    // Align user_version so opening at runtime skips the DDL
     NSString *uv = [NSString stringWithFormat:@"PRAGMA user_version = %ld;",
                     (long)self.currentDBVersion];
     sqlite3_exec(db, uv.UTF8String, NULL, NULL, NULL);
 
-    // rdb_name → stable platform_id。已发布版本的 id 不可变，新平台从 max+1 递增。
-    // 添加新平台时只需在此追加，不要修改已有条目。
+    // rdb_name → stable platform_id. Ids of released versions never change; new platforms count up from max+1.
+    // To add a platform, just append it here; never change existing entries.
     NSDictionary<NSString *, NSNumber *> *stablePlatformIds = @{
         @"DOS":                                             @1,
         @"Nintendo - Family Computer Disk System":          @2,
@@ -1127,7 +1201,7 @@ static NSString *p_locNorm(NSString *s);
         @"Sega - SG-1000":                                  @24,
     };
 
-    // 逐个导入 .rdb（复用与线上完全相同的导入核心）
+    // Import each .rdb (reusing exactly the same import core as the live path)
     NSInteger total = 0;
     for (NSString *rdbPath in rdbPaths) {
         NSString *rdbName = [[rdbPath lastPathComponent] stringByDeletingPathExtension];
@@ -1144,16 +1218,16 @@ static NSString *p_locNorm(NSString *s);
         }
     }
 
-    // ── 物化分组表 ────────────────────────────────────────────────────────
-    // 每个 (platform_id, group_name) 归为一组：
-    //   representative_game_id：组内代表变体——按地区优先级 USA>World>Europe>Japan>其它，
-    //                           同级取 id 最小者；用于列表封面与元数据展示。
-    //   variant_count：组内变体数。
+    // ── Materialized group table ──────────────────────────────────────────
+    // Each (platform_id, group_name) forms one group:
+    //   representative_game_id: the group's representative variant, by region priority USA>World>Europe>Japan>other,
+    //                           smallest id on ties; used for list covers and metadata.
+    //   variant_count: number of variants in the group.
     {
-        // 用窗口函数单趟扫描（对 game 仅排序一次），避免按组的关联子查询造成的
-        // O(分组数 × 行数) 爆炸：
-        //   ROW_NUMBER 按「地区优先级 + id」排序，rn=1 即代表变体；
-        //   COUNT(*) OVER(无 ORDER BY) 取整组的变体数。
+        // A single pass with window functions (sorting game only once) avoids the
+        // O(groups × rows) blowup of a per-group correlated subquery:
+        //   ROW_NUMBER orders by "region priority + id", so rn=1 is the representative variant;
+        //   COUNT(*) OVER (no ORDER BY) gives the whole group's variant count.
         const char *sql =
             "INSERT INTO game_group(platform_id, group_name, representative_game_id, variant_count) "
             "SELECT platform_id, group_name, id, cnt FROM ( "
@@ -1174,24 +1248,24 @@ static NSString *p_locNorm(NSString *s);
         }
     }
 
-    // 回填每个平台的 group_count（去重后的分组数，供列表分页用）
+    // Backfill each platform's group_count (number of deduplicated groups, for list paging)
     sqlite3_exec(db,
         "UPDATE platform SET group_count = "
         "  (SELECT COUNT(*) FROM game_group WHERE game_group.platform_id = platform.id);",
         NULL, NULL, NULL);
 
-    // 收尾：合并 WAL → 单文件、切回 DELETE journal、VACUUM 瘦身。
-    // 顺序：先 checkpoint 把 -wal 内容并入主库，再切 DELETE 模式，最后 VACUUM。
+    // Wrap-up: merge WAL → single file, switch back to the DELETE journal, VACUUM to compact.
+    // Order: checkpoint first to fold -wal into the main database, then switch to DELETE mode, then VACUUM.
     sqlite3_exec(db, "PRAGMA wal_checkpoint(TRUNCATE);", NULL, NULL, NULL);
     sqlite3_exec(db, "PRAGMA journal_mode=DELETE;", NULL, NULL, NULL);
     sqlite3_exec(db, "VACUUM;", NULL, NULL, NULL);
 
     sqlite3_close(db);
 
-    // 兜底：切 DELETE 模式 + 关库后 SQLite 通常会自动删除 -wal/-shm，
-    // 但某些情况下 -shm 仍会残留。此时这两个边车已不含任何独有数据
-    // （-wal 已 checkpoint 入主库，-shm 只是 WAL 索引），显式删除，
-    // 保证导出产物是干净的单文件，可直接打包。
+    // Fallback: after switching to DELETE mode and closing, SQLite usually deletes -wal/-shm itself,
+    // but -shm can sometimes linger. By now neither sidecar holds any data of its own
+    // (-wal has been checkpointed into the main database, -shm is only the WAL index), so delete them explicitly
+    // to keep the export a clean single file ready to bundle.
     for (NSString *suffix in @[@"-wal", @"-shm"]) {
         [fm removeItemAtPath:[destPath stringByAppendingString:suffix] error:NULL];
     }
@@ -1200,7 +1274,7 @@ static NSString *p_locNorm(NSString *s);
 }
 #endif
 
-// MARK: - 结果集转换
+// MARK: - Result set conversion
 
 - (RAPlatformItem *)p_platformItemFromStmt:(sqlite3_stmt *)stmt {
     RAPlatformItem *item  = [[RAPlatformItem alloc] init];
@@ -1246,12 +1320,15 @@ static NSString *p_locNorm(NSString *s);
         entry.localizationSource = (NSInteger)sqlite3_column_int64(stmt, 20);
         entry.localizationReference = entry.localizationSource == 5;
     }
+    if (entry.localizedName) {
+        entry.localizationLanguage = d_languagePackLanguage;
+    }
     return entry;
 }
 
-/// 分组结果行 → RAGameEntry：gameId/元数据取自代表变体，
-/// name 用干净的分组名（供列表展示与封面匹配），并带上 groupName / variantCount。
-/// 列顺序见 fetchGroups / 搜索折叠查询。
+/// Group result row → RAGameEntry: gameId/metadata come from the representative variant,
+/// name is the clean group name (for list display and cover matching), along with groupName / variantCount.
+/// See fetchGroups / the folded search query for the column order.
 - (RAGameEntry *)p_groupEntryFromStmt:(sqlite3_stmt *)stmt {
     RAGameEntry *entry    = [[RAGameEntry alloc] init];
     entry.gameId          = (NSInteger)sqlite3_column_int64(stmt,  0);
@@ -1280,19 +1357,22 @@ static NSString *p_locNorm(NSString *s);
         entry.localizationSource = (NSInteger)sqlite3_column_int64(stmt, 20);
         entry.localizationReference = entry.localizationSource == 5;
     }
+    if (entry.localizedName) {
+        entry.localizationLanguage = d_languagePackLanguage;
+    }
     return entry;
 }
 
-// MARK: - FTS 查询构造
+// MARK: - FTS query building
 
-/// "super mario" → "super* mario*"（FTS5 前缀匹配）
+/// "super mario" → "super* mario*" (FTS5 prefix matching)
 - (NSString *)p_buildFTSQuery:(NSString *)keyword {
     NSCharacterSet *ws = NSCharacterSet.whitespaceAndNewlineCharacterSet;
     NSArray<NSString *> *words = [keyword componentsSeparatedByCharactersInSet:ws];
     NSMutableArray<NSString *> *tokens = [NSMutableArray array];
     for (NSString *word in words) {
         NSString *w = [word stringByTrimmingCharactersInSet:ws];
-        // 对 FTS5 特殊字符做简单转义（避免 MATCH 语法错误）
+        // Simple escaping of FTS5 special characters (avoids MATCH syntax errors)
         w = [w stringByReplacingOccurrencesOfString:@"\"" withString:@""];
         if (w.length > 0) {
             [tokens addObject:[w stringByAppendingString:@"*"]];
@@ -1301,7 +1381,7 @@ static NSString *p_locNorm(NSString *s);
     return [tokens componentsJoinedByString:@" "];
 }
 
-// MARK: - 错误构造
+// MARK: - Error building
 
 - (NSError *)p_errorWithCode:(RARDBErrorCode)code reason:(NSString *)reason {
     return [NSError errorWithDomain:kRARDBErrorDomain
@@ -1310,10 +1390,10 @@ static NSString *p_locNorm(NSString *s);
 }
 
 // ===========================================================================
-// MARK: - 静态工具函数（文件内部使用）
+// MARK: - Static helpers (file-internal)
 // ===========================================================================
 
-/// 从 rmsgpack_dom_value (RDT_STRING) 中安全地构造 NSString
+/// Safely builds an NSString from an rmsgpack_dom_value (RDT_STRING)
 static inline NSString * _Nullable p_str(struct rmsgpack_dom_value *val) {
     if (!val || val->type != RDT_STRING || !val->val.string.buff || val->val.string.len == 0)
         return nil;
@@ -1322,7 +1402,7 @@ static inline NSString * _Nullable p_str(struct rmsgpack_dom_value *val) {
                                   encoding:NSUTF8StringEncoding];
 }
 
-/// 将 binary 字段转换为小写 hex 字符串（md5 / sha1 通用）
+/// Converts a binary field to a lowercase hex string (shared by md5 / sha1)
 static inline NSString * _Nullable p_binaryHexString(struct rmsgpack_dom_value *val) {
     if (!val || val->type != RDT_BINARY || !val->val.binary.buff || val->val.binary.len == 0)
         return nil;
@@ -1334,12 +1414,12 @@ static inline NSString * _Nullable p_binaryHexString(struct rmsgpack_dom_value *
     return [hex copy];
 }
 
-/// 将 crc binary（4字节，big-endian 存储）转换为 8位小写 hex
+/// Converts a crc binary (4 bytes, stored big-endian) to 8-digit lowercase hex
 static inline NSString * _Nullable p_crc32HexString(struct rmsgpack_dom_value *val) {
     if (!val || val->type != RDT_BINARY || !val->val.binary.buff) return nil;
     switch (val->val.binary.len) {
         case 4: {
-            // rdb 中 CRC 以 big-endian 存储，CFSwapInt32BigToHost 处理字节序
+            // The rdb stores CRC big-endian; CFSwapInt32BigToHost handles the byte order
             uint32_t raw = *(uint32_t *)val->val.binary.buff;
             uint32_t crc = CFSwapInt32BigToHost(raw);
             return [NSString stringWithFormat:@"%08x", crc];
@@ -1349,13 +1429,13 @@ static inline NSString * _Nullable p_crc32HexString(struct rmsgpack_dom_value *v
     }
 }
 
-/// 从 sqlite3_stmt 中安全读取 TEXT 列（可能为 NULL）
+/// Safely reads a TEXT column from a sqlite3_stmt (may be NULL)
 static inline NSString * _Nullable p_colText(sqlite3_stmt *stmt, int col) {
     const unsigned char *text = sqlite3_column_text(stmt, col);
     return text ? [NSString stringWithUTF8String:(const char *)text] : nil;
 }
 
-/// 向 sqlite3_stmt 绑定可空 TEXT（nil → SQL NULL）
+/// Binds a nullable TEXT to a sqlite3_stmt (nil → SQL NULL)
 static inline void p_bindText(sqlite3_stmt *stmt, int col, NSString * _Nullable val) {
     if (val) {
         sqlite3_bind_text(stmt, col, val.UTF8String, -1, SQLITE_TRANSIENT);
@@ -1364,31 +1444,13 @@ static inline void p_bindText(sqlite3_stmt *stmt, int col, NSString * _Nullable 
     }
 }
 
-/// 向 sqlite3_stmt 绑定 INTEGER（值为 0 时也绑定，不绑定 NULL）
+/// Binds an INTEGER to a sqlite3_stmt (also bound when the value is 0, never as NULL)
 static inline void p_bindInt64(sqlite3_stmt *stmt, int col, NSInteger val) {
     sqlite3_bind_int64(stmt, col, (sqlite3_int64)val);
 }
 
 static NSString *p_locNorm(NSString *s) {
-    static NSCharacterSet *keep = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSMutableCharacterSet *set = [NSMutableCharacterSet decimalDigitCharacterSet];
-        [set formUnionWithCharacterSet:[NSCharacterSet lowercaseLetterCharacterSet]];
-        [set formUnionWithCharacterSet:[NSCharacterSet uppercaseLetterCharacterSet]];
-        [set addCharactersInRange:NSMakeRange(0x4E00, 0x9FFF - 0x4E00 + 1)];
-        [set addCharactersInRange:NSMakeRange(0x3400, 0x4DBF - 0x3400 + 1)];
-        keep = [set copy];
-    });
-    NSMutableString *out = [NSMutableString string];
-    NSString *lower = s.lowercaseString ?: @"";
-    for (NSUInteger i = 0; i < lower.length; i++) {
-        unichar c = [lower characterAtIndex:i];
-        if ([keep characterIsMember:c]) {
-            [out appendFormat:@"%C", c];
-        }
-    }
-    return out;
+    return RALanguagePackSearchNorm(s);
 }
 
 @end
