@@ -248,6 +248,17 @@ extension GamePageOverlayElement {
         return b
     }
 
+    /// Controls a custom layout moves and scales together (`action` for the face buttons).
+    var group: String? {
+        guard case .string(let s) = meta?["group"] else { return nil }
+        return s
+    }
+
+    /// Only buttons the original controller lacks (turbo, combo) may be hidden by a custom layout.
+    var isHideableInCustomLayout: Bool {
+        type == .button && !isNative
+    }
+
     var title: String? {
         guard let v = meta?["title"], case .string(let s) = v else {
             return nil
@@ -329,6 +340,13 @@ extension GamePageOverlayElement {
 }
 
 extension GamePageOverlayConfig {
+    /// Whether the layout has the arcade four/six-button switch (MAME).
+    var hasArcadeLayoutSwitch: Bool {
+        elements.contains { $0.type == .arcadeLayoutButton }
+    }
+}
+
+extension GamePageOverlayConfig {
     enum OverlayName: String {
         case `default` = "default"
         case n64 = "n64"
@@ -346,9 +364,14 @@ extension GamePageOverlayConfig {
         case mame = "mame"
     }
 
+    /// The overlay JSON a core's `overlayName` loads; unknown or missing names use `default`.
+    static func resolvedOverlayName(_ name: String?) -> String {
+        (OverlayName(rawValue: name ?? "") ?? .default).rawValue
+    }
+
     static func loadOverlayConfig(_ name: String?) -> Self {
-        let overlayName = OverlayName(rawValue: name ?? "") ?? .default
-        guard let url = Bundle.main.url(forResource: overlayName.rawValue, withExtension: "json", subdirectory: "Data/overlays/spritekit") else {
+        let overlayName = resolvedOverlayName(name)
+        guard let url = Bundle.main.url(forResource: overlayName, withExtension: "json", subdirectory: "Data/overlays/spritekit") else {
             fatalError()
         }
 

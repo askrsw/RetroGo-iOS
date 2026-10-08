@@ -35,7 +35,8 @@ final class GamePageViewController: RAGameViewController {
 
     let inGameInfoView = GamePageInGameInfoView(frame: .zero)
     private(set) lazy var myToolbarView = GamePageToolbarView(holder: self)
-    private(set) lazy var myOverlayView = GamePageOverlayView(coreInfoItem: core)
+    private(set) lazy var myOverlayView = GamePageOverlayView(coreInfoItem: core, game: romItem)
+    private(set) lazy var overlayLayoutEditController = GameOverlayLayoutEditController(gamePage: self, overlayView: myOverlayView)
 
     /// Runtime-only landscape lock — intentionally NOT persisted. Entering a
     /// game should match the device's current orientation (no jarring auto-
@@ -225,6 +226,46 @@ final class GamePageViewController: RAGameViewController {
 
         // Apply persisted orientation lock on entry.
         applyOrientationLock()
+    }
+
+    /// Whether this core has on-screen controls whose layout can be edited.
+    var canEditOverlayLayout: Bool {
+        myOverlayView.overlayScene != nil
+    }
+
+    /// Shows this platform's control layouts; editing one returns to the list when done.
+    func showOverlayLayoutList() {
+        guard !RANetplayCoordinator.shared.isNetplayEnabled, !overlayLayoutEditController.isEditing else { return }
+        let list = GameOverlayLayoutListViewController(session: myOverlayView.layoutSession)
+        let card = GameOverlayLayoutListCardController(listController: list)
+        list.editHandler = { [weak self, weak card] request in
+            // Keeps the game paused from the list closing until the editor takes over.
+            let bridge = GamePauseCoordinator.shared.acquire(reason: "overlay-layout-list-to-edit")
+            card?.close { [weak self] in
+                self?.editOverlayLayout(request)
+                bridge?.release()
+            }
+        }
+        present(card, animated: true)
+    }
+
+    private func editOverlayLayout(_ request: GameOverlayLayoutListViewController.EditRequest) {
+        let target: GameOverlayLayoutEditController.Target
+        switch request {
+        case .create:
+            // A new layout starts from what the game shows now.
+            target = .create(from: myOverlayView.layoutSession.resolvedLayout().item?.data ?? GameOverlayLayoutData())
+        case .edit(let item):
+            target = .edit(item)
+        }
+        overlayLayoutEditController.begin(target) { [weak self] _ in
+            self?.showOverlayLayoutList()
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        overlayLayoutEditController.viewDidLayout()
     }
 
     override func viewWillDisappear(_ animated: Bool) {

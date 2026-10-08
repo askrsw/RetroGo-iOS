@@ -26,6 +26,7 @@
                 "plain_landscape_layout": { "right": 20, "bottom": 150 }
             },
             "meta": {
+                "group": "action",
                 "ps_action_button_icon": "circle",
                 "binds": ["A"],
                 "is_native": true
@@ -41,6 +42,7 @@
                 "plain_landscape_layout": { "right": 60, "bottom": 105 }
             },
             "meta": {
+                "group": "action",
                 "ps_action_button_icon": "cross",
                 "binds": ["B"],
                 "is_native": true
@@ -56,6 +58,7 @@
                 "plain_landscape_layout": { "right": 60, "bottom": 195 }
             },
             "meta": {
+                "group": "action",
                 "ps_action_button_icon": "triangle",
                 "binds": ["X"],
                 "is_native": true
@@ -71,6 +74,7 @@
                 "plain_landscape_layout": { "right": 100, "bottom": 150 }
             },
             "meta": {
+                "group": "action",
                 "ps_action_button_icon": "square",
                 "binds": ["Y"],
                 "is_native": true

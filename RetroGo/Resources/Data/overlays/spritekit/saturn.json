@@ -28,6 +28,7 @@
                 "polar_landscape_layout": { "theta": -242.5, "radius": 300 }
             },
             "meta": {
+                "group": "action",
                 "title": "A",
                 "binds": ["B"],
                 "is_native": true
@@ -45,6 +46,7 @@
                 "polar_landscape_layout": { "theta": -255, "radius": 300 }
             },
             "meta": {
+                "group": "action",
                 "title": "B",
                 "binds": ["A"],
                 "is_native": true
@@ -62,6 +64,7 @@
                 "polar_landscape_layout": { "theta": -267.5, "radius": 300 }
             },
             "meta": {
+                "group": "action",
                 "title": "C",
                 "binds": ["R1"],
                 "is_native": true
@@ -79,6 +82,7 @@
                 "polar_landscape_layout": { "theta": -244, "radius": 365 }
             },
             "meta": {
+                "group": "action",
                 "title": "X",
                 "binds": ["Y"],
                 "is_native": true
@@ -96,6 +100,7 @@
                 "polar_landscape_layout": { "theta": -255, "radius": 365 }
             },
             "meta": {
+                "group": "action",
                 "title": "Y",
                 "binds": ["X"],
                 "is_native": true
@@ -113,6 +118,7 @@
                 "polar_landscape_layout": { "theta": -266, "radius": 365 }
             },
             "meta": {
+                "group": "action",
                 "title": "Z",
                 "binds": ["L1"],
                 "is_native": true

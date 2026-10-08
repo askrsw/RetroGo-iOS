@@ -35,7 +35,7 @@ final class RetroRomPersistence {
     }
 
     var currentVersion: Int {
-        8
+        9
     }
 
     // MARK: - Rom File and Rom Folder Stuff
@@ -1188,7 +1188,7 @@ extension RetroRomPersistence {
 
             switch version {
                 case 0:
-                    try databaseV8(db: db)
+                    try databaseV9(db: db)
                     return true
                 case 1:
                     try migrationV1ToV2(db: db)
@@ -1198,6 +1198,7 @@ extension RetroRomPersistence {
                     try migrationV5ToV6(db: db)
                     try migrationV6ToV7(db: db)
                     try migrationV7ToV8(db: db)
+                    try migrationV8ToV9(db: db)
                     return true
                 case 2:
                     try migrationV2ToV3(db: db)
@@ -1206,6 +1207,7 @@ extension RetroRomPersistence {
                     try migrationV5ToV6(db: db)
                     try migrationV6ToV7(db: db)
                     try migrationV7ToV8(db: db)
+                    try migrationV8ToV9(db: db)
                     return true
                 case 3:
                     try migrationV3ToV4(db: db)
@@ -1213,24 +1215,32 @@ extension RetroRomPersistence {
                     try migrationV5ToV6(db: db)
                     try migrationV6ToV7(db: db)
                     try migrationV7ToV8(db: db)
+                    try migrationV8ToV9(db: db)
                     return true
                 case 4:
                     try migrationV4ToV5(db: db)
                     try migrationV5ToV6(db: db)
                     try migrationV6ToV7(db: db)
                     try migrationV7ToV8(db: db)
+                    try migrationV8ToV9(db: db)
                     return true
                 case 5:
                     try migrationV5ToV6(db: db)
                     try migrationV6ToV7(db: db)
                     try migrationV7ToV8(db: db)
+                    try migrationV8ToV9(db: db)
                     return true
                 case 6:
                     try migrationV6ToV7(db: db)
                     try migrationV7ToV8(db: db)
+                    try migrationV8ToV9(db: db)
                     return true
                 case 7:
                     try migrationV7ToV8(db: db)
+                    try migrationV8ToV9(db: db)
+                    return true
+                case 8:
+                    try migrationV8ToV9(db: db)
                     return true
                 default:
                     return true

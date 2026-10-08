@@ -478,7 +478,22 @@ extension GamePageToolbarView {
         ) { [weak self] _ in
             self?.editLayoutAction()
         }
-        sections.append(UIMenu(title: "", options: .displayInline, children: [editAction]))
+        var editActions: [UIMenuElement] = [editAction]
+        if holder?.canEditOverlayLayout == true {
+            let controlsAction = UIAction(
+                title: Bundle.localizedString(forKey: "overlay_layout_list_title"),
+                image: UIImage(systemName: "dpad")
+            ) { [weak self] _ in
+                Vibration.selection.vibrate()
+                self?.holder?.showOverlayLayoutList()
+            }
+            // Netplay keeps the game running, and moving controls mid-match is no time to edit.
+            if RANetplayCoordinator.shared.isNetplayEnabled {
+                controlsAction.attributes = .disabled
+            }
+            editActions.append(controlsAction)
+        }
+        sections.append(UIMenu(title: "", options: .displayInline, children: editActions))
 
         let toggleKey = isBarHidden ? "gamepage_toolbar_show_menu" : "gamepage_toolbar_hide_menu"
         let toggleImage = isBarHidden ? "eye" : "eye.slash"

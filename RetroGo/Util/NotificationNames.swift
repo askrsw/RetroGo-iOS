@@ -42,6 +42,8 @@ extension NSNotification.Name {
     static let gameToolbarLayoutChanged = NSNotification.Name(rawValue: "notif_gameToolbarLayoutChanged")
     static let overlayTurboTapLatchChanged = NSNotification.Name(rawValue: "notif_overlayTurboTapLatchChanged")
     static let overlayTurboSpeedChanged = NSNotification.Name(rawValue: "notif_overlayTurboSpeedChanged")
+    /// Posted with the overlay name (`object`) when a custom layout or a layout choice of that platform changes.
+    static let overlayLayoutChanged = NSNotification.Name(rawValue: "notif_overlayLayoutChanged")
     /// Posted whenever the current game's cheat list changes (toggle/add/edit/
     /// delete/reorder/apply), so the toolbar can refresh its "cheat active" badge.
     static let gameCheatStateChanged = NSNotification.Name(rawValue: "notif_gameCheatStateChanged")

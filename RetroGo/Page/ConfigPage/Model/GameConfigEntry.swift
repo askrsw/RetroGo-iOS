@@ -67,6 +67,8 @@ final class GameConfigEntry: NSObject {
 
     var enabled: Bool = true
     var opensCoreOptions = false
+    /// Opens the control layout list (in game) or the layout manager (from the settings pages).
+    var opensOverlayLayouts = false
     var desc: String?
     weak var session: GameConfigSession?
     @objc dynamic var refresh: Bool = false
@@ -138,6 +140,18 @@ extension GameConfigSession {
 
     func makeOverlayConfigEntries() -> [GameConfigEntry] {
         var entries: [GameConfigEntry] = []
+        // Layouts belong to a platform, so there is no global layout setting.
+        if scope != .global, let core, core.coreId != "dosbox-pure" {
+            let title = Bundle.localizedString(forKey: "overlay_layout_list_title")
+            let entry = GameConfigEntry(type: .string, ui: .list, title: title)
+            entry.opensOverlayLayouts = true
+            entry.getListSelectedTitle = { [weak self] in
+                guard let self else { return nil }
+                let session = GameOverlayLayoutSession(core: core, game: scope == .game ? game : nil)
+                return session.resolvedLayout().item?.name ?? Bundle.localizedString(forKey: "overlay_layout_builtin")
+            }
+            entries.append(entry)
+        }
         do {
             let title = Bundle.localizedString(forKey: "configpage_game_fast_multiplier")
             let array: [(GameConfigSegmentItem, Double)] = [ (.text(" 2x "), 2.0), (.text(" 3x "), 3.0), (.text(" 4x "), 4.0), (.text(" 6x "), 6.0) ]

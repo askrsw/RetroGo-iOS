@@ -54,6 +54,8 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     private var ndsLayoutButton: GameOverlayNDSLayoutButton?
     private var arcadeLayoutButton: GameOverlayArcadeLayoutButton?
     private(set) var usesFourButtonLayout = false
+    /// The arcade 4/6-button switch changed the layout; the owner remembers it for the game.
+    var onFourButtonLayoutChanged: ((Bool) -> Void)?
     private var emuFrameActionToken: String?
 
     private struct CollapseVisualState {
@@ -68,11 +70,15 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     private var collapseVisualStates: [ObjectIdentifier: CollapseVisualState] = [:]
     private var isAnimatingCollapse = false
 
-    init(size: CGSize, config: GamePageOverlayConfig, supportsAnalog: Bool, theme: GameOverlayTheme = .default) {
+    init(size: CGSize, config: GamePageOverlayConfig, supportsAnalog: Bool, layoutData: GameOverlayLayoutData? = nil,
+         fourButtonLayout: Bool = false, theme: GameOverlayTheme = .default) {
         self.config = config
         self.supportsAnalog = supportsAnalog
         self.theme = theme
         self.overlayLayoutResolver = GameOverlayLayoutResolver(config: config)
+        self.overlayLayoutResolver.layoutData = layoutData
+        // Only layouts with the arcade switch have a four-button form.
+        self.usesFourButtonLayout = fourButtonLayout && config.hasArcadeLayoutSwitch
         super.init(size: size)
         backgroundColor = .clear
         scaleMode = .resizeFill
@@ -80,6 +86,8 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
 
         updateOverlayLayout(for: size)
         buildNodes()
+        applyNodeVisibility()
+        applyCustomOpacity()
         updateEmuFrameCallbackRegistration()
 
         NotificationCenter.default.addObserver(
@@ -118,7 +126,21 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     }
 
     func updateLayout(for size: CGSize) {
+        let wasPortrait = overlayLayoutResolver.mode == .portrait
         updateOverlayLayout(for: size)
+        // Each orientation has its own custom layout, so what is hidden may change.
+        if wasPortrait != (overlayLayoutResolver.mode == .portrait) {
+            applyNodeVisibility()
+        }
+        layoutNodes()
+    }
+
+    /// Switches to another custom layout (nil = built-in) without rebuilding the nodes.
+    func applyLayoutData(_ layoutData: GameOverlayLayoutData?) {
+        guard overlayLayoutResolver.layoutData != layoutData else { return }
+        overlayLayoutResolver.layoutData = layoutData
+        applyNodeVisibility()
+        applyCustomOpacity()
         layoutNodes()
     }
 
@@ -192,6 +214,26 @@ extension GamePageOverlayScene {
                 collapseVisualStates[key] = state
             }
         }
+    }
+
+    /// Hidden by the JSON, by the arcade four-button layout, or by the custom layout.
+    private func applyNodeVisibility() {
+        for button in actionButtons {
+            let element = button.element
+            let hidden = element.isHidden
+                || (usesFourButtonLayout && element.isSixButtonOnly)
+                || overlayLayoutResolver.isHiddenByCustomLayout(element, fourButtonLayout: usesFourButtonLayout)
+            if hidden && !button.isHidden {
+                button.cancelActiveInput()
+            }
+            button.isHidden = hidden
+        }
+    }
+
+    /// Custom layout opacity on the top-level nodes; collapse animations only touch their children.
+    private func applyCustomOpacity() {
+        let opacity = overlayLayoutResolver.customOpacity
+        children.forEach { $0.alpha = opacity }
     }
 
     private func makeNode(for element: GamePageOverlayElement) -> SKNode {
@@ -319,18 +361,24 @@ extension GamePageOverlayScene {
     private func makeArcadeLayoutButtonNode(element: GamePageOverlayElement) -> SKNode {
         let node = GameOverlayArcadeLayoutButton(element: element, theme: theme) { [weak self] in
             guard let self, !self.isAnimatingCollapse, self.overlayCollapsed != true else { return }
-            self.usesFourButtonLayout.toggle()
-            for button in self.actionButtons {
-                guard button.element.fourButtonGeometry != nil || button.element.isSixButtonOnly else { continue }
-                button.cancelActiveInput()
-                button.isHidden = button.element.isHidden || (self.usesFourButtonLayout && button.element.isSixButtonOnly)
-            }
-            self.arcadeLayoutButton?.applyFourButtonLayout(self.usesFourButtonLayout)
-            self.layoutNodes()
+            self.setFourButtonLayout(!self.usesFourButtonLayout)
+            self.onFourButtonLayoutChanged?(self.usesFourButtonLayout)
         }
         node.applyFourButtonLayout(usesFourButtonLayout)
         self.arcadeLayoutButton = node
         return node
+    }
+
+    /// Switches between the arcade four- and six-button layouts; ignored without the arcade switch.
+    func setFourButtonLayout(_ fourButtons: Bool) {
+        guard config.hasArcadeLayoutSwitch, usesFourButtonLayout != fourButtons else { return }
+        usesFourButtonLayout = fourButtons
+        for button in actionButtons where button.element.fourButtonGeometry != nil || button.element.isSixButtonOnly {
+            button.cancelActiveInput()
+        }
+        applyNodeVisibility()
+        arcadeLayoutButton?.applyFourButtonLayout(usesFourButtonLayout)
+        layoutNodes()
     }
 
     private func setOverlayCollapsed(_ collapsed: Bool, animated: Bool) {
