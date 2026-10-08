@@ -69,6 +69,10 @@ final class AppSettings {
     }
 
     func checkAndMarkRatingRequest() -> Bool {
+        #if targetEnvironment(simulator)
+        // Simulator builds are for development only; the review prompt would just get in the way.
+        return false
+        #else
         let now = Date()
         if let lastRateTime = Defaults[.lastRateTime] {
             if now.timeIntervalSince(lastRateTime) < 3600 * 24 {
@@ -77,5 +81,6 @@ final class AppSettings {
         }
         Defaults[.lastRateTime] = now
         return true
+        #endif
     }
 }

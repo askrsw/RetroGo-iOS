@@ -35,7 +35,12 @@ final class AppStoreProFeatureGate {
     private init() { }
 
     var isProUnlocked: Bool {
-        AppStorePurchaseManager.shared.isProPurchased
+        #if targetEnvironment(simulator)
+        // Simulator builds are for development only; skip the play-time limit there.
+        return true
+        #else
+        return AppStorePurchaseManager.shared.isProPurchased
+        #endif
     }
 
     func presentPurchasePage(from viewController: UIViewController? = nil) {
