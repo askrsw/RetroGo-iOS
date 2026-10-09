@@ -47,6 +47,7 @@
 #include <emu/cheat_manager.h>
 #include <emu/content.h>
 #include <core/dynamic.h>
+#include <core/ra_port_devices.h>
 #include <utils/list_special.h>
 #include <utils/retro_paths.h>
 #include <main/retroarch.h>
@@ -1188,6 +1189,20 @@ void command_event_init_controllers(rarch_system_info_t *sys_info,
          {
             device = input_config_get_device(port);
             break;
+         }
+      }
+
+      /* RetroGo: the device type the game config asks for, e.g. DualShock.
+       * Written back like the menu does, since the input mapper reads it too. */
+      {
+         unsigned preferred = ra_port_devices_resolve(
+               &sys_info->ports.data[port], device);
+         if (preferred != device)
+         {
+            RARCH_LOG("[Input] Port %u device set to %u by the game config.\n",
+                  port + 1, preferred);
+            device = preferred;
+            input_config_set_device(port, device);
          }
       }
 

@@ -347,6 +347,10 @@
 "configpage_overlay_haptic_rigid" = "清脆";
 "configpage_game_rumble" = "游戏震动";
 "configpage_game_rumble_desc" = "游戏发出震动时（如赛车碰撞、射击开火）让手机跟着震动。连接了带震动马达的手柄时，由手柄震动。";
+"configpage_port_device" = "手柄类型";
+"configpage_port_device_desc" = "游戏识别到的手柄。DualShock 带摇杆和震动；个别早期游戏不兼容时可改为普通手柄。下次启动游戏时生效。";
+"configpage_port_device_standard" = "普通手柄";
+"configpage_port_device_dualshock" = "DualShock";
 "configpage_controllers" = "玩家控制器";
 "configpage_player" = "玩家 %d";
 "configpage_touchscreen" = "触摸屏";

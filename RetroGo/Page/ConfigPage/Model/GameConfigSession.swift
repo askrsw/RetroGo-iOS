@@ -68,6 +68,32 @@ enum TurboSpeed: Int, CaseIterable {
     }
 }
 
+/// A controller type a player can pick for a core's ports, from "port_devices"
+/// in the extra core info. RetroArch picks the core's device whose description
+/// contains `name`; an empty name is the standard RetroPad.
+struct GamePortDevice: Equatable {
+    let name: String
+    /// Has sticks the core reads, so the on-screen stick sends analog values.
+    let analog: Bool
+    let isDefault: Bool
+}
+
+extension EmuCoreInfoItem {
+    var gamePortDevices: [GamePortDevice] {
+        (portDevices ?? []).compactMap { item in
+            guard let name = item["name"] as? String else { return nil }
+            return GamePortDevice(name: name,
+                                  analog: (item["analog"] as? Bool) ?? false,
+                                  isDefault: (item["default"] as? Bool) ?? false)
+        }
+    }
+
+    var defaultPortDevice: GamePortDevice? {
+        let devices = gamePortDevices
+        return devices.first(where: \.isDefault) ?? devices.first
+    }
+}
+
 final class GameConfigSession {
     let scope: GameConfigScope
     let core: EmuCoreInfoItem?
@@ -305,6 +331,21 @@ extension GameConfigSession {
         return ok
     }
 
+    /// The controller type every port of this core gets; nil when the core has no choice.
+    /// Resolved like the other RAConfig values; an unknown stored name falls back to the default.
+    func getPortDevice() -> GamePortDevice? {
+        guard let core else { return nil }
+        let devices = core.gamePortDevices
+        return devices.first(where: { $0.name == config.portDevice }) ?? core.defaultPortDevice
+    }
+
+    /// Applies from the next launch: the core reads its port types while the game loads.
+    @discardableResult
+    func setPortDevice(_ device: GamePortDevice) -> Bool {
+        config.portDevice = device.name
+        return setOptionalValue(column: Self.portDevice, value: device.name)
+    }
+
     @discardableResult
     func saveInputBindingProfile(_ profile: RAInputBindingProfile?) -> Bool {
         config.inputBindingProfile = profile
@@ -516,6 +557,12 @@ private extension GameConfigSession {
             if core.supportsLogicThread == false {
                 cfg.logicThread = false
             }
+            // Unset, or a name this core does not list, means the core's default
+            // (an empty name is the standard RetroPad, not "unset").
+            let devices = core.gamePortDevices
+            if !devices.contains(where: { $0.name == cfg.portDevice }) {
+                cfg.portDevice = core.defaultPortDevice?.name
+            }
             if core.isHWRender {
                 cfg.videoDriver = RetroArchX.shared().defaultVideoDriver()
             }
@@ -583,6 +630,9 @@ private extension GameConfigSession {
         }
         if let v = row[Self.overlayTurboSpeed] {
             config.overlayTurboSpeedTier = Int32(v)
+        }
+        if let v = row[Self.portDevice] {
+            config.portDevice = v
         }
         if let v = row[Self.inputBindingProfile] {
             do {
@@ -753,6 +803,7 @@ extension GameConfigSession {
     // v9
     static let overlayHapticLevel = SQLite.Expression<Int?>("overlay_haptic_level")
     static let gameRumbleEnabled = SQLite.Expression<Bool?>("game_rumble_enabled")
+    static let portDevice = SQLite.Expression<String?>("port_device")
 
     /*
      * key, configScope, updateAt
@@ -762,7 +813,7 @@ extension GameConfigSession {
      * v5: toolbarLayout, overlayTurboTapLatch, overlayTurboSpeed
      * v6: autoEnableCheats
      * v7: coreOptions
-     * v9: overlayHapticLevel, gameRumbleEnabled
+     * v9: overlayHapticLevel, gameRumbleEnabled, portDevice
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

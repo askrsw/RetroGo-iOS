@@ -411,6 +411,14 @@ NS_ASSUME_NONNULL_BEGIN
     return [obj boolValue];
 }
 
+- (nullable NSArray<NSDictionary<NSString *, id> *> *)portDevices {
+    if(d_extraInfo == nil) {
+        d_extraInfo = [self loadExtraCoreInfo];
+    }
+    NSArray *devices = d_extraInfo[@"port_devices"];
+    return [devices isKindOfClass:[NSArray class]] && devices.count > 0 ? devices : nil;
+}
+
 // Full extraction callback, supporting empty folder creation and automatic parent directory creation
 static int file_archive_extract_cb(const char *name, const char *valid_exts, const uint8_t *cdata, unsigned cmode, uint32_t csize, uint32_t size, uint32_t crc32, struct archive_extract_userdata *userdata) {
 

@@ -112,17 +112,48 @@ static uint16_t ra_rumble_requested[DEFAULT_MAX_PADS][RA_RUMBLE_MOTORS];
 }
 
 - (void)reset {
+    // A game ends as its audio driver shuts down, which can stop the engine
+    // before stoppedHandler reaches this queue; only a running engine is touched.
+    if (_engineRunning) {
+        CHHapticEngine *engine = _engine;
+        id<CHHapticPatternPlayer> strong = _players[RA_RUMBLE_STRONG];
+        id<CHHapticPatternPlayer> weak = _players[RA_RUMBLE_WEAK];
+        [self performHaptics:^{
+            [strong stopAtTime:CHHapticTimeImmediate error:nil];
+            [weak stopAtTime:CHHapticTimeImmediate error:nil];
+            [engine stopWithCompletionHandler:nil];
+        }];
+    }
     for (int motor = 0; motor < RA_RUMBLE_MOTORS; motor++) {
-        [_players[motor] stopAtTime:CHHapticTimeImmediate error:nil];
         _players[motor] = nil;
         _running[motor] = NO;
         _levels[motor] = 0;
     }
     [self updateRestartTimer];
-    [_engine stopWithCompletionHandler:nil];
     _engine = nil;
     _engineRunning = NO;
     _suspended = NO;
+}
+
+/* Core Haptics raises an exception, not an error, when a call needs a running
+ * engine that the system has just stopped (the core's audio driver deactivating
+ * the shared audio session, a call, the App going to the background), and that
+ * stop reaches this queue only later through stoppedHandler. A raised call
+ * marks the engine stopped, so the next request starts it again with new players. */
+- (BOOL)performHaptics:(void (NS_NOESCAPE ^)(void))block {
+    @try {
+        block();
+        return YES;
+    } @catch (NSException *exception) {
+        RETROGO_LOGN(GAME, "Rumble haptics call failed, engine treated as stopped: %{public}@", exception.reason);
+        _engineRunning = NO;
+        for (int motor = 0; motor < RA_RUMBLE_MOTORS; motor++) {
+            _players[motor] = nil;
+            _running[motor] = NO;
+            _levels[motor] = 0;
+        }
+        return NO;
+    }
 }
 
 #pragma mark - Motors
@@ -130,7 +161,10 @@ static uint16_t ra_rumble_requested[DEFAULT_MAX_PADS][RA_RUMBLE_MOTORS];
 - (void)driveMotor:(int)motor level:(float)level {
     if (level <= 0) {
         if (_running[motor]) {
-            [_players[motor] stopAtTime:CHHapticTimeImmediate error:nil];
+            id<CHHapticPatternPlayer> player = _players[motor];
+            [self performHaptics:^{
+                [player stopAtTime:CHHapticTimeImmediate error:nil];
+            }];
             _running[motor] = NO;
         }
         _levels[motor] = 0;
@@ -156,10 +190,16 @@ static uint16_t ra_rumble_requested[DEFAULT_MAX_PADS][RA_RUMBLE_MOTORS];
 }
 
 - (BOOL)startPlayer:(id<CHHapticPatternPlayer>)player motor:(int)motor level:(float)level {
-    NSError *error = nil;
+    __block NSError *error = nil;
+    __block BOOL started = NO;
     // The level goes before and after the start, so the first moment is not at full strength.
     [self sendLevel:level toPlayer:player];
-    if (![player startAtTime:CHHapticTimeImmediate error:&error]) {
+    if (![self performHaptics:^{
+        started = [player startAtTime:CHHapticTimeImmediate error:&error];
+    }]) {
+        return NO;
+    }
+    if (!started) {
         RETROGO_LOGD(GAME, "Rumble player failed to start: %{public}@", error.localizedDescription);
         // A player from before an engine stop may be stale; build a new one next time.
         _players[motor] = nil;
@@ -177,7 +217,9 @@ static uint16_t ra_rumble_requested[DEFAULT_MAX_PADS][RA_RUMBLE_MOTORS];
         [[CHHapticDynamicParameter alloc] initWithParameterID:CHHapticDynamicParameterIDHapticIntensityControl
                                                         value:level
                                                  relativeTime:0];
-    [player sendParameters:@[ intensity ] atTime:CHHapticTimeImmediate error:nil];
+    [self performHaptics:^{
+        [player sendParameters:@[ intensity ] atTime:CHHapticTimeImmediate error:nil];
+    }];
 }
 
 - (nullable id<CHHapticPatternPlayer>)playerForMotor:(int)motor {
@@ -195,9 +237,15 @@ static uint16_t ra_rumble_requested[DEFAULT_MAX_PADS][RA_RUMBLE_MOTORS];
                                                          parameters:parameters
                                                        relativeTime:0
                                                            duration:ra_rumble_event_duration];
-    NSError *error = nil;
+    __block NSError *error = nil;
     CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithEvents:@[ event ] parameters:@[] error:&error];
-    id<CHHapticPatternPlayer> player = pattern ? [_engine createPlayerWithPattern:pattern error:&error] : nil;
+    __block id<CHHapticPatternPlayer> player = nil;
+    CHHapticEngine *engine = _engine;
+    if (pattern != nil && ![self performHaptics:^{
+        player = [engine createPlayerWithPattern:pattern error:&error];
+    }]) {
+        return nil;
+    }
     if (player == nil) {
         RETROGO_LOGE(GAME, "Failed to create rumble player: %{public}@", error.localizedDescription);
         return nil;
@@ -232,9 +280,14 @@ static uint16_t ra_rumble_requested[DEFAULT_MAX_PADS][RA_RUMBLE_MOTORS];
             continue;
         }
         id<CHHapticPatternPlayer> player = _players[motor];
-        [player stopAtTime:CHHapticTimeImmediate error:nil];
+        float level = _levels[motor];
+        if (![self performHaptics:^{
+            [player stopAtTime:CHHapticTimeImmediate error:nil];
+        }]) {
+            break;
+        }
         _running[motor] = NO;
-        [self startPlayer:player motor:motor level:_levels[motor]];
+        [self startPlayer:player motor:motor level:level];
     }
     [self updateRestartTimer];
 }

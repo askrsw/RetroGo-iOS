@@ -345,6 +345,10 @@
 "configpage_overlay_haptic_rigid" = "Rigid";
 "configpage_game_rumble" = "Game Rumble";
 "configpage_game_rumble_desc" = "Vibrate the phone when the game rumbles, such as a crash in a racing game or a shot in a shooter. A connected controller with its own motors rumbles instead.";
+"configpage_port_device" = "Controller Type";
+"configpage_port_device_desc" = "The controller the game sees. DualShock adds the analog sticks and rumble; pick Standard Controller if an early game does not work with it. Applies the next time the game starts.";
+"configpage_port_device_standard" = "Standard Controller";
+"configpage_port_device_dualshock" = "DualShock";
 "configpage_controllers" = "Controllers";
 "configpage_player" = "Player %d";
 "configpage_touchscreen" = "Touch Screen";

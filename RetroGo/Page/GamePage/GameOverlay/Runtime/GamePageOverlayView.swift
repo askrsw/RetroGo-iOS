@@ -90,7 +90,7 @@ final class GamePageOverlayView: SKView {
         let config = GamePageOverlayConfig.loadOverlayConfig(coreInfoItem.overlayName)
         // The editor starts on the arcade 4/6-button layout the game shows.
         let editor = GameOverlayLayoutEditorScene(size: bounds.size, config: config,
-                                                  supportsAnalog: coreInfoItem.supportsAnalog, layoutData: layoutData,
+                                                  supportsAnalog: overlaySupportsAnalog, layoutData: layoutData,
                                                   fourButtonLayout: overlayScene?.usesFourButtonLayout ?? false)
         editorScene = editor
         presentScene(editor)
@@ -118,6 +118,13 @@ final class GamePageOverlayView: SKView {
 }
 
 extension GamePageOverlayView {
+    /// Whether the on-screen stick sends analog values. A port set to a pad without
+    /// sticks (the PS1 standard controller) ignores them, so the stick works as a D-pad.
+    private var overlaySupportsAnalog: Bool {
+        let portDevice = GamePageViewController.instance?.configSession.getPortDevice()
+        return coreInfoItem.supportsAnalog && (portDevice?.analog ?? true)
+    }
+
     @objc private func handleOverlayLayoutChanged(_ notification: Notification) {
         guard notification.object as? String == layoutSession.overlayName, editorScene == nil else { return }
         reloadCustomLayout()
@@ -135,7 +142,7 @@ extension GamePageOverlayView {
 
             let overlayConfig = GamePageOverlayConfig.loadOverlayConfig(coreInfoItem.overlayName)
             let layoutData = layoutSession.resolvedLayout().item?.data
-            let scene = GamePageOverlayScene(size: .zero, config: overlayConfig, supportsAnalog: coreInfoItem.supportsAnalog,
+            let scene = GamePageOverlayScene(size: .zero, config: overlayConfig, supportsAnalog: overlaySupportsAnalog,
                                              layoutData: layoutData, fourButtonLayout: layoutSession.savedFourButtonLayout())
             scene.onFourButtonLayoutChanged = { [weak self] fourButtons in
                 self?.layoutSession.saveFourButtonLayout(fourButtons)

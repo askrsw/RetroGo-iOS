@@ -37,6 +37,7 @@
 #include <defines/input_defines.h>
 #include <string.h>
 #include <core/ra_core_options.h>
+#include <core/ra_port_devices.h>
 #include <core/core_option_manager.h>
 #include <intl/msg_hash.h>
 #include <utils/verbosity.h>
@@ -112,7 +113,14 @@ static char coreOptionConfigurationKey;
         [self p_writeCString:settings->arrays.video_driver cap:sizeof(settings->arrays.video_driver) value:cfg.videoDriver];
         [self p_writeCString:settings->arrays.audio_driver cap:sizeof(settings->arrays.audio_driver) value:cfg.audioDriver];
         [self setMuteOnFastForward:cfg.muteOnFastForward];
+
+        // settings_t outlives the game: start every launch from the standard RetroPad,
+        // and let the controller init pick the configured type for this core.
+        for (unsigned port = 0; port < MAX_USERS; port++) {
+            settings->uints.input_libretro_device[port] = RETRO_DEVICE_JOYPAD;
+        }
     }
+    ra_port_devices_set_preferred(cfg.portDevice.UTF8String);
 
     [[RAInputActionManager shared] applyInputBindingProfile:cfg.inputBindingProfile coreCapabilities:cfg.coreCaps useLock:YES];
 }

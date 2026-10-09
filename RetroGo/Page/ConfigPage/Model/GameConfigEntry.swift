@@ -138,6 +138,12 @@ extension GameConfigSession {
         return Bundle.localizedString(forKey: key)
     }
 
+    fileprivate static func portDeviceTitle(_ device: GamePortDevice) -> String {
+        let key = "configpage_port_device_" + (device.name.isEmpty ? "standard" : device.name)
+        let title = Bundle.localizedString(forKey: key)
+        return title == key ? device.name : title
+    }
+
     fileprivate static func hapticLevelTitle(_ level: GameHapticLevel) -> String {
         let key: String
         switch level {
@@ -331,6 +337,28 @@ extension GameConfigSession {
             } else {
                 entry.desc = Bundle.localizedString(forKey: "configpage_game_thread_desc")
             }
+            entries.append(entry)
+        }
+
+        if let core, !core.gamePortDevices.isEmpty {
+            let devices = core.gamePortDevices
+            let title = Bundle.localizedString(forKey: "configpage_port_device")
+            let entry = GameConfigEntry(type: .string, ui: .list, title: title)
+            entry.getListArray = { [weak self] in
+                guard let self else { return ([], nil) }
+                let list: [(title: String, value: AnyHashable)] = devices.map { (Self.portDeviceTitle($0), $0.name) }
+                let selected = devices.firstIndex(where: { $0 == self.getPortDevice() })
+                return (list, selected)
+            }
+            entry.getListSelectedTitle = { [weak self] in
+                guard let self, let device = getPortDevice() else { return nil }
+                return Self.portDeviceTitle(device)
+            }
+            entry.setListSelectedValue = { [weak self] v in
+                guard let self, let name = v as? String, let device = devices.first(where: { $0.name == name }) else { return }
+                setPortDevice(device)
+            }
+            entry.desc = Bundle.localizedString(forKey: "configpage_port_device_desc")
             entries.append(entry)
         }
 
