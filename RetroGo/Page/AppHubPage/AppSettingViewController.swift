@@ -382,18 +382,58 @@ extension AppSettingViewController {
         }
     }
 
-    private func emailToHaharsw() {
-        guard MFMailComposeViewController.canSendMail() else { return }
+    private static let feedbackAddress = "askrsw@163.com"
 
+    private func emailToHaharsw() {
         let appVersion  = Bundle.main.infoDictionary?["CFBundleShortVersionString"] ?? ""
+        let subject = "RetroGo \(Bundle.localizedString(forKey: "appsetting_mail_subject")) - \(appVersion)"
+
+        guard MFMailComposeViewController.canSendMail() else {
+            // No account in the system Mail app (or Mail removed, or the Simulator):
+            // hand the mail to the default mail app, and say so when there is none.
+            openMailtoOrExplain(subject: subject)
+            return
+        }
 
         let mailCompose = MFMailComposeViewController()
-        let subject = "RetroGo \(Bundle.localizedString(forKey: "appsetting_mail_subject")) - \(appVersion)"
         mailCompose.setSubject(subject)
-        mailCompose.setToRecipients(["askrsw@163.com"])
+        mailCompose.setToRecipients([Self.feedbackAddress])
         mailCompose.setMessageBody(feedbackEmailBody(), isHTML: false)
         mailCompose.mailComposeDelegate = self
         present(mailCompose, animated: true, completion: nil)
+    }
+
+    private func openMailtoOrExplain(subject: String) {
+        // queryItems leaves & = + unescaped, which would cut the subject or body short.
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=+?#")
+        func encode(_ text: String) -> String {
+            text.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+        }
+        let link = "mailto:\(Self.feedbackAddress)?subject=\(encode(subject))&body=\(encode(feedbackEmailBody()))"
+        guard let url = URL(string: link) else {
+            showCannotSendMailAlert()
+            return
+        }
+        UIApplication.shared.open(url) { [weak self] opened in
+            if !opened {
+                self?.showCannotSendMailAlert()
+            }
+        }
+    }
+
+    private func showCannotSendMailAlert() {
+        let address = Self.feedbackAddress
+        let alert = UIAlertController(
+            title: Bundle.localizedString(forKey: "appsetting_notlogin_mailbox"),
+            message: String(format: Bundle.localizedString(forKey: "appsetting_no_mail_app_fmt"), address),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel))
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "appsetting_copy_email"), style: .default) { _ in
+            UIPasteboard.general.string = address
+            AppToastManager.shared.toast(Bundle.localizedString(forKey: "appsetting_email_copied"), context: .ui, level: .success)
+        })
+        present(alert, animated: true)
     }
 
     /// Builds a plain-text email body pre-filled with app and device diagnostics

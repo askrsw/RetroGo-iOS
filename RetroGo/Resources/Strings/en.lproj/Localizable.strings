@@ -100,8 +100,10 @@
 "appsetting_send_succ" = "Send completed.";
 "appsetting_send_fail" = "Failed to send.";
 "appsetting_mail_subject" = " - Feedback";
-"appsetting_notlogin_mailbox" = "Can't send emails";
-"appsetting_loginto_mailbox" = "You haven't signed in your email in this iPhone. Please login to your email first.";
+"appsetting_notlogin_mailbox" = "Can't Send Email";
+"appsetting_no_mail_app_fmt" = "No mail account is set up on this device. You can copy our address and write to %@ from any email app.";
+"appsetting_copy_email" = "Copy Email Address";
+"appsetting_email_copied" = "Email address copied.";
 
 // MARK: - Homepage
 

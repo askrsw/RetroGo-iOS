@@ -102,7 +102,9 @@
 "appsetting_send_fail" = "发送失败。";
 "appsetting_mail_subject" = "—— 问题反馈";
 "appsetting_notlogin_mailbox" = "无法发送邮件";
-"appsetting_loginto_mailbox" = "你还未登录系统邮箱，请先登录系统邮箱。";
+"appsetting_no_mail_app_fmt" = "这台设备上没有可用的邮件账户。你可以复制邮箱地址，用任意邮箱 App 发邮件到 %@。";
+"appsetting_copy_email" = "复制邮箱地址";
+"appsetting_email_copied" = "邮箱地址已复制。";
 
 // MARK: - Homepage
 
