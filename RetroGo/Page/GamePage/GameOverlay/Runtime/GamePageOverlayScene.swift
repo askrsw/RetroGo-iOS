@@ -364,8 +364,34 @@ extension GamePageOverlayScene {
             RetroArchX.shared().setFastForwardEnabled(enabled, multiplier: requestedMultiplier)
         }
         node.hapticHandler = hapticHandler
+        node.longPressHandler = { [weak self, weak node] in
+            guard let self, let node else { return }
+            presentFastSpeedPicker(from: node)
+        }
         self.fastButton = node
         return node
+    }
+
+    /// Long-press on the fast-forward button: pick the speed in place. Writes the
+    /// same value as the in-game settings page and turns fast-forward on at it.
+    private func presentFastSpeedPicker(from node: GameOverLayFastButton) {
+        guard let session = GamePageViewController.instance?.configSession,
+              let skView = view, let window = skView.window, let parent = node.parent else { return }
+
+        let frame = node.calculateAccumulatedFrame()
+        let corners = [CGPoint(x: frame.minX, y: frame.minY), CGPoint(x: frame.maxX, y: frame.maxY)].map {
+            skView.convert(convertPoint(toView: convert($0, from: parent)), to: window)
+        }
+        let sourceRect = CGRect(x: min(corners[0].x, corners[1].x), y: min(corners[0].y, corners[1].y),
+                                width: abs(corners[1].x - corners[0].x), height: abs(corners[1].y - corners[0].y))
+
+        let bubble = GameOverlayFastSpeedBubble(options: GameConfigSession.fastForwardMultiplierOptions,
+                                                selected: session.getFastForwardMultiplier()) { [weak node] multiplier in
+            session.setFastForwardMultiplier(value: multiplier)
+            RetroArchX.shared().setFastForwardMultiplier(multiplier)
+            node?.enableFastForward()
+        }
+        bubble.present(pointingAt: sourceRect)
     }
 
     private func makeOverlayCollapseNode(element: GamePageOverlayElement) -> SKNode {

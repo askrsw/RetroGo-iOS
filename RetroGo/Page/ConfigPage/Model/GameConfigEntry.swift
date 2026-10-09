@@ -173,7 +173,7 @@ extension GameConfigSession {
         }
         do {
             let title = Bundle.localizedString(forKey: "configpage_game_fast_multiplier")
-            let array: [(GameConfigSegmentItem, Double)] = [ (.text(" 2x "), 2.0), (.text(" 3x "), 3.0), (.text(" 4x "), 4.0), (.text(" 6x "), 6.0) ]
+            let array: [(GameConfigSegmentItem, Double)] = Self.fastForwardMultiplierOptions.map { (.text(" \(Int($0))x "), $0) }
             let entry = GameConfigEntry(type: .double, ui: .segmentcontrol, title: title)
             entry.getSegmentArray = {
                 array.map({ $0.0 })

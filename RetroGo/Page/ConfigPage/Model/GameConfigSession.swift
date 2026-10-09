@@ -202,6 +202,9 @@ extension GameConfigSession {
         return setOptionalValue(column: Self.threadEnabled, value: value)
     }
 
+    /// Speeds offered by the settings page and the fast-forward button's long-press bubble.
+    static let fastForwardMultiplierOptions: [Double] = [2, 3, 4, 6]
+
     func getFastForwardMultiplier() -> Double {
         config.fastForwardMultiplier
     }

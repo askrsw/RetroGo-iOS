@@ -28,7 +28,9 @@ import RACoordinator
 
 final class GameOverLayFastButton: SKNode, GameOverlayElementLayout {
     // MARK: - Constants
-    private let longPressThreshold: TimeInterval = 0.15
+    /// Holding this long opens the speed picker instead of toggling fast-forward.
+    private static let longPressDuration: TimeInterval = 0.4
+    private static let longPressActionKey = "fast-button-long-press"
 
     // MARK: - Properties
     private var shape: GameOverlayButtonShape?
@@ -38,7 +40,8 @@ final class GameOverLayFastButton: SKNode, GameOverlayElementLayout {
     private let rightChevronNode = SKShapeNode()
 
     private var trackingTouch: ObjectIdentifier?
-    private var touchBeganAt: TimeInterval?
+    /// The current touch already opened the speed picker, so lifting it does not toggle.
+    private var longPressFired = false
 
     private(set) var isTouching: Bool = false {
         didSet {
@@ -69,6 +72,8 @@ final class GameOverLayFastButton: SKNode, GameOverlayElementLayout {
     private let fastStateChangeHander: GameOverlayFastStateChanged?
     private let theme: GameOverlayTheme
     var hapticHandler: GameOverlayHapticHandler?
+    /// Called while the button is held; the scene shows the speed picker.
+    var longPressHandler: (() -> Void)?
 
     // MARK: - Init
     init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, fastStateChangeHander: GameOverlayFastStateChanged?) {
@@ -110,9 +115,15 @@ final class GameOverLayFastButton: SKNode, GameOverlayElementLayout {
         guard trackingTouch == nil, let touch = touches.first else { return }
 
         trackingTouch = ObjectIdentifier(touch)
-        touchBeganAt = CACurrentMediaTime()
+        longPressFired = false
         isTouching = true
         hapticHandler?()
+
+        guard longPressHandler != nil else { return }
+        run(.sequence([
+            .wait(forDuration: Self.longPressDuration),
+            .run { [weak self] in self?.handleLongPress() }
+        ]), withKey: Self.longPressActionKey)
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -195,18 +206,11 @@ extension GameOverLayFastButton {
     private func handleTouchEnd(_ touches: Set<UITouch>, cancelled: Bool) {
         guard let tracking = trackingTouch, touches.contains(where: { ObjectIdentifier($0) == tracking }) else { return }
 
-        let beganAt = touchBeganAt
+        removeAction(forKey: Self.longPressActionKey)
         trackingTouch = nil
-        touchBeganAt = nil
         isTouching = false
 
-        guard !cancelled else { return }
-
-        let elapsed = beganAt.map { CACurrentMediaTime() - $0 } ?? 0
-        if elapsed >= longPressThreshold {
-            handleLongPress()
-            return
-        }
+        guard !cancelled, !longPressFired else { return }
 
         isFastForwardEnabled.toggle()
         emitStateChange()
@@ -245,7 +249,18 @@ extension GameOverLayFastButton {
     }
 
     private func handleLongPress() {
-        // Reserved for the fast-forward multiplier popup menu.
+        guard trackingTouch != nil else { return }
+        longPressFired = true
+        isTouching = false
+        hapticHandler?()
+        longPressHandler?()
+    }
+
+    /// Turns fast-forward on from outside the button (picking a speed in the picker).
+    func enableFastForward() {
+        guard !isFastForwardEnabled else { return }
+        isFastForwardEnabled = true
+        emitStateChange()
     }
 
     func applyBindingBubbleTouch(_ touching: Bool) {

@@ -75,6 +75,7 @@
 		AB4DCCDB2FA26AD8004691BD /* GameConfigBindingBubbleNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4DCCD92FA26AD8004691BD /* GameConfigBindingBubbleNode.swift */; };
 		AB4DCCDC2FA26AD8004691BD /* GameConfigBindingSettingPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4DCCDA2FA26AD8004691BD /* GameConfigBindingSettingPresenting.swift */; };
 		AB4DCCDE2FA2F0A0004691BD /* GameOverlayTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4DCCDD2FA2F0A0004691BD /* GameOverlayTheme.swift */; };
+		AC0FFB022FFB0000F5B0B001 /* GameOverlayFastSpeedBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0FFB012FFB0000F5B0B001 /* GameOverlayFastSpeedBubble.swift */; };
 		AB55BC622F3B587F00569A84 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = AB55BC612F3B587F00569A84 /* Defaults */; };
 		AB55BC642F3B804600569A84 /* DefaultKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC632F3B803F00569A84 /* DefaultKeys.swift */; };
 		AB55BC662F3B806800569A84 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC652F3B806600569A84 /* DeviceConfig.swift */; };
@@ -327,6 +328,7 @@
 		AB4DCCD92FA26AD8004691BD /* GameConfigBindingBubbleNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameConfigBindingBubbleNode.swift; sourceTree = "<group>"; };
 		AB4DCCDA2FA26AD8004691BD /* GameConfigBindingSettingPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameConfigBindingSettingPresenting.swift; sourceTree = "<group>"; };
 		AB4DCCDD2FA2F0A0004691BD /* GameOverlayTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayTheme.swift; sourceTree = "<group>"; };
+		AC0FFB012FFB0000F5B0B001 /* GameOverlayFastSpeedBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayFastSpeedBubble.swift; sourceTree = "<group>"; };
 		AB55BC632F3B803F00569A84 /* DefaultKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultKeys.swift; sourceTree = "<group>"; };
 		AB55BC652F3B806600569A84 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
 		AB55BC672F3B80C300569A84 /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
@@ -1116,6 +1118,7 @@
 				AC0F1C012FFB000000F1C001 /* GameOverlayCombo.swift */,
 				AB4DCCD52FA20912004691BD /* GameOverlayLayoutResolver.swift */,
 				AB4DCCDD2FA2F0A0004691BD /* GameOverlayTheme.swift */,
+				AC0FFB012FFB0000F5B0B001 /* GameOverlayFastSpeedBubble.swift */,
 			);
 			path = Runtime;
 			sourceTree = "<group>";
@@ -1479,6 +1482,7 @@
 				AB0A1DD52FB71C7800503077 /* GamePauseCoordinator.swift in Sources */,
 				ABB6F6EA2FC0D73600A13412 /* RetroRomFileBrowserConfigMenu.swift in Sources */,
 				AB4DCCDE2FA2F0A0004691BD /* GameOverlayTheme.swift in Sources */,
+				AC0FFB022FFB0000F5B0B001 /* GameOverlayFastSpeedBubble.swift in Sources */,
 				AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */,
 				AC2309260000000000000001 /* GameOverlayArcadeLayoutButton.swift in Sources */,
 				AB55BC7C2F3B8BC400569A84 /* GamePageViewController.swift in Sources */,
