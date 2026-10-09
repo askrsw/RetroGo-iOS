@@ -85,6 +85,8 @@ final class GamePageViewController: RAGameViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(appWillBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
 
         NotificationCenter.default.addObserver(self, selector: #selector(showInGameMessageNotification(_:)), name: .showInGameMessage, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(overlayHapticLevelChanged), name: .overlayHapticLevelChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(gameRumbleEnabledChanged), name: .gameRumbleEnabledChanged, object: nil)
     }
 
     init(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
@@ -121,6 +123,8 @@ final class GamePageViewController: RAGameViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(appWillBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
 
         NotificationCenter.default.addObserver(self, selector: #selector(showInGameMessageNotification(_:)), name: .showInGameMessage, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(overlayHapticLevelChanged), name: .overlayHapticLevelChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(gameRumbleEnabledChanged), name: .gameRumbleEnabledChanged, object: nil)
 
         romItem.updateLastPlayAt()
     }
@@ -171,7 +175,8 @@ final class GamePageViewController: RAGameViewController {
         super.viewDidLoad()
 
         configSession.configRetroArch()
-        
+        GameHapticEngine.shared.start(level: configSession.getOverlayHapticLevel())
+
         RetroArchX.shared().start(romUrl?.path(percentEncoded: false), core: core) { [unowned self] success in
             loaded = true
             myLoadingView?.uninstall()
@@ -287,6 +292,15 @@ final class GamePageViewController: RAGameViewController {
         AppDelegate.setOrientationLock(.allButUpsideDown)
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+
+        // The game is over once the page is gone, however it was closed.
+        if isBeingDismissed || isMovingFromParent {
+            GameHapticEngine.shared.stop()
+        }
+    }
+
     /// Applies the current (runtime) landscape-lock state to the app-wide mask
     /// and this VC's `supportedInterfaceOrientations`.
     func applyOrientationLock() {
@@ -353,6 +367,21 @@ extension GamePageViewController {
 
             RetroArchX.shared().resume()
         }
+    }
+
+    @objc
+    private func gameRumbleEnabledChanged() {
+        guard Self.instance == self else { return }
+        RetroArchX.shared().setPhoneRumbleEnabled(configSession.getGameRumbleEnabled())
+    }
+
+    @objc
+    private func overlayHapticLevelChanged() {
+        guard Self.instance == self else { return }
+        let engine = GameHapticEngine.shared
+        engine.setLevel(configSession.getOverlayHapticLevel())
+        // Lets the player feel the new level from the settings sheet.
+        engine.impact()
     }
 
     @objc

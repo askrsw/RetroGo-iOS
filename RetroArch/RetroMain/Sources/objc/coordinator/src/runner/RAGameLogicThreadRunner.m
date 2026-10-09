@@ -40,8 +40,8 @@
 
 typedef _Atomic double atomic_double;
 
-#import "../virtual/virtual_joypad.h"
-#import "../virtual/virtual_video_driver.h"
+#import "../input/virtual_joypad.h"
+#import "../video/virtual_video_driver.h"
 
 @interface RAGameLogicThreadCommand : NSObject {
 @public

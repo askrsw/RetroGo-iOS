@@ -127,6 +127,7 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
     private let joypadCodes: [RetroArchJoypadCode]
     private let digitalChangeHandler: GameOverlayButtonDigitalChanged?
     private let theme: GameOverlayTheme
+    var hapticHandler: GameOverlayHapticHandler?
 
     // MARK: - Init
     init(element: GamePageOverlayElement, isTurboSupported: Bool, autoKeepTurbo: Bool, turboPeriod: Int = 4, turboDuty: Int = 2, theme: GameOverlayTheme = .default, digitalChangeHandler: GameOverlayButtonDigitalChanged?) {
@@ -283,6 +284,7 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
 
         trackingTouch = ObjectIdentifier(touch)
         isTouching = true
+        hapticHandler?()
 
         if isTurboSupported {
             touchBeganAt = CACurrentMediaTime()

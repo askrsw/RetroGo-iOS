@@ -225,6 +225,7 @@
 		C02120260921000000000001 /* emu.mame.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C02120260921000000000002 /* emu.mame.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AC0F1C022FFB000000F1C001 /* GameOverlayCombo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1C012FFB000000F1C001 /* GameOverlayCombo.swift */; };
 		AC0F1C042FFB000000F1C001 /* GameOverlayInputMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1C032FFB000000F1C001 /* GameOverlayInputMixer.swift */; };
+		AC0F1D022FFC000000F1D001 /* GameHapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1D012FFC000000F1D001 /* GameHapticEngine.swift */; };
 		AC0F1C062FFB000000F1C001 /* GameOverlayComboEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1C052FFB000000F1C001 /* GameOverlayComboEditViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -487,6 +488,7 @@
 		C02120260921000000000002 /* emu.mame.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.mame.framework; sourceTree = "<group>"; };
 		AC0F1C012FFB000000F1C001 /* GameOverlayCombo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayCombo.swift; sourceTree = "<group>"; };
 		AC0F1C032FFB000000F1C001 /* GameOverlayInputMixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayInputMixer.swift; sourceTree = "<group>"; };
+		AC0F1D012FFC000000F1D001 /* GameHapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameHapticEngine.swift; sourceTree = "<group>"; };
 		AC0F1C052FFB000000F1C001 /* GameOverlayComboEditViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayComboEditViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -650,6 +652,7 @@
 				AB8905D42FD34CE500CA9DEC /* GameCheat */,
 				AB77608B2FCF61280026D6F6 /* GameToolbar */,
 				AB9CDD6F2F70422B002E6A55 /* GameOverlay */,
+				AC0F1D032FFC000000F1D001 /* GameHaptic */,
 				ABCAFE010000000000000012 /* Netplay */,
 				ABDAD2AA2F3BBBDD004100A9 /* View */,
 				ABDAD2AB2F3BBBE8004100A9 /* GameState */,
@@ -1095,6 +1098,14 @@
 			path = DataSource;
 			sourceTree = "<group>";
 		};
+		AC0F1D032FFC000000F1D001 /* GameHaptic */ = {
+			isa = PBXGroup;
+			children = (
+				AC0F1D012FFC000000F1D001 /* GameHapticEngine.swift */,
+			);
+			path = GameHaptic;
+			sourceTree = "<group>";
+		};
 		AC0F1B012FFA000000F1B001 /* Runtime */ = {
 			isa = PBXGroup;
 			children = (
@@ -1445,6 +1456,7 @@
 				AB4DCCD42FA20560004691BD /* GameConfigBindingOverlayScene.swift in Sources */,
 				AB9CDD732F70422B002E6A55 /* GamePageOverlayConfig.swift in Sources */,
 				AC0F1C042FFB000000F1C001 /* GameOverlayInputMixer.swift in Sources */,
+				AC0F1D022FFC000000F1D001 /* GameHapticEngine.swift in Sources */,
 				AC0F1C022FFB000000F1C001 /* GameOverlayCombo.swift in Sources */,
 				AC0F1A042FF9000000F1A001 /* GameOverlayLayoutData.swift in Sources */,
 				AC0F1A062FF9000000F1A001 /* GameOverlayLayoutSession.swift in Sources */,

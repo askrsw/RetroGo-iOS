@@ -68,6 +68,7 @@ final class GameOverLayFastButton: SKNode, GameOverlayElementLayout {
     private(set) var element: GamePageOverlayElement
     private let fastStateChangeHander: GameOverlayFastStateChanged?
     private let theme: GameOverlayTheme
+    var hapticHandler: GameOverlayHapticHandler?
 
     // MARK: - Init
     init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, fastStateChangeHander: GameOverlayFastStateChanged?) {
@@ -111,6 +112,7 @@ final class GameOverLayFastButton: SKNode, GameOverlayElementLayout {
         trackingTouch = ObjectIdentifier(touch)
         touchBeganAt = CACurrentMediaTime()
         isTouching = true
+        hapticHandler?()
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {

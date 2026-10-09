@@ -87,7 +87,6 @@ extension AppSettingViewController {
 
         // game section
         case coreList
-        case inGameHaptic
         case coreSettingList
         case odrResources
 
@@ -221,21 +220,6 @@ extension AppSettingViewController {
                 cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_odr_resources")
                 cell.accessoryType = .disclosureIndicator
                 return cell
-            case .inGameHaptic:
-                let switchControl = UISwitch()
-                switchControl.isOn = true
-                switchControl.onTintColor = .mainColor
-                switchControl.addTarget(self, action: #selector(inGameHapticChanged(_:)), for: .valueChanged)
-                let cell = cellBuilder()
-                cell.imageView?.image = IconRender.shared.settingsIcon(
-                    symbol: "sensor.tag.radiowaves.forward.fill",
-                    background: .systemPink,
-                    size: iconSize
-                )
-                cell.textLabel?.text = Bundle.localizedString(forKey: "appsetting_ingame_haptic_feedback")
-                cell.accessoryView = switchControl
-                return cell
-
             case .versionHistory:
                 let cell = cellBuilder()
                 cell.accessoryView = nil
@@ -537,11 +521,6 @@ extension AppSettingViewController {
     @objc
     private func uiHapticChanged(_ sender: UISwitch) {
         AppSettings.shared.isUIFeedbackEnabled = sender.isOn
-    }
-
-    @objc
-    private func inGameHapticChanged(_ sender: UISwitch) {
-
     }
 
     @objc

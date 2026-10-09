@@ -26,7 +26,8 @@
 #import "RetroArchX+Config.h"
 #import "../input/RAInputBindingProfile.h"
 #import "../input/RAInputActionManager.h"
-#import "../virtual/virtual_joypad.h"
+#import "../input/virtual_joypad.h"
+#import "../input/RAPhoneRumble.h"
 
 #include <gfx/video_driver.h>
 #include <utils/configuration.h>
@@ -93,6 +94,7 @@ static char coreOptionConfigurationKey;
     }
     [self p_enforceBuiltinTurboDisabled];
     [self p_enforceFrontendOwnsPause];
+    [self p_enforceFrontendOwnsDeviceRumble];
 
     // Cores read the frontend language when they load (option labels, BIOS
     // language defaults); follow the App language, which may differ from the
@@ -391,6 +393,20 @@ static char coreOptionConfigurationKey;
         settings->bools.pause_nonactive     = false;
         settings->bools.pause_on_disconnect = false;
     }
+}
+
+- (void)p_enforceFrontendOwnsDeviceRumble {
+    settings_t *settings = config_get_ptr();
+    if(settings != nil) {
+        // RetroGo plays rumble on the phone itself (RAPhoneRumble), only for the player
+        // on the on-screen controls. RetroArch's own device vibration in mfi_joypad
+        // would rumble the phone for pad 0 as well, even with a controller in hand.
+        settings->bools.enable_device_vibration = false;
+    }
+}
+
+- (void)setPhoneRumbleEnabled:(BOOL)enabled {
+    ra_phone_rumble_set_enabled(enabled);
 }
 
 #pragma mark - Debug core option export

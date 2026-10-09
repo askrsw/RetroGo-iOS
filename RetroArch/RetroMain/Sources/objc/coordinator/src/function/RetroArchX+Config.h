@@ -76,6 +76,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSDictionary<NSString *, id> *)debugCurrentCoreOptionsSnapshot;
 - (void)setFastForwardMultiplier:(double)multiplier;
 - (void)setMuteOnFastForward:(BOOL)value;
+/// Whether the phone rumbles when the game asks for it, for the player on the on-screen controls.
+- (void)setPhoneRumbleEnabled:(BOOL)enabled;
 
 - (NSString *)defaultVideoDriver;
 - (NSArray<NSString *> *)availableVideoDrivers;

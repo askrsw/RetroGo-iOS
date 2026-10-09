@@ -734,6 +734,16 @@ static void mfi_joypad_autodetect_add(unsigned autoconf_pad, const char *display
 
 @end
 
+bool mfi_joypad_has_rumble(unsigned pad)
+{
+    if (pad >= MAX_MFI_CONTROLLERS)
+        return false;
+    if (@available(iOS 14, tvOS 14, macOS 11, *))
+        /* The rumbler keeps its controller only when that controller has haptics. */
+        return mfi_rumblers[pad].controller != nil;
+    return false;
+}
+
 static void apple_gamecontroller_joypad_setup_haptics(GCController *controller)
 {
     if (@available(iOS 14, tvOS 14, macOS 11, *))

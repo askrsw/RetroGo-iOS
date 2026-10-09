@@ -34,7 +34,7 @@
 #include <gfx/video_driver.h>
 #include <string.h>
 
-#import "../virtual/virtual_joypad.h"
+#import "../input/virtual_joypad.h"
 
 @implementation RAGameLogicDisplayLinkRunner {
     CADisplayLink *d_displayLink;

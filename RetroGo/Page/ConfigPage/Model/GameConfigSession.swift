@@ -110,6 +110,7 @@ final class GameConfigSession {
             config.coreOptions = [:]
         }
         RetroArchX.shared().config(config)
+        RetroArchX.shared().setPhoneRumbleEnabled(getGameRumbleEnabled())
 
         RAInputActionManager.shared().fastForwardMultiplierProvider = { [weak self] in
             guard let self = self else { return 2.0 }
@@ -269,6 +270,37 @@ extension GameConfigSession {
             // turbo timing via the notification.
             applyTurboSpeedToEngine()
             NotificationCenter.default.post(name: .overlayTurboSpeedChanged, object: nil)
+        }
+        return ok
+    }
+
+    /// Resolved haptic level of the on-screen controls (game over core over
+    /// global). Read from SQLite each time, so a change at any scope shows up in
+    /// the running game; it is not part of `RAConfig`.
+    func getOverlayHapticLevel() -> GameHapticLevel {
+        resolvedValue(column: Self.overlayHapticLevel).flatMap(GameHapticLevel.init(rawValue:)) ?? .default
+    }
+
+    @discardableResult
+    func setOverlayHapticLevel(_ level: GameHapticLevel) -> Bool {
+        let ok = setOptionalValue(column: Self.overlayHapticLevel, value: level.rawValue)
+        if ok {
+            NotificationCenter.default.post(name: .overlayHapticLevelChanged, object: nil)
+        }
+        return ok
+    }
+
+    /// Whether the phone rumbles when the game asks for it, for the player on the
+    /// on-screen controls; resolved like `getOverlayHapticLevel()`. On by default.
+    func getGameRumbleEnabled() -> Bool {
+        resolvedValue(column: Self.gameRumbleEnabled) ?? true
+    }
+
+    @discardableResult
+    func setGameRumbleEnabled(_ enabled: Bool) -> Bool {
+        let ok = setOptionalValue(column: Self.gameRumbleEnabled, value: enabled)
+        if ok {
+            NotificationCenter.default.post(name: .gameRumbleEnabledChanged, object: nil)
         }
         return ok
     }
@@ -583,6 +615,23 @@ private extension GameConfigSession {
         Self.romConfigTable.filter(Self.configScope == scope.rawValue && Self.key == key)
     }
 
+    /// The value of a column after the global, core and game rows, for settings kept out of `RAConfig`.
+    func resolvedValue<T: Value>(column: SQLite.Expression<T?>) -> T? {
+        var value: T?
+        do {
+            let db = RetroRomPersistence.sqlite
+            for pair in makeConfigScopeKeyPairs() {
+                let alice = Self.romConfigTable.filter(Self.configScope == pair.scope && Self.key == pair.key)
+                if let v = try db.pluck(alice.select(column))?[column] {
+                    value = v
+                }
+            }
+        } catch {
+            RetroGoLogger.game.error("Failed to read config value: \(error.localizedDescription, privacy: .public)")
+        }
+        return value
+    }
+
     func getOptionalValue<T: Value>(column: SQLite.Expression<T?>) -> T? {
         guard let key = resolveKey() else {
             return nil
@@ -701,6 +750,10 @@ extension GameConfigSession {
     // v7
     static let coreOptions = SQLite.Expression<Data?>("core_options")
 
+    // v9
+    static let overlayHapticLevel = SQLite.Expression<Int?>("overlay_haptic_level")
+    static let gameRumbleEnabled = SQLite.Expression<Bool?>("game_rumble_enabled")
+
     /*
      * key, configScope, updateAt
      * v3: threadEnabled, fastForwardMultiplier
@@ -709,6 +762,7 @@ extension GameConfigSession {
      * v5: toolbarLayout, overlayTurboTapLatch, overlayTurboSpeed
      * v6: autoEnableCheats
      * v7: coreOptions
+     * v9: overlayHapticLevel, gameRumbleEnabled
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

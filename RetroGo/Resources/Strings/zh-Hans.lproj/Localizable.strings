@@ -92,7 +92,6 @@
 "appsetting_use_system_homepage" = "使用系统首页";
 "appsetting_language_follow_system" = "语言跟随系统";
 "appsetting_ui_haptic_feedback" = "界面触感反馈";
-"appsetting_ingame_haptic_feedback" = "游戏震动反馈";
 "appsetting_about" = "关于 Retro Go";
 "appsetting_acknowledgments" = "致谢";
 "appsetting_version_history" = "版本历史";
@@ -338,6 +337,16 @@
 "configpage_turbo_speed_medium" = "中";
 "configpage_turbo_speed_fast" = "快";
 "configpage_turbo_speed_very_fast" = "非常快";
+"configpage_overlay_haptic" = "按键震动";
+"configpage_overlay_haptic_desc" = "按下屏幕按键、十字键换方向或推动摇杆时，手机给出的震动手感。";
+"configpage_overlay_haptic_off" = "关闭";
+"configpage_overlay_haptic_soft" = "柔和";
+"configpage_overlay_haptic_light" = "轻";
+"configpage_overlay_haptic_medium" = "中";
+"configpage_overlay_haptic_heavy" = "重";
+"configpage_overlay_haptic_rigid" = "清脆";
+"configpage_game_rumble" = "游戏震动";
+"configpage_game_rumble_desc" = "游戏发出震动时（如赛车碰撞、射击开火）让手机跟着震动。连接了带震动马达的手柄时，由手柄震动。";
 "configpage_controllers" = "玩家控制器";
 "configpage_player" = "玩家 %d";
 "configpage_touchscreen" = "触摸屏";

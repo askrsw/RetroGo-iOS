@@ -138,6 +138,19 @@ extension GameConfigSession {
         return Bundle.localizedString(forKey: key)
     }
 
+    fileprivate static func hapticLevelTitle(_ level: GameHapticLevel) -> String {
+        let key: String
+        switch level {
+        case .off:    key = "configpage_overlay_haptic_off"
+        case .soft:   key = "configpage_overlay_haptic_soft"
+        case .light:  key = "configpage_overlay_haptic_light"
+        case .medium: key = "configpage_overlay_haptic_medium"
+        case .heavy:  key = "configpage_overlay_haptic_heavy"
+        case .rigid:  key = "configpage_overlay_haptic_rigid"
+        }
+        return Bundle.localizedString(forKey: key)
+    }
+
     func makeOverlayConfigEntries() -> [GameConfigEntry] {
         var entries: [GameConfigEntry] = []
         // Layouts belong to a platform, so there is no global layout setting.
@@ -224,6 +237,44 @@ extension GameConfigSession {
                 setOverlayTurboSpeed(speed)
             }
             entry.desc = Bundle.localizedString(forKey: "configpage_turbo_speed_desc")
+            entries.append(entry)
+        }
+
+        do {
+            let title = Bundle.localizedString(forKey: "configpage_overlay_haptic")
+            let entry = GameConfigEntry(type: .int, ui: .list, title: title)
+            entry.getListArray = { [weak self] in
+                guard let self = self else { return ([], nil) }
+                let list: [(title: String, value: AnyHashable)] = GameHapticLevel.allCases.map {
+                    (Self.hapticLevelTitle($0), $0.rawValue)
+                }
+                let selected = GameHapticLevel.allCases.firstIndex(of: getOverlayHapticLevel())
+                return (list, selected)
+            }
+            entry.getListSelectedTitle = { [weak self] in
+                guard let self = self else { return nil }
+                return Self.hapticLevelTitle(getOverlayHapticLevel())
+            }
+            entry.setListSelectedValue = { [weak self] v in
+                guard let self = self, let raw = v as? Int, let level = GameHapticLevel(rawValue: raw) else { return }
+                // Setter persists and posts `.overlayHapticLevelChanged`; a running game applies it at once.
+                setOverlayHapticLevel(level)
+            }
+            entry.desc = Bundle.localizedString(forKey: "configpage_overlay_haptic_desc")
+            entries.append(entry)
+        }
+
+        do {
+            let title = Bundle.localizedString(forKey: "configpage_game_rumble")
+            let entry = GameConfigEntry(type: .bool, ui: .switch, title: title)
+            entry.getBoolValue = { [weak self] in
+                self?.getGameRumbleEnabled() ?? true
+            }
+            entry.setBoolValue = { [weak self] value in
+                // Setter persists and posts `.gameRumbleEnabledChanged`; a running game applies it at once.
+                self?.setGameRumbleEnabled(value)
+            }
+            entry.desc = Bundle.localizedString(forKey: "configpage_game_rumble_desc")
             entries.append(entry)
         }
 

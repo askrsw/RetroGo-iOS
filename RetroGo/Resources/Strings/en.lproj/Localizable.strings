@@ -91,7 +91,6 @@
 "appsetting_use_system_homepage" = "Use System Homepage";
 "appsetting_language_follow_system" = "Language Follows System";
 "appsetting_ui_haptic_feedback" = "UI Haptic Feedback";
-"appsetting_ingame_haptic_feedback" = "In-Game Haptic Feedback";
 "appsetting_about" = "About Retro Go";
 "appsetting_acknowledgments" = "Acknowledgments";
 "appsetting_version_history" = "Version History";
@@ -336,6 +335,16 @@
 "configpage_turbo_speed_medium" = "Medium";
 "configpage_turbo_speed_fast" = "Fast";
 "configpage_turbo_speed_very_fast" = "Very Fast";
+"configpage_overlay_haptic" = "Control Haptics";
+"configpage_overlay_haptic_desc" = "How the phone answers when you press the on-screen controls, move the D-pad to a new direction, or move a stick.";
+"configpage_overlay_haptic_off" = "Off";
+"configpage_overlay_haptic_soft" = "Soft";
+"configpage_overlay_haptic_light" = "Light";
+"configpage_overlay_haptic_medium" = "Medium";
+"configpage_overlay_haptic_heavy" = "Heavy";
+"configpage_overlay_haptic_rigid" = "Rigid";
+"configpage_game_rumble" = "Game Rumble";
+"configpage_game_rumble_desc" = "Vibrate the phone when the game rumbles, such as a crash in a racing game or a shot in a shooter. A connected controller with its own motors rumbles instead.";
 "configpage_controllers" = "Controllers";
 "configpage_player" = "Player %d";
 "configpage_touchscreen" = "Touch Screen";

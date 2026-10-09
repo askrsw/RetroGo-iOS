@@ -32,7 +32,8 @@
 #import "runner/RAGameLogicThreadRunner.h"
 #import "runner/RAGameLogicDisplayLinkRunner.h"
 #import "input/RAInputActionManager.h"
-#import "virtual/virtual_joypad.h"
+#import "input/RAPhoneRumble.h"
+#import "input/virtual_joypad.h"
 
 #import <retroarch_door.h>
 #import <utils/verbosity.h>
@@ -232,6 +233,8 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         return;
     }
 
+    ra_phone_rumble_reset();
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
         content_ctx_info_t content_info;
         NSString *corePath = core.corePath;
@@ -409,6 +412,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     d_gameLogicRuner = nil;
     d_dummyCoreRunning = NO;
     d_inputDriverOnlyRunning = NO;
+    ra_phone_rumble_reset();
     [self clearCoreOptionConfiguration];
     [runningCore cleanupMameSession];
 
@@ -422,7 +426,12 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
 - (BOOL)pause {
     if(self.currentCoreItem != nil) {
-        return [d_gameLogicRuner pause];
+        BOOL ret = [d_gameLogicRuner pause];
+        if (ret) {
+            // A paused core sends no more requests, so a rumble left on would never end.
+            ra_phone_rumble_suspend();
+        }
+        return ret;
     } else {
         return NO;
     }
@@ -430,7 +439,11 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
 - (BOOL)resume {
     if(self.currentCoreItem != nil) {
-        return [d_gameLogicRuner resume];
+        BOOL ret = [d_gameLogicRuner resume];
+        if (ret) {
+            ra_phone_rumble_resume();
+        }
+        return ret;
     } else {
         return NO;
     }

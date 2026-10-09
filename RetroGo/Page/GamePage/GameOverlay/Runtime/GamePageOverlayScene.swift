@@ -56,6 +56,7 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     /// What the emulator frame callback updates; it runs on the game logic thread with the thread runner.
     private let turboButtons = GameOverlayLockedValue<[GameOverlayActionButton]>([])
     private let inputMixer = GameOverlayInputMixer()
+    private let hapticHandler: GameOverlayHapticHandler = { GameHapticEngine.shared.impact() }
     private var fastButton: GameOverLayFastButton?
     private var n64CButton: GameOverlayN64CButton?
     private var ndsLayoutButton: GameOverlayNDSLayoutButton?
@@ -299,6 +300,7 @@ extension GamePageOverlayScene {
 
     private func makeDPadNode(element: GamePageOverlayElement) -> SKNode {
         let node = GameOverlayDirectionPad(element: element, theme: theme, digitalHandler: inputMixer.handler())
+        node.hapticHandler = hapticHandler
         self.dpad = node
         return node
     }
@@ -313,6 +315,7 @@ extension GamePageOverlayScene {
         } else {
             node = GameOverlayThumbStick(element: element, theme: theme, digitalHandler: inputMixer.handler())
         }
+        node.hapticHandler = hapticHandler
         self.stick = node
         return node
     }
@@ -328,6 +331,7 @@ extension GamePageOverlayScene {
                 RetroArchX.shared().send(.leftY, value: y)
             }
         )
+        node.hapticHandler = hapticHandler
         self.directionalControl = node
         return node
     }
@@ -339,6 +343,7 @@ extension GamePageOverlayScene {
         let speed = currentTurboSpeed
         let node = GameOverlayActionButton(element: element, isTurboSupported: element.isTurbo, autoKeepTurbo: autoKeep, turboPeriod: speed.period, turboDuty: speed.duty, theme: theme,
                                            digitalChangeHandler: inputMixer.handler())
+        node.hapticHandler = hapticHandler
         self.actionButtons.append(node)
         return node
     }
@@ -358,6 +363,7 @@ extension GamePageOverlayScene {
             }
             RetroArchX.shared().setFastForwardEnabled(enabled, multiplier: requestedMultiplier)
         }
+        node.hapticHandler = hapticHandler
         self.fastButton = node
         return node
     }
@@ -369,18 +375,21 @@ extension GamePageOverlayScene {
             setOverlayCollapsed(collapsed, animated: true)
         }
         node.applyCollapsed(overlayCollapsed ?? false, animated: false)
+        node.hapticHandler = hapticHandler
         self.overlayCollapseButton = node
         return node
     }
 
     private func makeN64CButtonNode(element: GamePageOverlayElement) -> SKNode {
         let node = GameOverlayN64CButton(element: element, theme: theme, digitalHandler: inputMixer.handler())
+        node.hapticHandler = hapticHandler
         self.n64CButton = node
         return node
     }
 
     private func makeNDSLayoutButtonNode(element: GamePageOverlayElement) -> SKNode {
         let node = GameOverlayNDSLayoutButton(element: element, theme: theme, digitalChangeHandler: inputMixer.handler())
+        node.hapticHandler = hapticHandler
         self.ndsLayoutButton = node
         return node
     }
@@ -392,6 +401,7 @@ extension GamePageOverlayScene {
             self.onFourButtonLayoutChanged?(self.usesFourButtonLayout)
         }
         node.applyFourButtonLayout(usesFourButtonLayout)
+        node.hapticHandler = hapticHandler
         self.arcadeLayoutButton = node
         return node
     }

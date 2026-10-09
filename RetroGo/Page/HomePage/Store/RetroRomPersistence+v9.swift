@@ -28,8 +28,10 @@ import Foundation
 
 extension RetroRomPersistence {
     /// v9 adds the user's on-screen control layouts, which one a platform or a
-    /// game uses, and per game which arcade layout (four or six buttons) the
-    /// controls last showed (see `GameOverlayLayoutSession`).
+    /// game uses, per game which arcade layout (four or six buttons) the
+    /// controls last showed (see `GameOverlayLayoutSession`), and two config
+    /// columns: the haptic level of the controls and whether the phone rumbles
+    /// when the game asks for it.
     static func migrationV8ToV9(db: Connection) throws {
         typealias L = GameOverlayLayoutSession
         try db.transaction {
@@ -72,6 +74,8 @@ extension RetroRomPersistence {
                 t.primaryKey(L.romKey, L.overlayName)
                 t.foreignKey(L.romKey, references: Self.romGameTable, Self.key, delete: .cascade)
             }))
+            try addColumnIfNeeded(db: db, table: "romconfig", column: "overlay_haptic_level", type: "INTEGER")
+            try addColumnIfNeeded(db: db, table: "romconfig", column: "game_rumble_enabled", type: "INTEGER")
             try db.run("PRAGMA user_version = 9")
         }
     }
