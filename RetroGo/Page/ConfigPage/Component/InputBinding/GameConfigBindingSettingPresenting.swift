@@ -129,11 +129,6 @@ private var bindingBubbleStoreKey: UInt8 = 0
 
 extension GameOverlayActionButton: GameConfigBindingSettingPresenting {
     func bindingActionIds() -> [String] {
-        if element.isCombo {
-            let parts = element.binds.map(\.rawValue)
-            return ["combo_" + parts.joined(separator: "_")]
-        }
-
         if element.binds.count == 1 {
             return [element.binds[0].rawValue]
         }
@@ -143,10 +138,6 @@ extension GameOverlayActionButton: GameConfigBindingSettingPresenting {
     }
 
     func bindingJoypadCode(for actionId: String) -> RetroArchJoypadCode {
-        if element.isCombo, bindingActionIds().contains(actionId) {
-            return element.binds.first?.code ?? .none
-        }
-
         if element.binds.count == 1, bindingActionIds().contains(actionId) {
             return element.binds[0].code
         }

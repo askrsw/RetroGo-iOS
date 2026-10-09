@@ -57,6 +57,13 @@ struct GameOverlayLayoutData: Codable, Equatable {
     /// Missing means the built-in four-button positions.
     var portraitFourButton: Orientation?
     var landscapeFourButton: Orientation?
+    /// Combo buttons the user made. What they press is shared by every
+    /// orientation; where each shows, and whether, is kept per orientation in
+    /// `elements` like any other control.
+    var combos: [Combo]?
+    /// Turbo of the platform's built-in combos, keyed by element id, where this layout
+    /// differs from the overlay JSON (A+B on NES is turbo there, for one).
+    var presetComboTurbo: [String: Bool]?
 
     struct Orientation: Codable, Equatable {
         /// Keyed by overlay element id (`a`, `left-dpad`, `start`...).
@@ -87,6 +94,20 @@ struct GameOverlayLayoutData: Codable, Equatable {
         var isEmpty: Bool { offsetX == 0 && offsetY == 0 && scale == nil }
     }
 
+    struct Combo: Codable, Equatable {
+        static let idPrefix = "user-combo-"
+        static let keyRange = 2...4
+
+        var id: String
+        /// RetroPad buttons (`A`, `L1`, `START`...), the vocabulary of the overlay JSON `binds`.
+        var binds: [String]
+        var turbo: Bool
+
+        static func makeId() -> String {
+            idPrefix + UUID().uuidString.prefix(8).lowercased()
+        }
+    }
+
     init() { }
 
     func orientation(portrait isPortrait: Bool, fourButton: Bool = false) -> Orientation? {
@@ -105,6 +126,34 @@ struct GameOverlayLayoutData: Codable, Equatable {
         case (false, false): landscape = stored
         case (true, true): portraitFourButton = stored
         case (false, true): landscapeFourButton = stored
+        }
+    }
+}
+
+extension GameOverlayLayoutData {
+    private static let allOrientations: [(portrait: Bool, fourButton: Bool)] = [
+        (true, false), (false, false), (true, true), (false, true)
+    ]
+
+    /// Adds a combo, or replaces the one with the same id.
+    mutating func saveCombo(_ combo: Combo) {
+        var list = combos ?? []
+        if let index = list.firstIndex(where: { $0.id == combo.id }) {
+            list[index] = combo
+        } else {
+            list.append(combo)
+        }
+        combos = list
+    }
+
+    /// Removes a combo together with its position and visibility in every orientation.
+    mutating func removeCombo(id: String) {
+        let list = (combos ?? []).filter { $0.id != id }
+        combos = list.isEmpty ? nil : list
+        for key in Self.allOrientations {
+            guard var orientation = orientation(portrait: key.portrait, fourButton: key.fourButton) else { continue }
+            orientation.elements[id] = nil
+            setOrientation(orientation, portrait: key.portrait, fourButton: key.fourButton)
         }
     }
 }

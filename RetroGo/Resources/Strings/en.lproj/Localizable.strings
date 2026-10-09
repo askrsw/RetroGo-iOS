@@ -775,7 +775,8 @@
 "overlay_layout_size" = "Size";
 "overlay_layout_size_hint" = "Tap a control to resize it";
 "overlay_layout_opacity" = "Opacity";
-"overlay_layout_extra_buttons" = "Show";
+"overlay_layout_hide_control" = "Hide Control";
+"overlay_layout_show_control" = "Show Control";
 "overlay_layout_save_title" = "Save Layout";
 "overlay_layout_name_placeholder" = "Layout Name";
 "overlay_layout_name_prefix" = "Layout";
@@ -811,3 +812,16 @@
 "overlay_layout_manage_hint" = "To edit a layout or create one, open Control Layouts from the menu while playing.";
 "overlay_layout_arcade_six" = "6 Buttons";
 "overlay_layout_arcade_four" = "4 Buttons";
+"overlay_layout_combos" = "Combos";
+"overlay_combo_new" = "New Combo";
+"overlay_combo_new_short" = "New";
+"overlay_combo_edit_title" = "Edit Combo";
+"overlay_combo_preview_empty" = "Choose Buttons";
+"overlay_combo_keys" = "Buttons";
+"overlay_combo_keys_footer" = "Choose 2 to 4 buttons. The combo presses them all at once.";
+"overlay_combo_turbo_name_format" = "%@ (Turbo)";
+"overlay_combo_taken_format" = "“%@” already presses these buttons, so this combo can’t be added again.";
+"overlay_combo_taken_hidden_format" = "“%@” already presses these buttons, so this combo can’t be added again. It’s hidden now; tap it in the Combos row to show it.";
+"overlay_combo_turbo" = "Turbo";
+"overlay_combo_turbo_footer" = "While held, presses them repeatedly at the turbo speed.";
+"overlay_combo_delete" = "Delete Combo";

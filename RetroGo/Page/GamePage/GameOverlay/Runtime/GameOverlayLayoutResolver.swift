@@ -89,8 +89,10 @@ struct GameOverlayLayoutResolver {
     }
 
     /// Whether the custom layout hides the element; only extension buttons can be hidden.
+    /// Combos are hidden unless the layout shows them, the built-in layout included.
     func isHiddenByCustomLayout(_ element: GamePageOverlayElement, fourButtonLayout: Bool = false) -> Bool {
-        element.isHideableInCustomLayout && customElement(for: element, fourButtonLayout: fourButtonLayout)?.hidden == true
+        guard element.isHideableInCustomLayout else { return false }
+        return customElement(for: element, fourButtonLayout: fourButtonLayout)?.hidden ?? element.isHiddenByDefaultInCustomLayout
     }
 
     /// Opacity of the whole overlay, clamped so the controls never vanish.

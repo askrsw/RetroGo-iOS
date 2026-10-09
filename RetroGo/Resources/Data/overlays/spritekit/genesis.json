@@ -155,6 +155,20 @@
             }
         },
         {
+            "id": "combo-abc",
+            "type": "combo",
+            "meta": {
+                "binds": ["Y", "B", "A"]
+            }
+        },
+        {
+            "id": "combo-xyz",
+            "type": "combo",
+            "meta": {
+                "binds": ["L1", "X", "R1"]
+            }
+        },
+        {
             "id": "fast",
             "type": "fast-button",
             "geometry": {

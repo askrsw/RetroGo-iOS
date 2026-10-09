@@ -90,20 +90,10 @@
         },
         {
             "id": "a-b",
-            "type": "button",
-            "geometry": {
-                "shape": "capsule",
-                "size": { "width": 50, "height": 35 },
-                "plain_portrait_layout": { "right": 170, "bottom": 215 },
-                "plain_landscape_layout": { "right": 170, "bottom": 80 }
-            },
+            "type": "combo",
             "meta": {
-                "group": "action",
-                "title": "AB",
                 "binds": ["A", "B"],
-                "is_combo": true,
-                "is_turbo": true,
-                "is_turbo_auto_keep": false
+                "is_turbo": true
             }
         },
         {

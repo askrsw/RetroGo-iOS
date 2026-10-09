@@ -50,7 +50,9 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
         case element(String)
     }
 
-    private let config: GamePageOverlayConfig
+    /// The overlay JSON; `config` adds the combos of the layout being edited.
+    private let baseConfig: GamePageOverlayConfig
+    private var config: GamePageOverlayConfig
     private let supportsAnalog: Bool
 
     var overlayLayoutResolver: GameOverlayLayoutResolver
@@ -74,7 +76,6 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
     /// Layout before a slider drag; the whole drag becomes one undo step.
     private var continuousEditStart: GameOverlayLayoutData?
     private var drag: DragState?
-    private let snapFeedback = UISelectionFeedbackGenerator()
 
     private struct DragState {
         let touch: ObjectIdentifier
@@ -96,7 +97,8 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
 
     init(size: CGSize, config: GamePageOverlayConfig, supportsAnalog: Bool, layoutData: GameOverlayLayoutData,
          fourButtonLayout: Bool = false) {
-        self.config = config
+        self.baseConfig = config
+        self.config = config.withCombos(from: layoutData)
         self.supportsAnalog = supportsAnalog
         self.layoutData = layoutData
         self.overlayLayoutResolver = GameOverlayLayoutResolver(config: config)
@@ -229,15 +231,8 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
             return "C"
         case .ndsLayoutButton, .arcadeLayoutButton:
             return Bundle.localizedString(forKey: "overlay_layout_element_layout_switch")
-        case .button:
-            if let title = element.title { return title }
-            switch element.psActionButtonIcon {
-            case .triangle: return "△"
-            case .circle: return "○"
-            case .cross: return "×"
-            case .square: return "□"
-            case nil: return element.id.uppercased()
-            }
+        case .button, .combo:
+            return element.buttonTitle
         }
     }
 
@@ -245,9 +240,21 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
         Double(overlayLayoutResolver.customOpacity)
     }
 
-    /// Controls the layout may hide, in JSON order.
-    var hideableElements: [GamePageOverlayElement] {
-        config.elements.filter { $0.isHideableInCustomLayout && isShown($0) }
+    /// Whether the selected control is hidden; nil for a group or a control that always stays.
+    var selectionHidden: Bool? {
+        guard case .element(let id) = selection, let element = element(id: id), element.isHideableInCustomLayout else { return nil }
+        return isHiddenInLayout(element)
+    }
+
+    /// Hides the selected control or shows it again; a hidden one stays faintly drawn so it can be picked.
+    func toggleSelectionHidden() {
+        guard case .element(let id) = selection, let hidden = selectionHidden else { return }
+        setHidden(!hidden, element: id)
+    }
+
+    /// The platform's combos, then the user's, shown or not.
+    var comboElements: [GamePageOverlayElement] {
+        config.elements.filter { $0.type == .combo && isAvailable($0) }
     }
 
     func isHiddenInLayout(_ element: GamePageOverlayElement) -> Bool {
@@ -255,14 +262,91 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
     }
 
     func setHidden(_ hidden: Bool, element id: String) {
+        guard let element = element(id: id) else { return }
+        // Combos are hidden unless the layout says otherwise; other controls are shown.
+        if element.type == .combo, !hidden, !hasCustomPosition(element) {
+            commit(placingCombo(id, in: layoutData))
+            selection = .element(id)
+            refresh()
+            return
+        }
         var orientation = currentOrientation
         var custom = orientation.elements[id] ?? GameOverlayLayoutData.Element()
-        custom.hidden = hidden ? true : nil
+        custom.hidden = hidden == element.isHiddenByDefaultInCustomLayout ? nil : hidden
         orientation.elements[id] = custom.isEmpty ? nil : custom
         var data = layoutData
         data.setOrientation(orientation, portrait: isPortrait, fourButton: usesFourButtonLayout)
         commit(data)
     }
+
+    // MARK: Combos
+
+    var comboKeys: [GameOverlayComboKey] { baseConfig.comboKeys }
+
+    /// The selection's combo title when it draws Start/Select as symbols.
+    var selectionComboTitle: GameOverlayComboTitle? {
+        guard case .element(let id) = selection, let title = element(id: id)?.comboTitle, title.hasSymbols else { return nil }
+        return title
+    }
+
+    func userCombo(id: String) -> GameOverlayLayoutData.Combo? {
+        layoutData.combos?.first { $0.id == id }
+    }
+
+    /// The selection when it is a combo the user made.
+    var selectedUserCombo: GameOverlayLayoutData.Combo? {
+        guard case .element(let id) = selection else { return nil }
+        return userCombo(id: id)
+    }
+
+    /// Another combo, built-in or the user's, that already presses these buttons. Turbo does not
+    /// make a second one: A+B and turbo A+B count as the same combo.
+    func combo(binds: [String], excluding id: String?) -> GamePageOverlayElement? {
+        let keys = Set(binds)
+        return config.elements.first {
+            $0.type == .combo && $0.id != id && Set($0.binds.map(\.rawValue)) == keys
+        }
+    }
+
+    /// Saves a combo; a new one is shown in the orientation being edited, at a free spot, and selected.
+    func saveCombo(_ combo: GameOverlayLayoutData.Combo) {
+        cancelDrag()
+        var data = layoutData
+        let isNew = userCombo(id: combo.id) == nil
+        data.saveCombo(combo)
+        if isNew {
+            data = placingCombo(combo.id, in: data)
+            selection = .element(combo.id)
+        }
+        commit(data)
+    }
+
+    /// Turns turbo on or off for a combo in this layout: a user combo changes itself,
+    /// a built-in one keeps the change only where it differs from the overlay JSON.
+    func setComboTurbo(_ turbo: Bool, combo id: String) {
+        cancelDrag()
+        var data = layoutData
+        if var combo = userCombo(id: id) {
+            combo.turbo = turbo
+            data.saveCombo(combo)
+        } else if let preset = baseConfig.elements.first(where: { $0.id == id && $0.type == .combo }) {
+            var overrides = data.presetComboTurbo ?? [:]
+            overrides[id] = turbo == preset.isTurbo ? nil : turbo
+            data.presetComboTurbo = overrides.isEmpty ? nil : overrides
+        }
+        commit(data)
+    }
+
+    func removeCombo(id: String) {
+        cancelDrag()
+        var data = layoutData
+        data.removeCombo(id: id)
+        if selection == .element(id) {
+            selection = nil
+        }
+        commit(data)
+    }
+
 
     /// Slider edits: begin once, change many times, end once for a single undo step.
     func beginContinuousEdit() {
@@ -379,7 +463,7 @@ private extension GameOverlayLayoutEditorScene {
             return GameOverlayThumbStick(element: element)
         case .directional:
             return GameOverlayDirectionalControl(element: element, supportsAnalog: supportsAnalog, digitalHandler: nil, analogHandler: nil)
-        case .button:
+        case .button, .combo:
             return GameOverlayActionButton(element: element, isTurboSupported: false, autoKeepTurbo: false, digitalChangeHandler: nil)
         case .fastButton:
             return GameOverLayFastButton(element: element, fastStateChangeHander: nil)
@@ -415,11 +499,37 @@ private extension GameOverlayLayoutEditorScene {
     }
 
     func setLayoutData(_ data: GameOverlayLayoutData) {
+        let combosChanged = data.combos != layoutData.combos || data.presetComboTurbo != layoutData.presetComboTurbo
         layoutData = data
         overlayLayoutResolver.layoutData = data
+        if combosChanged {
+            updateComboNodes()
+        }
+    }
+
+    /// Rebuilds the combo nodes after the user's combos changed (made, edited, removed, undone).
+    func updateComboNodes() {
+        config = baseConfig.withCombos(from: layoutData)
+        nodes.removeAll { node in
+            guard node.element.type == .combo else { return false }
+            node.removeFromParent()
+            return true
+        }
+        for element in config.elements where element.type == .combo {
+            let node = makeNode(for: element)
+            disableInteraction(node)
+            addChild(node)
+            nodes.append(node)
+        }
     }
 
     func refresh() {
+        // A selected combo that was hidden or removed is no longer there to edit.
+        if case .element(let id) = selection, let element = element(id: id), !isShown(element) {
+            selection = nil
+        } else if case .element(let id) = selection, element(id: id) == nil {
+            selection = nil
+        }
         let opacity = overlayLayoutResolver.customOpacity
         for node in nodes {
             let element = node.element.arcadeLayoutElement(fourButtons: usesFourButtonLayout)
@@ -427,7 +537,8 @@ private extension GameOverlayLayoutEditorScene {
             let rotates = node is GameOverlayActionButton || node is GameOverLayFastButton
             node.zRotation = resolveOverlayRotation(element, rotatesWithPolarLayout: rotates)
 
-            // Hidden controls stay faintly visible so they can be picked and shown again.
+            // Hidden controls stay faintly visible so they can be picked and shown again;
+            // hidden combos are shown again from the panel.
             if !isShown(element) {
                 node.isHidden = true
             } else {
@@ -463,9 +574,14 @@ extension GameOverlayLayoutEditorScene {
         resolveOverlayRect(element.arcadeLayoutElement(fourButtons: usesFourButtonLayout))
     }
 
-    /// Hidden by the JSON, or a six-button-only key in the four-button layout.
-    func isShown(_ element: GamePageOverlayElement) -> Bool {
+    /// Not hidden by the JSON, nor a six-button-only key in the four-button layout.
+    func isAvailable(_ element: GamePageOverlayElement) -> Bool {
         !element.isHidden && !(usesFourButtonLayout && element.isSixButtonOnly)
+    }
+
+    /// Drawn and selectable: available, and for a combo, shown by the layout.
+    func isShown(_ element: GamePageOverlayElement) -> Bool {
+        isAvailable(element) && !(element.type == .combo && isHiddenInLayout(element))
     }
 
     func hasCustomPosition(_ element: GamePageOverlayElement) -> Bool {
@@ -496,7 +612,8 @@ extension GameOverlayLayoutEditorScene {
         guard let element = hits.min(by: { $0.1.width * $0.1.height < $1.1.width * $1.1.height })?.0 else {
             return nil
         }
-        if selectionMode == .group, let group = element.group, !hasCustomPosition(element) {
+        // A hidden group member is picked on its own, so it can be shown again without leaving group mode.
+        if selectionMode == .group, let group = element.group, !hasCustomPosition(element), !isHiddenInLayout(element) {
             return .group(group)
         }
         return .element(element.id)
@@ -519,7 +636,6 @@ extension GameOverlayLayoutEditorScene {
 
         drag = DragState(touch: ObjectIdentifier(touch), startPoint: point, startRect: rect,
                          startData: layoutData, baseData: dataForMoving(selection))
-        snapFeedback.prepare()
         refresh()
     }
 
@@ -542,7 +658,8 @@ extension GameOverlayLayoutEditorScene {
         rect = clamped(rect)
 
         if (snappedX?.line != nil && snappedX?.line != drag.snappedX) || (snappedY?.line != nil && snappedY?.line != drag.snappedY) {
-            snapFeedback.selectionChanged()
+            // Through Vibration, so the UI haptics switch in Settings covers it too.
+            Vibration.selection.vibrate()
         }
         drag.snappedX = snappedX?.line
         drag.snappedY = snappedY?.line
@@ -628,12 +745,68 @@ private extension GameOverlayLayoutEditorScene {
         return data
     }
 
+    /// Shows a combo in the orientation being edited at a free spot near the face buttons.
+    func placingCombo(_ id: String, in data: GameOverlayLayoutData) -> GameOverlayLayoutData {
+        var resolver = overlayLayoutResolver
+        resolver.layoutData = data
+        guard let element = baseConfig.withCombos(from: data).elements.first(where: { $0.id == id }) else { return data }
+        let size = resolver.resolveRect(element, usePolarLayout: usePolarLayout, fourButtonLayout: usesFourButtonLayout).size
+        let rect = freeRect(size: size, excluding: id)
+
+        var orientation = data.orientation(portrait: isPortrait, fourButton: usesFourButtonLayout) ?? GameOverlayLayoutData.Orientation()
+        var custom = orientation.elements[id] ?? GameOverlayLayoutData.Element()
+        custom.layout = resolver.plainInsets(for: rect)
+        custom.hidden = false
+        orientation.elements[id] = custom
+        var result = data
+        result.setOrientation(orientation, portrait: isPortrait, fourButton: usesFourButtonLayout)
+        return result
+    }
+
+    /// The spot closest to the face buttons where a control of `size` covers no other
+    /// control; the screen center when the controls leave no room.
+    func freeRect(size: CGSize, excluding id: String) -> CGRect {
+        let gap: CGFloat = 6
+        // Hidden controls leave their space free; that is what hiding them is for.
+        let occupied = config.elements
+            .filter { isShown($0) && !isHiddenInLayout($0) && $0.id != id }
+            .map { frame($0).insetBy(dx: -gap, dy: -gap) }
+        let faceButtons = selectedElements(.group("action")).map(frame).reduce(CGRect.null) { $0.union($1) }
+        let target = faceButtons.isNull
+            ? CGRect(x: self.size.width * 0.75, y: self.size.height * 0.25, width: 0, height: 0)
+            : faceButtons.insetBy(dx: -gap, dy: -gap)
+
+        let margin = Self.screenMargin
+        let step: CGFloat = 6
+        var best: (rect: CGRect, distance: CGFloat)?
+        var y = margin
+        while y + size.height <= self.size.height - margin {
+            var x = margin
+            while x + size.width <= self.size.width - margin {
+                let rect = CGRect(origin: CGPoint(x: x, y: y), size: size)
+                // Not between the face buttons either: a combo there is easy to press by mistake.
+                if !rect.intersects(target), !occupied.contains(where: { $0.intersects(rect) }) {
+                    let dx = max(target.minX - rect.maxX, 0, rect.minX - target.maxX)
+                    let dy = max(target.minY - rect.maxY, 0, rect.minY - target.maxY)
+                    let distance = hypot(dx, dy)
+                    if distance < best?.distance ?? .greatestFiniteMagnitude {
+                        best = (rect, distance)
+                    }
+                }
+                x += step
+            }
+            y += step
+        }
+        return best?.rect ?? CGRect(x: (self.size.width - size.width) * 0.5, y: (self.size.height - size.height) * 0.5,
+                                    width: size.width, height: size.height)
+    }
+
     /// Lines the selection's edges or center snap to: the screen center and
     /// edges, and the centers of the other visible controls.
     func snapTargets(excluding selection: Selection) -> (x: [CGFloat], y: [CGFloat]) {
         let moving = Set(selectedElements(selection).map(\.id))
         let others = config.elements
-            .filter { isShown($0) && !moving.contains($0.id) }
+            .filter { isShown($0) && !isHiddenInLayout($0) && !moving.contains($0.id) }
             .map(frame)
         let margin = Self.screenMargin
         let xs = [size.width * 0.5, margin, size.width - margin] + others.map(\.midX)

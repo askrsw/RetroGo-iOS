@@ -70,6 +70,8 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
     private let shapeNode = SKShapeNode()
     private let contentNode = SKNode()
     private var labelNode: SKLabelNode?
+    /// A combo's buttons side by side, drawn instead of `labelNode`.
+    private var comboTitleNode: GameOverlayComboTitleNode?
     private var psIconNode: SKNode?
     private var psIconShapeNodes: [SKShapeNode] = []
 
@@ -347,6 +349,12 @@ extension GameOverlayActionButton {
             iconNode.zPosition = 1
             contentNode.addChild(iconNode)
             self.psIconNode = iconNode
+        } else if let comboTitle = element.comboTitle {
+            let titleNode = GameOverlayComboTitleNode(title: comboTitle)
+            titleNode.zPosition = 1
+            titleNode.setColor(theme.primaryColor(alpha: theme.normalContentAlpha))
+            contentNode.addChild(titleNode)
+            self.comboTitleNode = titleNode
         } else if let title = element.title {
             let lNode = SKLabelNode(text: title)
             lNode.fontName = "Helvetica"
@@ -391,6 +399,7 @@ extension GameOverlayActionButton {
             shapeNode.fillColor = fillColor
         }
         labelNode?.fontColor = theme.primaryColor(alpha: foregroundAlpha)
+        comboTitleNode?.setColor(theme.primaryColor(alpha: foregroundAlpha))
         updatePSIconAppearance(alpha: foregroundAlpha)
         updateLatchBreathing(latchedHandsOff, seedFill: fillColor)
     }
@@ -425,8 +434,15 @@ extension GameOverlayActionButton {
         shapeNode.path = s.path
         if let labelNode = labelNode {
             labelNode.fontSize = s.fontSize
+            // Long titles (combos such as START+SELECT) shrink to stay inside the button.
+            let maxWidth = s.size.width * 0.84
+            let width = labelNode.frame.width
+            if width > maxWidth, width > 0 {
+                labelNode.fontSize = s.fontSize * maxWidth / width
+            }
             s.fixLabelPosition(labelNode)
         }
+        comboTitleNode?.fit(fontSize: s.fontSize, maxWidth: s.size.width * 0.84)
         if let psIconNode = psIconNode, let psActionButtonIcon = element.psActionButtonIcon {
             psIconNode.position = .zero
             let targetExtent = min(s.size.width, s.size.height) * psActionButtonIcon.scaleFactor
@@ -548,5 +564,80 @@ private extension GameOverlayPSActionButtonIcon {
 
     private var squarePath: CGPath {
         CGPath(rect: CGRect(x: -28, y: -28, width: 56, height: 56), transform: nil)
+    }
+}
+
+/// A combo title such as A B (view) (menu): text labels and SF Symbol sprites side
+/// by side, built once at a reference size and scaled to the button.
+private final class GameOverlayComboTitleNode: SKNode {
+    private static let referenceFontSize: CGFloat = 40
+    private var labels: [SKLabelNode] = []
+    private var symbols: [SKSpriteNode] = []
+    private var contentWidth: CGFloat = 0
+
+    init(title: GameOverlayComboTitle) {
+        super.init()
+        var items: [SKNode] = []
+        for part in title.parts {
+            switch part {
+            case .text(let text):
+                items.append(makeLabel(text))
+            case .symbol(let name, let text):
+                items.append(makeSymbol(name) ?? makeLabel(text))
+            }
+        }
+        let spacing = Self.referenceFontSize * 0.55 * CGFloat(GameOverlayComboTitle.gap)
+        let widths = items.map { $0.calculateAccumulatedFrame().width }
+        contentWidth = widths.reduce(0, +) + spacing * CGFloat(max(items.count - 1, 0))
+        var x = -contentWidth * 0.5
+        for (item, width) in zip(items, widths) {
+            item.position = CGPoint(x: x + width * 0.5, y: 0)
+            addChild(item)
+            x += width + spacing
+        }
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func setColor(_ color: SKColor) {
+        labels.forEach { $0.fontColor = color }
+        // The symbol textures are white: tint the color in, and fade by the color's alpha.
+        let alpha = color.cgColor.alpha
+        for symbol in symbols {
+            symbol.color = color.withAlphaComponent(1)
+            symbol.colorBlendFactor = 1
+            symbol.alpha = alpha
+        }
+    }
+
+    /// The font size of a plain label on this button, smaller when the title would overflow.
+    func fit(fontSize: CGFloat, maxWidth: CGFloat) {
+        var scale = fontSize / Self.referenceFontSize
+        if contentWidth * scale > maxWidth, contentWidth > 0 {
+            scale = maxWidth / contentWidth
+        }
+        setScale(scale)
+    }
+
+    private func makeLabel(_ text: String) -> SKLabelNode {
+        let label = SKLabelNode(text: text)
+        label.fontName = "Helvetica"
+        label.fontSize = Self.referenceFontSize
+        label.verticalAlignmentMode = .center
+        label.horizontalAlignmentMode = .center
+        labels.append(label)
+        return label
+    }
+
+    private func makeSymbol(_ name: String) -> SKSpriteNode? {
+        guard let image = GameOverlayComboTitle.symbolImage(name) else { return nil }
+        // As tall as the labels' capitals, so START/SELECT and the PlayStation shapes match the letters.
+        let capHeight = UIFont(name: "Helvetica", size: Self.referenceFontSize)?.capHeight ?? Self.referenceFontSize * 0.72
+        let sprite = SKSpriteNode(texture: SKTexture(image: image),
+                                  size: GameOverlayComboTitle.symbolSize(image.size, capHeight: capHeight))
+        symbols.append(sprite)
+        return sprite
     }
 }

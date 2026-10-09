@@ -52,7 +52,7 @@ final class GamePageToolbarView: UIView {
     private var menuPauseLease: GamePauseCoordinator.Lease?
 
     private var isGamePaused = false
-    private var isGameMuted = false
+    private(set) var isGameMuted = false
 
     /// Brand-color plate shown behind the lock glyph when landscape is locked,
     /// so the state reads on any background (a mid-tone tint alone washes out).

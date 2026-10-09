@@ -777,7 +777,8 @@
 "overlay_layout_size" = "大小";
 "overlay_layout_size_hint" = "点选按键后可调整大小";
 "overlay_layout_opacity" = "透明度";
-"overlay_layout_extra_buttons" = "显示";
+"overlay_layout_hide_control" = "隐藏按键";
+"overlay_layout_show_control" = "显示按键";
 "overlay_layout_save_title" = "保存布局";
 "overlay_layout_name_placeholder" = "布局名称";
 "overlay_layout_name_prefix" = "布局";
@@ -813,3 +814,16 @@
 "overlay_layout_manage_hint" = "编辑或新建布局：游戏中从菜单打开「屏幕按键布局」。";
 "overlay_layout_arcade_six" = "6 键";
 "overlay_layout_arcade_four" = "4 键";
+"overlay_layout_combos" = "组合键";
+"overlay_combo_new" = "新建组合键";
+"overlay_combo_new_short" = "新建";
+"overlay_combo_edit_title" = "编辑组合键";
+"overlay_combo_preview_empty" = "选择按键";
+"overlay_combo_keys" = "按键";
+"overlay_combo_keys_footer" = "选 2 到 4 个按键，按下组合键时它们同时按下。";
+"overlay_combo_turbo_name_format" = "%@（连发）";
+"overlay_combo_taken_format" = "已有相同的组合键「%@」，不能重复添加。";
+"overlay_combo_taken_hidden_format" = "已有相同的组合键「%@」，不能重复添加。它现在是隐藏的，在「组合键」一行点它就能显示。";
+"overlay_combo_turbo" = "连发";
+"overlay_combo_turbo_footer" = "按住时按连发速度反复按下。";
+"overlay_combo_delete" = "删除组合键";

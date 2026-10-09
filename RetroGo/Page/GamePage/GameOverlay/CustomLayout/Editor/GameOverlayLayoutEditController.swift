@@ -73,6 +73,8 @@ final class GameOverlayLayoutEditController {
         editorScene = editor
         pauseLease = GamePauseCoordinator.shared.acquire(reason: "overlay-layout-edit")
         gamePage.toolbarView.isHidden = true
+        // The screen stays in the orientation being edited until the panel switches it.
+        gamePage.setLayoutEditingOrientation(editor.isPortrait ? .portrait : .landscape)
 
         let panel = GameOverlayLayoutEditPanel()
         bind(panel, to: editor)
@@ -99,6 +101,9 @@ final class GameOverlayLayoutEditController {
     private func bind(_ panel: GameOverlayLayoutEditPanel, to editor: GameOverlayLayoutEditorScene) {
         panel.onModeChanged = { [weak editor] mode in editor?.setSelectionMode(mode) }
         panel.onArcadeLayoutChanged = { [weak editor] fourButtons in editor?.setFourButtonLayout(fourButtons) }
+        panel.onOrientationChanged = { [weak self] portrait in
+            self?.gamePage?.setLayoutEditingOrientation(portrait ? .portrait : .landscape)
+        }
         panel.onUndo = { [weak editor] in editor?.undo() }
         panel.onReset = { [weak editor] in editor?.resetCurrentOrientation() }
         panel.onCancel = { [weak self] in self?.finish(saved: nil) }
@@ -117,7 +122,12 @@ final class GameOverlayLayoutEditController {
             case .ended: editor?.endContinuousEdit()
             }
         }
-        panel.onExtraButtonToggled = { [weak editor] id, shown in editor?.setHidden(!shown, element: id) }
+        panel.onToggleSelectionHidden = { [weak editor] in editor?.toggleSelectionHidden() }
+        panel.onComboToggled = { [weak editor] id, shown in editor?.setHidden(!shown, element: id) }
+        panel.onAddCombo = { [weak self] in self?.presentComboEditor(comboId: nil) }
+        panel.onEditCombo = { [weak self] id in self?.presentComboEditor(comboId: id) }
+        panel.onDeleteCombo = { [weak editor] id in editor?.removeCombo(id: id) }
+        panel.onComboTurboChanged = { [weak editor] id, turbo in editor?.setComboTurbo(turbo, combo: id) }
         panel.onSizeChanged = { [weak self] in self?.viewDidLayout() }
     }
 
@@ -130,13 +140,40 @@ final class GameOverlayLayoutEditController {
             canUndo: editor.canUndo,
             canReset: editor.editedOrientation != nil,
             selectionTitle: editor.selectionTitle,
+            selectionComboTitle: editor.selectionComboTitle,
             selectionScale: editor.selectionScale,
             opacity: editor.opacity,
-            extraButtons: editor.hideableElements.map {
-                (id: $0.id, title: GameOverlayLayoutEditorScene.elementTitle($0), shown: !editor.isHiddenInLayout($0))
+            selectionHidden: editor.selectionHidden,
+            combos: editor.comboElements.map {
+                GameOverlayLayoutEditPanel.Combo(id: $0.id, title: $0.comboTitle ?? GameOverlayComboTitle(parts: [.text($0.buttonTitle)]),
+                                                 shown: !editor.isHiddenInLayout($0),
+                                                 isTurbo: $0.isTurbo, isUserCombo: editor.userCombo(id: $0.id) != nil)
             },
+            selectedUserComboId: editor.selectedUserCombo?.id,
             note: sharedNote
         ))
+    }
+
+    /// Makes a combo (nil) or edits one of the user's in a sheet over the paused game.
+    private func presentComboEditor(comboId: String?) {
+        guard let gamePage, let editor = editorScene, gamePage.presentedViewController == nil else { return }
+        let combo = comboId.flatMap(editor.userCombo(id:))
+        if comboId != nil, combo == nil { return }
+        let controller = GameOverlayComboEditViewController(keys: editor.comboKeys, combo: combo) { [weak editor] binds in
+            guard let editor, let existing = editor.combo(binds: binds, excluding: combo?.id) else { return nil }
+            return .init(title: existing.comboTitle?.plainText ?? existing.buttonTitle, isTurbo: existing.isTurbo,
+                         isShown: editor.isShown(existing))
+        }
+        controller.onSave = { [weak editor] in editor?.saveCombo($0) }
+        if let combo {
+            controller.onDelete = { [weak editor] in editor?.removeCombo(id: combo.id) }
+        }
+        let navigation = UINavigationController(rootViewController: controller)
+        if let sheet = navigation.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+        }
+        gamePage.present(navigation, animated: true)
     }
 
     /// Editing a layout other games use changes it for them too.
@@ -224,6 +261,7 @@ final class GameOverlayLayoutEditController {
         // Show what the game resolves to now: the saved layout if it was chosen, else the one it had.
         overlayView.endEditing(showing: nil)
         gamePage?.toolbarView.isHidden = false
+        gamePage?.setLayoutEditingOrientation(nil)
         pauseLease?.release()
         pauseLease = nil
 

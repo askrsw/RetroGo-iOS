@@ -37,7 +37,9 @@ typealias GameOverlaySwitchHandler = (GameOverlayDpadStickSwitch.`Type`) -> Void
 typealias GameOverlayFastStateChanged = (Bool) -> Void
 
 final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
-    private let config: GamePageOverlayConfig
+    /// The overlay JSON; `config` adds the combos of the custom layout.
+    private let baseConfig: GamePageOverlayConfig
+    private var config: GamePageOverlayConfig
     private let supportsAnalog: Bool
     private let theme: GameOverlayTheme
 
@@ -48,7 +50,12 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     private var stick: GameOverlayThumbStick?
     private var directionalControl: GameOverlayDirectionalControl?
     private var overlayCollapseButton: GameOverlayCollapseButton?
-    private var actionButtons: [GameOverlayActionButton] = []
+    private var actionButtons: [GameOverlayActionButton] = [] {
+        didSet { turboButtons.set(actionButtons) }
+    }
+    /// What the emulator frame callback updates; it runs on the game logic thread with the thread runner.
+    private let turboButtons = GameOverlayLockedValue<[GameOverlayActionButton]>([])
+    private let inputMixer = GameOverlayInputMixer()
     private var fastButton: GameOverLayFastButton?
     private var n64CButton: GameOverlayN64CButton?
     private var ndsLayoutButton: GameOverlayNDSLayoutButton?
@@ -72,7 +79,8 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
 
     init(size: CGSize, config: GamePageOverlayConfig, supportsAnalog: Bool, layoutData: GameOverlayLayoutData? = nil,
          fourButtonLayout: Bool = false, theme: GameOverlayTheme = .default) {
-        self.config = config
+        self.baseConfig = config
+        self.config = config.withCombos(from: layoutData)
         self.supportsAnalog = supportsAnalog
         self.theme = theme
         self.overlayLayoutResolver = GameOverlayLayoutResolver(config: config)
@@ -135,10 +143,11 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
         layoutNodes()
     }
 
-    /// Switches to another custom layout (nil = built-in) without rebuilding the nodes.
+    /// Switches to another custom layout (nil = built-in) in place; only the combos that changed are rebuilt.
     func applyLayoutData(_ layoutData: GameOverlayLayoutData?) {
         guard overlayLayoutResolver.layoutData != layoutData else { return }
         overlayLayoutResolver.layoutData = layoutData
+        updateComboNodes(baseConfig.withCombos(from: layoutData))
         applyNodeVisibility()
         applyCustomOpacity()
         layoutNodes()
@@ -212,6 +221,9 @@ extension GamePageOverlayScene {
             if var state = collapseVisualStates[key] {
                 state.position = newPosition
                 collapseVisualStates[key] = state
+            } else if !shouldUpdatePosition {
+                // A combo added while collapsed expands to its own place.
+                collapseVisualStates[key] = CollapseVisualState(position: newPosition, xScale: 1, yScale: 1, alpha: 1)
             }
         }
     }
@@ -230,6 +242,32 @@ extension GamePageOverlayScene {
         }
     }
 
+    /// Builds, rebuilds or removes combo nodes so they match `newConfig`; other controls stay as they are.
+    private func updateComboNodes(_ newConfig: GamePageOverlayConfig) {
+        let oldCombos = Dictionary(uniqueKeysWithValues: config.elements.filter { $0.type == .combo }.map { ($0.id, $0) })
+        let newCombos = newConfig.elements.filter { $0.type == .combo }
+        config = newConfig
+        let kept = Set(newCombos.filter { oldCombos[$0.id] == $0 }.map(\.id))
+        guard kept.count != oldCombos.count || kept.count != newCombos.count else { return }
+
+        let removed = actionButtons.filter { $0.element.type == .combo && !kept.contains($0.element.id) }
+        for button in removed {
+            // Releases what the combo holds before it goes.
+            button.cancelActiveInput()
+            button.removeFromParent()
+            collapseVisualStates[ObjectIdentifier(button)] = nil
+        }
+        actionButtons.removeAll { button in removed.contains { $0 === button } }
+
+        let parent: SKNode = overlayCollapseButton == nil ? self : overlayCollapseSupportNode
+        for element in newCombos where !kept.contains(element.id) {
+            parent.addChild(makeButtonNode(element: element))
+        }
+        if emuFrameActionToken == nil {
+            updateEmuFrameCallbackRegistration()
+        }
+    }
+
     /// Custom layout opacity on the top-level nodes; collapse animations only touch their children.
     private func applyCustomOpacity() {
         let opacity = overlayLayoutResolver.customOpacity
@@ -244,7 +282,7 @@ extension GamePageOverlayScene {
             return makeStickNode(element: element)
         case .directional:
             return makeDirectionalNode(element: element)
-        case .button:
+        case .button, .combo:
             return makeButtonNode(element: element)
         case .fastButton:
             return makeFastButtonNode(element: element)
@@ -260,9 +298,7 @@ extension GamePageOverlayScene {
     }
 
     private func makeDPadNode(element: GamePageOverlayElement) -> SKNode {
-        let node = GameOverlayDirectionPad(element: element, theme: theme) { code, down in
-            RetroArchX.shared().send(code, down: down)
-        }
+        let node = GameOverlayDirectionPad(element: element, theme: theme, digitalHandler: inputMixer.handler())
         self.dpad = node
         return node
     }
@@ -275,9 +311,7 @@ extension GamePageOverlayScene {
                 RetroArchX.shared().send(.leftY, value: y)
             })
         } else {
-            node = GameOverlayThumbStick(element: element, theme: theme, digitalHandler: { code, down in
-                RetroArchX.shared().send(code, down: down)
-            })
+            node = GameOverlayThumbStick(element: element, theme: theme, digitalHandler: inputMixer.handler())
         }
         self.stick = node
         return node
@@ -288,9 +322,7 @@ extension GamePageOverlayScene {
             element: element,
             supportsAnalog: supportsAnalog,
             theme: theme,
-            digitalHandler: { code, down in
-                RetroArchX.shared().send(code, down: down)
-            },
+            digitalHandler: inputMixer.handler(),
             analogHandler: { x, y in
                 RetroArchX.shared().send(.leftX, value: x)
                 RetroArchX.shared().send(.leftY, value: y)
@@ -305,9 +337,8 @@ extension GamePageOverlayScene {
         // config switch decides whether tap-latch is allowed at all. Default off.
         let autoKeep = element.isTurboAutoKeep && turboTapLatchEnabled
         let speed = currentTurboSpeed
-        let node = GameOverlayActionButton(element: element, isTurboSupported: element.isTurbo, autoKeepTurbo: autoKeep, turboPeriod: speed.period, turboDuty: speed.duty, theme: theme) { code, down in
-            RetroArchX.shared().send(code, down: down)
-        }
+        let node = GameOverlayActionButton(element: element, isTurboSupported: element.isTurbo, autoKeepTurbo: autoKeep, turboPeriod: speed.period, turboDuty: speed.duty, theme: theme,
+                                           digitalChangeHandler: inputMixer.handler())
         self.actionButtons.append(node)
         return node
     }
@@ -343,17 +374,13 @@ extension GamePageOverlayScene {
     }
 
     private func makeN64CButtonNode(element: GamePageOverlayElement) -> SKNode {
-        let node = GameOverlayN64CButton(element: element, theme: theme) { code, down in
-            RetroArchX.shared().send(code, down: down)
-        }
+        let node = GameOverlayN64CButton(element: element, theme: theme, digitalHandler: inputMixer.handler())
         self.n64CButton = node
         return node
     }
 
     private func makeNDSLayoutButtonNode(element: GamePageOverlayElement) -> SKNode {
-        let node = GameOverlayNDSLayoutButton(element: element, theme: theme) { code, down in
-            RetroArchX.shared().send(code, down: down)
-        }
+        let node = GameOverlayNDSLayoutButton(element: element, theme: theme, digitalChangeHandler: inputMixer.handler())
         self.ndsLayoutButton = node
         return node
     }
@@ -373,7 +400,7 @@ extension GamePageOverlayScene {
     func setFourButtonLayout(_ fourButtons: Bool) {
         guard config.hasArcadeLayoutSwitch, usesFourButtonLayout != fourButtons else { return }
         usesFourButtonLayout = fourButtons
-        for button in actionButtons where button.element.fourButtonGeometry != nil || button.element.isSixButtonOnly {
+        for button in actionButtons where button.element.fourButtonGeometry != nil || button.element.isSixButtonOnly || button.element.type == .combo {
             button.cancelActiveInput()
         }
         applyNodeVisibility()
@@ -520,9 +547,9 @@ extension GamePageOverlayScene {
             return
         }
 
-        emuFrameActionToken = RetroArchX.shared().addEmuPrevFrameAction { [weak self] in
-            guard let self else { return }
-            self.actionButtons.forEach { $0.updateTurboFrameOutput() }
+        let turboButtons = self.turboButtons
+        emuFrameActionToken = RetroArchX.shared().addEmuPrevFrameAction {
+            turboButtons.get().forEach { $0.updateTurboFrameOutput() }
         }
     }
 }

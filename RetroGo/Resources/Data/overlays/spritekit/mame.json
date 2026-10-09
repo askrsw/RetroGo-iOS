@@ -191,6 +191,50 @@
             }
         },
         {
+            "id": "combo-ba",
+            "type": "combo",
+            "meta": {
+                "binds": ["B", "A"]
+            }
+        },
+        {
+            "id": "combo-yb",
+            "type": "combo",
+            "meta": {
+                "binds": ["Y", "B"]
+            }
+        },
+        {
+            "id": "combo-xa",
+            "type": "combo",
+            "meta": {
+                "binds": ["X", "A"]
+            }
+        },
+        {
+            "id": "combo-ybx",
+            "type": "combo",
+            "meta": {
+                "binds": ["Y", "B", "X"]
+            }
+        },
+        {
+            "id": "combo-yxl",
+            "type": "combo",
+            "meta": {
+                "binds": ["Y", "X", "L1"],
+                "six_button_only": true
+            }
+        },
+        {
+            "id": "combo-bar",
+            "type": "combo",
+            "meta": {
+                "binds": ["B", "A", "R1"],
+                "six_button_only": true
+            }
+        },
+        {
             "id": "arcade-layout",
             "type": "arcade-layout-button",
             "geometry": {

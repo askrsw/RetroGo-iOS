@@ -170,6 +170,20 @@
             }
         },
         {
+            "id": "combo-abc",
+            "type": "combo",
+            "meta": {
+                "binds": ["B", "A", "R1"]
+            }
+        },
+        {
+            "id": "combo-xyz",
+            "type": "combo",
+            "meta": {
+                "binds": ["Y", "X", "L1"]
+            }
+        },
+        {
             "id": "fast",
             "type": "fast-button",
             "geometry": {

@@ -43,6 +43,8 @@ final class GamePageViewController: RAGameViewController {
     /// rotate with no user action); the user taps once to lock landscape.
     /// Resets to free rotation every game session.
     private(set) var isLandscapeLocked = false
+    /// The orientation the control layout editor shows; overrides the landscape lock while it runs.
+    private(set) var layoutEditingOrientation: UIInterfaceOrientationMask?
 
     let romItem: RetroRomFileItem?
     let romUrl: URL?
@@ -268,6 +270,16 @@ final class GamePageViewController: RAGameViewController {
         overlayLayoutEditController.viewDidLayout()
     }
 
+    override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        coordinator.animate(alongsideTransition: nil) { [weak self] _ in
+            guard let self, overlayLayoutEditController.isEditing else { return }
+            // The paused game still shows its frame at the old size; let it draw a few at the new one,
+            // so the controls are edited against the real picture.
+            GamePauseCoordinator.shared.runFramesWhilePaused(keepMuted: myToolbarView.isGameMuted)
+        }
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
@@ -278,9 +290,16 @@ final class GamePageViewController: RAGameViewController {
     /// Applies the current (runtime) landscape-lock state to the app-wide mask
     /// and this VC's `supportedInterfaceOrientations`.
     func applyOrientationLock() {
-        let mask: UIInterfaceOrientationMask = isLandscapeLocked ? .landscape : .allButUpsideDown
-        AppDelegate.setOrientationLock(mask)
+        AppDelegate.setOrientationLock(supportedInterfaceOrientations)
         setNeedsUpdateOfSupportedInterfaceOrientations()
+    }
+
+    /// Turns the screen for the control layout editor (portrait or landscape); nil gives
+    /// rotation back to the device and the landscape lock.
+    func setLayoutEditingOrientation(_ mask: UIInterfaceOrientationMask?) {
+        guard layoutEditingOrientation != mask else { return }
+        layoutEditingOrientation = mask
+        applyOrientationLock()
     }
 
     /// Toggles the runtime landscape lock (called by the toolbar button).
@@ -290,7 +309,7 @@ final class GamePageViewController: RAGameViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        isLandscapeLocked ? .landscape : .allButUpsideDown
+        layoutEditingOrientation ?? (isLandscapeLocked ? .landscape : .allButUpsideDown)
     }
 
     override func showInGameMessage(_ message: EmuInGameMessage) {
