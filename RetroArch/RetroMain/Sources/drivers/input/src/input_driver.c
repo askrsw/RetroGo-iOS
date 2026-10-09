@@ -827,49 +827,55 @@ static int32_t input_state_wrap(
       {
          /* Do a bitwise OR to combine both input
           * states together */
-         if (binds[_port][id].valid)
+         const bool bind_valid          = binds[_port][id].valid;
+         /* Auto-binds are per joypad, not per user. */
+         const uint64_t bind_joykey     = binds[_port][id].joykey;
+         const uint64_t bind_joyaxis    = binds[_port][id].joyaxis;
+         uint16_t port                  = joypad_info->joy_idx;
+         float axis_threshold           = joypad_info->axis_threshold;
+
+         if (joypad && bind_valid)
          {
-            /* Auto-binds are per joypad, not per user. */
-            const uint64_t bind_joykey     = binds[_port][id].joykey;
-            const uint64_t bind_joyaxis    = binds[_port][id].joyaxis;
             const uint64_t autobind_joykey = joypad_info->auto_binds[id].joykey;
             const uint64_t autobind_joyaxis= joypad_info->auto_binds[id].joyaxis;
-            uint16_t port                  = joypad_info->joy_idx;
-            float axis_threshold           = joypad_info->axis_threshold;
             const uint64_t joykey          = (bind_joykey != NO_BTN)
                ? bind_joykey  : autobind_joykey;
             const uint64_t joyaxis         = (bind_joyaxis != AXIS_NONE)
                ? bind_joyaxis : autobind_joyaxis;
 
-            if (joypad)
-            {
-               if ((uint16_t)joykey != NO_BTN && joypad->button(
-                        port, (uint16_t)joykey))
-                  return 1;
-               if (joyaxis != AXIS_NONE &&
-                     ((float)abs(joypad->axis(port, (uint32_t)joyaxis))
-                      / 0x8000) > axis_threshold)
-                  return 1;
-            }
-            if (sec_joypad)
-            {
-               const uint64_t sec_autobind_joykey = sec_info->auto_binds[id].joykey;
-               const uint64_t sec_autobind_joyaxis = sec_info->auto_binds[id].joyaxis;
-               const uint64_t sec_joykey = (bind_joykey != NO_BTN)
-                  ? bind_joykey  : sec_autobind_joykey;
-               const uint64_t sec_joyaxis = (bind_joyaxis != AXIS_NONE)
-                  ? bind_joyaxis : sec_autobind_joyaxis;
-               uint16_t sec_port = sec_joypad_is_virtual
-                  ? (uint16_t)_port : port;
+            if ((uint16_t)joykey != NO_BTN && joypad->button(
+                     port, (uint16_t)joykey))
+               return 1;
+            if (joyaxis != AXIS_NONE &&
+                  ((float)abs(joypad->axis(port, (uint32_t)joyaxis))
+                   / 0x8000) > axis_threshold)
+               return 1;
+         }
+         /* RetroGo: the virtual joypad (on-screen controls) keeps its own
+          * fixed mapping. The user's binds remap the physical controller;
+          * applied here they would make an on-screen button press another
+          * RetroPad button (bind joykeys are physical button indices) or
+          * nothing at all (a bind invalidated by a remap), but only for
+          * cores that query one button at a time; the bitmask path
+          * (virtual_joypad_state) never used them. */
+         if (sec_joypad && (bind_valid || sec_joypad_is_virtual))
+         {
+            const uint64_t sec_autobind_joykey = sec_info->auto_binds[id].joykey;
+            const uint64_t sec_autobind_joyaxis = sec_info->auto_binds[id].joyaxis;
+            const uint64_t sec_joykey = (bind_joykey != NO_BTN && !sec_joypad_is_virtual)
+               ? bind_joykey  : sec_autobind_joykey;
+            const uint64_t sec_joyaxis = (bind_joyaxis != AXIS_NONE && !sec_joypad_is_virtual)
+               ? bind_joyaxis : sec_autobind_joyaxis;
+            uint16_t sec_port = sec_joypad_is_virtual
+               ? (uint16_t)_port : port;
 
-               if ((uint16_t)sec_joykey != NO_BTN && sec_joypad->button(
-                        sec_port, (uint16_t)sec_joykey))
-                  return 1;
-               if (sec_joyaxis != AXIS_NONE &&
-                     ((float)abs(sec_joypad->axis(sec_port, (uint32_t)sec_joyaxis))
-                      / 0x8000) > axis_threshold)
-                  return 1;
-            }
+            if ((uint16_t)sec_joykey != NO_BTN && sec_joypad->button(
+                     sec_port, (uint16_t)sec_joykey))
+               return 1;
+            if (sec_joyaxis != AXIS_NONE &&
+                  ((float)abs(sec_joypad->axis(sec_port, (uint32_t)sec_joyaxis))
+                   / 0x8000) > axis_threshold)
+               return 1;
          }
       }
    }
