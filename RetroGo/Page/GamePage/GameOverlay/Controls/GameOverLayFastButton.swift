@@ -74,6 +74,8 @@ final class GameOverLayFastButton: SKNode, GameOverlayElementLayout {
     var hapticHandler: GameOverlayHapticHandler?
     /// Called while the button is held; the scene shows the speed picker.
     var longPressHandler: (() -> Void)?
+    /// Asked before a tap turns fast-forward on; false leaves it off.
+    var shouldTurnOn: (() -> Bool)?
 
     // MARK: - Init
     init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, fastStateChangeHander: GameOverlayFastStateChanged?) {
@@ -211,6 +213,7 @@ extension GameOverLayFastButton {
         isTouching = false
 
         guard !cancelled, !longPressFired else { return }
+        if !isFastForwardEnabled, let shouldTurnOn, !shouldTurnOn() { return }
 
         isFastForwardEnabled.toggle()
         emitStateChange()

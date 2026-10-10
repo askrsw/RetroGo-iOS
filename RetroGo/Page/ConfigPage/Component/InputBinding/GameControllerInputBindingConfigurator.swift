@@ -69,7 +69,16 @@ final class GameControllerInputBindingConfigurator: UIViewController {
             self?.updateResetButtonEnabled()
         }
         overlayView.shouldAllowBindingChange = { [weak self] in
-            self?.isBindingInteractionActive ?? false
+            guard let self, self.isBindingInteractionActive else {
+                return false
+            }
+
+            // Mappings saved before stay in use; changing one needs Pro.
+            return AppStoreProFeatureGate.shared.requirePro(
+                feature: .controllerMapping,
+                presentation: .alert,
+                from: self
+            )
         }
         updateResetButtonEnabled()
     }

@@ -63,10 +63,6 @@ final class GamePageViewController: RAGameViewController {
     private var myLoadingView: GamePageLoadingView?
     private var loaded = false
 
-    private var freePlayTimer: Timer?
-    private weak var freePlayAlert: UIAlertController?
-    private var freePlayWarned = false
-
     init(romUrl: URL?, core: EmuCoreInfoItem) {
         self.romItem   = nil
         self.romUrl    = romUrl
@@ -134,7 +130,6 @@ final class GamePageViewController: RAGameViewController {
     }
 
     deinit {
-        freePlayTimer?.invalidate()
         NotificationCenter.default.removeObserver(self)
         self.romUrl?.stopAccessingSecurityScopedResource()
 
@@ -174,6 +169,7 @@ final class GamePageViewController: RAGameViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        AppStoreProFeatureGate.resetFastForwardNotice()
         configSession.configRetroArch()
         GameHapticEngine.shared.start(level: configSession.getOverlayHapticLevel())
 
@@ -196,12 +192,18 @@ final class GamePageViewController: RAGameViewController {
             // Rebuild the engine cheat snapshot after the core starts. This must
             // load system-template states too; otherwise the toolbar badge and
             // enabled template cheats only become correct after opening the cheat page.
-            cheatSession?.reloadTemplateItems {}
-            mameCheatSession?.gameDidStart()
-
-            if success {
-                startFreePlayTimerIfNeeded()
+            // A Pro that expired or was refunded keeps only the free number of
+            // cheats; someone who never had Pro keeps every cheat switched on before.
+            // This completion runs on the main thread, like the UI work above.
+            let proLapsed = MainActor.assumeIsolated { AppStorePurchaseManager.shared.isProLapsed }
+            cheatSession?.reloadTemplateItems { [weak self] in
+                guard proLapsed else { return }
+                self?.cheatSession?.limitEnabledCheatsToFreeNumber()
             }
+            if proLapsed {
+                mameCheatSession?.limitRestorableToFreeNumber()
+            }
+            mameCheatSession?.gameDidStart()
 
             if core.coreId == "dosbox-pure" {
                 self.useRetroArchOverlay = true
@@ -390,90 +392,6 @@ extension GamePageViewController {
             return
         }
         showInGameMessage(message)
-    }
-}
-
-// MARK: - Free play allowance
-
-extension GamePageViewController {
-    private static let freePlayTick: TimeInterval = 1
-    private static let freePlayWarning: TimeInterval = 60
-
-    private func startFreePlayTimerIfNeeded() {
-        guard GameFreePlayQuota.access(for: core) == .limited else { return }
-
-        let minutes = Int((GameFreePlayQuota.remainingToday(for: core) / 60).rounded(.up))
-        let formatter = Bundle.localizedString(forKey: "progate_free_time_left_format")
-        AppToastManager.shared.toast(String(format: formatter, minutes), context: .game, level: .info)
-
-        freePlayTimer?.invalidate()
-        freePlayTimer = Timer.scheduledTimer(withTimeInterval: Self.freePlayTick, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.freePlayTimerFired()
-            }
-        }
-    }
-
-    private func freePlayTimerFired() {
-        guard Self.instance == self, view.window != nil else { return }
-
-        if GameFreePlayQuota.access(for: core) == .unlimited {
-            freePlayTimer?.invalidate()
-            freePlayTimer = nil
-            return
-        }
-
-        if GameFreePlayQuota.isExhausted(for: core) {
-            // Re-shown whenever nothing else is on screen, e.g. after the purchase
-            // page closes without a purchase.
-            if presentedViewController == nil {
-                presentFreePlayLimitReached()
-            }
-            return
-        }
-
-        // Only count time the game actually runs.
-        guard UIApplication.shared.applicationState == .active,
-              !GamePauseCoordinator.shared.isHoldingPause else { return }
-
-        GameFreePlayQuota.consume(Self.freePlayTick, for: core)
-
-        let remaining = GameFreePlayQuota.remainingToday(for: core)
-        if remaining <= 0 {
-            presentFreePlayLimitReached()
-        } else if remaining <= Self.freePlayWarning, !freePlayWarned {
-            freePlayWarned = true
-            AppToastManager.shared.toast(Bundle.localizedString(forKey: "progate_free_time_ending"), context: .game, level: .info)
-        }
-    }
-
-    private func presentFreePlayLimitReached() {
-        guard freePlayAlert == nil, presentedViewController == nil else { return }
-
-        let alert = UIAlertController.gamePausedAlert(
-            title: Bundle.localizedString(forKey: "progate_alert_title"),
-            message: GameFreePlayQuota.dailyLimitMessage(for: core)
-        )
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_unlock_pro"), style: .default) { [weak self, weak alert] _ in
-            // Hold the dismissed alert strongly: nothing else keeps it alive past the
-            // yield, and its pause lease would leak with it, freezing the game.
-            guard let alert else { return }
-            Task { @MainActor [weak self] in
-                await Task.yield()
-                // The purchase page takes its own pause lease before this one goes.
-                AppStoreProFeatureGate.shared.presentPurchasePage(from: self)
-                alert.releaseGamePauseIfNeeded()
-            }
-        })
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_quit_game"), style: .cancel) { [weak self, weak alert] _ in
-            alert?.releaseGamePauseIfNeeded()
-            self?.freePlayTimer?.invalidate()
-            self?.freePlayTimer = nil
-            self?.myToolbarView.closeAction()
-        })
-
-        freePlayAlert = alert
-        present(alert, animated: true)
     }
 }
 

@@ -159,6 +159,9 @@ final class GameOverlayLayoutEditController {
         guard let gamePage, let editor = editorScene, gamePage.presentedViewController == nil else { return }
         let combo = comboId.flatMap(editor.userCombo(id:))
         if comboId != nil, combo == nil { return }
+        // The preset combos are free; making one's own needs Pro. Combos made
+        // before stay and can still be edited and deleted.
+        if comboId == nil, !AppStoreProFeatureGate.shared.requirePro(feature: .overlayCombo, from: gamePage) { return }
         let controller = GameOverlayComboEditViewController(keys: editor.comboKeys, combo: combo) { [weak editor] binds in
             guard let editor, let existing = editor.combo(binds: binds, excluding: combo?.id) else { return nil }
             return .init(title: existing.comboTitle?.plainText ?? existing.buttonTitle, isTurbo: existing.isTurbo,
@@ -215,6 +218,9 @@ final class GameOverlayLayoutEditController {
             RetroGoLogger.game.info("Saved overlay layout \(item.id, privacy: .public) of \(self.session.overlayName, privacy: .public)")
             finish(saved: session.layout(id: item.id))
         case .create:
+            // Checked again here: the list may have been opened before a purchase was refunded.
+            guard session.canCreateAnotherLayout ||
+                  AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayout, from: gamePage) else { return }
             presentSaveSheet(data: editor.layoutData)
         }
     }

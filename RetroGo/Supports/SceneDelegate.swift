@@ -52,6 +52,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         #if DEBUG
         AppStoreWelcomeOffer.resetIfRequestedForTesting()
         #endif
+        GameFreePlayQuota.removeLegacyUsage()
         if let window {
             WelcomeOfferFloatingView.install(in: window)
         }

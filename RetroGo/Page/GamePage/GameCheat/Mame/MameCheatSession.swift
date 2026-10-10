@@ -132,6 +132,31 @@ final class MameCheatSession {
         entries.contains { $0.enabled && ($0.kind == .onOff || $0.kind == .parameter) }
     }
 
+    // MARK: - Free limit
+
+    /// Whether one more cheat may be switched on: always with Pro, otherwise while
+    /// fewer than the free number are on. Restoring last time's cheats is not
+    /// limited, since they were on before.
+    var canEnableAnotherCheat: Bool {
+        AppStorePurchaseManager.hasLocallyValidCachedProEntitlement ||
+            entries.filter { $0.enabled && ($0.kind == .onOff || $0.kind == .parameter) }.count < AppStoreProFeaturePolicy.freeCheatsPerGame
+    }
+
+    /// For a Pro that expired or was refunded: offers only the first of last time's
+    /// cheats for restore, up to the free number, and saves the rest as off.
+    func limitRestorableToFreeNumber() {
+        let limit = AppStoreProFeaturePolicy.freeCheatsPerGame
+        guard restorableIndices.count > limit else { return }
+        for index in restorableIndices.dropFirst(limit) {
+            if let entry = entries.first(where: { $0.index == index && !$0.enabled }) {
+                _ = Self.upsertState(romKey: game.key, entry: entry)
+            }
+        }
+        RetroGoLogger.mame.notice("Pro lapsed; offering \(limit) of \(self.restorableIndices.count) cheats for restore")
+        restorableIndices = Array(restorableIndices.prefix(limit))
+        NotificationCenter.default.post(name: .gameCheatStateChanged, object: nil)
+    }
+
     // MARK: - Engine
 
     /// Cheats from last time that the list can offer to restore; 0 until the cheats are loaded.
@@ -318,6 +343,7 @@ final class MameCheatSession {
     func setEnabled(_ enabled: Bool, index: Int) -> Bool {
         guard canChange(enabling: enabled), let i = entries.firstIndex(where: { $0.index == index }),
               entries[i].kind == .onOff || (entries[i].kind == .parameter && !enabled) else { return false }
+        if enabled, !entries[i].enabled, !canEnableAnotherCheat { return false }
         if enabled { discardRestorable(except: index) }
         entries[i].enabled = enabled
         return commit(i)
@@ -328,6 +354,7 @@ final class MameCheatSession {
     func setPosition(_ position: Int, index: Int) -> Bool {
         guard canChange(enabling: true), let i = entries.firstIndex(where: { $0.index == index }),
               entries[i].kind == .parameter else { return false }
+        if !entries[i].enabled, !canEnableAnotherCheat { return false }
         discardRestorable(except: index)
         entries[i].enabled = true
         entries[i].position = position
@@ -339,6 +366,8 @@ final class MameCheatSession {
     func activate(index: Int, position: Int? = nil) -> Bool {
         guard canChange(enabling: true), let i = entries.firstIndex(where: { $0.index == index }),
               entries[i].available else { return false }
+        // Running a one-shot entry is using a cheat too, so it needs Pro like switching one on.
+        guard AppStorePurchaseManager.hasLocallyValidCachedProEntitlement else { return false }
         discardRestorable(except: index)
         switch entries[i].kind {
         case .oneShot:

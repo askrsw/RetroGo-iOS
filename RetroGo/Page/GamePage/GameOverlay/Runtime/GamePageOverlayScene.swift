@@ -361,11 +361,19 @@ extension GamePageOverlayScene {
             guard let requestedMultiplier = GamePageViewController.instance?.configSession.getFastForwardMultiplier() else {
                 return
             }
-            RetroArchX.shared().setFastForwardEnabled(enabled, multiplier: requestedMultiplier)
+            let multiplier = enabled
+                ? AppStoreProFeatureGate.effectiveFastForwardMultiplierForRuntime(requestedMultiplier)
+                : requestedMultiplier
+            RetroArchX.shared().setFastForwardEnabled(enabled, multiplier: multiplier)
         }
         node.hapticHandler = hapticHandler
+        // Fast-forward needs Pro; the button and its speed picker say so instead.
+        node.shouldTurnOn = {
+            MainActor.assumeIsolated { AppStoreProFeatureGate.shared.requirePro(feature: .fastForward) }
+        }
         node.longPressHandler = { [weak self, weak node] in
             guard let self, let node else { return }
+            guard MainActor.assumeIsolated({ AppStoreProFeatureGate.shared.requirePro(feature: .fastForward) }) else { return }
             presentFastSpeedPicker(from: node)
         }
         self.fastButton = node
@@ -390,6 +398,9 @@ extension GamePageOverlayScene {
             session.setFastForwardMultiplier(value: multiplier)
             RetroArchX.shared().setFastForwardMultiplier(multiplier)
             node?.enableFastForward()
+        }
+        bubble.shouldSelect = { _ in
+            MainActor.assumeIsolated { AppStoreProFeatureGate.shared.requirePro(feature: .fastForward) }
         }
         bubble.present(pointingAt: sourceRect)
     }

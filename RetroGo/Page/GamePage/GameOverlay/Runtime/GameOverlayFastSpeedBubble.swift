@@ -38,6 +38,9 @@ final class GameOverlayFastSpeedBubble: UIView {
 
     private let options: [Double]
     private let onSelect: (Double) -> Void
+    /// Asked before a speed is taken; false keeps the old one and closes the bubble.
+    var shouldSelect: ((Double) -> Bool)?
+    private var selectedIndex: Int
     private let shapeLayer = CAShapeLayer()
     private let control: UISegmentedControl
     private var dimmingView: OCMaskView?
@@ -46,6 +49,7 @@ final class GameOverlayFastSpeedBubble: UIView {
         self.options = options
         self.onSelect = onSelect
         self.control = UISegmentedControl(items: options.map { "\(Int($0))x" })
+        self.selectedIndex = options.firstIndex { abs($0 - selected) < 0.001 } ?? UISegmentedControl.noSegment
         super.init(frame: .zero)
 
         shapeLayer.shadowColor = UIColor.black.cgColor
@@ -55,7 +59,7 @@ final class GameOverlayFastSpeedBubble: UIView {
         layer.addSublayer(shapeLayer)
         backgroundColor = .clear
 
-        control.selectedSegmentIndex = options.firstIndex { abs($0 - selected) < 0.001 } ?? UISegmentedControl.noSegment
+        control.selectedSegmentIndex = selectedIndex
         control.addAction(UIAction { [weak self] _ in self?.picked() }, for: .valueChanged)
         addSubview(control)
 
@@ -116,6 +120,12 @@ final class GameOverlayFastSpeedBubble: UIView {
         let index = control.selectedSegmentIndex
         guard options.indices.contains(index) else { return }
         Vibration.selection.vibrate()
+        guard shouldSelect?(options[index]) ?? true else {
+            control.selectedSegmentIndex = selectedIndex
+            dismiss()
+            return
+        }
+        selectedIndex = index
         onSelect(options[index])
         // Let the selection show before closing.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in self?.dismiss() }

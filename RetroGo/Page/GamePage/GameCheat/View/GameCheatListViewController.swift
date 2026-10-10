@@ -389,10 +389,16 @@ extension GameCheatListViewController {
     private func allowToggleCheat(isOn: Bool) -> Bool {
         guard isOn else { return true }
         // Cheats can't be enabled during a netplay session (would desync peers).
-        // Bounce the switch back via applySnapshot and explain why.
+        // Bounce the switch back via applySnapshot and explain why. Checked before
+        // the Pro gate so the message is netplay-specific, not a paywall.
         if RANetplayCoordinator.shared.isNetplayEnabled {
             applySnapshot(animatingDifferences: true)
             showNetplayCheatBlocked()
+            return false
+        }
+        guard session.canEnableAnotherCheat ||
+              AppStoreProFeatureGate.shared.requirePro(feature: .cheats, from: self, toastContext: .game) else {
+            applySnapshot(animatingDifferences: true)
             return false
         }
         return true

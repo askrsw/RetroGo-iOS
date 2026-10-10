@@ -67,6 +67,7 @@
 "gamestate_overwrite_confirm" = "Overwrite \"%@\"?";
 "gamestate_overwrite_message" = "The existing save state will be replaced. This cannot be undone.";
 "gamestate_overwrite_hint" = "Tap an existing save to overwrite it.";
+"gamestate_overwrite_hint_free_format" = "Free users keep up to %d manual saves per game: delete an old one to make room. Overwriting needs Pro.";
 "gamestate_section_manual" = "Manual Saves";
 "gamestate_section_auto" = "Auto Save";
 "gamestate_section_existing" = "Existing Saves";
@@ -371,8 +372,12 @@
 "iap_yearly_trial_desc" = "%@ · then billed yearly";
 "iap_loading" = "Loading...";
 "iap_probenefits" = "Pro Benefits";
-"iap_probenefit_unlimited_play" = "Unlimited play on every platform. Free users get 10 minutes a day per platform.";
 "iap_probenefit_all_cores" = "Every emulator core, not just each platform's free one.";
+"iap_probenefit_cheats" = "Turn on cheats, including the built-in cheat templates.";
+"iap_probenefit_fast_forward" = "Fast-forward at 2x, 3x, 4x and 6x.";
+"iap_probenefit_save_slots" = "Unlimited manual save slots per game, and overwrite old saves (3 slots for free).";
+"iap_probenefit_controller_mapping" = "Custom button mapping for physical controllers.";
+"iap_probenefit_overlay" = "Unlimited custom on-screen control layouts and combos of your own.";
 "iap_probenefit5" = "Support ongoing RetroGo development and future premium features.";
 "iap_foottiptext" = "The Pro unlock fee is charged to your App Store account at confirmation of purchase. Monthly and yearly subscriptions renew automatically unless auto-renew is turned off at least 24 hours before the end of the current subscription period. Lifetime unlock is a one-time purchase and does not renew. You can Manage Subscriptions on the App Store at any time. If you have any questions, please Contact Us.";
 "iap_foottipmanage" = "Manage Subscriptions";
@@ -430,12 +435,16 @@
 "progate_alert_title" = "RetroGo Pro";
 "progate_unlock_pro" = "Unlock Pro";
 "progate_not_now" = "Not Now";
-"progate_daily_limit_reached_format" = "Today's 10 free minutes for %@ are used up. Unlock RetroGo Pro for unlimited play, or come back tomorrow.";
+"progate_alert_message_format" = "%@\nUnlock RetroGo Pro to go further.";
 "progate_core_requires_pro_format" = "%@ requires RetroGo Pro.";
-"progate_core_requires_pro_with_free_format" = "%1$@ requires RetroGo Pro. Free users can play this platform with %2$@ for 10 minutes a day.";
-"progate_free_time_left_format" = "Free play left today: %d min";
-"progate_free_time_ending" = "Less than 1 minute of free play left today.";
-"progate_quit_game" = "Quit Game";
+"progate_core_requires_pro_with_free_format" = "%1$@ requires RetroGo Pro. Free users can play this platform with %2$@.";
+"progate_cheats_locked" = "Turning cheats on is a Pro feature. Browsing, searching and editing them stays free.";
+"progate_fast_forward_locked" = "Fast-forward is a Pro feature.";
+"progate_manual_save_slot_locked_format" = "Free users get %d manual save slots per game; delete an old save to make room.";
+"progate_save_overwrite_locked" = "Overwriting a save is a Pro feature. Free users can delete an old save and make a new one.";
+"progate_controller_mapping_locked" = "Custom controller mapping is a Pro feature. Mappings you already made keep working.";
+"progate_overlay_layout_locked" = "Free users get one custom layout per platform; you can still edit, use or delete it.";
+"progate_overlay_combo_locked" = "The preset combos are free; making your own is a Pro feature.";
 
 // MARK: - Game Discover Page
 

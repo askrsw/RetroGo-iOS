@@ -216,6 +216,7 @@ enum AppStoreBootstrapState: Equatable {
 }
 
 fileprivate let cachedProEntitlementKey = "AppStorePurchaseManager.cachedProEntitlement"
+fileprivate let hadProEntitlementKey = "AppStorePurchaseManager.hadProEntitlement"
 
 @MainActor
 final class AppStorePurchaseManager: ObservableObject {
@@ -224,6 +225,7 @@ final class AppStorePurchaseManager: ObservableObject {
         activeProEntitlement = Self.loadCachedProEntitlement()
         if let activeProEntitlement {
             purchasedProductIDs.insert(activeProEntitlement.productID)
+            Self.markHadProEntitlement()
         }
         transactionUpdatesTask = observeTransactionUpdates()
         ensureBootstrapped()
@@ -257,6 +259,9 @@ final class AppStorePurchaseManager: ObservableObject {
     private(set) var purchasedProductIDs = Set<String>()
     private(set) var activeProEntitlement: AppStoreProEntitlementInfo?
     private var introOfferEligibilityByKind: [AppStoreProductKind: Bool] = [:]
+    /// Set once this launch has checked the entitlements against StoreKit, so a
+    /// missing entitlement is known rather than not loaded yet.
+    private var hasVerifiedEntitlements = false
 
     var onStateChanged: (() -> Void)?
 
@@ -275,6 +280,13 @@ final class AppStorePurchaseManager: ObservableObject {
 
     nonisolated static var hasLocallyValidCachedProEntitlement: Bool {
         loadCachedProEntitlement() != nil
+    }
+
+    /// Whether Pro was bought on this Apple ID and has since expired or been
+    /// refunded, as StoreKit confirmed this launch. False for anyone who never had
+    /// Pro, and while StoreKit has not answered yet.
+    var isProLapsed: Bool {
+        hasVerifiedEntitlements && !isProPurchased && UserDefaults.standard.bool(forKey: hadProEntitlementKey)
     }
 
     // MARK: - Public API
@@ -435,11 +447,19 @@ final class AppStorePurchaseManager: ObservableObject {
             cacheActiveProEntitlement()
         } else {
             if let activeProEntitlement {
+                Self.markHadProEntitlement()
                 RetroGoLogger.iap.notice("Clearing Pro entitlement \(activeProEntitlement.productID, privacy: .public) (transaction \(activeProEntitlement.transactionID.map { String($0) } ?? "unknown", privacy: .public))")
             }
             purchasedProductIDs = []
             activeProEntitlement = nil
             Self.clearCachedProEntitlement()
+        }
+
+        if activeProEntitlement != nil {
+            Self.markHadProEntitlement()
+        } else if allowClearingActiveEntitlement {
+            await recordPastProTransactions()
+            hasVerifiedEntitlements = true
         }
 
         if !productsByKind.isEmpty {
@@ -454,6 +474,24 @@ final class AppStorePurchaseManager: ObservableObject {
     }
 
     // MARK: - Private
+
+    /// Remembers that this Apple ID has had Pro when its history holds a Pro
+    /// transaction, expired or refunded ones included, e.g. a subscription that
+    /// lapsed before this version.
+    private func recordPastProTransactions() async {
+        guard !UserDefaults.standard.bool(forKey: hadProEntitlementKey) else { return }
+        for await result in Transaction.all {
+            guard case .verified(let transaction) = result,
+                  AppStoreProductKind(productID: transaction.productID) != nil else { continue }
+            RetroGoLogger.iap.notice("Found past Pro transaction \(transaction.productID, privacy: .public) (transaction \(transaction.id))")
+            Self.markHadProEntitlement()
+            return
+        }
+    }
+
+    private nonisolated static func markHadProEntitlement() {
+        UserDefaults.standard.set(true, forKey: hadProEntitlementKey)
+    }
 
     /// Whether the given transaction is still unrevoked and unexpired according
     /// to the full transaction history.

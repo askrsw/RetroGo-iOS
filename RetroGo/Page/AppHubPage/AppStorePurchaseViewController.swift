@@ -511,6 +511,8 @@ fileprivate final class PlanSectionView: UIStackView {
 
     private var productInfoByKind: [AppStoreProductKind: AppStoreProductInfo] = [:]
     private var selectedKind: AppStoreProductKind?
+    /// Set once the user taps a plan; until then the page picks the plan itself.
+    private var userPickedPlan = false
 
     private let planTitleRow      = UIView()
     private let subscriptionRow   = UIStackView()       // Monthly + Yearly
@@ -693,6 +695,7 @@ fileprivate final class PlanSectionView: UIStackView {
             guard !Task.isCancelled else { return }
 
             self.productInfoByKind = Dictionary(uniqueKeysWithValues: self.purchaseManager.productInfos().map { ($0.kind, $0) })
+            self.chooseDefaultSelectedPlanIfNeeded()
             self.renderPlans()
             self.updateUIFromState()
 
@@ -744,6 +747,16 @@ fileprivate final class PlanSectionView: UIStackView {
     }
 
     private func chooseDefaultSelectedPlanIfNeeded() {
+        // While the welcome window is open the page leads with the welcome price,
+        // even if another plan was picked before its product or window arrived.
+        if !userPickedPlan, purchaseManager.activeProEntitlement == nil,
+           productInfoByKind[.proLifetimeWelcome] != nil {
+            AppStoreWelcomeOffer.startIfNeeded()
+            if AppStoreWelcomeOffer.isActive {
+                selectedKind = .proLifetimeWelcome
+                return
+            }
+        }
         if let selectedKind, productInfoByKind[selectedKind] != nil { return }
         if AppStoreWelcomeOffer.isActive, productInfoByKind[.proLifetimeWelcome] != nil {
             selectedKind = .proLifetimeWelcome
@@ -955,6 +968,7 @@ fileprivate final class PlanSectionView: UIStackView {
         guard productInfoByKind[kind] != nil        else { return }
         Vibration.selection.vibrate()
         selectedKind = kind
+        userPickedPlan = true
         renderPlans()
         updateUIFromState()
     }
@@ -1056,8 +1070,12 @@ private final class BenefitSectionView: UIStackView {
         addArrangedSubview(benefitsStack)
 
         let benefits: [(String, UIColor)] = [
-            (Bundle.localizedString(forKey: "iap_probenefit_unlimited_play"), UIColor(hex: 0x2ECC71, alpha: 1.0)),
             (Bundle.localizedString(forKey: "iap_probenefit_all_cores"), UIColor(hex: 0xE67E22, alpha: 1.0)),
+            (Bundle.localizedString(forKey: "iap_probenefit_cheats"), .cheatIconColor),
+            (Bundle.localizedString(forKey: "iap_probenefit_fast_forward"), UIColor(hex: 0xF1C40F, alpha: 1.0)),
+            (Bundle.localizedString(forKey: "iap_probenefit_save_slots"), UIColor(hex: 0xE74C3C, alpha: 1.0)),
+            (Bundle.localizedString(forKey: "iap_probenefit_controller_mapping"), UIColor(hex: 0x3498D8, alpha: 1.0)),
+            (Bundle.localizedString(forKey: "iap_probenefit_overlay"), UIColor(hex: 0x1ABC9C, alpha: 1.0)),
             (Bundle.localizedString(forKey: "iap_probenefit5"), UIColor(hex: 0x9B59B6, alpha: 1.0)),
         ]
         benefits.forEach { benefitsStack.addArrangedSubview(BenefitRowView(text: $0.0, dotColor: $0.1)) }
