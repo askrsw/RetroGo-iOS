@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.13.1" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.13.1</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>October 10, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.13.1" style="number">
+            <p-item><b>Play without time limits again</b>: the 10-minute daily limit is gone, on every platform including arcade. Each platform still has one free core; its other cores need Pro.</p-item>
+            <p-item>RetroGo Pro now unlocks advanced features: turning on cheats, fast-forward, more than 3 manual save slots per game and overwriting old saves, custom controller mapping, more custom on-screen control layouts per platform, and combos of your own.</p-item>
+            <p-item>Everything you already set up <b>stays and keeps working</b>: cheats you turned on, saves, control layouts, combos and controller mappings. Fast-forward now needs Pro. Nothing changes for anyone who already has Pro.</p-item>
+            <p-item>Fixed subscribing again after a subscription ended, which failed on the first tap saying there was nothing to restore; fixed a controller that reconnected after dropping off landing on player 2 or not controlling the game; the purchase page now selects the welcome price while the offer lasts.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.13.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.13.0</p-title>
         <p-paragraph fontsize="13">
