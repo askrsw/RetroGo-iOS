@@ -27,11 +27,15 @@
 #include <input/input_driver.h>
 #include <input/mfi_joypad.h>
 #include <tasks/tasks_internal.h>
+#include <utils/retrogo_log.h>
 
 void get_ios_version(int *major, int *minor);
 
 #import <GameController/GameController.h>
 #import <CoreHaptics/CoreHaptics.h>
+#if TARGET_OS_IOS
+#import <UIKit/UIKit.h>
+#endif
 
 #ifndef MAX_MFI_CONTROLLERS
 #define MAX_MFI_CONTROLLERS 4
@@ -60,6 +64,9 @@ static NSMutableArray *mfiControllers;
 static bool mfi_inited            = false;
 static id mfi_connect_observer    = nil;
 static id mfi_disconnect_observer = nil;
+#if TARGET_OS_IOS
+static id mfi_active_observer     = nil;
+#endif
 static mfi_joypad_button_event_callback_t mfi_button_event_callback = NULL;
 static void *mfi_button_event_userdata = NULL;
 static mfi_joypad_axis_event_callback_t mfi_axis_event_callback = NULL;
@@ -750,6 +757,9 @@ static void apple_gamecontroller_joypad_setup_haptics(GCController *controller)
         mfi_rumblers[controller.playerIndex] = [[MFIRumbleController alloc] initWithController:controller];
 }
 
+static void apple_gamecontroller_joypad_release_slot(NSInteger pad, const char *name);
+static void apple_gamecontroller_joypad_release_stale_slots(GCController *gone);
+
 static void apple_gamecontroller_joypad_connect(GCController *controller)
 {
     signed desired_index = (int32_t)controller.playerIndex;
@@ -765,9 +775,32 @@ static void apple_gamecontroller_joypad_connect(GCController *controller)
     /* Prevent same controller getting set twice */
     if ([mfiControllers containsObject:controller])
     {
-        RARCH_DBG("[MFI] Got connected notice for controller already connected.\n");
-        return;
+        NSInteger pad = controller.playerIndex;
+        if (pad >= 0 && pad < MAX_MFI_CONTROLLERS && mfi_controllers[pad] == (uint32_t)controller.hash)
+        {
+            RARCH_DBG("[MFI] Got connected notice for controller already connected.\n");
+            return;
+        }
+
+        /* The same controller object came back after a disconnect that never
+         * reached us (the app was in the background): its old slot is stale and
+         * its playerIndex was reset, so polling ignores it. Set it up again. */
+        RETROGO_LOGN(GAME, "Controller reconnected without a disconnect; setting it up again");
+        /* Ask for the slot it had, so it stays on the same player. */
+        desired_index = 0;
+        for (NSInteger i = MAX_MFI_CONTROLLERS - 1; i >= 0; i--)
+        {
+            if (mfi_controllers[i] && mfi_controllers[i] == (uint32_t)controller.hash)
+            {
+                apple_gamecontroller_joypad_release_slot(i, NULL);
+                desired_index = (signed)i;
+            }
+        }
+        [mfiControllers removeObject:controller];
     }
+
+    /* A missed or unmatched disconnect must not keep this controller's old slot. */
+    apple_gamecontroller_joypad_release_stale_slots(nil);
 
     if (@available(macOS 11, iOS 14, tvOS 14, *))
     {
@@ -826,38 +859,104 @@ static void apple_gamecontroller_joypad_connect(GCController *controller)
 
     [mfiControllers addObject:controller];
 
-    RARCH_LOG("[MFI] Controller connected, beginning setup and autodetect...\n");
+    RETROGO_LOGI(GAME, "Controller connected to port %d", (int)controller.playerIndex);
     apple_gamecontroller_joypad_register(controller);
     apple_gamecontroller_joypad_setup_haptics(controller);
     mfi_joypad_autodetect_add((unsigned)controller.playerIndex, [controller.vendorName cStringUsingEncoding:NSUTF8StringEncoding]);
 }
 
-static void apple_gamecontroller_joypad_disconnect(GCController* controller)
+/* Frees a player slot: drops its rumbler, input state and retained controller,
+ * and tells autoconfigure the port is empty so the port shows no device. */
+static void apple_gamecontroller_joypad_release_slot(NSInteger pad, const char *name)
 {
-    NSInteger pad = controller.playerIndex;
-
     if (pad < 0 || pad >= MAX_MFI_CONTROLLERS)
         return;
 
     if (mfi_rumblers[pad])
         [mfi_rumblers[pad] shutdown];
     mfi_rumblers[pad]    = nil;
+    uint32_t hash        = mfi_controllers[pad];
     mfi_controllers[pad] = 0;
     memset(mfi_axes[pad], 0, sizeof(mfi_axes[pad]));
     mfi_buttons[pad] = 0;
 
-    /* Disconnect notification object may not match the exact retained pointer.
-     * Always remove matching controller entry by player slot, then enqueue
-     * autoconfigure disconnect unconditionally so input_device_info is cleared. */
     for (NSInteger i = (NSInteger)mfiControllers.count - 1; i >= 0; i--)
     {
        GCController *c = mfiControllers[(NSUInteger)i];
-       if (c == controller || c.playerIndex == pad)
+       if ((hash && (uint32_t)c.hash == hash) || c.playerIndex == pad)
           [mfiControllers removeObjectAtIndex:(NSUInteger)i];
     }
 
-    input_autoconfigure_disconnect((unsigned)pad,
-          [controller.vendorName cStringUsingEncoding:NSUTF8StringEncoding]);
+    input_autoconfigure_disconnect((unsigned)pad, name);
+}
+
+/* Releases every slot whose controller is no longer connected. A disconnect can
+ * arrive after the system already reset the controller's playerIndex, or with a
+ * different object than the one retained; left alone, the stale slot keeps its
+ * port and the reconnected controller lands on the next player. */
+static void apple_gamecontroller_joypad_release_stale_slots(GCController *gone)
+{
+    NSArray<GCController *> *live = [GCController controllers];
+    for (NSInteger pad = 0; pad < MAX_MFI_CONTROLLERS; pad++)
+    {
+        uint32_t hash = mfi_controllers[pad];
+        if (!hash)
+            continue;
+
+        bool connected = false;
+        for (GCController *c in live)
+        {
+            if (c != gone && (uint32_t)c.hash == hash)
+            {
+                connected = true;
+                break;
+            }
+        }
+        if (connected)
+            continue;
+
+        RETROGO_LOGN(GAME, "Releasing port %d of a controller that is no longer connected", (int)pad);
+        apple_gamecontroller_joypad_release_slot(pad, NULL);
+    }
+}
+
+static void apple_gamecontroller_joypad_disconnect(GCController* controller)
+{
+    const char *name = [controller.vendorName cStringUsingEncoding:NSUTF8StringEncoding];
+    NSInteger pad    = controller.playerIndex;
+
+    /* playerIndex may already be unset here; find the slot by the controller. */
+    if (pad < 0 || pad >= MAX_MFI_CONTROLLERS || mfi_controllers[pad] != (uint32_t)controller.hash)
+    {
+        pad = -1;
+        for (NSInteger i = 0; i < MAX_MFI_CONTROLLERS; i++)
+        {
+            if (mfi_controllers[i] && mfi_controllers[i] == (uint32_t)controller.hash)
+            {
+                pad = i;
+                break;
+            }
+        }
+    }
+
+    if (pad >= 0)
+    {
+        RETROGO_LOGI(GAME, "Controller disconnected from port %d", (int)pad);
+        apple_gamecontroller_joypad_release_slot(pad, name);
+    }
+    apple_gamecontroller_joypad_release_stale_slots(controller);
+}
+
+/* Connect and disconnect notifications can be missed while the app is in the
+ * background. Back in the foreground, free the slots of controllers that are
+ * gone and set up again any connected controller that lost its slot. */
+static void apple_gamecontroller_joypad_resync(void)
+{
+    if (!mfiControllers)
+        return;
+    apple_gamecontroller_joypad_release_stale_slots(nil);
+    for (GCController *controller in [GCController controllers])
+        apple_gamecontroller_joypad_connect(controller);
 }
 
 #if TARGET_OS_IOS
@@ -970,6 +1069,11 @@ static void *apple_gamecontroller_joypad_init(void *data)
       apple_gamecontroller_joypad_disconnect([note object]);
    }];
 #endif // __IPHONE_7_0
+#if TARGET_OS_IOS
+   mfi_active_observer = [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *note) {
+      apple_gamecontroller_joypad_resync();
+   }];
+#endif
    mfi_inited = true;
    return (void*)-1;
 }
@@ -980,6 +1084,11 @@ static void apple_gamecontroller_joypad_destroy(void)
    [[NSNotificationCenter defaultCenter] removeObserver:mfi_disconnect_observer];
    mfi_connect_observer    = nil;
    mfi_disconnect_observer = nil;
+#if TARGET_OS_IOS
+   if (mfi_active_observer)
+      [[NSNotificationCenter defaultCenter] removeObserver:mfi_active_observer];
+   mfi_active_observer     = nil;
+#endif
    mfiControllers          = nil;
    mfi_inited              = false;
 }
