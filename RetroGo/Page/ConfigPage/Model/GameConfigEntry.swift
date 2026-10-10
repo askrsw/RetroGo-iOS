@@ -67,6 +67,8 @@ final class GameConfigEntry: NSObject {
 
     var enabled: Bool = true
     var opensCoreOptions = false
+    /// Opens the control layout list (in game) or the layout manager (from the settings pages).
+    var opensOverlayLayouts = false
     var desc: String?
     weak var session: GameConfigSession?
     @objc dynamic var refresh: Bool = false
@@ -136,11 +138,42 @@ extension GameConfigSession {
         return Bundle.localizedString(forKey: key)
     }
 
+    fileprivate static func portDeviceTitle(_ device: GamePortDevice) -> String {
+        let key = "configpage_port_device_" + (device.name.isEmpty ? "standard" : device.name)
+        let title = Bundle.localizedString(forKey: key)
+        return title == key ? device.name : title
+    }
+
+    fileprivate static func hapticLevelTitle(_ level: GameHapticLevel) -> String {
+        let key: String
+        switch level {
+        case .off:    key = "configpage_overlay_haptic_off"
+        case .soft:   key = "configpage_overlay_haptic_soft"
+        case .light:  key = "configpage_overlay_haptic_light"
+        case .medium: key = "configpage_overlay_haptic_medium"
+        case .heavy:  key = "configpage_overlay_haptic_heavy"
+        case .rigid:  key = "configpage_overlay_haptic_rigid"
+        }
+        return Bundle.localizedString(forKey: key)
+    }
+
     func makeOverlayConfigEntries() -> [GameConfigEntry] {
         var entries: [GameConfigEntry] = []
+        // Layouts belong to a platform, so there is no global layout setting.
+        if scope != .global, let core, core.coreId != "dosbox-pure" {
+            let title = Bundle.localizedString(forKey: "overlay_layout_list_title")
+            let entry = GameConfigEntry(type: .string, ui: .list, title: title)
+            entry.opensOverlayLayouts = true
+            entry.getListSelectedTitle = { [weak self] in
+                guard let self else { return nil }
+                let session = GameOverlayLayoutSession(core: core, game: scope == .game ? game : nil)
+                return session.resolvedLayout().item?.name ?? Bundle.localizedString(forKey: "overlay_layout_builtin")
+            }
+            entries.append(entry)
+        }
         do {
             let title = Bundle.localizedString(forKey: "configpage_game_fast_multiplier")
-            let array: [(GameConfigSegmentItem, Double)] = [ (.text(" 2x "), 2.0), (.text(" 3x "), 3.0), (.text(" 4x "), 4.0), (.text(" 6x "), 6.0) ]
+            let array: [(GameConfigSegmentItem, Double)] = Self.fastForwardMultiplierOptions.map { (.text(" \(Int($0))x "), $0) }
             let entry = GameConfigEntry(type: .double, ui: .segmentcontrol, title: title)
             entry.getSegmentArray = {
                 array.map({ $0.0 })
@@ -214,6 +247,44 @@ extension GameConfigSession {
         }
 
         do {
+            let title = Bundle.localizedString(forKey: "configpage_overlay_haptic")
+            let entry = GameConfigEntry(type: .int, ui: .list, title: title)
+            entry.getListArray = { [weak self] in
+                guard let self = self else { return ([], nil) }
+                let list: [(title: String, value: AnyHashable)] = GameHapticLevel.allCases.map {
+                    (Self.hapticLevelTitle($0), $0.rawValue)
+                }
+                let selected = GameHapticLevel.allCases.firstIndex(of: getOverlayHapticLevel())
+                return (list, selected)
+            }
+            entry.getListSelectedTitle = { [weak self] in
+                guard let self = self else { return nil }
+                return Self.hapticLevelTitle(getOverlayHapticLevel())
+            }
+            entry.setListSelectedValue = { [weak self] v in
+                guard let self = self, let raw = v as? Int, let level = GameHapticLevel(rawValue: raw) else { return }
+                // Setter persists and posts `.overlayHapticLevelChanged`; a running game applies it at once.
+                setOverlayHapticLevel(level)
+            }
+            entry.desc = Bundle.localizedString(forKey: "configpage_overlay_haptic_desc")
+            entries.append(entry)
+        }
+
+        do {
+            let title = Bundle.localizedString(forKey: "configpage_game_rumble")
+            let entry = GameConfigEntry(type: .bool, ui: .switch, title: title)
+            entry.getBoolValue = { [weak self] in
+                self?.getGameRumbleEnabled() ?? true
+            }
+            entry.setBoolValue = { [weak self] value in
+                // Setter persists and posts `.gameRumbleEnabledChanged`; a running game applies it at once.
+                self?.setGameRumbleEnabled(value)
+            }
+            entry.desc = Bundle.localizedString(forKey: "configpage_game_rumble_desc")
+            entries.append(entry)
+        }
+
+        do {
             let title = Bundle.localizedString(forKey: "configpage_overlay_touch_player")
             let entry = GameConfigEntry(type: .int, ui: .list, title: title)
             entry.getListArray = { [weak self] in
@@ -266,6 +337,28 @@ extension GameConfigSession {
             } else {
                 entry.desc = Bundle.localizedString(forKey: "configpage_game_thread_desc")
             }
+            entries.append(entry)
+        }
+
+        if let core, !core.gamePortDevices.isEmpty {
+            let devices = core.gamePortDevices
+            let title = Bundle.localizedString(forKey: "configpage_port_device")
+            let entry = GameConfigEntry(type: .string, ui: .list, title: title)
+            entry.getListArray = { [weak self] in
+                guard let self else { return ([], nil) }
+                let list: [(title: String, value: AnyHashable)] = devices.map { (Self.portDeviceTitle($0), $0.name) }
+                let selected = devices.firstIndex(where: { $0 == self.getPortDevice() })
+                return (list, selected)
+            }
+            entry.getListSelectedTitle = { [weak self] in
+                guard let self, let device = getPortDevice() else { return nil }
+                return Self.portDeviceTitle(device)
+            }
+            entry.setListSelectedValue = { [weak self] v in
+                guard let self, let name = v as? String, let device = devices.first(where: { $0.name == name }) else { return }
+                setPortDevice(device)
+            }
+            entry.desc = Bundle.localizedString(forKey: "configpage_port_device_desc")
             entries.append(entry)
         }
 

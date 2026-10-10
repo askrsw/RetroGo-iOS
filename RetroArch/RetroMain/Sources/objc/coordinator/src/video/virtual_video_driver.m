@@ -25,6 +25,7 @@
 
 #import "virtual_video_driver.h"
 #import <gfx/video_thread_wrapper.h>
+#include <pthread.h>
 
 #ifdef HAVE_OVERLAY
 static void virtual_video_overlay_enable(void *ctx, bool state);
@@ -136,6 +137,36 @@ NS_ASSUME_NONNULL_BEGIN
     CADisplayLink *d_displayLink;
 }
 
+/* The driver virtual_video_service_main_thread() steps. Weak, so registering never
+ * keeps a driver alive: RetroArch owns it through video_st->data. Set once the display
+ * link exists and cleared at the start of -free, before the locks go away, under this
+ * mutex, so a service call never steps a driver being freed. Recursive in case a packet
+ * handled there leads back to another blocking wait on the main thread. */
+static pthread_mutex_t s_service_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+static __weak RAVirtualVideoDriver *_Nullable s_service_driver = nil;
+
+/* Sets the serviced driver; with `expected`, only while that driver is the one set. */
+static void virtual_video_set_service_driver(RAVirtualVideoDriver *_Nullable driver, RAVirtualVideoDriver *_Nullable expected) {
+    pthread_mutex_lock(&s_service_mutex);
+    if (expected == nil || s_service_driver == expected) {
+        s_service_driver = driver;
+    }
+    pthread_mutex_unlock(&s_service_mutex);
+}
+
+void virtual_video_service_main_thread(void) {
+    if (![NSThread isMainThread]) {
+        return;
+    }
+    pthread_mutex_lock(&s_service_mutex);
+    RAVirtualVideoDriver *driver = s_service_driver;
+    CADisplayLink *displayLink = driver.displayLink;
+    if (displayLink) {
+        [driver step:displayLink];
+    }
+    pthread_mutex_unlock(&s_service_mutex);
+}
+
 - (instancetype)initWithVideoInfo:(const video_info_t)info input:(input_driver_t **)input inputData:(void **)inputData {
     self = [super init];
     if (self) {
@@ -208,6 +239,7 @@ NS_ASSUME_NONNULL_BEGIN
             [d_displayLink setPreferredFrameRateRange:CAFrameRateRangeMake(60, 60, 60)];
         }
         [d_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
+        virtual_video_set_service_driver(self, nil);
     }
 
     return self;
@@ -223,9 +255,13 @@ NS_ASSUME_NONNULL_BEGIN
         pkt.type = CMD_FREE;
         [self sendAndWaitReply:&pkt];
 
+        // Only now: a main thread blocked on the logic thread must still be able to
+        // answer CMD_FREE above. If it is servicing this driver right now, this waits for it.
+        virtual_video_set_service_driver(nil, self);
         [d_displayLink invalidate];
         d_displayLink = nil;
     } else {
+        virtual_video_set_service_driver(nil, self);
         /* If we don't have a thread,
          * we must call the driver's free function ourselves. */
         if (driver_data && driver && driver->free) {

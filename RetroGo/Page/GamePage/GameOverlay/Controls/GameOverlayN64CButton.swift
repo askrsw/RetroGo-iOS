@@ -108,6 +108,11 @@ final class GameOverlayN64CButton: SKNode, GameOverlayElementLayout {
             if (oldValue ^ status) & GameOverlayDirectionMask.up > 0 {
                 digitalHandler?(codes.up, isUp)
             }
+
+            // Each arrow pressed taps, as a button would; releases are silent.
+            if status & ~oldValue != 0 {
+                hapticHandler?()
+            }
         }
     }
 
@@ -115,6 +120,7 @@ final class GameOverlayN64CButton: SKNode, GameOverlayElementLayout {
     private let codes: CodeMap
     private let digitalHandler: GameOverlayButtonDigitalChanged?
     private let theme: GameOverlayTheme
+    var hapticHandler: GameOverlayHapticHandler?
 
     init(element: GamePageOverlayElement, codes: CodeMap = .n64C, theme: GameOverlayTheme = .default, digitalHandler: GameOverlayButtonDigitalChanged?) {
         self.element = element

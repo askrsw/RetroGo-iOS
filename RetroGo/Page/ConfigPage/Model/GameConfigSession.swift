@@ -68,6 +68,32 @@ enum TurboSpeed: Int, CaseIterable {
     }
 }
 
+/// A controller type a player can pick for a core's ports, from "port_devices"
+/// in the extra core info. RetroArch picks the core's device whose description
+/// contains `name`; an empty name is the standard RetroPad.
+struct GamePortDevice: Equatable {
+    let name: String
+    /// Has sticks the core reads, so the on-screen stick sends analog values.
+    let analog: Bool
+    let isDefault: Bool
+}
+
+extension EmuCoreInfoItem {
+    var gamePortDevices: [GamePortDevice] {
+        (portDevices ?? []).compactMap { item in
+            guard let name = item["name"] as? String else { return nil }
+            return GamePortDevice(name: name,
+                                  analog: (item["analog"] as? Bool) ?? false,
+                                  isDefault: (item["default"] as? Bool) ?? false)
+        }
+    }
+
+    var defaultPortDevice: GamePortDevice? {
+        let devices = gamePortDevices
+        return devices.first(where: \.isDefault) ?? devices.first
+    }
+}
+
 final class GameConfigSession {
     let scope: GameConfigScope
     let core: EmuCoreInfoItem?
@@ -110,6 +136,7 @@ final class GameConfigSession {
             config.coreOptions = [:]
         }
         RetroArchX.shared().config(config)
+        RetroArchX.shared().setPhoneRumbleEnabled(getGameRumbleEnabled())
 
         RAInputActionManager.shared().fastForwardMultiplierProvider = { [weak self] in
             guard let self = self else { return 2.0 }
@@ -174,6 +201,9 @@ extension GameConfigSession {
         config.logicThread = value
         return setOptionalValue(column: Self.threadEnabled, value: value)
     }
+
+    /// Speeds offered by the settings page and the fast-forward button's long-press bubble.
+    static let fastForwardMultiplierOptions: [Double] = [2, 3, 4, 6]
 
     func getFastForwardMultiplier() -> Double {
         config.fastForwardMultiplier
@@ -271,6 +301,52 @@ extension GameConfigSession {
             NotificationCenter.default.post(name: .overlayTurboSpeedChanged, object: nil)
         }
         return ok
+    }
+
+    /// Resolved haptic level of the on-screen controls (game over core over
+    /// global). Read from SQLite each time, so a change at any scope shows up in
+    /// the running game; it is not part of `RAConfig`.
+    func getOverlayHapticLevel() -> GameHapticLevel {
+        resolvedValue(column: Self.overlayHapticLevel).flatMap(GameHapticLevel.init(rawValue:)) ?? .default
+    }
+
+    @discardableResult
+    func setOverlayHapticLevel(_ level: GameHapticLevel) -> Bool {
+        let ok = setOptionalValue(column: Self.overlayHapticLevel, value: level.rawValue)
+        if ok {
+            NotificationCenter.default.post(name: .overlayHapticLevelChanged, object: nil)
+        }
+        return ok
+    }
+
+    /// Whether the phone rumbles when the game asks for it, for the player on the
+    /// on-screen controls; resolved like `getOverlayHapticLevel()`. On by default.
+    func getGameRumbleEnabled() -> Bool {
+        resolvedValue(column: Self.gameRumbleEnabled) ?? true
+    }
+
+    @discardableResult
+    func setGameRumbleEnabled(_ enabled: Bool) -> Bool {
+        let ok = setOptionalValue(column: Self.gameRumbleEnabled, value: enabled)
+        if ok {
+            NotificationCenter.default.post(name: .gameRumbleEnabledChanged, object: nil)
+        }
+        return ok
+    }
+
+    /// The controller type every port of this core gets; nil when the core has no choice.
+    /// Resolved like the other RAConfig values; an unknown stored name falls back to the default.
+    func getPortDevice() -> GamePortDevice? {
+        guard let core else { return nil }
+        let devices = core.gamePortDevices
+        return devices.first(where: { $0.name == config.portDevice }) ?? core.defaultPortDevice
+    }
+
+    /// Applies from the next launch: the core reads its port types while the game loads.
+    @discardableResult
+    func setPortDevice(_ device: GamePortDevice) -> Bool {
+        config.portDevice = device.name
+        return setOptionalValue(column: Self.portDevice, value: device.name)
     }
 
     @discardableResult
@@ -484,6 +560,12 @@ private extension GameConfigSession {
             if core.supportsLogicThread == false {
                 cfg.logicThread = false
             }
+            // Unset, or a name this core does not list, means the core's default
+            // (an empty name is the standard RetroPad, not "unset").
+            let devices = core.gamePortDevices
+            if !devices.contains(where: { $0.name == cfg.portDevice }) {
+                cfg.portDevice = core.defaultPortDevice?.name
+            }
             if core.isHWRender {
                 cfg.videoDriver = RetroArchX.shared().defaultVideoDriver()
             }
@@ -552,6 +634,9 @@ private extension GameConfigSession {
         if let v = row[Self.overlayTurboSpeed] {
             config.overlayTurboSpeedTier = Int32(v)
         }
+        if let v = row[Self.portDevice] {
+            config.portDevice = v
+        }
         if let v = row[Self.inputBindingProfile] {
             do {
                let profile = try RAInputBindingProfile.decode(from: v)
@@ -581,6 +666,23 @@ private extension GameConfigSession {
 
     func query(scope: GameConfigScope, key: String) -> SQLite.Table {
         Self.romConfigTable.filter(Self.configScope == scope.rawValue && Self.key == key)
+    }
+
+    /// The value of a column after the global, core and game rows, for settings kept out of `RAConfig`.
+    func resolvedValue<T: Value>(column: SQLite.Expression<T?>) -> T? {
+        var value: T?
+        do {
+            let db = RetroRomPersistence.sqlite
+            for pair in makeConfigScopeKeyPairs() {
+                let alice = Self.romConfigTable.filter(Self.configScope == pair.scope && Self.key == pair.key)
+                if let v = try db.pluck(alice.select(column))?[column] {
+                    value = v
+                }
+            }
+        } catch {
+            RetroGoLogger.game.error("Failed to read config value: \(error.localizedDescription, privacy: .public)")
+        }
+        return value
     }
 
     func getOptionalValue<T: Value>(column: SQLite.Expression<T?>) -> T? {
@@ -701,6 +803,11 @@ extension GameConfigSession {
     // v7
     static let coreOptions = SQLite.Expression<Data?>("core_options")
 
+    // v9
+    static let overlayHapticLevel = SQLite.Expression<Int?>("overlay_haptic_level")
+    static let gameRumbleEnabled = SQLite.Expression<Bool?>("game_rumble_enabled")
+    static let portDevice = SQLite.Expression<String?>("port_device")
+
     /*
      * key, configScope, updateAt
      * v3: threadEnabled, fastForwardMultiplier
@@ -709,6 +816,7 @@ extension GameConfigSession {
      * v5: toolbarLayout, overlayTurboTapLatch, overlayTurboSpeed
      * v6: autoEnableCheats
      * v7: coreOptions
+     * v9: overlayHapticLevel, gameRumbleEnabled, portDevice
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

@@ -118,6 +118,29 @@ final class GameConfigViewController: UIViewController {
         super.viewDidAppear(animated)
         attachGamePauseLeaseToPresentation(gamePauseLease)
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // The layout row shows the chosen layout's name, which the layout list may have changed.
+        configData.flatMap(\.entries).filter(\.opensOverlayLayouts).forEach { $0.refresh.toggle() }
+    }
+}
+
+extension GameConfigViewController {
+    /// In game the list opens over the game, where layouts can be edited and
+    /// previewed; from the settings pages it manages the platform's layouts.
+    func openOverlayLayouts() {
+        guard let core = session.core else { return }
+        if openedWhileGameRunning, let gamePage = GamePageViewController.instance, gamePage.core.coreId == core.coreId {
+            let host = navigationController ?? self
+            host.dismiss(animated: true) {
+                gamePage.showOverlayLayoutList()
+            }
+            return
+        }
+        let layoutSession = GameOverlayLayoutSession(core: core, game: session.scope == .game ? session.game : nil)
+        navigationController?.pushViewController(GameOverlayLayoutListViewController(session: layoutSession), animated: true)
+    }
 }
 
 extension GameConfigViewController {
@@ -311,6 +334,7 @@ extension GameConfigViewController: UITableViewDelegate {
             return false
         }
         if entry.opensCoreOptions { return entry.enabled }
+        if entry.opensOverlayLayouts { return true }
         switch entry.ui {
         case .list: return entry.enabled
         case .controller: return true
@@ -324,6 +348,10 @@ extension GameConfigViewController: UITableViewDelegate {
         Vibration.selection.vibrate()
 
         guard let entry = dataSource.itemIdentifier(for: indexPath) else { return }
+        if entry.opensOverlayLayouts {
+            openOverlayLayouts()
+            return
+        }
         if entry.opensCoreOptions {
             guard let core = session.core else { return }
             do {

@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.13.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.13.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>October 10, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.13.0" style="number">
+            <p-item><b>Customize the on-screen controls</b>: move, resize, fade or hide any button except Start, and save the result as <b>named layouts</b>. Choose a layout for one game, or use it for every game on the platform, from <b>Control Layouts</b> in the in-game menu or the game settings; each pick shows right away over the paused game. The editor moves the face buttons together or one by one, snaps to edges and other controls, switches between portrait and landscape, and supports undo and reset.</p-item>
+            <p-item>Added <b>combo buttons</b> that press several buttons at once, with optional turbo. Platforms come with ready-made combos, such as A+B turbo on NES, SNES, Game Boy and Master System (replacing the old AB button), A+B+C and X+Y+Z on Mega Drive and Saturn, and attack plus jump for arcade games, and you can make your own from two to four buttons in the layout editor.</p-item>
+            <p-item>The on-screen controls now give <b>haptic feedback</b> when pressed (Soft by default, or Light, Medium, Heavy, Rigid or off), and with <b>Game Rumble</b> your iPhone vibrates when a game rumbles, such as a crash in a racing game. With a controller that has its own rumble motors, the controller rumbles instead. Both are set under <b>Control Haptics</b> and <b>Game Rumble</b>, for all games, a core or a single game, and replace the old haptic switch in App settings.</p-item>
+            <p-item>PlayStation games can now use a <b>DualShock</b> controller, so they read the <b>analog sticks</b> and <b>rumble</b>. Choose Standard Controller or DualShock (the default) under <b>Controller Type</b> for PCSX-ReARMed and Beetle PSX. The PlayStation on-screen layout now has the D-pad and the left stick side by side, and the shoulder buttons in one row.</p-item>
+            <p-item><b>Hold the fast-forward button</b> to choose its speed (2x, 3x, 4x or 6x); the speed is saved for that game. A short tap still turns fast-forward on and off.</p-item>
+            <p-item>Fixed controller button mappings not being saved when the settings were closed from the mapping page, and on-screen buttons pressing the wrong button in some cores, such as ClownMDEmu, after a physical controller was remapped.</p-item>
+            <p-item>Fixed an occasional freeze when pausing a game, for example when tapping More right after an arcade game started; the offline resources alert no longer says network access is denied on first launch after you allow it; and <b>Contact Us</b> now opens your default mail app or offers to copy our email address when the Mail app isn't set up.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.12.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.12.0</p-title>
         <p-paragraph fontsize="13">

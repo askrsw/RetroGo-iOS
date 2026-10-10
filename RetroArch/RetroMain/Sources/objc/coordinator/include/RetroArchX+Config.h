@@ -55,6 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) int    overlayTouchPlayer;
 @property(nonatomic, assign) BOOL   overlayTurboTapLatch;
 @property(nonatomic, assign) int    overlayTurboSpeedTier;
+/// Device type for every port, by name (e.g. "dualshock"); nil or empty for the standard RetroPad.
+@property(nonatomic, copy, nullable) NSString *portDevice;
 
 @property(nonatomic, strong, nullable) RAInputCoreCapabilities *coreCaps;
 @property(nonatomic, strong, nullable) RAInputBindingProfile *inputBindingProfile;
@@ -72,6 +74,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSDictionary<NSString *, id> *)debugCurrentCoreOptionsSnapshot;
 - (void)setFastForwardMultiplier:(double)multiplier;
 - (void)setMuteOnFastForward:(BOOL)value;
+/// Whether the phone rumbles when the game asks for it, for the player on the on-screen controls.
+- (void)setPhoneRumbleEnabled:(BOOL)enabled;
 
 - (NSString *)defaultVideoDriver;
 - (NSArray<NSString *> *)availableVideoDrivers;

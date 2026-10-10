@@ -76,9 +76,20 @@ final class GameOverlayThumbStick: SKNode, GameOverlayElementLayout {
         }
     }
 
+    private enum HapticAxis {
+        case up, down, left, right
+    }
+    /// Per axis, the share of full deflection that still counts as zero.
+    private static let hapticDeadzone: CGFloat = 0.1
+    /// Whether the thumb has left the center during this drag.
+    private var hapticActivated = false
+    /// The axis the thumb last sat on; nil in the center or between two axes.
+    private var hapticAxis: HapticAxis?
+
     private(set) var element: GamePageOverlayElement
     private let digitalHandler: GameOverlayButtonDigitalChanged?
     private let analogHandler: GameOverlayDirectionAnalogChanged?
+    var hapticHandler: GameOverlayHapticHandler?
     private let theme: GameOverlayTheme
 
     init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, digitalHandler: GameOverlayButtonDigitalChanged? = nil, analogHandler: GameOverlayDirectionAnalogChanged? = nil) {
@@ -169,6 +180,7 @@ final class GameOverlayThumbStick: SKNode, GameOverlayElementLayout {
         zPosition = baseZPosition
         touching = false
         sendAnalogZeroIfNeeded()
+        resetHapticState()
     }
 }
 
@@ -193,6 +205,7 @@ extension GameOverlayThumbStick {
 
         // Input value is measured from home: direction follows the finger and
         // magnitude clamps at the ring, regardless of how far the base trailed.
+        updateHaptic(for: v)
         if digitalHandler != nil, analogHandler == nil {
             updateDigitalIfNeeded(v)
         }
@@ -205,6 +218,9 @@ extension GameOverlayThumbStick {
         activeTouch = nil
         touching = false
         sendAnalogZeroIfNeeded()
+        // The thumb springing back home taps once.
+        hapticHandler?()
+        resetHapticState()
 
         let back = SKAction.move(to: homePosition, duration: Self.springBackDuration)
         back.timingMode = .easeOut
@@ -311,5 +327,42 @@ extension GameOverlayThumbStick {
     private func sendAnalogZeroIfNeeded() {
         guard let analogHandler, digitalHandler == nil else { return }
         analogHandler(0, 0)
+    }
+
+    /// Taps when the thumb leaves the center and each time it comes onto an axis,
+    /// like the notches of a real stick; moving between axes is silent.
+    /// Both forms, analog and digital, feel the same.
+    private func updateHaptic(for v: CGPoint) {
+        guard radius > 0 else { return }
+        // An axis is full at half the radius, so an axis is a narrow notch the thumb crosses.
+        func axisValue(_ d: CGFloat) -> CGFloat {
+            let value = max(-1, min(1, 2 * d / radius))
+            return abs(value) < Self.hapticDeadzone ? 0 : value
+        }
+        let x = axisValue(v.x)
+        let y = axisValue(v.y)
+        let activated = hypot(x, y) > Self.hapticDeadzone
+
+        let axis: HapticAxis?
+        switch (x == 0, y == 0) {
+        case (false, true): axis = x < 0 ? .left : .right
+        case (true, false): axis = y < 0 ? .down : .up
+        default:            axis = nil
+        }
+
+        if let axis {
+            if axis != hapticAxis {
+                hapticHandler?()
+            }
+        } else if activated, !hapticActivated {
+            hapticHandler?()
+        }
+        hapticAxis = axis
+        hapticActivated = activated
+    }
+
+    private func resetHapticState() {
+        hapticActivated = false
+        hapticAxis = nil
     }
 }

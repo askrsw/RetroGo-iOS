@@ -58,6 +58,14 @@ final class GameOverlayDirectionalControl: SKNode, GameOverlayElementLayout {
     private let switchCorner: SwitchCorner
     private(set) var currentControl: GameOverlayDpadStickSwitch.`Type`
 
+    var hapticHandler: GameOverlayHapticHandler? {
+        didSet {
+            dpad.hapticHandler = hapticHandler
+            stick.hapticHandler = hapticHandler
+            dpadStickSwitch.hapticHandler = hapticHandler
+        }
+    }
+
     init(element: GamePageOverlayElement,
          supportsAnalog: Bool,
          theme: GameOverlayTheme = .default,

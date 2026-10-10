@@ -31,6 +31,7 @@
 #include <rthreads/rthreads.h>
 
 #include "virtual_joypad.h"
+#include "RAPhoneRumble.h"
 
 static input_bits_t virtual_pending_buttons[DEFAULT_MAX_PADS];
 static int16_t virtual_pending_axes[DEFAULT_MAX_PADS][4];
@@ -327,9 +328,8 @@ static void virtual_joypad_poll(void)
 
 static bool virtual_joypad_rumble(unsigned pad, enum retro_rumble_effect effect, uint16_t strength)
 {
-    (void)pad;
-    (void)effect;
-    (void)strength;
+    /* The on-screen controls have no motors; the phone rumbles for them. */
+    ra_phone_rumble_set_state(pad, (unsigned)effect, strength);
     return false;
 }
 

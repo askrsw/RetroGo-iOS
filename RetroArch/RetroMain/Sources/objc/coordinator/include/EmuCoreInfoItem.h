@@ -61,6 +61,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable, readonly) NSString *overlayName;
 @property(nonatomic, assign, readonly) BOOL supportsLogicThread;
 @property(nonatomic, assign, readonly) BOOL allowsDefaultTurboXYHijack;
+/* Controller types a player can pick for this core's ports ("port_devices" in
+ * the extra core info): name, analog, default, title. nil when there is no choice. */
+@property(nonatomic, copy, nullable, readonly) NSArray<NSDictionary<NSString *, id> *> *portDevices;
 /* YES when the core's savestate support level is deterministic, which is the
  * minimum requirement for netplay (and runahead). Derived from core_info. */
 @property(nonatomic, assign, readonly) BOOL supportsNetplay;

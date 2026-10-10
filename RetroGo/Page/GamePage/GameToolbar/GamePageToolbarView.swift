@@ -52,7 +52,7 @@ final class GamePageToolbarView: UIView {
     private var menuPauseLease: GamePauseCoordinator.Lease?
 
     private var isGamePaused = false
-    private var isGameMuted = false
+    private(set) var isGameMuted = false
 
     /// Brand-color plate shown behind the lock glyph when landscape is locked,
     /// so the state reads on any background (a mid-tone tint alone washes out).
@@ -478,7 +478,22 @@ extension GamePageToolbarView {
         ) { [weak self] _ in
             self?.editLayoutAction()
         }
-        sections.append(UIMenu(title: "", options: .displayInline, children: [editAction]))
+        var editActions: [UIMenuElement] = [editAction]
+        if holder?.canEditOverlayLayout == true {
+            let controlsAction = UIAction(
+                title: Bundle.localizedString(forKey: "overlay_layout_list_title"),
+                image: UIImage(systemName: "dpad")
+            ) { [weak self] _ in
+                Vibration.selection.vibrate()
+                self?.holder?.showOverlayLayoutList()
+            }
+            // Netplay keeps the game running, and moving controls mid-match is no time to edit.
+            if RANetplayCoordinator.shared.isNetplayEnabled {
+                controlsAction.attributes = .disabled
+            }
+            editActions.append(controlsAction)
+        }
+        sections.append(UIMenu(title: "", options: .displayInline, children: editActions))
 
         let toggleKey = isBarHidden ? "gamepage_toolbar_show_menu" : "gamepage_toolbar_hide_menu"
         let toggleImage = isBarHidden ? "eye" : "eye.slash"

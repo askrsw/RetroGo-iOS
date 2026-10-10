@@ -29,6 +29,7 @@
                 "polar_landscape_layout": { "theta": -270, "radius": 80 }
             },
             "meta": {
+                "group": "action",
                 "title": "A",
                 "binds": ["A"],
                 "is_native": true
@@ -46,6 +47,7 @@
                 "polar_landscape_layout": { "theta": -220, "radius": 80 }
             },
             "meta": {
+                "group": "action",
                 "title": "B",
                 "binds": ["B"],
                 "is_native": true
@@ -63,6 +65,7 @@
                 "polar_landscape_layout": { "theta": -260, "radius": 140 }
             },
             "meta": {
+                "group": "action",
                 "title": "X",
                 "binds": ["X"],
                 "is_native": true
@@ -80,6 +83,7 @@
                 "polar_landscape_layout": { "theta": -230, "radius": 140 }
             },
             "meta": {
+                "group": "action",
                 "title": "Y",
                 "binds": ["Y"],
                 "is_native": true

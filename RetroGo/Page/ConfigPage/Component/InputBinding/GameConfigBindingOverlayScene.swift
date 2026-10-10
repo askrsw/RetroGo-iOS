@@ -177,11 +177,7 @@ private extension GameConfigBindingOverlayScene {
             let button = GameOverlayActionButton(element: element, isTurboSupported: false, autoKeepTurbo: false, theme: overlayTheme) { [weak self] code, down in
                 guard down else { return }
                 Vibration.selection.vibrate()
-                if element.isCombo {
-                    self?.activateBinding(elementId: element.id)
-                } else {
-                    self?.activateBinding(elementId: element.id, joypadCode: code)
-                }
+                self?.activateBinding(elementId: element.id, joypadCode: code)
             }
             self.actionButtons.append(button)
             node = button
@@ -409,7 +405,7 @@ private extension GameConfigBindingOverlayScene {
         }
 
         // fallback: default turbo X/Y when profile is nil or no explicit overlay action binding
-        if !element.isCombo, element.isTurbo, let defaultSourceIdentifier = defaultPhysicalSourceIdentifier(for: element), !isPhysicalSourceUsedByNativeOverlayBindings(defaultSourceIdentifier), let displayName = inputActionManager.displayName(forPhysicalSourceIdentifier: defaultSourceIdentifier, useLock: true) {
+        if element.isTurbo, let defaultSourceIdentifier = defaultPhysicalSourceIdentifier(for: element), !isPhysicalSourceUsedByNativeOverlayBindings(defaultSourceIdentifier), let displayName = inputActionManager.displayName(forPhysicalSourceIdentifier: defaultSourceIdentifier, useLock: true) {
             return shortBindingDisplay(displayName, fallbackCode: presenter.bindingJoypadCode(for: actionId))
         }
 
@@ -453,7 +449,7 @@ private extension GameConfigBindingOverlayScene {
             return .inputAction(descriptor)
         }
 
-        if element.isCombo || element.isTurbo {
+        if element.isTurbo {
             let outputCodes = element.binds.map(\.code).filter({ $0 != .none })
             guard !outputCodes.isEmpty else { return nil }
 
@@ -461,7 +457,7 @@ private extension GameConfigBindingOverlayScene {
                 withIdentifier: inputActionIdentifier(for: element, actionId: actionId),
                 displayName: element.title ?? actionId,
                 outputJoypadCodes: outputCodes.map({ NSNumber(value: $0.rawValue) }),
-                turboEnabled: element.isCombo || element.isTurbo
+                turboEnabled: true
             )
             return .inputAction(descriptor)
         }
@@ -477,8 +473,7 @@ private extension GameConfigBindingOverlayScene {
     }
 
     func defaultPhysicalSourceIdentifier(for element: GamePageOverlayElement) -> String? {
-        guard !element.isCombo,
-              element.isTurbo,
+        guard element.isTurbo,
               element.binds.count == 1 else {
             return nil
         }
@@ -494,8 +489,7 @@ private extension GameConfigBindingOverlayScene {
     }
 
     func legacyDefaultPhysicalSourceIdentifier(for element: GamePageOverlayElement) -> String? {
-        guard !element.isCombo,
-              element.isTurbo,
+        guard element.isTurbo,
               element.binds.count == 1 else {
             return nil
         }

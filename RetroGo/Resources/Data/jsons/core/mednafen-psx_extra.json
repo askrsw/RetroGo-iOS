@@ -13,5 +13,16 @@
     "supports_analog": true,
     "overlay": "ps",
     "supports_logic_thread": true,
-    "allows_default_turbo_xy_hijack": false
+    "allows_default_turbo_xy_hijack": false,
+    "port_devices": [
+        {
+            "name": "",
+            "analog": false
+        },
+        {
+            "name": "dualshock",
+            "analog": true,
+            "default": true
+        }
+    ]
 }

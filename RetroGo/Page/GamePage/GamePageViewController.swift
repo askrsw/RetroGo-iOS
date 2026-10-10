@@ -35,13 +35,16 @@ final class GamePageViewController: RAGameViewController {
 
     let inGameInfoView = GamePageInGameInfoView(frame: .zero)
     private(set) lazy var myToolbarView = GamePageToolbarView(holder: self)
-    private(set) lazy var myOverlayView = GamePageOverlayView(coreInfoItem: core)
+    private(set) lazy var myOverlayView = GamePageOverlayView(coreInfoItem: core, game: romItem)
+    private(set) lazy var overlayLayoutEditController = GameOverlayLayoutEditController(gamePage: self, overlayView: myOverlayView)
 
     /// Runtime-only landscape lock — intentionally NOT persisted. Entering a
     /// game should match the device's current orientation (no jarring auto-
     /// rotate with no user action); the user taps once to lock landscape.
     /// Resets to free rotation every game session.
     private(set) var isLandscapeLocked = false
+    /// The orientation the control layout editor shows; overrides the landscape lock while it runs.
+    private(set) var layoutEditingOrientation: UIInterfaceOrientationMask?
 
     let romItem: RetroRomFileItem?
     let romUrl: URL?
@@ -82,6 +85,8 @@ final class GamePageViewController: RAGameViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(appWillBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
 
         NotificationCenter.default.addObserver(self, selector: #selector(showInGameMessageNotification(_:)), name: .showInGameMessage, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(overlayHapticLevelChanged), name: .overlayHapticLevelChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(gameRumbleEnabledChanged), name: .gameRumbleEnabledChanged, object: nil)
     }
 
     init(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
@@ -118,6 +123,8 @@ final class GamePageViewController: RAGameViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(appWillBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
 
         NotificationCenter.default.addObserver(self, selector: #selector(showInGameMessageNotification(_:)), name: .showInGameMessage, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(overlayHapticLevelChanged), name: .overlayHapticLevelChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(gameRumbleEnabledChanged), name: .gameRumbleEnabledChanged, object: nil)
 
         romItem.updateLastPlayAt()
     }
@@ -168,7 +175,8 @@ final class GamePageViewController: RAGameViewController {
         super.viewDidLoad()
 
         configSession.configRetroArch()
-        
+        GameHapticEngine.shared.start(level: configSession.getOverlayHapticLevel())
+
         RetroArchX.shared().start(romUrl?.path(percentEncoded: false), core: core) { [unowned self] success in
             loaded = true
             myLoadingView?.uninstall()
@@ -227,6 +235,56 @@ final class GamePageViewController: RAGameViewController {
         applyOrientationLock()
     }
 
+    /// Whether this core has on-screen controls whose layout can be edited.
+    var canEditOverlayLayout: Bool {
+        myOverlayView.overlayScene != nil
+    }
+
+    /// Shows this platform's control layouts; editing one returns to the list when done.
+    func showOverlayLayoutList() {
+        guard !RANetplayCoordinator.shared.isNetplayEnabled, !overlayLayoutEditController.isEditing else { return }
+        let list = GameOverlayLayoutListViewController(session: myOverlayView.layoutSession)
+        let card = GameOverlayLayoutListCardController(listController: list)
+        list.editHandler = { [weak self, weak card] request in
+            // Keeps the game paused from the list closing until the editor takes over.
+            let bridge = GamePauseCoordinator.shared.acquire(reason: "overlay-layout-list-to-edit")
+            card?.close { [weak self] in
+                self?.editOverlayLayout(request)
+                bridge?.release()
+            }
+        }
+        present(card, animated: true)
+    }
+
+    private func editOverlayLayout(_ request: GameOverlayLayoutListViewController.EditRequest) {
+        let target: GameOverlayLayoutEditController.Target
+        switch request {
+        case .create:
+            // A new layout starts from what the game shows now.
+            target = .create(from: myOverlayView.layoutSession.resolvedLayout().item?.data ?? GameOverlayLayoutData())
+        case .edit(let item):
+            target = .edit(item)
+        }
+        overlayLayoutEditController.begin(target) { [weak self] _ in
+            self?.showOverlayLayoutList()
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        overlayLayoutEditController.viewDidLayout()
+    }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        coordinator.animate(alongsideTransition: nil) { [weak self] _ in
+            guard let self, overlayLayoutEditController.isEditing else { return }
+            // The paused game still shows its frame at the old size; let it draw a few at the new one,
+            // so the controls are edited against the real picture.
+            GamePauseCoordinator.shared.runFramesWhilePaused(keepMuted: myToolbarView.isGameMuted)
+        }
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
@@ -234,12 +292,28 @@ final class GamePageViewController: RAGameViewController {
         AppDelegate.setOrientationLock(.allButUpsideDown)
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+
+        // The game is over once the page is gone, however it was closed.
+        if isBeingDismissed || isMovingFromParent {
+            GameHapticEngine.shared.stop()
+        }
+    }
+
     /// Applies the current (runtime) landscape-lock state to the app-wide mask
     /// and this VC's `supportedInterfaceOrientations`.
     func applyOrientationLock() {
-        let mask: UIInterfaceOrientationMask = isLandscapeLocked ? .landscape : .allButUpsideDown
-        AppDelegate.setOrientationLock(mask)
+        AppDelegate.setOrientationLock(supportedInterfaceOrientations)
         setNeedsUpdateOfSupportedInterfaceOrientations()
+    }
+
+    /// Turns the screen for the control layout editor (portrait or landscape); nil gives
+    /// rotation back to the device and the landscape lock.
+    func setLayoutEditingOrientation(_ mask: UIInterfaceOrientationMask?) {
+        guard layoutEditingOrientation != mask else { return }
+        layoutEditingOrientation = mask
+        applyOrientationLock()
     }
 
     /// Toggles the runtime landscape lock (called by the toolbar button).
@@ -249,7 +323,7 @@ final class GamePageViewController: RAGameViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        isLandscapeLocked ? .landscape : .allButUpsideDown
+        layoutEditingOrientation ?? (isLandscapeLocked ? .landscape : .allButUpsideDown)
     }
 
     override func showInGameMessage(_ message: EmuInGameMessage) {
@@ -293,6 +367,21 @@ extension GamePageViewController {
 
             RetroArchX.shared().resume()
         }
+    }
+
+    @objc
+    private func gameRumbleEnabledChanged() {
+        guard Self.instance == self else { return }
+        RetroArchX.shared().setPhoneRumbleEnabled(configSession.getGameRumbleEnabled())
+    }
+
+    @objc
+    private func overlayHapticLevelChanged() {
+        guard Self.instance == self else { return }
+        let engine = GameHapticEngine.shared
+        engine.setLevel(configSession.getOverlayHapticLevel())
+        // Lets the player feel the new level from the settings sheet.
+        engine.impact()
     }
 
     @objc

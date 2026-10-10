@@ -36,4 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) CADisplayLink *displayLink;
 @end
 
+/* Handles a video packet the logic thread is waiting on, as the display link would.
+ * For the main thread while it blocks on the logic thread: the logic thread may
+ * itself be waiting on the main thread (video_alive while paused), and neither
+ * would move otherwise. Does nothing off the main thread or without a driver. */
+void virtual_video_service_main_thread(void);
+
 NS_ASSUME_NONNULL_END

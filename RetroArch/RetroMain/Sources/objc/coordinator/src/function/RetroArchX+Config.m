@@ -26,7 +26,8 @@
 #import "RetroArchX+Config.h"
 #import "../input/RAInputBindingProfile.h"
 #import "../input/RAInputActionManager.h"
-#import "../virtual/virtual_joypad.h"
+#import "../input/virtual_joypad.h"
+#import "../input/RAPhoneRumble.h"
 
 #include <gfx/video_driver.h>
 #include <utils/configuration.h>
@@ -36,6 +37,7 @@
 #include <defines/input_defines.h>
 #include <string.h>
 #include <core/ra_core_options.h>
+#include <core/ra_port_devices.h>
 #include <core/core_option_manager.h>
 #include <intl/msg_hash.h>
 #include <utils/verbosity.h>
@@ -92,6 +94,8 @@ static char coreOptionConfigurationKey;
         objc_setAssociatedObject(self, &coreOptionConfigurationKey, pending, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     [self p_enforceBuiltinTurboDisabled];
+    [self p_enforceFrontendOwnsPause];
+    [self p_enforceFrontendOwnsDeviceRumble];
 
     // Cores read the frontend language when they load (option labels, BIOS
     // language defaults); follow the App language, which may differ from the
@@ -109,7 +113,14 @@ static char coreOptionConfigurationKey;
         [self p_writeCString:settings->arrays.video_driver cap:sizeof(settings->arrays.video_driver) value:cfg.videoDriver];
         [self p_writeCString:settings->arrays.audio_driver cap:sizeof(settings->arrays.audio_driver) value:cfg.audioDriver];
         [self setMuteOnFastForward:cfg.muteOnFastForward];
+
+        // settings_t outlives the game: start every launch from the standard RetroPad,
+        // and let the controller init pick the configured type for this core.
+        for (unsigned port = 0; port < MAX_USERS; port++) {
+            settings->uints.input_libretro_device[port] = RETRO_DEVICE_JOYPAD;
+        }
     }
+    ra_port_devices_set_preferred(cfg.portDevice.UTF8String);
 
     [[RAInputActionManager shared] applyInputBindingProfile:cfg.inputBindingProfile coreCapabilities:cfg.coreCaps useLock:YES];
 }
@@ -376,6 +387,34 @@ static char coreOptionConfigurationKey;
     if (input_st != NULL) {
         memset(&input_st->turbo_btns, 0, sizeof(input_st->turbo_btns));
     }
+}
+
+- (void)p_enforceFrontendOwnsPause {
+    settings_t *settings = config_get_ptr();
+    if(settings != nil) {
+        // RetroGo pauses and resumes the game itself (GamePauseCoordinator, App
+        // lifecycle). RetroArch pausing on its own when the video driver loses focus
+        // (App inactive, or a frame that failed to draw) leaves the runner thinking the
+        // game runs while runloop_iterate waits on the main thread for every
+        // video_alive call; a blocking pause from the main thread then deadlocks. It
+        // also unpauses on its own when focus comes back, behind the runner's back.
+        settings->bools.pause_nonactive     = false;
+        settings->bools.pause_on_disconnect = false;
+    }
+}
+
+- (void)p_enforceFrontendOwnsDeviceRumble {
+    settings_t *settings = config_get_ptr();
+    if(settings != nil) {
+        // RetroGo plays rumble on the phone itself (RAPhoneRumble), only for the player
+        // on the on-screen controls. RetroArch's own device vibration in mfi_joypad
+        // would rumble the phone for pad 0 as well, even with a controller in hand.
+        settings->bools.enable_device_vibration = false;
+    }
+}
+
+- (void)setPhoneRumbleEnabled:(BOOL)enabled {
+    ra_phone_rumble_set_enabled(enabled);
 }
 
 #pragma mark - Debug core option export

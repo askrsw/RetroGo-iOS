@@ -79,11 +79,20 @@ final class GameControllerInputBindingConfigurator: UIViewController {
         overlayView.updateLayout(for: skView.bounds.size)
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        // Back on screen, e.g. a swipe-down dismissal that was cancelled: the next exit saves again.
+        didPersistOnExit = false
+    }
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        // Save once, only when really leaving this page
-        guard (isMovingFromParent || isBeingDismissed), !didPersistOnExit else { return }
+        // Save once, only when really leaving this page: popped, dismissed itself, or
+        // gone with the sheet it sits in (the in-game settings' Close button or a swipe
+        // down while this page is showing dismisses the navigation controller, not this page).
+        let leaving = isMovingFromParent || isBeingDismissed || (navigationController?.isBeingDismissed ?? false)
+        guard leaving, !didPersistOnExit else { return }
         didPersistOnExit = true
         persistBindingProfileIfNeeded()
     }

@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.13.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.13.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 10 月 10 日</i>。
+        </p-paragraph>
+        <p-list id="v1.13.0" style="number">
+            <p-item><b>屏幕按键可以自定义了</b>：除开始键外，每个按键都能移动、缩放、调整透明度或隐藏，调整好后保存为<b>有名字的布局</b>。在游戏内菜单或游戏设置的<b>「屏幕按键布局」</b>中，可以为当前游戏选择布局，也可以用于该平台的所有游戏，选中后在暂停的游戏画面上立即生效。编辑时，主按键可以整组移动，也可以单独调整；按键会自动对齐屏幕边缘和其他按键，可以切换竖屏、横屏分别编辑，并支持撤销和重置。</p-item>
+            <p-item>新增<b>组合键</b>：一次同时按下多个按键，可选连发。各平台预置了常用组合键，例如 NES、SNES、Game Boy、Master System 的 A+B 连发（取代原来的 AB 键），Mega Drive 和土星的 A+B+C、X+Y+Z，街机游戏的攻击加跳跃等；也可以在布局编辑器中用 2 到 4 个按键自己组合。</p-item>
+            <p-item>屏幕按键新增<b>按键震动</b>，按下时给出震感（默认柔和，可选轻、中、重、清脆或关闭）；开启<b>游戏震动</b>后，游戏发出震动时（如赛车碰撞）手机也会跟着震动，连接带震动马达的手柄时由手柄震动。两项都可以在<b>「按键震动」</b>和<b>「游戏震动」</b>中设置，可作用于全部游戏、某个核心或单个游戏，取代了原来 App 设置中的震动开关。</p-item>
+            <p-item>PlayStation 游戏现在可以使用 <b>DualShock</b> 手柄，支持<b>摇杆</b>和<b>震动</b>。在 PCSX-ReARMed 和 Beetle PSX 的<b>「手柄类型」</b>中可选择普通手柄或 DualShock（默认）。PlayStation 的屏幕按键布局改为十字键与左摇杆并排，肩键排成一行。</p-item>
+            <p-item><b>长按快进键</b>可以选择快进倍数（2x、3x、4x、6x），选择会保存到当前游戏；轻点仍然是开关快进。</p-item>
+            <p-item>修复在按键映射页直接关闭设置时，手柄按键映射没有保存的问题；修复在 ClownMDEmu 等部分核心中重新映射实体手柄后，屏幕按键按出的键不对的问题。</p-item>
+            <p-item>修复暂停游戏时偶尔卡住的问题（例如街机游戏刚启动就点「更多」）；首次启动时允许网络访问后，不再误报离线资源无法下载；系统邮件 App 未设置账户时，<b>「联系我们」</b>会打开你的默认邮件 App，或提示复制我们的邮箱地址。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.12.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.12.0</p-title>
         <p-paragraph fontsize="13">

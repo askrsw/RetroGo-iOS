@@ -97,12 +97,15 @@ final class RetroGoTabBarController: UITabBarController {
 
     /// Last size class pushed to the tabs, so layout passes don't reapply it.
     private var appliedChildSizeClass: UIUserInterfaceSizeClass?
+    /// The "can't download offline resources" alert while it is on screen.
+    private weak var networkDeniedAlert: UIAlertController?
 
     init() {
         super.init(nibName: nil, bundle: nil)
         delegate = self
         NotificationCenter.default.addObserver(self, selector: #selector(languageChanged), name: .languageChanged, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(networkAccessDenied(_:)), name: .odrNetworkAccessDenied, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(networkAccessRestored), name: .odrNetworkAccessRestored, object: nil)
     }
     
     required init?(coder: NSCoder) {
@@ -286,6 +289,15 @@ private extension RetroGoTabBarController {
                 UIApplication.shared.open(url)
             }
         })
+        networkDeniedAlert = alert
         (UIViewController.currentActive() ?? self).present(alert, animated: true)
+    }
+
+    /// Access came back (the downloads resume on their own): the alert no
+    /// longer applies.
+    @objc
+    func networkAccessRestored() {
+        guard let alert = networkDeniedAlert, alert.presentingViewController != nil else { return }
+        alert.dismiss(animated: true)
     }
 }

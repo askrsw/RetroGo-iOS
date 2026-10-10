@@ -79,6 +79,11 @@ final class GameOverlayDirectionPad: SKNode, GameOverlayElementLayout {
             digitalHandler?(.down, status & GameOverlayDirectionMask.down > 0)
             digitalHandler?(.left, status & GameOverlayDirectionMask.left > 0)
             digitalHandler?(.up, status & GameOverlayDirectionMask.up > 0)
+
+            // Only a direction that was not held before taps; dropping one, or letting go, is silent.
+            if status & ~oldValue != 0 {
+                hapticHandler?()
+            }
         }
     }
 
@@ -94,6 +99,7 @@ final class GameOverlayDirectionPad: SKNode, GameOverlayElementLayout {
     private(set) var element: GamePageOverlayElement
     let allowsDiagonalInput: Bool
     let digitalHandler: GameOverlayButtonDigitalChanged?
+    var hapticHandler: GameOverlayHapticHandler?
     private let theme: GameOverlayTheme
     private var activeTouch: UITouch?
 

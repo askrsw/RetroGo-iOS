@@ -69,7 +69,12 @@ struct GamePageOverlayElement: Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
         type = try container.decode(GamePageOverlayElementType.self, forKey: .type)
-        geometry = try container.decode(GamePageOverlayGeometry.self, forKey: .geometry)
+        // A combo is sized from its title and placed by the layout editor, so its geometry may be left out.
+        if type == .combo, !container.contains(.geometry) {
+            geometry = .comboPlaceholder
+        } else {
+            geometry = try container.decode(GamePageOverlayGeometry.self, forKey: .geometry)
+        }
         fourButtonGeometry = try container.decodeIfPresent(GamePageOverlayGeometry.self, forKey: .fourButtonGeometry)
         meta = try container.decodeIfPresent([String: JSONValue].self, forKey: .meta)
     }
@@ -98,6 +103,8 @@ enum GamePageOverlayElementType: String, Codable {
     case n64CButton = "n64-c-button"
     case ndsLayoutButton = "nds-layout-button"
     case arcadeLayoutButton = "arcade-layout-button"
+    // Presses several native buttons at once; hidden until a custom layout shows it.
+    case combo
 }
 
 struct GamePageOverlayGeometry: Codable, Equatable {
@@ -248,6 +255,24 @@ extension GamePageOverlayElement {
         return b
     }
 
+    /// Controls a custom layout moves and scales together (`action` for the face buttons).
+    var group: String? {
+        guard case .string(let s) = meta?["group"] else { return nil }
+        return s
+    }
+
+    /// Buttons a custom layout may hide, so a game that uses few of them leaves room for the
+    /// rest: every button but Start, which nearly every game needs, and the combos.
+    /// Directions, fast-forward, collapse and the layout switches always stay.
+    var isHideableInCustomLayout: Bool {
+        (type == .button && !binds.contains { $0.code == .start }) || type == .combo
+    }
+
+    /// Combos stay hidden until a custom layout shows them, so the built-in layout keeps only the controller's buttons.
+    var isHiddenByDefaultInCustomLayout: Bool {
+        type == .combo
+    }
+
     var title: String? {
         guard let v = meta?["title"], case .string(let s) = v else {
             return nil
@@ -313,18 +338,18 @@ extension GamePageOverlayElement {
         }).map({ GamePageOverlayAction($0) })
     }
 
-    var isCombo: Bool {
-        guard let v = meta?["is_combo"], case .bool(let b) = v else {
-            return false
-        }
-        return b
-    }
-
     var psActionButtonIcon: GameOverlayPSActionButtonIcon? {
         guard let v = meta?["ps_action_button_icon"], case .string(let s) = v else {
             return nil
         }
         return GameOverlayPSActionButtonIcon(rawValue: s)
+    }
+}
+
+extension GamePageOverlayConfig {
+    /// Whether the layout has the arcade four/six-button switch (MAME).
+    var hasArcadeLayoutSwitch: Bool {
+        elements.contains { $0.type == .arcadeLayoutButton }
     }
 }
 
@@ -346,9 +371,14 @@ extension GamePageOverlayConfig {
         case mame = "mame"
     }
 
+    /// The overlay JSON a core's `overlayName` loads; unknown or missing names use `default`.
+    static func resolvedOverlayName(_ name: String?) -> String {
+        (OverlayName(rawValue: name ?? "") ?? .default).rawValue
+    }
+
     static func loadOverlayConfig(_ name: String?) -> Self {
-        let overlayName = OverlayName(rawValue: name ?? "") ?? .default
-        guard let url = Bundle.main.url(forResource: overlayName.rawValue, withExtension: "json", subdirectory: "Data/overlays/spritekit") else {
+        let overlayName = resolvedOverlayName(name)
+        guard let url = Bundle.main.url(forResource: overlayName, withExtension: "json", subdirectory: "Data/overlays/spritekit") else {
             fatalError()
         }
 

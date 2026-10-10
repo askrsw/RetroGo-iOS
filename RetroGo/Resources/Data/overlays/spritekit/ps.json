@@ -9,11 +9,20 @@
     "elements": [
         {
             "id": "left-dpad",
-            "type": "directional",
+            "type": "dpad",
             "geometry": {
-                "size": { "width": 130, "height": 130 },
-                "plain_portrait_layout": { "left": 25, "bottom": 230 },
-                "plain_landscape_layout": { "left": 22.5, "bottom": 80 }
+                "size": { "width": 122, "height": 122 },
+                "plain_portrait_layout": { "left": 22, "bottom": 262 },
+                "plain_landscape_layout": { "left": 18, "bottom": 122 }
+            }
+        },
+        {
+            "id": "left-stick",
+            "type": "stick",
+            "geometry": {
+                "size": { "width": 108, "height": 108 },
+                "plain_portrait_layout": { "left": 88, "bottom": 124 },
+                "plain_landscape_layout": { "left": 112, "bottom": 28 }
             }
         },
         {
@@ -22,10 +31,11 @@
             "geometry": {
                 "shape": "circle",
                 "size": { "width": 50, "height": 50 },
-                "plain_portrait_layout": { "right": 20, "bottom": 270 },
-                "plain_landscape_layout": { "right": 20, "bottom": 150 }
+                "plain_portrait_layout": { "right": 18, "bottom": 275 },
+                "plain_landscape_layout": { "right": 16, "bottom": 150 }
             },
             "meta": {
+                "group": "action",
                 "ps_action_button_icon": "circle",
                 "binds": ["A"],
                 "is_native": true
@@ -37,10 +47,11 @@
             "geometry": {
                 "shape": "circle",
                 "size": { "width": 50, "height": 50 },
-                "plain_portrait_layout": { "right": 60, "bottom": 225 },
-                "plain_landscape_layout": { "right": 60, "bottom": 105 }
+                "plain_portrait_layout": { "right": 64, "bottom": 225 },
+                "plain_landscape_layout": { "right": 62, "bottom": 100 }
             },
             "meta": {
+                "group": "action",
                 "ps_action_button_icon": "cross",
                 "binds": ["B"],
                 "is_native": true
@@ -52,10 +63,11 @@
             "geometry": {
                 "shape": "circle",
                 "size": { "width": 50, "height": 50 },
-                "plain_portrait_layout": { "right": 60, "bottom": 315 },
-                "plain_landscape_layout": { "right": 60, "bottom": 195 }
+                "plain_portrait_layout": { "right": 64, "bottom": 325 },
+                "plain_landscape_layout": { "right": 62, "bottom": 200 }
             },
             "meta": {
+                "group": "action",
                 "ps_action_button_icon": "triangle",
                 "binds": ["X"],
                 "is_native": true
@@ -67,10 +79,11 @@
             "geometry": {
                 "shape": "circle",
                 "size": { "width": 50, "height": 50 },
-                "plain_portrait_layout": { "right": 100, "bottom": 270 },
-                "plain_landscape_layout": { "right": 100, "bottom": 150 }
+                "plain_portrait_layout": { "right": 110, "bottom": 275 },
+                "plain_landscape_layout": { "right": 108, "bottom": 150 }
             },
             "meta": {
+                "group": "action",
                 "ps_action_button_icon": "square",
                 "binds": ["Y"],
                 "is_native": true
@@ -82,8 +95,8 @@
             "geometry": {
                 "shape": "rounded",
                 "size": { "width": 58, "height": 28 },
-                "plain_portrait_layout": { "left": 10, "bottom": 438 },
-                "plain_landscape_layout": { "left": 10, "bottom": 295 }
+                "plain_portrait_layout": { "left": 14, "bottom": 420 },
+                "plain_landscape_layout": { "left": 12, "bottom": 296 }
             },
             "meta": {
                 "title": "L1",
@@ -97,8 +110,8 @@
             "geometry": {
                 "shape": "rounded",
                 "size": { "width": 58, "height": 28 },
-                "plain_portrait_layout": { "left": 78, "bottom": 424 },
-                "plain_landscape_layout": { "left": 78, "bottom": 281 }
+                "plain_portrait_layout": { "left": 96, "bottom": 420 },
+                "plain_landscape_layout": { "left": 88, "bottom": 296 }
             },
             "meta": {
                 "title": "L2",
@@ -112,8 +125,8 @@
             "geometry": {
                 "shape": "rounded",
                 "size": { "width": 58, "height": 28 },
-                "plain_portrait_layout": { "right": 10, "bottom": 438 },
-                "plain_landscape_layout": { "right": 10, "bottom": 295 }
+                "plain_portrait_layout": { "right": 14, "bottom": 420 },
+                "plain_landscape_layout": { "right": 12, "bottom": 296 }
             },
             "meta": {
                 "title": "R1",
@@ -127,8 +140,8 @@
             "geometry": {
                 "shape": "rounded",
                 "size": { "width": 58, "height": 28 },
-                "plain_portrait_layout": { "right": 78, "bottom": 424 },
-                "plain_landscape_layout": { "right": 78, "bottom": 281 }
+                "plain_portrait_layout": { "right": 96, "bottom": 420 },
+                "plain_landscape_layout": { "right": 88, "bottom": 296 }
             },
             "meta": {
                 "title": "R2",
@@ -142,7 +155,7 @@
             "geometry": {
                 "shape": "capsule",
                 "size": { "width": 70, "height": 25 },
-                "plain_portrait_layout": { "center_x": -80, "bottom": 385 },
+                "plain_portrait_layout": { "center_x": -80, "bottom": 72 },
                 "plain_landscape_layout": { "center_x": -55, "bottom": 35 }
             },
             "meta": {
@@ -157,7 +170,7 @@
             "geometry": {
                 "shape": "capsule",
                 "size": { "width": 70, "height": 25 },
-                "plain_portrait_layout": { "center_x": 10, "bottom": 385 },
+                "plain_portrait_layout": { "center_x": 10, "bottom": 72 },
                 "plain_landscape_layout": { "center_x": 55, "bottom": 35 }
             },
             "meta": {

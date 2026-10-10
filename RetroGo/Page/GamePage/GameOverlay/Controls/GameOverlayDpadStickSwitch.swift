@@ -42,6 +42,7 @@ final class GameOverlayDpadStickSwitch: SKNode, GameOverlayElementLayout {
     private(set) var element: GamePageOverlayElement
     private let handler: GameOverlaySwitchHandler?
     private let theme: GameOverlayTheme
+    var hapticHandler: GameOverlayHapticHandler?
 
     init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, handler: GameOverlaySwitchHandler?) {
         self.element = element
@@ -101,6 +102,7 @@ final class GameOverlayDpadStickSwitch: SKNode, GameOverlayElementLayout {
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         setPressed(true)
+        hapticHandler?()
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {

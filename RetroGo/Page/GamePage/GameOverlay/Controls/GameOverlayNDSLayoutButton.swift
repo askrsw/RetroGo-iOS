@@ -48,6 +48,9 @@ final class GameOverlayNDSLayoutButton: SKNode, GameOverlayElementLayout {
             secondaryScreenNode.fillColor = theme.primaryColor(alpha: secondaryAlpha)
 
             joypadCodes.forEach { digitalChangeHandler?($0, touching) }
+            if touching {
+                hapticHandler?()
+            }
         }
     }
 
@@ -64,6 +67,7 @@ final class GameOverlayNDSLayoutButton: SKNode, GameOverlayElementLayout {
     private let joypadCodes: [RetroArchJoypadCode]
     private let digitalChangeHandler: GameOverlayButtonDigitalChanged?
     private let theme: GameOverlayTheme
+    var hapticHandler: GameOverlayHapticHandler?
 
     init(element: GamePageOverlayElement, theme: GameOverlayTheme = .default, digitalChangeHandler: GameOverlayButtonDigitalChanged?) {
         self.element = element

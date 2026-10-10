@@ -27,6 +27,7 @@ final class GameOverlayArcadeLayoutButton: SKNode, GameOverlayElementLayout {
     let element: GamePageOverlayElement
     private let theme: GameOverlayTheme
     private let handler: () -> Void
+    var hapticHandler: GameOverlayHapticHandler?
     private let ringNode = SKShapeNode()
     private let dotsNode = SKNode()
     private var diameter: CGFloat = 0
@@ -105,6 +106,7 @@ final class GameOverlayArcadeLayoutButton: SKNode, GameOverlayElementLayout {
         guard trackingTouch == nil, let touch = touches.first else { return }
         trackingTouch = ObjectIdentifier(touch)
         setPressed(true)
+        hapticHandler?()
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {

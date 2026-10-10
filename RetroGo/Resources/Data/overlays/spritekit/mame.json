@@ -30,6 +30,7 @@
                 "polar_landscape_layout": { "theta": -242.5, "radius": 300 }
             },
             "meta": {
+                "group": "action",
                 "title": "B",
                 "binds": ["B"],
                 "is_native": true
@@ -55,6 +56,7 @@
                 "polar_landscape_layout": { "theta": -255, "radius": 300 }
             },
             "meta": {
+                "group": "action",
                 "title": "A",
                 "binds": ["A"],
                 "is_native": true
@@ -80,6 +82,7 @@
                 "polar_landscape_layout": { "theta": -267.5, "radius": 300 }
             },
             "meta": {
+                "group": "action",
                 "title": "R",
                 "binds": ["R1"],
                 "six_button_only": true,
@@ -98,6 +101,7 @@
                 "polar_landscape_layout": { "theta": -244, "radius": 365 }
             },
             "meta": {
+                "group": "action",
                 "title": "Y",
                 "binds": ["Y"],
                 "is_native": true
@@ -123,6 +127,7 @@
                 "polar_landscape_layout": { "theta": -255, "radius": 365 }
             },
             "meta": {
+                "group": "action",
                 "title": "X",
                 "binds": ["X"],
                 "is_native": true
@@ -148,6 +153,7 @@
                 "polar_landscape_layout": { "theta": -266, "radius": 365 }
             },
             "meta": {
+                "group": "action",
                 "title": "L",
                 "binds": ["L1"],
                 "six_button_only": true,
@@ -182,6 +188,50 @@
                 "title": "START",
                 "binds": ["START"],
                 "is_native": true
+            }
+        },
+        {
+            "id": "combo-ba",
+            "type": "combo",
+            "meta": {
+                "binds": ["B", "A"]
+            }
+        },
+        {
+            "id": "combo-yb",
+            "type": "combo",
+            "meta": {
+                "binds": ["Y", "B"]
+            }
+        },
+        {
+            "id": "combo-xa",
+            "type": "combo",
+            "meta": {
+                "binds": ["X", "A"]
+            }
+        },
+        {
+            "id": "combo-ybx",
+            "type": "combo",
+            "meta": {
+                "binds": ["Y", "B", "X"]
+            }
+        },
+        {
+            "id": "combo-yxl",
+            "type": "combo",
+            "meta": {
+                "binds": ["Y", "X", "L1"],
+                "six_button_only": true
+            }
+        },
+        {
+            "id": "combo-bar",
+            "type": "combo",
+            "meta": {
+                "binds": ["B", "A", "R1"],
+                "six_button_only": true
             }
         },
         {

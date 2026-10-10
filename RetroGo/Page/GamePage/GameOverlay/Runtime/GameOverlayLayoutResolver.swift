@@ -32,6 +32,8 @@ struct GameOverlayLayoutResolver {
     }
 
     let config: GamePageOverlayConfig
+    /// User layout applied on top of the JSON; nil keeps the built-in layout.
+    var layoutData: GameOverlayLayoutData?
 
     private(set) var size: CGSize = .zero
     private(set) var mode: Mode = .portrait
@@ -54,24 +56,75 @@ struct GameOverlayLayoutResolver {
         self.fourButtonPolarAnchor = fourButtonInsets.map(resolvePolarAnchor) ?? polarAnchor
     }
 
+    /// Frame of an element: the JSON layout, then the custom layout's group
+    /// transform, then the element's own position and size.
     func resolveRect(_ element: GamePageOverlayElement, usePolarLayout: Bool, fourButtonLayout: Bool = false) -> CGRect {
-        let elementSize = element.geometry.size
-        let scaledSize = CGSize(
-            width: CGFloat(elementSize.width) * scaleFactor,
-            height: CGFloat(elementSize.height) * scaleFactor
-        )
+        let custom = customElement(for: element, fourButtonLayout: fourButtonLayout)
+        let elementScale = CGFloat(custom?.scale ?? 1)
 
-        if usePolarLayout, let polar = polarLayout(for: element) {
-            return resolvePolarRect(size: scaledSize, polar: polar,
-                                    anchor: fourButtonLayout ? fourButtonPolarAnchor : polarAnchor)
+        // An element given its own position leaves the arc and its group.
+        if let insets = custom?.layout {
+            return resolvePlainRect(size: scaledSize(element, multiplier: elementScale), insets: insets)
         }
 
-        return resolvePlainRect(size: scaledSize, insets: plainLayout(for: element))
+        var rect = resolveBuiltInRect(element, usePolarLayout: usePolarLayout, fourButtonLayout: fourButtonLayout)
+
+        if let groupName = element.group,
+           let group = customOrientation(fourButtonLayout: fourButtonLayout)?.groups[groupName], !group.isEmpty {
+            let pivot = groupPivot(groupName, usePolarLayout: usePolarLayout, fourButtonLayout: fourButtonLayout)
+            let groupScale = CGFloat(group.scale ?? 1)
+            // Offsets are in reference units, +y up like the scene.
+            let center = CGPoint(
+                x: pivot.x + (rect.midX - pivot.x) * groupScale + CGFloat(group.offsetX) * scaleFactor,
+                y: pivot.y + (rect.midY - pivot.y) * groupScale + CGFloat(group.offsetY) * scaleFactor
+            )
+            rect = Self.rect(center: center, size: CGSize(width: rect.width * groupScale, height: rect.height * groupScale))
+        }
+
+        if elementScale != 1 {
+            rect = Self.rect(center: CGPoint(x: rect.midX, y: rect.midY),
+                             size: CGSize(width: rect.width * elementScale, height: rect.height * elementScale))
+        }
+        return rect
     }
 
-    func resolveRotation(_ element: GamePageOverlayElement, usePolarLayout: Bool, rotatesWithPolarLayout: Bool) -> CGFloat {
+    /// Whether the custom layout hides the element; only extension buttons can be hidden.
+    /// Combos are hidden unless the layout shows them, the built-in layout included.
+    func isHiddenByCustomLayout(_ element: GamePageOverlayElement, fourButtonLayout: Bool = false) -> Bool {
+        guard element.isHideableInCustomLayout else { return false }
+        return customElement(for: element, fourButtonLayout: fourButtonLayout)?.hidden ?? element.isHiddenByDefaultInCustomLayout
+    }
+
+    /// Opacity of the whole overlay, clamped so the controls never vanish.
+    var customOpacity: CGFloat {
+        guard let opacity = layoutData?.opacity else { return 1 }
+        return min(1, max(Self.minimumOpacity, CGFloat(opacity)))
+    }
+
+    static let minimumOpacity: CGFloat = 0.2
+
+    /// Whether the custom layout gives the element its own position, outside the arc and its group.
+    func hasCustomPosition(_ element: GamePageOverlayElement, fourButtonLayout: Bool = false) -> Bool {
+        customElement(for: element, fourButtonLayout: fourButtonLayout)?.layout != nil
+    }
+
+    /// Plain-layout insets that place an element at `rect`, measured in reference
+    /// units from the nearest horizontal and vertical edges so the position
+    /// follows the closest screen edge on other screen sizes.
+    func plainInsets(for rect: CGRect) -> GamePageOverlayInsets {
+        let scale = max(scaleFactor, 0.001)
+        let frame = rect.offsetBy(dx: -contentOffset.x, dy: -contentOffset.y)
+        let left = frame.midX <= size.width * 0.5 ? Double(frame.minX / scale) : nil
+        let right = left == nil ? Double((size.width - frame.maxX) / scale) : nil
+        let bottom = frame.midY <= size.height * 0.5 ? Double(frame.minY / scale) : nil
+        let top = bottom == nil ? Double((size.height - frame.maxY) / scale) : nil
+        return GamePageOverlayInsets(top: top, left: left, bottom: bottom, right: right, centerX: nil, centerY: nil)
+    }
+
+    func resolveRotation(_ element: GamePageOverlayElement, usePolarLayout: Bool, rotatesWithPolarLayout: Bool, fourButtonLayout: Bool = false) -> CGFloat {
         guard usePolarLayout,
               rotatesWithPolarLayout,
+              customElement(for: element, fourButtonLayout: fourButtonLayout)?.layout == nil,
               let polar = polarLayout(for: element) else {
             return 0
         }
@@ -85,6 +138,46 @@ struct GameOverlayLayoutResolver {
 }
 
 private extension GameOverlayLayoutResolver {
+    /// The custom layout for the current orientation and arcade 4/6-button layout.
+    func customOrientation(fourButtonLayout: Bool) -> GameOverlayLayoutData.Orientation? {
+        layoutData?.orientation(portrait: mode == .portrait, fourButton: fourButtonLayout)
+    }
+
+    func customElement(for element: GamePageOverlayElement, fourButtonLayout: Bool) -> GameOverlayLayoutData.Element? {
+        customOrientation(fourButtonLayout: fourButtonLayout)?.elements[element.id]
+    }
+
+    func scaledSize(_ element: GamePageOverlayElement, multiplier: CGFloat = 1) -> CGSize {
+        let elementSize = element.geometry.size
+        return CGSize(
+            width: CGFloat(elementSize.width) * scaleFactor * multiplier,
+            height: CGFloat(elementSize.height) * scaleFactor * multiplier
+        )
+    }
+
+    func resolveBuiltInRect(_ element: GamePageOverlayElement, usePolarLayout: Bool, fourButtonLayout: Bool) -> CGRect {
+        let size = scaledSize(element)
+        if usePolarLayout, let polar = polarLayout(for: element) {
+            return resolvePolarRect(size: size, polar: polar,
+                                    anchor: fourButtonLayout ? fourButtonPolarAnchor : polarAnchor)
+        }
+        return resolvePlainRect(size: size, insets: plainLayout(for: element))
+    }
+
+    /// Center of the group's built-in bounds; scaling about it keeps the group in place.
+    func groupPivot(_ groupName: String, usePolarLayout: Bool, fourButtonLayout: Bool) -> CGPoint {
+        let bounds = config.elements
+            .filter { $0.group == groupName && !(fourButtonLayout && $0.isSixButtonOnly) }
+            .map { resolveBuiltInRect($0.arcadeLayoutElement(fourButtons: fourButtonLayout), usePolarLayout: usePolarLayout, fourButtonLayout: fourButtonLayout) }
+            .reduce(CGRect.null) { $0.union($1) }
+        guard !bounds.isNull else { return .zero }
+        return CGPoint(x: bounds.midX, y: bounds.midY)
+    }
+
+    static func rect(center: CGPoint, size: CGSize) -> CGRect {
+        CGRect(x: center.x - size.width * 0.5, y: center.y - size.height * 0.5, width: size.width, height: size.height)
+    }
+
     func resolvePolarRect(size: CGSize, polar: GamePageOverlayPolar, anchor: CGPoint) -> CGRect {
         let theta = polar.theta * Double.pi / 180.0
         let radius = polar.radius * Double(scaleFactor)
@@ -222,7 +315,8 @@ extension GameOverlaySceneLayouting where Self: SKScene {
         overlayLayoutResolver.resolveRotation(
             element,
             usePolarLayout: usePolarLayout,
-            rotatesWithPolarLayout: rotatesWithPolarLayout
+            rotatesWithPolarLayout: rotatesWithPolarLayout,
+            fourButtonLayout: usesFourButtonLayout
         )
     }
 }

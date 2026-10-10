@@ -70,6 +70,9 @@ final class GamePauseCoordinator {
     }
 
     private var activeLeaseIDs: Set<UUID> = []
+    /// Emulator frame callback of a frame run (`runFramesWhilePaused`); nil when none is going.
+    private var frameRunToken: String?
+    private var frameRunKeepsMuted = false
 
     private init() {}
 
@@ -98,7 +101,45 @@ final class GamePauseCoordinator {
         guard activeLeaseIDs.remove(id) != nil else { return }
         guard activeLeaseIDs.isEmpty else { return }
         guard shouldPauseGameLoop else { return }
+        // A frame run has the game going already; it ends without pausing again.
+        guard frameRunToken == nil else { return }
         _ = RetroArchX.shared().resume()
+    }
+
+    /// Lets the paused game run a few frames, muted, then pauses it again. A paused game
+    /// keeps showing its last frame at the old size, so after the screen turns the picture
+    /// is stretched; a few frames draw it at the new size. The game moves on by those frames.
+    /// Does nothing unless a lease holds the pause.
+    func runFramesWhilePaused(_ frames: Int = 6, keepMuted: Bool) {
+        guard isHoldingPause, frameRunToken == nil, shouldPauseGameLoop else { return }
+        let ra = RetroArchX.shared()
+        ra.mute(true)
+        guard ra.resume() else {
+            ra.mute(keepMuted)
+            return
+        }
+        frameRunKeepsMuted = keepMuted
+        // Counted on the thread that runs the frames; the end goes back to the main thread once.
+        var remaining = max(1, frames)
+        frameRunToken = ra.addEmuPrevFrameAction { [weak self] in
+            remaining -= 1
+            guard remaining == 0 else { return }
+            DispatchQueue.main.async {
+                self?.finishFrameRun()
+            }
+        }
+    }
+
+    private func finishFrameRun() {
+        guard let token = frameRunToken else { return }
+        let ra = RetroArchX.shared()
+        ra.removeEmuPrevFrameAction(forToken: token)
+        frameRunToken = nil
+        // Paused again only if something still holds the pause; a lease released meanwhile left it running.
+        if !activeLeaseIDs.isEmpty {
+            _ = ra.pause()
+        }
+        ra.mute(frameRunKeepsMuted)
     }
 
     private var shouldPauseGameLoop: Bool {

@@ -75,6 +75,7 @@
 		AB4DCCDB2FA26AD8004691BD /* GameConfigBindingBubbleNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4DCCD92FA26AD8004691BD /* GameConfigBindingBubbleNode.swift */; };
 		AB4DCCDC2FA26AD8004691BD /* GameConfigBindingSettingPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4DCCDA2FA26AD8004691BD /* GameConfigBindingSettingPresenting.swift */; };
 		AB4DCCDE2FA2F0A0004691BD /* GameOverlayTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB4DCCDD2FA2F0A0004691BD /* GameOverlayTheme.swift */; };
+		AC0FFB022FFB0000F5B0B001 /* GameOverlayFastSpeedBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0FFB012FFB0000F5B0B001 /* GameOverlayFastSpeedBubble.swift */; };
 		AB55BC622F3B587F00569A84 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = AB55BC612F3B587F00569A84 /* Defaults */; };
 		AB55BC642F3B804600569A84 /* DefaultKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC632F3B803F00569A84 /* DefaultKeys.swift */; };
 		AB55BC662F3B806800569A84 /* DeviceConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB55BC652F3B806600569A84 /* DeviceConfig.swift */; };
@@ -207,6 +208,15 @@
 		ABF60F882FC5F99C006C5B5A /* RetroRomByCoreSectionedDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F872FC5F99C006C5B5A /* RetroRomByCoreSectionedDataSource.swift */; };
 		ABF60F8A2FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F892FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift */; };
 		ABF60F8C2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABF60F8B2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift */; };
+		AC0F1A022FF9000000F1A001 /* RetroRomPersistence+v9.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1A012FF9000000F1A001 /* RetroRomPersistence+v9.swift */; };
+		AC0F1A042FF9000000F1A001 /* GameOverlayLayoutData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1A032FF9000000F1A001 /* GameOverlayLayoutData.swift */; };
+		AC0F1A062FF9000000F1A001 /* GameOverlayLayoutSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1A052FF9000000F1A001 /* GameOverlayLayoutSession.swift */; };
+		AC0F1A082FF9000000F1A001 /* GameOverlayLayoutEditorScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1A072FF9000000F1A001 /* GameOverlayLayoutEditorScene.swift */; };
+		AC0F1A0A2FF9000000F1A001 /* GameOverlayLayoutEditPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1A092FF9000000F1A001 /* GameOverlayLayoutEditPanel.swift */; };
+		AC0F1A0C2FF9000000F1A001 /* GameOverlayLayoutEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1A0B2FF9000000F1A001 /* GameOverlayLayoutEditController.swift */; };
+		AC0F1A0E2FF9000000F1A001 /* GameOverlayLayoutSaveViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1A0D2FF9000000F1A001 /* GameOverlayLayoutSaveViewController.swift */; };
+		AC0F1A102FF9000000F1A001 /* GameOverlayLayoutListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1A0F2FF9000000F1A001 /* GameOverlayLayoutListViewController.swift */; };
+		AC0F1A122FF9000000F1A001 /* GameOverlayLayoutListCardController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1A112FF9000000F1A001 /* GameOverlayLayoutListCardController.swift */; };
 		AC10C1D22FF0A00000C1D001 /* emu.clownmdemu.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AC10C1D12FF0A00000C1D001 /* emu.clownmdemu.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AC10C1D42FF0A00000C1D001 /* emu.gearsystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AC10C1D32FF0A00000C1D001 /* emu.gearsystem.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AC10F1C22FF0A00000F1C001 /* emu.flycast.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AC10F1C12FF0A00000F1C001 /* emu.flycast.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -214,6 +224,10 @@
 		C01920260919000000000001 /* GameCoreOptionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000003 /* GameCoreOptionCatalog.swift */; };
 		C01920260919000000000002 /* GameCoreOptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000004 /* GameCoreOptionViewController.swift */; };
 		C02120260921000000000001 /* emu.mame.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C02120260921000000000002 /* emu.mame.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AC0F1C022FFB000000F1C001 /* GameOverlayCombo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1C012FFB000000F1C001 /* GameOverlayCombo.swift */; };
+		AC0F1C042FFB000000F1C001 /* GameOverlayInputMixer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1C032FFB000000F1C001 /* GameOverlayInputMixer.swift */; };
+		AC0F1D022FFC000000F1D001 /* GameHapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1D012FFC000000F1D001 /* GameHapticEngine.swift */; };
+		AC0F1C062FFB000000F1C001 /* GameOverlayComboEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0F1C052FFB000000F1C001 /* GameOverlayComboEditViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -314,6 +328,7 @@
 		AB4DCCD92FA26AD8004691BD /* GameConfigBindingBubbleNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameConfigBindingBubbleNode.swift; sourceTree = "<group>"; };
 		AB4DCCDA2FA26AD8004691BD /* GameConfigBindingSettingPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameConfigBindingSettingPresenting.swift; sourceTree = "<group>"; };
 		AB4DCCDD2FA2F0A0004691BD /* GameOverlayTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayTheme.swift; sourceTree = "<group>"; };
+		AC0FFB012FFB0000F5B0B001 /* GameOverlayFastSpeedBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayFastSpeedBubble.swift; sourceTree = "<group>"; };
 		AB55BC632F3B803F00569A84 /* DefaultKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultKeys.swift; sourceTree = "<group>"; };
 		AB55BC652F3B806600569A84 /* DeviceConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConfig.swift; sourceTree = "<group>"; };
 		AB55BC672F3B80C300569A84 /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
@@ -457,6 +472,15 @@
 		ABF60F872FC5F99C006C5B5A /* RetroRomByCoreSectionedDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomByCoreSectionedDataSource.swift; sourceTree = "<group>"; };
 		ABF60F892FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomByTagSectionedDataSource.swift; sourceTree = "<group>"; };
 		ABF60F8B2FC63ACA006C5B5A /* RetroRomFolderUnifiedSubview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroRomFolderUnifiedSubview.swift; sourceTree = "<group>"; };
+		AC0F1A012FF9000000F1A001 /* RetroRomPersistence+v9.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RetroRomPersistence+v9.swift"; sourceTree = "<group>"; };
+		AC0F1A032FF9000000F1A001 /* GameOverlayLayoutData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayLayoutData.swift; sourceTree = "<group>"; };
+		AC0F1A052FF9000000F1A001 /* GameOverlayLayoutSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayLayoutSession.swift; sourceTree = "<group>"; };
+		AC0F1A072FF9000000F1A001 /* GameOverlayLayoutEditorScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayLayoutEditorScene.swift; sourceTree = "<group>"; };
+		AC0F1A092FF9000000F1A001 /* GameOverlayLayoutEditPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayLayoutEditPanel.swift; sourceTree = "<group>"; };
+		AC0F1A0B2FF9000000F1A001 /* GameOverlayLayoutEditController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayLayoutEditController.swift; sourceTree = "<group>"; };
+		AC0F1A0D2FF9000000F1A001 /* GameOverlayLayoutSaveViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayLayoutSaveViewController.swift; sourceTree = "<group>"; };
+		AC0F1A0F2FF9000000F1A001 /* GameOverlayLayoutListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayLayoutListViewController.swift; sourceTree = "<group>"; };
+		AC0F1A112FF9000000F1A001 /* GameOverlayLayoutListCardController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayLayoutListCardController.swift; sourceTree = "<group>"; };
 		AC10C1D12FF0A00000C1D001 /* emu.clownmdemu.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.clownmdemu.framework; sourceTree = "<group>"; };
 		AC10C1D32FF0A00000C1D001 /* emu.gearsystem.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.gearsystem.framework; sourceTree = "<group>"; };
 		AC10F1C12FF0A00000F1C001 /* emu.flycast.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.flycast.framework; sourceTree = "<group>"; };
@@ -464,6 +488,10 @@
 		C01920260919000000000003 /* GameCoreOptionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionCatalog.swift; sourceTree = "<group>"; };
 		C01920260919000000000004 /* GameCoreOptionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionViewController.swift; sourceTree = "<group>"; };
 		C02120260921000000000002 /* emu.mame.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.mame.framework; sourceTree = "<group>"; };
+		AC0F1C012FFB000000F1C001 /* GameOverlayCombo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayCombo.swift; sourceTree = "<group>"; };
+		AC0F1C032FFB000000F1C001 /* GameOverlayInputMixer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayInputMixer.swift; sourceTree = "<group>"; };
+		AC0F1D012FFC000000F1D001 /* GameHapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameHapticEngine.swift; sourceTree = "<group>"; };
+		AC0F1C052FFB000000F1C001 /* GameOverlayComboEditViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameOverlayComboEditViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -626,6 +654,7 @@
 				AB8905D42FD34CE500CA9DEC /* GameCheat */,
 				AB77608B2FCF61280026D6F6 /* GameToolbar */,
 				AB9CDD6F2F70422B002E6A55 /* GameOverlay */,
+				AC0F1D032FFC000000F1D001 /* GameHaptic */,
 				ABCAFE010000000000000012 /* Netplay */,
 				ABDAD2AA2F3BBBDD004100A9 /* View */,
 				ABDAD2AB2F3BBBE8004100A9 /* GameState */,
@@ -723,6 +752,7 @@
 				AB462F112F9286A7006ABEDD /* RetroRomPersistence+v3.swift */,
 				AB8905E32FD34E4C00CA9DEC /* RetroRomPersistence+v6.swift */,
 				AB2C0243D36005BAD467BBC7 /* RetroRomPersistence+v8.swift */,
+				AC0F1A012FF9000000F1A001 /* RetroRomPersistence+v9.swift */,
 			);
 			path = Store;
 			sourceTree = "<group>";
@@ -884,22 +914,9 @@
 		AB9CDD6F2F70422B002E6A55 /* GameOverlay */ = {
 			isa = PBXGroup;
 			children = (
-				AB4DCCD52FA20912004691BD /* GameOverlayLayoutResolver.swift */,
-				AB4DCCDD2FA2F0A0004691BD /* GameOverlayTheme.swift */,
-				AB9CDD6C2F70422B002E6A55 /* GamePageOverlayConfig.swift */,
-				AB3D70412F7D57610008A6AA /* GameOverlayButtonShape.swift */,
-				AB3D70432F7D57760008A6AA /* GameOverlayActionButton.swift */,
-				AB8400192F911B4800E7FD49 /* GameOverLayFastButton.swift */,
-				AB3D703B2F7D4FEA0008A6AA /* GameOverlayDirectionPad.swift */,
-				AB3D703F2F7D53260008A6AA /* GameOverlayThumbStick.swift */,
-				AB3D703D2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift */,
-				AB3D70402F7D503D0008A6AA /* GameOverlayDirectionalControl.swift */,
-				AB3D70472F7D876A0008A6AA /* GameOverlayCollapseButton.swift */,
-				AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */,
-				AC2309260000000000000002 /* GameOverlayArcadeLayoutButton.swift */,
-				AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */,
-				AB3D70372F7D49F70008A6AA /* GamePageOverlayScene.swift */,
-				AB9CDD6A2F70422B002E6A55 /* GamePageOverlayView.swift */,
+				AC0F1B012FFA000000F1B001 /* Runtime */,
+				AC0F1B022FFA000000F1B001 /* Controls */,
+				AC0F1B032FFA000000F1B001 /* CustomLayout */,
 			);
 			path = GameOverlay;
 			sourceTree = "<group>";
@@ -1081,6 +1098,87 @@
 				ABF60F892FC60654006C5B5A /* RetroRomByTagSectionedDataSource.swift */,
 			);
 			path = DataSource;
+			sourceTree = "<group>";
+		};
+		AC0F1D032FFC000000F1D001 /* GameHaptic */ = {
+			isa = PBXGroup;
+			children = (
+				AC0F1D012FFC000000F1D001 /* GameHapticEngine.swift */,
+			);
+			path = GameHaptic;
+			sourceTree = "<group>";
+		};
+		AC0F1B012FFA000000F1B001 /* Runtime */ = {
+			isa = PBXGroup;
+			children = (
+				AB9CDD6A2F70422B002E6A55 /* GamePageOverlayView.swift */,
+				AB3D70372F7D49F70008A6AA /* GamePageOverlayScene.swift */,
+				AB9CDD6C2F70422B002E6A55 /* GamePageOverlayConfig.swift */,
+				AC0F1C032FFB000000F1C001 /* GameOverlayInputMixer.swift */,
+				AC0F1C012FFB000000F1C001 /* GameOverlayCombo.swift */,
+				AB4DCCD52FA20912004691BD /* GameOverlayLayoutResolver.swift */,
+				AB4DCCDD2FA2F0A0004691BD /* GameOverlayTheme.swift */,
+				AC0FFB012FFB0000F5B0B001 /* GameOverlayFastSpeedBubble.swift */,
+			);
+			path = Runtime;
+			sourceTree = "<group>";
+		};
+		AC0F1B022FFA000000F1B001 /* Controls */ = {
+			isa = PBXGroup;
+			children = (
+				AB3D70432F7D57760008A6AA /* GameOverlayActionButton.swift */,
+				AB3D70412F7D57610008A6AA /* GameOverlayButtonShape.swift */,
+				AB3D703B2F7D4FEA0008A6AA /* GameOverlayDirectionPad.swift */,
+				AB3D70402F7D503D0008A6AA /* GameOverlayDirectionalControl.swift */,
+				AB3D703D2F7D503D0008A6AA /* GameOverlayDpadStickSwitch.swift */,
+				AB3D703F2F7D53260008A6AA /* GameOverlayThumbStick.swift */,
+				AB8400192F911B4800E7FD49 /* GameOverLayFastButton.swift */,
+				AB3D70472F7D876A0008A6AA /* GameOverlayCollapseButton.swift */,
+				AB6378A12F7E6394001E1152 /* GameOverlayN64CButton.swift */,
+				AB63789F2F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift */,
+				AC2309260000000000000002 /* GameOverlayArcadeLayoutButton.swift */,
+			);
+			path = Controls;
+			sourceTree = "<group>";
+		};
+		AC0F1B032FFA000000F1B001 /* CustomLayout */ = {
+			isa = PBXGroup;
+			children = (
+				AC0F1B042FFA000000F1B001 /* Model */,
+				AC0F1B052FFA000000F1B001 /* Editor */,
+				AC0F1B062FFA000000F1B001 /* List */,
+			);
+			path = CustomLayout;
+			sourceTree = "<group>";
+		};
+		AC0F1B042FFA000000F1B001 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				AC0F1A032FF9000000F1A001 /* GameOverlayLayoutData.swift */,
+				AC0F1A052FF9000000F1A001 /* GameOverlayLayoutSession.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		AC0F1B052FFA000000F1B001 /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				AC0F1A072FF9000000F1A001 /* GameOverlayLayoutEditorScene.swift */,
+				AC0F1A092FF9000000F1A001 /* GameOverlayLayoutEditPanel.swift */,
+				AC0F1A0B2FF9000000F1A001 /* GameOverlayLayoutEditController.swift */,
+				AC0F1A0D2FF9000000F1A001 /* GameOverlayLayoutSaveViewController.swift */,
+				AC0F1C052FFB000000F1C001 /* GameOverlayComboEditViewController.swift */,
+			);
+			path = Editor;
+			sourceTree = "<group>";
+		};
+		AC0F1B062FFA000000F1B001 /* List */ = {
+			isa = PBXGroup;
+			children = (
+				AC0F1A0F2FF9000000F1A001 /* GameOverlayLayoutListViewController.swift */,
+				AC0F1A112FF9000000F1A001 /* GameOverlayLayoutListCardController.swift */,
+			);
+			path = List;
 			sourceTree = "<group>";
 		};
 		C01920260919000000000005 /* CoreOption */ = {
@@ -1311,6 +1409,7 @@
 				AB2CEBA0D8D18388F8A56549 /* MameCheatListViewController.swift in Sources */,
 				AB2C53F9515CDB26AF9105F6 /* MameCheatSession.swift in Sources */,
 				AB2C32206C7713DE2C6E2066 /* RetroRomPersistence+v8.swift in Sources */,
+				AC0F1A022FF9000000F1A001 /* RetroRomPersistence+v9.swift in Sources */,
 				AB2CC16E6B788A3F13425E40 /* MameCheatDefinition.swift in Sources */,
 				AB2CEB5B5E02F2A4E604B28B /* MameCheatLibrary.swift in Sources */,
 				AB2C72D76691A7C247FFA5B9 /* MameCheatLibraryViewController.swift in Sources */,
@@ -1359,6 +1458,18 @@
 				AB9CDD722F70422B002E6A55 /* GamePageOverlayView.swift in Sources */,
 				AB4DCCD42FA20560004691BD /* GameConfigBindingOverlayScene.swift in Sources */,
 				AB9CDD732F70422B002E6A55 /* GamePageOverlayConfig.swift in Sources */,
+				AC0F1C042FFB000000F1C001 /* GameOverlayInputMixer.swift in Sources */,
+				AC0F1D022FFC000000F1D001 /* GameHapticEngine.swift in Sources */,
+				AC0F1C022FFB000000F1C001 /* GameOverlayCombo.swift in Sources */,
+				AC0F1A042FF9000000F1A001 /* GameOverlayLayoutData.swift in Sources */,
+				AC0F1A062FF9000000F1A001 /* GameOverlayLayoutSession.swift in Sources */,
+				AC0F1A082FF9000000F1A001 /* GameOverlayLayoutEditorScene.swift in Sources */,
+				AC0F1A0A2FF9000000F1A001 /* GameOverlayLayoutEditPanel.swift in Sources */,
+				AC0F1A0C2FF9000000F1A001 /* GameOverlayLayoutEditController.swift in Sources */,
+				AC0F1A0E2FF9000000F1A001 /* GameOverlayLayoutSaveViewController.swift in Sources */,
+				AC0F1C062FFB000000F1C001 /* GameOverlayComboEditViewController.swift in Sources */,
+				AC0F1A102FF9000000F1A001 /* GameOverlayLayoutListViewController.swift in Sources */,
+				AC0F1A122FF9000000F1A001 /* GameOverlayLayoutListCardController.swift in Sources */,
 				ABDAD2862F3BB586004100A9 /* RetroRomCoreFrimwareViewCell.swift in Sources */,
 				ABB2F0772FB09F95006A40C0 /* AppStorePurchaseViewController.swift in Sources */,
 				AB38A1F02FC0000000000003 /* WelcomeOfferFloatingView.swift in Sources */,
@@ -1371,6 +1482,7 @@
 				AB0A1DD52FB71C7800503077 /* GamePauseCoordinator.swift in Sources */,
 				ABB6F6EA2FC0D73600A13412 /* RetroRomFileBrowserConfigMenu.swift in Sources */,
 				AB4DCCDE2FA2F0A0004691BD /* GameOverlayTheme.swift in Sources */,
+				AC0FFB022FFB0000F5B0B001 /* GameOverlayFastSpeedBubble.swift in Sources */,
 				AB6378A02F7E4155001E1152 /* GameOverlayNDSLayoutButton.swift in Sources */,
 				AC2309260000000000000001 /* GameOverlayArcadeLayoutButton.swift in Sources */,
 				AB55BC7C2F3B8BC400569A84 /* GamePageViewController.swift in Sources */,
@@ -1431,7 +1543,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 22;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1462,7 +1574,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.0;
+				MARKETING_VERSION = 1.13.0;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1488,7 +1600,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 22;
+				CURRENT_PROJECT_VERSION = 23;
 				DEVELOPMENT_TEAM = V97V429S7F;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1519,7 +1631,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.0;
+				MARKETING_VERSION = 1.13.0;
 				OTHER_SWIFT_FLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

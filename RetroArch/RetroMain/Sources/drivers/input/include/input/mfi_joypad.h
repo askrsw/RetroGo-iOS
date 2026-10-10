@@ -24,6 +24,9 @@ void mfi_joypad_stop_button_event_monitor(void);
 typedef void (*mfi_joypad_topology_changed_callback_t)(void *userdata);
 void mfi_joypad_set_topology_changed_callback(mfi_joypad_topology_changed_callback_t callback, void *userdata);
 void mfi_joypad_notify_auto_binds_changed(unsigned port);
+
+/* Whether the controller on this pad has motors of its own (GCController.haptics). */
+bool mfi_joypad_has_rumble(unsigned pad);
 #ifdef __cplusplus
 }
 #endif
