@@ -407,6 +407,7 @@
 "iap_error_transaction_verifi_failed" = "交易验证失败。";
 "iap_error_another_purchase_in_progress" = "当前有其他购买操作正在进行中。";
 "iap_error_no_purchase_available_to_restore" = "没有可恢复的购买记录。";
+"iap_error_purchase_not_active" = "购买尚未生效，请稍后打开购买页查看，或点击「恢复购买」。";
 "iap_error_unknown_purchase_error" = "未知购买错误。";
 "iap_hero_subtitle" = "解锁完整的复古游戏体验";
 "iap_monthly_badge" = "灵活";
