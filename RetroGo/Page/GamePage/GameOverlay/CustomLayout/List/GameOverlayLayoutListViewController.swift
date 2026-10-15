@@ -86,6 +86,10 @@ final class GameOverlayLayoutListViewController: UITableViewController {
     /// Off: the checked layout stays, for this game only; the platform keeps its layout.
     private func setUsesPlatformLayout(_ on: Bool) {
         let current = session.resolvedLayout().item?.id
+        guard requireLayoutSelection(id: current) else {
+            reload()
+            return
+        }
         session.choose(layoutId: current, applyToPlatform: on)
     }
 
@@ -103,6 +107,7 @@ final class GameOverlayLayoutListViewController: UITableViewController {
         title = Bundle.localizedString(forKey: "overlay_layout_list_title")
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         NotificationCenter.default.addObserver(self, selector: #selector(layoutsChanged(_:)), name: .overlayLayoutChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(purchaseChanged), name: .appStorePurchaseStateDidChange, object: nil)
         reload()
     }
 
@@ -119,6 +124,8 @@ final class GameOverlayLayoutListViewController: UITableViewController {
         layouts = session.layouts()
         tableView.reloadData()
     }
+
+    @objc private func purchaseChanged() { reload() }
 
     // MARK: Table
 
@@ -203,13 +210,18 @@ final class GameOverlayLayoutListViewController: UITableViewController {
         Vibration.selection.vibrate()
         switch sections[indexPath.section] {
         case .layouts:
-            session.choose(layoutId: layoutItem(at: indexPath.row)?.id, applyToPlatform: choosesForPlatform)
+            let id = layoutItem(at: indexPath.row)?.id
+            // Tapping the already active legacy layout is not a new binding.
+            if id == session.resolvedLayout().item?.id, !session.canChooseLayout(id: id) { return }
+            guard requireLayoutSelection(id: id) else { return }
+            session.choose(layoutId: id, applyToPlatform: choosesForPlatform)
         case .create:
             guard session.canCreateAnotherLayout ||
                   AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayout, from: self) else { return }
             editHandler?(.create)
         case .scope:
             if scopeRows[indexPath.row] == .followPlatform {
+                guard session.canFollowPlatform || AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayoutSelection, from: self) else { return }
                 session.followPlatform()
             }
         }
@@ -298,7 +310,8 @@ final class GameOverlayLayoutListViewController: UITableViewController {
     private func makeMenu(for item: GameOverlayLayoutItem) -> UIMenu {
         var actions: [UIMenuElement] = []
         if let editHandler {
-            actions.append(UIAction(title: Bundle.localizedString(forKey: "overlay_layout_edit"), image: UIImage(systemName: "slider.horizontal.3")) { _ in
+            actions.append(UIAction(title: Bundle.localizedString(forKey: "overlay_layout_edit"), image: UIImage(systemName: "slider.horizontal.3")) { [weak self] _ in
+                guard let self, session.canEditLayout(id: item.id) || AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayoutEditing, from: self) else { return }
                 editHandler(.edit(item))
             })
         }
@@ -339,8 +352,17 @@ final class GameOverlayLayoutListViewController: UITableViewController {
               AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayout, from: self) else { return }
         let base = "\(item.name) \(Bundle.localizedString(forKey: "overlay_layout_copy_suffix"))"
         let name = session.isNameTaken(base) ? session.suggestedName(prefix: base) : base
-        if session.duplicateLayout(id: item.id, name: name) == nil {
+        guard let copy = session.duplicateLayout(id: item.id, name: name) else {
             showMessage(Bundle.localizedString(forKey: "overlay_layout_save_failed"))
+            return
+        }
+        // Let the context menu close before scrolling the refreshed list.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let section = sections.firstIndex(of: .layouts),
+                  let row = layouts.firstIndex(where: { $0.id == copy.id }) else { return }
+            tableView.layoutIfNeeded()
+            tableView.scrollToRow(at: IndexPath(row: row + 1, section: section), at: .middle, animated: true)
+            AppToastManager.shared.toast(String(format: Bundle.localizedString(forKey: "overlay_layout_copy_created"), copy.name), context: .ui, level: .success)
         }
     }
 
@@ -366,5 +388,9 @@ final class GameOverlayLayoutListViewController: UITableViewController {
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
         present(alert, animated: true)
+    }
+
+    private func requireLayoutSelection(id: Int64?) -> Bool {
+        session.canChooseLayout(id: id) || AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayoutSelection, from: self)
     }
 }

@@ -34,9 +34,9 @@ struct GameOverlayComboKey: Equatable {
     /// Select, and the PlayStation shapes, whose text glyphs come out uneven in size.
     let symbol: String?
 
-    /// The name is the PlayStation glyph itself, so the symbol alone says it.
+    /// Menu buttons and PlayStation shapes use their symbols without a text label.
     var symbolReplacesTitle: Bool {
-        symbol != nil && title.count == 1
+        symbol != nil && (title.count == 1 || symbol == GameOverlayComboTitle.startSymbol || symbol == GameOverlayComboTitle.selectSymbol)
     }
 
     var titlePart: GameOverlayComboTitle.Part {
@@ -81,24 +81,59 @@ struct GameOverlayComboTitle: Equatable {
 
     /// Rough width in characters of the side-by-side form; a symbol is about as wide as 1.6 letters.
     var width: Double {
-        parts.reduce(Double(max(parts.count - 1, 0)) * Self.gap) { total, part in
+        parts.enumerated().reduce(0) { total, entry in
+            let (index, part) = entry
+            let spacing = compactSpacing(before: index) / 0.55
             switch part {
-            case .text(let text): return total + Double(text.count)
-            case .symbol: return total + 1.6
+            case .text(let text): return total + spacing + Double(text.count)
+            case .symbol(let name, _): return total + spacing + (name == Self.startSymbol ? 1.1 : 1.6)
             }
         }
     }
 
-    /// Space between buttons in the side-by-side form, in letter widths.
-    static let gap = 0.35
+    /// Compact spacing in font-size units; letters touch, menu symbols breathe,
+    /// and turbo is separated more clearly from the input labels.
+    static let menuGap = 0.18
+    static let turboGap = 0.4
+
+    func compactSpacing(before index: Int) -> Double {
+        guard index > 0, index < parts.count else { return 0 }
+        if case .symbol("bolt.fill", _) = parts[index] { return Self.turboGap }
+        let hasDirection = [parts[index - 1], parts[index]].contains {
+            if case .symbol(let name, _) = $0 { return name == "arrow.left" || name == "arrow.right" }
+            return false
+        }
+        if hasDirection { return 0.3 }
+        let hasMenuSymbol = [parts[index - 1], parts[index]].contains { part in
+            guard case .symbol(let name, _) = part else { return false }
+            return name == Self.startSymbol || name == Self.selectSymbol
+        }
+        return hasMenuSymbol ? Self.menuGap : 0
+    }
 
     /// The title for labels and buttons; the symbols take the text color.
-    /// `joined` puts "+" between the buttons; otherwise they sit side by side.
+    /// `joined` puts "+" between the buttons; otherwise they are contiguous.
     /// Size of a symbol drawn among letters, from its trimmed image: a little taller than
     /// their capitals (shapes read smaller than letters of the same height), and no wider
     /// than 1.6 of that, so wide symbols like the menu lines stay in step with the letters.
-    static func symbolSize(_ natural: CGSize, capHeight: CGFloat) -> CGSize {
+    /// Compact facing markers and full-size directional inputs have separate sizing rules.
+    static func symbolSize(_ natural: CGSize, capHeight: CGFloat, name: String, compactDirections: Bool = true) -> CGSize {
         guard natural.width > 0, natural.height > 0 else { return .zero }
+        if compactDirections && (name == "arrow.left" || name == "arrow.right") {
+            let height = capHeight * 0.45
+            return CGSize(width: natural.width * height / natural.height, height: height)
+        }
+        if !compactDirections && ["arrow.up", "arrow.down", "arrow.left", "arrow.right"].contains(name) {
+            let scale = capHeight * 1.08 / max(natural.width, natural.height)
+            return CGSize(width: natural.width * scale, height: natural.height * scale)
+        }
+        if name == startSymbol {
+            let height = capHeight * 1.08
+            return CGSize(width: min(natural.width * height / natural.height, capHeight * 1.1), height: height)
+        }
+        if name == "bolt.fill" {
+            return CGSize(width: natural.width * capHeight / natural.height, height: capHeight)
+        }
         let scale = min(capHeight * 1.08 / natural.height, capHeight * 1.6 / natural.width)
         return CGSize(width: natural.width * scale, height: natural.height * scale)
     }
@@ -109,9 +144,11 @@ struct GameOverlayComboTitle: Equatable {
     /// the shape, more for round shapes, so sizing the uncropped image left them smaller
     /// than the letters. Medium weight matches the labels' strokes. Template, so text
     /// attachments take the text color; SpriteKit tints the white.
-    static func symbolImage(_ name: String) -> UIImage? {
-        if let cached = symbolCache.object(forKey: name as NSString) { return cached }
-        let configuration = UIImage.SymbolConfiguration(pointSize: 60, weight: .medium)
+    static func symbolImage(_ name: String, pointSize: CGFloat = 60, compactDirections: Bool = true) -> UIImage? {
+        let cacheKey = "\(name):\(pointSize):\(compactDirections)" as NSString
+        if let cached = symbolCache.object(forKey: cacheKey) { return cached }
+        let weight: UIImage.SymbolWeight = compactDirections && (name == "arrow.left" || name == "arrow.right") ? .heavy : .medium
+        let configuration = UIImage.SymbolConfiguration(pointSize: pointSize, weight: weight)
         guard let symbol = UIImage(systemName: name, withConfiguration: configuration) else { return nil }
         let format = UIGraphicsImageRendererFormat()
         format.scale = 2
@@ -121,7 +158,7 @@ struct GameOverlayComboTitle: Equatable {
         guard let cgImage = rendered.cgImage, let ink = inkBounds(cgImage),
               let cropped = cgImage.cropping(to: ink) else { return nil }
         let image = UIImage(cgImage: cropped, scale: format.scale, orientation: .up).withRenderingMode(.alwaysTemplate)
-        symbolCache.setObject(image, forKey: name as NSString)
+        symbolCache.setObject(image, forKey: cacheKey)
         return image
     }
 
@@ -144,24 +181,29 @@ struct GameOverlayComboTitle: Equatable {
         return CGRect(x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1)
     }
 
-    func attributedString(font: UIFont, joined: Bool = true) -> NSAttributedString {
+    func attributedString(font: UIFont, joined: Bool = true, minimumSpacing: Double = 0, symbolScale: CGFloat = 1, directionScale: CGFloat = 1, compactDirections: Bool = true) -> NSAttributedString {
         let result = NSMutableAttributedString()
         for (index, part) in parts.enumerated() {
-            if index > 0 {
-                if joined {
-                    result.append(NSAttributedString(string: "+"))
-                } else {
-                    // A kerned space keeps the gap the same whatever the font's space width is.
-                    result.append(NSAttributedString(string: " ", attributes: [.kern: font.pointSize * (Self.gap - 0.25)]))
-                }
+            if index > 0, joined {
+                result.append(NSAttributedString(string: "+"))
+            } else if index > 0, max(compactSpacing(before: index), minimumSpacing) > 0 {
+                let naturalSpace = (" " as NSString).size(withAttributes: [.font: font]).width
+                let gap = font.pointSize * CGFloat(max(compactSpacing(before: index), minimumSpacing))
+                result.append(NSAttributedString(string: " ", attributes: [.kern: gap - naturalSpace]))
             }
             switch part {
             case .text(let text):
                 result.append(NSAttributedString(string: text))
             case .symbol(let name, let text):
-                if let image = Self.symbolImage(name) {
-                    let attachment = NSTextAttachment(image: image)
-                    let size = Self.symbolSize(image.size, capHeight: font.capHeight)
+                let isMarker = compactDirections && (name == "arrow.left" || name == "arrow.right")
+                // Tiny UIKit markers need SF Symbols' optical weight at their display size.
+                let pointSize = isMarker ? font.capHeight * 0.45 * directionScale : 60
+                if let image = Self.symbolImage(name, pointSize: pointSize, compactDirections: compactDirections) {
+                    // The image convenience initializer can discard custom attachment bounds.
+                    let attachment = NSTextAttachment()
+                    attachment.image = image
+                    let scale = isMarker ? directionScale : symbolScale
+                    let size = Self.symbolSize(image.size, capHeight: font.capHeight * scale, name: name, compactDirections: compactDirections)
                     // Sits on the baseline, centered on the capitals.
                     attachment.bounds = CGRect(origin: CGPoint(x: 0, y: (font.capHeight - size.height) * 0.5), size: size)
                     result.append(NSAttributedString(attachment: attachment))
@@ -274,7 +316,8 @@ extension GamePageOverlayConfig {
         return keys + menuKeys
     }
 
-    /// "A+B": the buttons a combo presses, named as the overlay shows them.
+    /// Resolve RetroPad inputs to visible native labels, preserving bind order.
+    /// For example, Dreamcast binds [A, B] display [B, A], not the input names.
     func comboTitle(binds: [GamePageOverlayAction]) -> GameOverlayComboTitle {
         let keys = comboKeys
         return GameOverlayComboTitle(parts: binds.map { bind in
@@ -282,25 +325,33 @@ extension GamePageOverlayConfig {
         })
     }
 
-    /// The config with the built-in combos titled and sized, and the user's
-    /// combos from `layoutData` added after the JSON elements.
-    func withCombos(from layoutData: GameOverlayLayoutData?) -> Self {
-        let turboOverrides = layoutData?.presetComboTurbo ?? [:]
+    /// Recommendations are creation templates only. Every runtime combo is
+    /// defined by the user's data, including combos migrated from version 1.
+    func withCombos(from layoutData: GameOverlayLayoutData?, macros: [GameOverlayMacro]? = nil) -> Self {
         var result = elements.map { element -> GamePageOverlayElement in
-            guard element.type == .combo else { return element }
-            guard let turbo = turboOverrides[element.id] else { return resolvedCombo(element) }
+            guard element.type == .button, element.isTurbo, element.binds.count == 1 else { return element }
             var meta = element.meta ?? [:]
-            meta["is_turbo"] = .bool(turbo)
-            return resolvedCombo(GamePageOverlayElement(id: element.id, type: .combo, geometry: element.geometry, meta: meta))
+            let title = comboTitle(binds: element.binds)
+            meta["title"] = .string(title.plainText)
+            meta["title_parts"] = title.jsonValue
+            return GamePageOverlayElement(id: element.id, type: element.type, geometry: element.geometry, meta: meta)
         }
         let ids = Set(result.map(\.id))
         for combo in layoutData?.combos ?? [] where !ids.contains(combo.id) && !combo.binds.isEmpty {
-            let meta: [String: JSONValue] = [
-                "binds": .array(combo.binds.map { .string($0) }),
-                "is_turbo": .bool(combo.turbo)
-            ]
+            var meta: [String: JSONValue] = [:]
+            meta["binds"] = .array(combo.binds.map { .string($0) })
+            meta["is_turbo"] = .bool(combo.turbo)
+            meta["title"] = nil
             result.append(resolvedCombo(GamePageOverlayElement(id: combo.id, type: .combo,
                                                                geometry: .comboPlaceholder, meta: meta)))
+        }
+        let definitions = macros ?? GameOverlayMacroStore.load(ids: layoutData?.macros?.map(\.macroId) ?? [])
+        for button in layoutData?.macros ?? [] where !result.contains(where: { $0.id == button.id }) {
+            guard let macro = definitions.first(where: { $0.id == button.macroId }) else { continue }
+            let title = macro.buttonTitle
+            let meta: [String: JSONValue] = ["title": .string(macro.name), "macro_id": .string(macro.id), "title_parts": title.jsonValue,
+                                           "title_font_scale": .double(1.4)]
+            result.append(GamePageOverlayElement(id: button.id, type: .macro, geometry: .combo(width: macro.direction == nil ? 50 : 68), meta: meta))
         }
         return GamePageOverlayConfig(
             platformId: platformId,
@@ -309,8 +360,7 @@ extension GamePageOverlayConfig {
             landscapeRefSize: landscapeRefSize,
             portraitPolarAnchor: portraitPolarAnchor,
             landscapePolarAnchor: landscapePolarAnchor,
-            fourButtonPortraitPolarAnchor: fourButtonPortraitPolarAnchor,
-            fourButtonLandscapePolarAnchor: fourButtonLandscapePolarAnchor,
+            recommendedCombo: recommendedCombo,
             elements: result
         )
     }
@@ -323,5 +373,16 @@ extension GamePageOverlayConfig {
         meta["title_parts"] = title.jsonValue
         let geometry = element.geometry == .comboPlaceholder ? .combo(title: title) : element.geometry
         return GamePageOverlayElement(id: element.id, type: .combo, geometry: geometry, meta: meta)
+    }
+}
+
+extension GameOverlayMacro {
+    var buttonTitle: GameOverlayComboTitle {
+        var parts: [GameOverlayComboTitle.Part] = [.symbol(resolvedSymbol, text: name)]
+        if let direction {
+            let marker = GameOverlayComboTitle.Part.symbol(direction.symbol, text: direction.marker)
+            if direction == .left { parts.insert(marker, at: 0) } else { parts.append(marker) }
+        }
+        return GameOverlayComboTitle(parts: parts)
     }
 }

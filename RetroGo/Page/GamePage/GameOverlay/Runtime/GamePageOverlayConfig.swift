@@ -32,36 +32,37 @@ struct GamePageOverlayConfig: Codable, Equatable {
     let landscapeRefSize: GamePageOverlaySize
     let portraitPolarAnchor: GamePageOverlayInsets
     let landscapePolarAnchor: GamePageOverlayInsets
-    /// Polar anchors for the arcade four-button layout; fall back to the regular anchors.
-    let fourButtonPortraitPolarAnchor: GamePageOverlayInsets?
-    let fourButtonLandscapePolarAnchor: GamePageOverlayInsets?
+    /// Creation template, separate from drawable elements. Binds are RetroPad
+    /// inputs; their visible labels must be resolved through native buttons.
+    var recommendedCombo: GameOverlayComboRecommendation? = nil
     let elements: [GamePageOverlayElement]
+}
+
+struct GameOverlayComboRecommendation: Codable, Equatable {
+    let binds: [GamePageOverlayAction]
+    let isTurbo: Bool
 }
 
 struct GamePageOverlayElement: Codable, Equatable {
     let id: String
     let type: GamePageOverlayElementType
     let geometry: GamePageOverlayGeometry
-    let fourButtonGeometry: GamePageOverlayGeometry?
     let meta: [String: JSONValue]?
 
     private enum CodingKeys: String, CodingKey {
         case id
         case type
         case geometry
-        case fourButtonGeometry
         case meta
     }
 
     init(id: String,
          type: GamePageOverlayElementType,
          geometry: GamePageOverlayGeometry,
-         fourButtonGeometry: GamePageOverlayGeometry? = nil,
          meta: [String: JSONValue]? = nil) {
         self.id = id
         self.type = type
         self.geometry = geometry
-        self.fourButtonGeometry = fourButtonGeometry
         self.meta = meta
     }
 
@@ -69,13 +70,7 @@ struct GamePageOverlayElement: Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
         type = try container.decode(GamePageOverlayElementType.self, forKey: .type)
-        // A combo is sized from its title and placed by the layout editor, so its geometry may be left out.
-        if type == .combo, !container.contains(.geometry) {
-            geometry = .comboPlaceholder
-        } else {
-            geometry = try container.decode(GamePageOverlayGeometry.self, forKey: .geometry)
-        }
-        fourButtonGeometry = try container.decodeIfPresent(GamePageOverlayGeometry.self, forKey: .fourButtonGeometry)
+        geometry = try container.decode(GamePageOverlayGeometry.self, forKey: .geometry)
         meta = try container.decodeIfPresent([String: JSONValue].self, forKey: .meta)
     }
 
@@ -84,7 +79,6 @@ struct GamePageOverlayElement: Codable, Equatable {
         try container.encode(id, forKey: .id)
         try container.encode(type, forKey: .type)
         try container.encode(geometry, forKey: .geometry)
-        try container.encodeIfPresent(fourButtonGeometry, forKey: .fourButtonGeometry)
         try container.encodeIfPresent(meta, forKey: .meta)
     }
 }
@@ -102,9 +96,9 @@ enum GamePageOverlayElementType: String, Codable {
     case overlayCollapse = "overlay-collapse"
     case n64CButton = "n64-c-button"
     case ndsLayoutButton = "nds-layout-button"
-    case arcadeLayoutButton = "arcade-layout-button"
-    // Presses several native buttons at once; hidden until a custom layout shows it.
+    // Runtime-only control built from the user's layout data, not a JSON template.
     case combo
+    case macro
 }
 
 struct GamePageOverlayGeometry: Codable, Equatable {
@@ -238,16 +232,6 @@ struct GamePageOverlayAction: Codable, Hashable, Equatable {
 }
 
 extension GamePageOverlayElement {
-    var isSixButtonOnly: Bool {
-        guard case .bool(let value) = meta?["six_button_only"] else { return false }
-        return value
-    }
-
-    func arcadeLayoutElement(fourButtons: Bool) -> Self {
-        guard fourButtons, let fourButtonGeometry else { return self }
-        return Self(id: id, type: type, geometry: fourButtonGeometry, meta: meta)
-    }
-
     var isHidden: Bool {
         guard let v = meta?["is_hidden"], case .bool(let b) = v else {
             return false
@@ -265,12 +249,12 @@ extension GamePageOverlayElement {
     /// rest: every button but Start, which nearly every game needs, and the combos.
     /// Directions, fast-forward, collapse and the layout switches always stay.
     var isHideableInCustomLayout: Bool {
-        (type == .button && !binds.contains { $0.code == .start }) || type == .combo
+        (type == .button && !binds.contains { $0.code == .start }) || type == .combo || type == .macro
     }
 
     /// Combos stay hidden until a custom layout shows them, so the built-in layout keeps only the controller's buttons.
     var isHiddenByDefaultInCustomLayout: Bool {
-        type == .combo
+        type == .combo || type == .macro
     }
 
     var title: String? {
@@ -315,6 +299,15 @@ extension GamePageOverlayElement {
         return b
     }
 
+    /// Optional resource-level typography independent of button geometry.
+    var titleFontScale: Double {
+        switch meta?["title_font_scale"] {
+        case .double(let value) where value.isFinite && value > 0: return value
+        case .int(let value) where value > 0: return Double(value)
+        default: return 1
+        }
+    }
+
     // Determines if the turbo latch (auto-fire) should be activated
     // after a short tap (less than the long-press threshold).
     // Default to false: turbo requires a sustained press unless explicitly enabled.
@@ -346,12 +339,6 @@ extension GamePageOverlayElement {
     }
 }
 
-extension GamePageOverlayConfig {
-    /// Whether the layout has the arcade four/six-button switch (MAME).
-    var hasArcadeLayoutSwitch: Bool {
-        elements.contains { $0.type == .arcadeLayoutButton }
-    }
-}
 
 extension GamePageOverlayConfig {
     enum OverlayName: String {

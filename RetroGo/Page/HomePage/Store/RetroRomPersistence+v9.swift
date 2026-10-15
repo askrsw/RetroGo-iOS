@@ -66,10 +66,13 @@ extension RetroRomPersistence {
             }))
             // Usage counts look choices up by layout.
             try db.run(L.gameChoiceTable.createIndex(L.optionalLayoutId, ifNotExists: true))
-            try db.run(L.gameStateTable.create(temporary: false, ifNotExists: true, withoutRowid: true, block: { t in
+            // Retain the historical v9 schema; v10 removes this obsolete table.
+            let legacyGameStateTable = SQLite.Table("overlay_game_state")
+            let legacyFourButtonLayout = SQLite.Expression<Bool>("four_button_layout")
+            try db.run(legacyGameStateTable.create(temporary: false, ifNotExists: true, withoutRowid: true, block: { t in
                 t.column(L.romKey)
                 t.column(L.overlayName)
-                t.column(L.fourButtonLayout)
+                t.column(legacyFourButtonLayout)
                 t.column(L.updateAt)
                 t.primaryKey(L.romKey, L.overlayName)
                 t.foreignKey(L.romKey, references: Self.romGameTable, Self.key, delete: .cascade)
@@ -84,5 +87,50 @@ extension RetroRomPersistence {
     static func databaseV9(db: Connection) throws {
         try databaseV8(db: db)
         try migrationV8ToV9(db: db)
+    }
+
+    /// v1.14.0 upgrades the released v9 schema directly to v10. Schema changes,
+    /// layout cleanup and geometry migration share one transaction.
+    static func migrationV9ToV10(db: Connection) throws {
+        typealias L = GameOverlayLayoutSession
+        try db.transaction {
+            // Macro definitions are independent assets referenced by layout UUIDs.
+            try db.run("""
+                CREATE TABLE IF NOT EXISTS overlay_macro (
+                    id TEXT PRIMARY KEY NOT NULL,
+                    overlay_name TEXT NOT NULL,
+                    data TEXT NOT NULL,
+                    create_at REAL NOT NULL,
+                    update_at REAL NOT NULL
+                )
+                """)
+            try db.run("DROP TABLE IF EXISTS overlay_game_state")
+            // Preserve layout ids, timestamps, choices, combos and six-button
+            // overrides. Leave malformed JSON intact for the existing read fallback.
+            try db.run("""
+                UPDATE overlay_layout SET data = json_remove(data,
+                    '$.opacity',
+                    '$.portrait_four_button', '$.landscape_four_button',
+                    '$.portrait.elements."arcade-layout"',
+                    '$.landscape.elements."arcade-layout"')
+                WHERE json_valid(data)
+                """)
+            // Freeze retired non-fan groups into independent positions. Layout
+            // JSON v1 still uses its separate frozen v1-to-v2 reader on access.
+            for row in try db.prepare(L.layoutTable) {
+                guard let original = try? GameOverlayLayoutData.decode(row[L.data]), original.version == 2 else { continue }
+                let config = GamePageOverlayConfig.loadOverlayConfig(row[L.overlayName])
+                let updated = GameOverlayLayoutResolver.migrateIndependentGroups(original, config: config)
+                if updated != original {
+                    try db.run(L.layoutTable.filter(L.id == row[L.id]).update(L.data <- updated.encodedString()))
+                }
+            }
+            try db.run("PRAGMA user_version = 10")
+        }
+    }
+
+    static func databaseV10(db: Connection) throws {
+        try databaseV9(db: db)
+        try migrationV9ToV10(db: db)
     }
 }

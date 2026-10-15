@@ -51,6 +51,11 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
     private static let latchBreatheCycle: TimeInterval = 1.0
 
     // MARK: - Properties
+    var onTap: (() -> Void)?
+
+    /// Fan members use a shared circular presentation while arranged around
+    /// the polar layout. The underlying overlay element remains unchanged.
+    var usesFanStyle = false
 
     private(set) var isTurboSupported: Bool {
         didSet {
@@ -264,7 +269,10 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
 
     // MARK: - Layout
     func updateRect(_ rect: CGRect, shouldUpdatePosition: Bool) -> CGPoint {
-        if let s = element.geometry.shape {
+        if usesFanStyle {
+            let diameter = min(rect.width, rect.height)
+            updateShape(.circle(radius: diameter * 0.5))
+        } else if let s = element.geometry.shape {
             let ss = GameOverlayButtonShape.makeShape(from: s, rect: rect)
             if ss != shape {
                 updateShape(ss)
@@ -319,6 +327,8 @@ final class GameOverlayActionButton: SKNode, GameOverlayElementLayout {
         self.trackingTouch = nil
         self.isTouching = false
 
+        if !cancelled { onTap?() }
+
         guard isTurboSupported else { return }
 
         self.isTurboHolding = false
@@ -352,7 +362,7 @@ extension GameOverlayActionButton {
             contentNode.addChild(iconNode)
             self.psIconNode = iconNode
         } else if let comboTitle = element.comboTitle {
-            let titleNode = GameOverlayComboTitleNode(title: comboTitle)
+            let titleNode = GameOverlayComboTitleNode(title: comboTitle, turbo: element.isTurbo)
             titleNode.zPosition = 1
             titleNode.setColor(theme.primaryColor(alpha: theme.normalContentAlpha))
             contentNode.addChild(titleNode)
@@ -434,17 +444,18 @@ extension GameOverlayActionButton {
     private func updateShape(_ s: GameOverlayButtonShape) {
         shape = s
         shapeNode.path = s.path
+        let titleFontSize = s.fontSize * CGFloat(element.titleFontScale)
         if let labelNode = labelNode {
-            labelNode.fontSize = s.fontSize
+            labelNode.fontSize = titleFontSize
             // Long titles (combos such as START+SELECT) shrink to stay inside the button.
             let maxWidth = s.size.width * 0.84
             let width = labelNode.frame.width
             if width > maxWidth, width > 0 {
-                labelNode.fontSize = s.fontSize * maxWidth / width
+                labelNode.fontSize = titleFontSize * maxWidth / width
             }
             s.fixLabelPosition(labelNode)
         }
-        comboTitleNode?.fit(fontSize: s.fontSize, maxWidth: s.size.width * 0.84)
+        comboTitleNode?.fit(fontSize: titleFontSize, maxWidth: s.size.width * 0.84)
         if let psIconNode = psIconNode, let psActionButtonIcon = element.psActionButtonIcon {
             psIconNode.position = .zero
             let targetExtent = min(s.size.width, s.size.height) * psActionButtonIcon.scaleFactor
@@ -577,10 +588,11 @@ private final class GameOverlayComboTitleNode: SKNode {
     private var symbols: [SKSpriteNode] = []
     private var contentWidth: CGFloat = 0
 
-    init(title: GameOverlayComboTitle) {
+    init(title: GameOverlayComboTitle, turbo: Bool) {
         super.init()
         var items: [SKNode] = []
-        for part in title.parts {
+        let displayTitle = GameOverlayComboTitle(parts: title.parts + (turbo ? [.symbol("bolt.fill", text: "⚡")] : []))
+        for part in displayTitle.parts {
             switch part {
             case .text(let text):
                 items.append(makeLabel(text))
@@ -588,14 +600,16 @@ private final class GameOverlayComboTitleNode: SKNode {
                 items.append(makeSymbol(name) ?? makeLabel(text))
             }
         }
-        let spacing = Self.referenceFontSize * 0.55 * CGFloat(GameOverlayComboTitle.gap)
+        let spacings = items.indices.map { Self.referenceFontSize * CGFloat(displayTitle.compactSpacing(before: $0)) }
         let widths = items.map { $0.calculateAccumulatedFrame().width }
-        contentWidth = widths.reduce(0, +) + spacing * CGFloat(max(items.count - 1, 0))
+        contentWidth = widths.reduce(0, +) + spacings.reduce(0, +)
         var x = -contentWidth * 0.5
-        for (item, width) in zip(items, widths) {
+        for (index, pair) in zip(items, widths).enumerated() {
+            let (item, width) = pair
+            x += spacings[index]
             item.position = CGPoint(x: x + width * 0.5, y: 0)
             addChild(item)
-            x += width + spacing
+            x += width
         }
     }
 
@@ -638,7 +652,7 @@ private final class GameOverlayComboTitleNode: SKNode {
         // As tall as the labels' capitals, so START/SELECT and the PlayStation shapes match the letters.
         let capHeight = UIFont(name: "Helvetica", size: Self.referenceFontSize)?.capHeight ?? Self.referenceFontSize * 0.72
         let sprite = SKSpriteNode(texture: SKTexture(image: image),
-                                  size: GameOverlayComboTitle.symbolSize(image.size, capHeight: capHeight))
+                                  size: GameOverlayComboTitle.symbolSize(image.size, capHeight: capHeight, name: name))
         symbols.append(sprite)
         return sprite
     }

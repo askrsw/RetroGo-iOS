@@ -83,6 +83,7 @@ final class GamePauseCoordinator {
 
     func acquire(reason: String) -> Lease? {
         guard shouldPauseGameLoop else { return nil }
+        NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
 
         let lease = Lease(coordinator: self)
         let wasEmpty = activeLeaseIDs.isEmpty

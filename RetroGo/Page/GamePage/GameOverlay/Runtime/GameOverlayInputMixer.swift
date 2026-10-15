@@ -52,6 +52,13 @@ final class GameOverlayInputMixer {
         return nextSource
     }
 
+    func reset() {
+        lock.lock()
+        defer { lock.unlock() }
+        for code in holders.keys { RetroArchX.shared().send(code, down: false) }
+        holders.removeAll()
+    }
+
     func send(_ code: RetroArchJoypadCode, down: Bool, from source: Source) {
         guard code != .none else { return }
         lock.lock()

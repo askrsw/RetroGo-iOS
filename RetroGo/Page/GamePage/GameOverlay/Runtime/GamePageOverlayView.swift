@@ -88,10 +88,8 @@ final class GamePageOverlayView: SKView {
     func beginEditing(layoutData: GameOverlayLayoutData) -> GameOverlayLayoutEditorScene? {
         guard overlayScene != nil else { return nil }
         let config = GamePageOverlayConfig.loadOverlayConfig(coreInfoItem.overlayName)
-        // The editor starts on the arcade 4/6-button layout the game shows.
         let editor = GameOverlayLayoutEditorScene(size: bounds.size, config: config,
-                                                  supportsAnalog: overlaySupportsAnalog, layoutData: layoutData,
-                                                  fourButtonLayout: overlayScene?.usesFourButtonLayout ?? false)
+                                                  supportsAnalog: overlaySupportsAnalog, layoutData: layoutData)
         editorScene = editor
         presentScene(editor)
         editor.updateLayout(for: bounds.size)
@@ -99,14 +97,9 @@ final class GamePageOverlayView: SKView {
     }
 
     /// Back to the game controls, showing `layoutData` (nil = the layout this game resolves to)
-    /// in the arcade 4/6-button layout the editor ended on.
     func endEditing(showing layoutData: GameOverlayLayoutData?) {
-        guard let editor = editorScene else { return }
+        guard editorScene != nil else { return }
         editorScene = nil
-        if let overlayScene, overlayScene.usesFourButtonLayout != editor.usesFourButtonLayout {
-            overlayScene.setFourButtonLayout(editor.usesFourButtonLayout)
-            layoutSession.saveFourButtonLayout(editor.usesFourButtonLayout)
-        }
         presentScene(overlayScene)
         overlayScene?.updateLayout(for: bounds.size)
         if let layoutData {
@@ -143,10 +136,7 @@ extension GamePageOverlayView {
             let overlayConfig = GamePageOverlayConfig.loadOverlayConfig(coreInfoItem.overlayName)
             let layoutData = layoutSession.resolvedLayout().item?.data
             let scene = GamePageOverlayScene(size: .zero, config: overlayConfig, supportsAnalog: overlaySupportsAnalog,
-                                             layoutData: layoutData, fourButtonLayout: layoutSession.savedFourButtonLayout())
-            scene.onFourButtonLayoutChanged = { [weak self] fourButtons in
-                self?.layoutSession.saveFourButtonLayout(fourButtons)
-            }
+                                             layoutData: layoutData)
             overlayScene = scene
         } else {
             isHidden = true

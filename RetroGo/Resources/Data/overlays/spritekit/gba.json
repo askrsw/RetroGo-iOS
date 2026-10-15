@@ -6,6 +6,7 @@
     "portrait_polar_anchor": { "right": 35, "bottom": 180 },
     "landscape_polar_anchor": { "right": 35, "bottom": 50 },
     "retroarch_source": "gamepads/Named_Overlays/Nintendo - Game Boy Advance.cfg",
+    "recommended_combo": { "binds": ["A", "B"], "is_turbo": true },
     "elements": [
         {
             "id": "left-dpad",
@@ -68,6 +69,7 @@
                 "title": "X",
                 "binds": ["A"],
                 "is_turbo": true,
+                "title_font_scale": 0.6,
                 "is_turbo_auto_keep": true
             }
         },
@@ -87,15 +89,8 @@
                 "title": "Y",
                 "binds": ["B"],
                 "is_turbo": true,
+                "title_font_scale": 0.6,
                 "is_turbo_auto_keep": true
-            }
-        },
-        {
-            "id": "a-b",
-            "type": "combo",
-            "meta": {
-                "binds": ["A", "B"],
-                "is_turbo": true
             }
         },
         {

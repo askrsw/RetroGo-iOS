@@ -799,6 +799,7 @@ extension GamePageToolbarView {
                 isGamePaused = false
             }
         } else {
+            NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
             success = RetroArchX.shared().pause()
             if success {
                 isGamePaused = true
@@ -869,6 +870,7 @@ extension GamePageToolbarView {
 
         // MAME cheats rewrite memory every frame; left on, they break the boot self-test.
         holder?.mameCheatSession?.prepareForReset()
+        NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
         RetroArchX.shared().reset()
     }
 
@@ -919,8 +921,10 @@ extension GamePageToolbarView {
             let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: holder?.romItem)
             _ = RetroRomFileManager.shared.saveState(rawName: name, showName: nil, sha256: holder?.romItem?.sha256, romKey: holder?.romItem?.key, autoSave: true)
             holder?.romItem?.pulseImage = !(holder?.romItem?.pulseImage ?? false)
+            NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
             RetroArchX.shared().stop()
         } else {
+            NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
             RetroArchX.shared().stop()
         }
 

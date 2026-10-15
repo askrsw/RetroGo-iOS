@@ -6,6 +6,7 @@
     "portrait_polar_anchor": { "right": 35, "bottom": -30 },
     "landscape_polar_anchor": { "right": 35, "bottom": -160 },
     "retroarch_source": "gamepads/Named_Overlays/Sega - Mega Drive - Genesis.cfg",
+    "recommended_combo": { "binds": ["Y", "B", "A"], "is_turbo": true },
     "elements": [
         {
             "id": "left-dpad",
@@ -152,20 +153,6 @@
                 "title": "START",
                 "binds": ["START"],
                 "is_native": true
-            }
-        },
-        {
-            "id": "combo-abc",
-            "type": "combo",
-            "meta": {
-                "binds": ["Y", "B", "A"]
-            }
-        },
-        {
-            "id": "combo-xyz",
-            "type": "combo",
-            "meta": {
-                "binds": ["L1", "X", "R1"]
             }
         },
         {

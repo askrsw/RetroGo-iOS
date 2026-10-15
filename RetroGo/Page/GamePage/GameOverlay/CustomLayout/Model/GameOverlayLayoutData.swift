@@ -45,33 +45,33 @@ enum GameOverlayLayoutIdiom: String {
 /// reference units, so they scale with the screen exactly like the built-in
 /// layout does.
 struct GameOverlayLayoutData: Codable, Equatable {
-    static let currentVersion = 1
+    static let currentVersion = 2
 
     var version: Int = Self.currentVersion
-    /// Opacity of the whole overlay, 0...1; nil keeps the built-in look.
-    var opacity: Double?
     var portrait: Orientation?
     var landscape: Orientation?
-    /// Arcade four-button layout (`four_button_geometry` in the overlay JSON),
-    /// kept apart so moving a button in one layout leaves the other alone.
-    /// Missing means the built-in four-button positions.
-    var portraitFourButton: Orientation?
-    var landscapeFourButton: Orientation?
     /// Combo buttons the user made. What they press is shared by every
     /// orientation; where each shows, and whether, is kept per orientation in
-    /// `elements` like any other control.
+    /// `elements` like any other control. Each definition is self-contained;
+    /// migrated IDs never require a lookup in a built-in recommendation.
     var combos: [Combo]?
-    /// Turbo of the platform's built-in combos, keyed by element id, where this layout
-    /// differs from the overlay JSON (A+B on NES is turbo there, for one).
-    var presetComboTurbo: [String: Bool]?
+    /// Stable references to independently stored macro definitions.
+    var macros: [MacroButton]?
+
+    struct MacroButton: Codable, Equatable {
+        var id: String
+        var macroId: String
+    }
 
     struct Orientation: Codable, Equatable {
         /// Keyed by overlay element id (`a`, `left-dpad`, `start`...).
         var elements: [String: Element] = [:]
         /// Keyed by group name; a group moves and scales its members together.
         var groups: [String: Group] = [:]
+        /// Slot ids come from bundle JSON; an empty string explicitly vacates a slot.
+        var slots: [String: String]?
 
-        var isEmpty: Bool { elements.isEmpty && groups.isEmpty }
+        var isEmpty: Bool { elements.isEmpty && groups.isEmpty && (slots?.isEmpty ?? true) }
     }
 
     struct Element: Codable, Equatable {
@@ -80,60 +80,76 @@ struct GameOverlayLayoutData: Codable, Equatable {
         var layout: GamePageOverlayInsets?
         /// Size multiplier on top of the JSON size.
         var scale: Double?
-        /// Only extension buttons (turbo, combo) may be hidden.
+        /// Rotation in degrees retained when taking a member out of its group.
+        var rotation: Double?
+        /// Visibility override for controls allowed by `isHideableInCustomLayout`.
         var hidden: Bool?
 
-        var isEmpty: Bool { layout == nil && scale == nil && hidden == nil }
+        var isEmpty: Bool { layout == nil && scale == nil && hidden == nil && rotation == nil }
     }
 
     struct Group: Codable, Equatable {
         var offsetX: Double = 0
         var offsetY: Double = 0
         var scale: Double?
+        var fan: Fan?
 
-        var isEmpty: Bool { offsetX == 0 && offsetY == 0 && scale == nil }
+        var isEmpty: Bool { offsetX == 0 && offsetY == 0 && scale == nil && fan == nil }
+    }
+
+    struct Fan: Codable, Equatable {
+        var radiusScale: Double = 1
+        var thetaOffset: Double = 0
+        var spreadScale: Double = 1
+        var ringOffset: Double = 0
+
+        var isDefault: Bool { self == Self() }
+        func adjusted(_ polar: GamePageOverlayPolar, centerTheta: Double, innerRadius: Double) -> GamePageOverlayPolar {
+            let radius = polar.radius * min(1.8, max(0.5, radiusScale))
+                + (polar.radius > innerRadius + 1 ? min(100, max(-60, ringOffset)) : 0)
+            return GamePageOverlayPolar(theta: centerTheta + (polar.theta - centerTheta) * min(2, max(0.5, spreadScale))
+                + min(90, max(-90, thetaOffset)), radius: max(1, radius))
+        }
     }
 
     struct Combo: Codable, Equatable {
         static let idPrefix = "user-combo-"
-        static let keyRange = 2...4
+        static let keyRange = 1...4
 
         var id: String
         /// RetroPad buttons (`A`, `L1`, `START`...), the vocabulary of the overlay JSON `binds`.
         var binds: [String]
         var turbo: Bool
 
-        static func makeId() -> String {
-            idPrefix + UUID().uuidString.prefix(8).lowercased()
+        /// Canonical identity for a newly created button set, independent of
+        /// selection order and turbo. Keep an existing id when editing it.
+        static func makeId(binds: [String], reservedIds: Set<String> = []) -> String {
+            let base = idPrefix + Set(binds).sorted().map { $0.lowercased() }.joined(separator: "-")
+            var id = base
+            var suffix = 2
+            // An edited button keeps its identity even if its binds change.
+            while reservedIds.contains(id) {
+                id = "\(base)-\(suffix)"
+                suffix += 1
+            }
+            return id
         }
     }
 
     init() { }
 
-    func orientation(portrait isPortrait: Bool, fourButton: Bool = false) -> Orientation? {
-        switch (isPortrait, fourButton) {
-        case (true, false): return portrait
-        case (false, false): return landscape
-        case (true, true): return portraitFourButton
-        case (false, true): return landscapeFourButton
-        }
+    func orientation(portrait isPortrait: Bool) -> Orientation? {
+        isPortrait ? portrait : landscape
     }
 
-    mutating func setOrientation(_ value: Orientation?, portrait isPortrait: Bool, fourButton: Bool = false) {
+    mutating func setOrientation(_ value: Orientation?, portrait isPortrait: Bool) {
         let stored = (value?.isEmpty ?? true) ? nil : value
-        switch (isPortrait, fourButton) {
-        case (true, false): portrait = stored
-        case (false, false): landscape = stored
-        case (true, true): portraitFourButton = stored
-        case (false, true): landscapeFourButton = stored
-        }
+        if isPortrait { portrait = stored } else { landscape = stored }
     }
 }
 
 extension GameOverlayLayoutData {
-    private static let allOrientations: [(portrait: Bool, fourButton: Bool)] = [
-        (true, false), (false, false), (true, true), (false, true)
-    ]
+    private static let allOrientations = [true, false]
 
     /// Adds a combo, or replaces the one with the same id.
     mutating func saveCombo(_ combo: Combo) {
@@ -151,9 +167,10 @@ extension GameOverlayLayoutData {
         let list = (combos ?? []).filter { $0.id != id }
         combos = list.isEmpty ? nil : list
         for key in Self.allOrientations {
-            guard var orientation = orientation(portrait: key.portrait, fourButton: key.fourButton) else { continue }
+            guard var orientation = orientation(portrait: key) else { continue }
             orientation.elements[id] = nil
-            setOrientation(orientation, portrait: key.portrait, fourButton: key.fourButton)
+            for slot in orientation.slots?.keys.filter({ orientation.slots?[$0] == id }) ?? [] { orientation.slots?[slot] = "" }
+            setOrientation(orientation, portrait: key)
         }
     }
 }

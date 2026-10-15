@@ -262,8 +262,7 @@ final class GamePageViewController: RAGameViewController {
         let target: GameOverlayLayoutEditController.Target
         switch request {
         case .create:
-            // A new layout starts from what the game shows now.
-            target = .create(from: myOverlayView.layoutSession.resolvedLayout().item?.data ?? GameOverlayLayoutData())
+            target = .create
         case .edit(let item):
             target = .edit(item)
         }
@@ -343,6 +342,7 @@ extension GamePageViewController {
     @objc
     private func appWillResignActive() {
         if Self.instance == self {
+            NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
             if let startDate = startDate {
                 let diff = Date().timeIntervalSince(startDate)
                 let seconds = Int(diff.rounded(.toNearestOrAwayFromZero))
@@ -367,7 +367,7 @@ extension GamePageViewController {
                 startDate = Date()
             }
 
-            RetroArchX.shared().resume()
+            if !GamePauseCoordinator.shared.isHoldingPause { RetroArchX.shared().resume() }
         }
     }
 

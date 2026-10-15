@@ -56,14 +56,11 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     /// What the emulator frame callback updates; it runs on the game logic thread with the thread runner.
     private let turboButtons = GameOverlayLockedValue<[GameOverlayActionButton]>([])
     private let inputMixer = GameOverlayInputMixer()
+    private(set) lazy var macroPlayer = GameOverlayMacroPlayer(mixer: inputMixer)
     private let hapticHandler: GameOverlayHapticHandler = { GameHapticEngine.shared.impact() }
     private var fastButton: GameOverLayFastButton?
     private var n64CButton: GameOverlayN64CButton?
     private var ndsLayoutButton: GameOverlayNDSLayoutButton?
-    private var arcadeLayoutButton: GameOverlayArcadeLayoutButton?
-    private(set) var usesFourButtonLayout = false
-    /// The arcade 4/6-button switch changed the layout; the owner remembers it for the game.
-    var onFourButtonLayoutChanged: ((Bool) -> Void)?
     private var emuFrameActionToken: String?
 
     private struct CollapseVisualState {
@@ -79,15 +76,13 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
     private var isAnimatingCollapse = false
 
     init(size: CGSize, config: GamePageOverlayConfig, supportsAnalog: Bool, layoutData: GameOverlayLayoutData? = nil,
-         fourButtonLayout: Bool = false, theme: GameOverlayTheme = .default) {
+         theme: GameOverlayTheme = .default) {
         self.baseConfig = config
         self.config = config.withCombos(from: layoutData)
         self.supportsAnalog = supportsAnalog
         self.theme = theme
-        self.overlayLayoutResolver = GameOverlayLayoutResolver(config: config)
+        self.overlayLayoutResolver = GameOverlayLayoutResolver(config: self.config)
         self.overlayLayoutResolver.layoutData = layoutData
-        // Only layouts with the arcade switch have a four-button form.
-        self.usesFourButtonLayout = fourButtonLayout && config.hasArcadeLayoutSwitch
         super.init(size: size)
         backgroundColor = .clear
         scaleMode = .resizeFill
@@ -96,8 +91,10 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
         updateOverlayLayout(for: size)
         buildNodes()
         applyNodeVisibility()
-        applyCustomOpacity()
         updateEmuFrameCallbackRegistration()
+
+        NotificationCenter.default.addObserver(self, selector: #selector(cancelMacros), name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(cancelMacros), name: .overlayMacroCancel, object: nil)
 
         NotificationCenter.default.addObserver(
             self,
@@ -118,6 +115,24 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
             RetroArchX.shared().removeEmuPrevFrameAction(forToken: emuFrameActionToken)
         }
         NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc func cancelMacros() { macroPlayer.cancel() }
+
+    override func didMove(to view: SKView) {
+        super.didMove(to: view)
+        if emuFrameActionToken == nil { updateEmuFrameCallbackRegistration() }
+    }
+
+    override func willMove(from view: SKView) {
+        macroPlayer.cancel()
+        actionButtons.forEach { $0.cancelActiveInput() }
+        inputMixer.reset()
+        if let emuFrameActionToken {
+            RetroArchX.shared().removeEmuPrevFrameAction(forToken: emuFrameActionToken)
+            self.emuFrameActionToken = nil
+        }
+        super.willMove(from: view)
     }
 
     @objc private func handleTurboTapLatchChanged() {
@@ -146,11 +161,11 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
 
     /// Switches to another custom layout (nil = built-in) in place; only the combos that changed are rebuilt.
     func applyLayoutData(_ layoutData: GameOverlayLayoutData?) {
-        guard overlayLayoutResolver.layoutData != layoutData else { return }
+        guard overlayLayoutResolver.layoutData != layoutData || !(layoutData?.macros?.isEmpty ?? true) else { return }
+        macroPlayer.cancel()
         overlayLayoutResolver.layoutData = layoutData
         updateComboNodes(baseConfig.withCombos(from: layoutData))
         applyNodeVisibility()
-        applyCustomOpacity()
         layoutNodes()
     }
 
@@ -200,14 +215,18 @@ extension GamePageOverlayScene {
         }
 
         let shouldUpdatePosition = !(overlayCollapsed ?? false)
-        let nodes: [GameOverlayElementLayout] = [directionalControl, dpad, stick, ndsLayoutButton, n64CButton, fastButton, arcadeLayoutButton].compactMap({ $0 }) + actionButtons
+        let nodes: [GameOverlayElementLayout] = [directionalControl, dpad, stick, ndsLayoutButton, n64CButton, fastButton].compactMap({ $0 }) + actionButtons
         layout(nodes: nodes, shouldUpdatePosition: shouldUpdatePosition, basePostion: basePostion)
     }
 
     private func layout(nodes: [GameOverlayElementLayout], shouldUpdatePosition: Bool, basePostion: CGPoint?) {
         for node in nodes {
-            let element = node.element.arcadeLayoutElement(fourButtons: usesFourButtonLayout)
+            let element = node.element
             let rect = resolveOverlayRect(element)
+            if let actionButton = node as? GameOverlayActionButton {
+                let group = overlayLayoutResolver.fanGroup(for: element)
+                actionButton.usesFanStyle = group != nil
+            }
             let newPosition = node.updateRect(rect, shouldUpdatePosition: shouldUpdatePosition)
 
             // Only button-like nodes use polar layout; other overlay elements keep zero rotation.
@@ -229,13 +248,12 @@ extension GamePageOverlayScene {
         }
     }
 
-    /// Hidden by the JSON, by the arcade four-button layout, or by the custom layout.
+    /// Hidden by the built-in JSON or by the custom layout.
     private func applyNodeVisibility() {
         for button in actionButtons {
             let element = button.element
             let hidden = element.isHidden
-                || (usesFourButtonLayout && element.isSixButtonOnly)
-                || overlayLayoutResolver.isHiddenByCustomLayout(element, fourButtonLayout: usesFourButtonLayout)
+                || overlayLayoutResolver.isHiddenByCustomLayout(element)
             if hidden && !button.isHidden {
                 button.cancelActiveInput()
             }
@@ -245,13 +263,17 @@ extension GamePageOverlayScene {
 
     /// Builds, rebuilds or removes combo nodes so they match `newConfig`; other controls stay as they are.
     private func updateComboNodes(_ newConfig: GamePageOverlayConfig) {
-        let oldCombos = Dictionary(uniqueKeysWithValues: config.elements.filter { $0.type == .combo }.map { ($0.id, $0) })
-        let newCombos = newConfig.elements.filter { $0.type == .combo }
+        let previousResolver = overlayLayoutResolver
+        overlayLayoutResolver = GameOverlayLayoutResolver(config: newConfig)
+        overlayLayoutResolver.update(size: previousResolver.size, contentOffset: previousResolver.contentOffset)
+        overlayLayoutResolver.layoutData = previousResolver.layoutData
+        let oldCombos = Dictionary(uniqueKeysWithValues: config.elements.filter { $0.type == .combo || $0.type == .macro }.map { ($0.id, $0) })
+        let newCombos = newConfig.elements.filter { $0.type == .combo || $0.type == .macro }
         config = newConfig
         let kept = Set(newCombos.filter { oldCombos[$0.id] == $0 }.map(\.id))
         guard kept.count != oldCombos.count || kept.count != newCombos.count else { return }
 
-        let removed = actionButtons.filter { $0.element.type == .combo && !kept.contains($0.element.id) }
+        let removed = actionButtons.filter { ($0.element.type == .combo || $0.element.type == .macro) && !kept.contains($0.element.id) }
         for button in removed {
             // Releases what the combo holds before it goes.
             button.cancelActiveInput()
@@ -269,12 +291,6 @@ extension GamePageOverlayScene {
         }
     }
 
-    /// Custom layout opacity on the top-level nodes; collapse animations only touch their children.
-    private func applyCustomOpacity() {
-        let opacity = overlayLayoutResolver.customOpacity
-        children.forEach { $0.alpha = opacity }
-    }
-
     private func makeNode(for element: GamePageOverlayElement) -> SKNode {
         switch element.type {
         case .dpad:
@@ -283,7 +299,7 @@ extension GamePageOverlayScene {
             return makeStickNode(element: element)
         case .directional:
             return makeDirectionalNode(element: element)
-        case .button, .combo:
+        case .button, .combo, .macro:
             return makeButtonNode(element: element)
         case .fastButton:
             return makeFastButtonNode(element: element)
@@ -293,8 +309,6 @@ extension GamePageOverlayScene {
             return makeN64CButtonNode(element: element)
         case .ndsLayoutButton:
             return makeNDSLayoutButtonNode(element: element)
-        case .arcadeLayoutButton:
-            return makeArcadeLayoutButtonNode(element: element)
         }
     }
 
@@ -344,6 +358,12 @@ extension GamePageOverlayScene {
         let node = GameOverlayActionButton(element: element, isTurboSupported: element.isTurbo, autoKeepTurbo: autoKeep, turboPeriod: speed.period, turboDuty: speed.duty, theme: theme,
                                            digitalChangeHandler: inputMixer.handler())
         node.hapticHandler = hapticHandler
+        if case .string(let id) = element.meta?["macro_id"] {
+            node.onTap = { [weak self] in
+                guard let self, let macro = GameOverlayMacroStore.load(ids: [id]).first else { return }
+                self.macroPlayer.toggle(macro)
+            }
+        }
         self.actionButtons.append(node)
         return node
     }
@@ -429,30 +449,6 @@ extension GamePageOverlayScene {
         node.hapticHandler = hapticHandler
         self.ndsLayoutButton = node
         return node
-    }
-
-    private func makeArcadeLayoutButtonNode(element: GamePageOverlayElement) -> SKNode {
-        let node = GameOverlayArcadeLayoutButton(element: element, theme: theme) { [weak self] in
-            guard let self, !self.isAnimatingCollapse, self.overlayCollapsed != true else { return }
-            self.setFourButtonLayout(!self.usesFourButtonLayout)
-            self.onFourButtonLayoutChanged?(self.usesFourButtonLayout)
-        }
-        node.applyFourButtonLayout(usesFourButtonLayout)
-        node.hapticHandler = hapticHandler
-        self.arcadeLayoutButton = node
-        return node
-    }
-
-    /// Switches between the arcade four- and six-button layouts; ignored without the arcade switch.
-    func setFourButtonLayout(_ fourButtons: Bool) {
-        guard config.hasArcadeLayoutSwitch, usesFourButtonLayout != fourButtons else { return }
-        usesFourButtonLayout = fourButtons
-        for button in actionButtons where button.element.fourButtonGeometry != nil || button.element.isSixButtonOnly || button.element.type == .combo {
-            button.cancelActiveInput()
-        }
-        applyNodeVisibility()
-        arcadeLayoutButton?.applyFourButtonLayout(usesFourButtonLayout)
-        layoutNodes()
     }
 
     private func setOverlayCollapsed(_ collapsed: Bool, animated: Bool) {
@@ -595,8 +591,10 @@ extension GamePageOverlayScene {
         }
 
         let turboButtons = self.turboButtons
+        let macroPlayer = self.macroPlayer
         emuFrameActionToken = RetroArchX.shared().addEmuPrevFrameAction {
             turboButtons.get().forEach { $0.updateTurboFrameOutput() }
+            macroPlayer.engine.advanceFrame()
         }
     }
 }

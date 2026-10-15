@@ -32,9 +32,6 @@ import ObjcHelper
 final class GameOverlayLayoutEditPanel: UIView {
     struct State {
         var isPortrait: Bool
-        /// Arcade four-button layout being edited; nil when the layout has no 4/6-button switch.
-        var fourButtonLayout: Bool?
-        var mode: GameOverlayLayoutEditorScene.SelectionMode
         var canUndo: Bool
         var canReset: Bool
         /// Name and size of the selection; nil when nothing is selected.
@@ -42,7 +39,6 @@ final class GameOverlayLayoutEditPanel: UIView {
         /// The selection's combo title when it has Start/Select symbols to draw.
         var selectionComboTitle: GameOverlayComboTitle?
         var selectionScale: Double?
-        var opacity: Double
         /// Whether the selected control is hidden; nil when it cannot be hidden.
         var selectionHidden: Bool?
         /// Combos of the platform and of the user, with whether they are shown.
@@ -51,6 +47,17 @@ final class GameOverlayLayoutEditPanel: UIView {
         var selectedUserComboId: String?
         /// Shown under the title, e.g. that the layout is shared by other games.
         var note: String?
+        var groupMembers: [GroupMember]
+        var selectedSlotId: String?
+        var selectedSlotOccupied: Bool
+        var memberHidden: Bool?
+        var canEditFan: Bool
+    }
+
+    struct GroupMember {
+        let id: String
+        let title: GameOverlayComboTitle
+        let hidden: Bool
     }
 
     struct Combo: Equatable {
@@ -61,6 +68,7 @@ final class GameOverlayLayoutEditPanel: UIView {
         let isTurbo: Bool
         /// Made by the user: can be edited and deleted.
         let isUserCombo: Bool
+        var isMacro = false
     }
 
     enum SliderEvent {
@@ -69,8 +77,6 @@ final class GameOverlayLayoutEditPanel: UIView {
         case ended
     }
 
-    var onModeChanged: ((GameOverlayLayoutEditorScene.SelectionMode) -> Void)?
-    var onArcadeLayoutChanged: ((Bool) -> Void)?
     /// The user picked portrait (true) or landscape to edit.
     var onOrientationChanged: ((Bool) -> Void)?
     var onUndo: (() -> Void)?
@@ -78,38 +84,26 @@ final class GameOverlayLayoutEditPanel: UIView {
     var onCancel: (() -> Void)?
     var onDone: (() -> Void)?
     var onScaleEditing: ((SliderEvent) -> Void)?
-    var onOpacityEditing: ((SliderEvent) -> Void)?
     var onToggleSelectionHidden: (() -> Void)?
-    var onComboToggled: ((String, Bool) -> Void)?
-    var onAddCombo: (() -> Void)?
+    var onAddCombo: ((UIButton) -> Void)?
     var onEditCombo: ((String) -> Void)?
-    var onDeleteCombo: ((String) -> Void)?
-    var onComboTurboChanged: ((String, Bool) -> Void)?
+    var onSelectMember: ((String) -> Void)?
+    var onEditFan: (() -> Void)?
     /// The panel's content height changed (folded, or a row shown or hidden).
     var onSizeChanged: (() -> Void)?
 
     static let scaleRange: ClosedRange<Float> = 0.6...1.6
+    private static let editSymbol = "square.and.pencil"
+    private static let macroDirectionScale: CGFloat = 1.4
 
     private let titleLabel = UILabel()
     private let noteLabel = UILabel()
     private let foldButton = UIButton(type: .system)
-    private let modeControl = UISegmentedControl(items: [
-        Bundle.localizedString(forKey: "overlay_layout_mode_group"),
-        Bundle.localizedString(forKey: "overlay_layout_mode_single")
-    ])
-    private let orientationControl = UISegmentedControl(items: [
-        Bundle.localizedString(forKey: "overlay_layout_portrait"),
-        Bundle.localizedString(forKey: "overlay_layout_landscape")
-    ])
-    private let arcadeLayoutControl = UISegmentedControl(items: [
-        Bundle.localizedString(forKey: "overlay_layout_arcade_six"),
-        Bundle.localizedString(forKey: "overlay_layout_arcade_four")
-    ])
+    private let orientationButton = UIButton(type: .custom)
+    private var isPortrait = true
     private let sizeTitleLabel = UILabel()
     private let sizeSlider = UISlider()
     private let sizeValueLabel = UILabel()
-    private let opacitySlider = UISlider()
-    private let opacityValueLabel = UILabel()
     private let combosScroll = UIScrollView()
     private let combosStack = UIStackView()
     /// First in the combos row, so making one's own combo reads as the main action, not an extra after the presets.
@@ -124,8 +118,9 @@ final class GameOverlayLayoutEditPanel: UIView {
         configuration.baseForegroundColor = .mainColor
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 10, bottom: 4, trailing: 12)
         let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in
+            guard let self else { return }
             Vibration.selection.vibrate()
-            self?.onAddCombo?()
+            onAddCombo?(addComboButton)
         })
         button.accessibilityLabel = Bundle.localizedString(forKey: "overlay_combo_new")
         button.setContentHuggingPriority(.required, for: .horizontal)
@@ -136,11 +131,14 @@ final class GameOverlayLayoutEditPanel: UIView {
     private lazy var hideButton = makeIconButton("eye", label: "overlay_layout_hide_control") { [weak self] in
         self?.onToggleSelectionHidden?()
     }
-    private lazy var editComboButton = makeIconButton("pencil", label: "overlay_combo_edit_title") { [weak self] in
+    private lazy var editComboButton = makeIconButton(Self.editSymbol, label: "overlay_combo_edit_title") { [weak self] in
         guard let self, let id = selectedUserComboId else { return }
         onEditCombo?(id)
     }
     private let detailStack = UIStackView()
+    private let groupBlock = UIStackView()
+    private let membersStack = UIStackView()
+    private lazy var fanButton = makeIconButton(Self.editSymbol, label: "overlay_layout_edit_fan") { [weak self] in self?.onEditFan?() }
     private lazy var undoButton = makeIconButton("arrow.uturn.backward", label: "overlay_layout_undo") { [weak self] in self?.onUndo?() }
     private lazy var resetButton = makeIconButton("arrow.counterclockwise", label: "overlay_layout_reset") { [weak self] in self?.onReset?() }
     private lazy var cancelButton = makeTextButton("cancel", prominent: false) { [weak self] in self?.onCancel?() }
@@ -149,7 +147,7 @@ final class GameOverlayLayoutEditPanel: UIView {
     private var panStartCenter: CGPoint = .zero
     private var isFolded = false
     /// Chips are rebuilt only when this changes; their shown state is updated in place.
-    private var comboChipKeys: [String] = []
+    private var comboChipKeys: [Combo] = []
     private var selectedUserComboId: String?
 
     override init(frame: CGRect) {
@@ -163,22 +161,24 @@ final class GameOverlayLayoutEditPanel: UIView {
 
     func update(_ state: State) {
         titleLabel.text = Bundle.localizedString(forKey: "overlay_layout_edit_title")
-        orientationControl.selectedSegmentIndex = state.isPortrait ? 0 : 1
-        let arcadeChanged = arcadeLayoutControl.isHidden != (state.fourButtonLayout == nil)
-        arcadeLayoutControl.isHidden = state.fourButtonLayout == nil
-        arcadeLayoutControl.selectedSegmentIndex = state.fourButtonLayout == true ? 1 : 0
+        isPortrait = state.isPortrait
+        orientationButton.setImage(UIImage(systemName: state.isPortrait ? "rectangle.portrait.rotate" : "rectangle.landscape.rotate"), for: .normal)
+        let currentOrientation = Bundle.localizedString(forKey: state.isPortrait ? "overlay_layout_portrait" : "overlay_layout_landscape")
+        let nextOrientation = Bundle.localizedString(forKey: state.isPortrait ? "overlay_layout_landscape" : "overlay_layout_portrait")
+        orientationButton.accessibilityValue = currentOrientation
+        orientationButton.accessibilityLabel = String(format: Bundle.localizedString(forKey: "overlay_layout_rotate_to"), nextOrientation)
         let noteChanged = noteLabel.isHidden != (state.note == nil)
         noteLabel.text = state.note
         noteLabel.isHidden = state.note == nil
 
-        modeControl.selectedSegmentIndex = state.mode == .group ? 0 : 1
         undoButton.isEnabled = state.canUndo
         resetButton.isEnabled = state.canReset
 
         if let title = state.selectionTitle, let scale = state.selectionScale {
             if let comboTitle = state.selectionComboTitle {
                 let text = NSMutableAttributedString(string: "\(Bundle.localizedString(forKey: "overlay_layout_size")) · ")
-                text.append(comboTitle.attributedString(font: sizeTitleLabel.font))
+                let isMacro = state.combos.first { $0.id == state.selectedUserComboId }?.isMacro == true
+                text.append(comboTitle.attributedString(font: sizeTitleLabel.font, joined: false, symbolScale: isMacro ? 1.4 : 1, directionScale: Self.macroDirectionScale))
                 text.addAttributes([.font: sizeTitleLabel.font as Any, .foregroundColor: sizeTitleLabel.textColor as Any],
                                    range: NSRange(location: 0, length: text.length))
                 sizeTitleLabel.attributedText = text
@@ -197,10 +197,6 @@ final class GameOverlayLayoutEditPanel: UIView {
             sizeValueLabel.text = nil
         }
 
-        if !opacitySlider.isTracking {
-            opacitySlider.value = Float(state.opacity)
-        }
-        opacityValueLabel.text = "\(Int((state.opacity * 100).rounded()))%"
 
         selectedUserComboId = state.selectedUserComboId
         editComboButton.isHidden = state.selectedUserComboId == nil
@@ -214,7 +210,24 @@ final class GameOverlayLayoutEditPanel: UIView {
             hideButton.isHidden = true
         }
 
-        if noteChanged || arcadeChanged {
+        let groupChanged = groupBlock.isHidden != state.groupMembers.isEmpty
+        groupBlock.isHidden = state.groupMembers.isEmpty
+        membersStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        for member in state.groupMembers {
+            var configuration = UIButton.Configuration.tinted()
+            configuration.cornerStyle = .capsule
+            let text = NSMutableAttributedString(attributedString: member.title.attributedString(font: .preferredFont(forTextStyle: .body), joined: false, directionScale: Self.macroDirectionScale))
+            text.addAttribute(.foregroundColor, value: member.hidden ? UIColor.tertiaryLabel : UIColor.label, range: NSRange(location: 0, length: text.length))
+            configuration.attributedTitle = AttributedString(text)
+            configuration.baseBackgroundColor = member.id == state.selectedSlotId ? .mainColor : .tertiarySystemFill
+            configuration.contentInsets = .init(top: 4, leading: 10, bottom: 4, trailing: 10)
+            let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.onSelectMember?(member.id) })
+            button.accessibilityLabel = member.title.plainText
+            if member.id == state.selectedSlotId { button.accessibilityTraits.insert(.selected) }
+            membersStack.addArrangedSubview(button)
+        }
+        fanButton.isHidden = !state.canEditFan
+        if noteChanged || groupChanged {
             onSizeChanged?()
         }
     }
@@ -258,43 +271,36 @@ private extension GameOverlayLayoutEditPanel {
 
         let titleRow = UIView()
         titleRow.addSubview(titleLabel)
+        titleRow.addSubview(orientationButton)
         titleRow.addSubview(foldButton)
         titleLabel.snp.makeConstraints { make in
             make.top.bottom.equalToSuperview()
             make.centerX.equalToSuperview()
             make.leading.greaterThanOrEqualToSuperview().offset(28)
-            make.trailing.lessThanOrEqualTo(foldButton.snp.leading).offset(-4)
+            make.trailing.lessThanOrEqualTo(orientationButton.snp.leading).offset(-4)
         }
         foldButton.snp.makeConstraints { make in
             make.trailing.centerY.equalToSuperview()
             make.size.equalTo(28)
         }
+        orientationButton.tintColor = .secondaryLabel
+        orientationButton.backgroundColor = .clear
+        orientationButton.setPreferredSymbolConfiguration(UIImage.SymbolConfiguration(pointSize: 18), forImageIn: .normal)
+        orientationButton.snp.makeConstraints { make in
+            make.trailing.equalTo(foldButton.snp.leading).offset(-6)
+            make.centerY.equalToSuperview()
+            make.size.equalTo(28)
+        }
 
-        modeControl.addAction(UIAction { [weak self] _ in
+        orientationButton.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             Vibration.selection.vibrate()
-            onModeChanged?(modeControl.selectedSegmentIndex == 0 ? .group : .single)
-        }, for: .valueChanged)
-
-        orientationControl.addAction(UIAction { [weak self] _ in
-            guard let self else { return }
-            Vibration.selection.vibrate()
-            onOrientationChanged?(orientationControl.selectedSegmentIndex == 0)
-        }, for: .valueChanged)
-
-        arcadeLayoutControl.isHidden = true
-        arcadeLayoutControl.addAction(UIAction { [weak self] _ in
-            guard let self else { return }
-            Vibration.selection.vibrate()
-            onArcadeLayoutChanged?(arcadeLayoutControl.selectedSegmentIndex == 1)
-        }, for: .valueChanged)
+            onOrientationChanged?(!isPortrait)
+        }, for: .touchUpInside)
 
         sizeSlider.minimumValue = Self.scaleRange.lowerBound
         sizeSlider.maximumValue = Self.scaleRange.upperBound
         bind(sizeSlider) { [weak self] in self?.onScaleEditing?($0) }
-        opacitySlider.minimumValue = Float(GameOverlayLayoutResolver.minimumOpacity)
-        opacitySlider.maximumValue = 1
-        bind(opacitySlider) { [weak self] in self?.onOpacityEditing?($0) }
 
         sizeTitleLabel.font = .systemFont(ofSize: 13)
         sizeTitleLabel.textColor = .secondaryLabel
@@ -302,7 +308,9 @@ private extension GameOverlayLayoutEditPanel {
         editComboButton.configuration?.buttonSize = .mini
         hideButton.isHidden = true
         hideButton.configuration?.buttonSize = .mini
-        let sizeHeader = UIStackView(arrangedSubviews: [sizeTitleLabel, UIView(), editComboButton, hideButton])
+        fanButton.configuration?.buttonSize = .mini
+        fanButton.isHidden = true
+        let sizeHeader = UIStackView(arrangedSubviews: [sizeTitleLabel, UIView(), editComboButton, hideButton, fanButton])
         sizeHeader.spacing = 6
         sizeHeader.axis = .horizontal
         sizeHeader.alignment = .center
@@ -312,8 +320,22 @@ private extension GameOverlayLayoutEditPanel {
         sizeBlock.axis = .vertical
         sizeBlock.spacing = 2
 
-        let opacityRow = makeRow(title: Bundle.localizedString(forKey: "overlay_layout_opacity"),
-                                 content: makeSliderLine(opacitySlider, value: opacityValueLabel))
+        membersStack.axis = .horizontal
+        membersStack.spacing = 6
+        let memberScroll = UIScrollView()
+        memberScroll.showsHorizontalScrollIndicator = false
+        memberScroll.addSubview(membersStack)
+        membersStack.snp.makeConstraints { make in
+            make.edges.equalTo(memberScroll.contentLayoutGuide)
+            make.height.equalTo(memberScroll.frameLayoutGuide)
+        }
+        memberScroll.snp.makeConstraints { make in make.height.equalTo(32) }
+        let membersRow = makeRow(title: Bundle.localizedString(forKey: "overlay_layout_members"), content: memberScroll)
+        groupBlock.axis = .vertical
+        groupBlock.spacing = 6
+        groupBlock.addArrangedSubview(membersRow)
+        groupBlock.isHidden = true
+
 
         combosStack.axis = .horizontal
         combosStack.spacing = 6
@@ -332,7 +354,7 @@ private extension GameOverlayLayoutEditPanel {
         detailStack.axis = .vertical
         detailStack.spacing = 8
         // Portrait and landscape keep separate positions; switching here saves leaving the editor to rotate.
-        [orientationControl, arcadeLayoutControl, modeControl, sizeBlock, opacityRow, combosRow].forEach(detailStack.addArrangedSubview)
+        [sizeBlock, groupBlock, combosRow].forEach(detailStack.addArrangedSubview)
 
         let toolRow = UIStackView(arrangedSubviews: [undoButton, resetButton, UIView(), cancelButton, doneButton])
         toolRow.axis = .horizontal
@@ -383,36 +405,19 @@ private extension GameOverlayLayoutEditPanel {
         onSizeChanged?()
     }
 
-    /// Combo chips: tap shows or hides; a user combo's chip also has Edit and Delete on long press.
+    /// Created buttons stay discoverable when hidden; tapping opens their details.
     func updateCombos(_ combos: [Combo]) {
-        let keys = combos.map { "\($0.id)|\($0.title.plainText)|\($0.isTurbo)|\($0.isUserCombo)" }
+        // Compare symbol identities as well as text; visibility is updated below.
+        let keys = combos.map { Combo(id: $0.id, title: $0.title, shown: true, isTurbo: $0.isTurbo, isUserCombo: $0.isUserCombo, isMacro: $0.isMacro) }
         if keys != comboChipKeys {
             comboChipKeys = keys
             combosStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
             combosStack.addArrangedSubview(addComboButton)
             for combo in combos {
                 let chip = makeChip(title: combo.title.plainText, symbol: combo.isTurbo ? "bolt.fill" : nil,
-                                    comboTitle: combo.title) { [weak self] shown in
-                    self?.onComboToggled?(combo.id, shown)
+                                    comboTitle: combo.title, symbolScale: combo.isMacro ? 1.4 : 1) { [weak self] _ in
+                    self?.onEditCombo?(combo.id)
                 }
-                // Long press: turbo for every combo; edit and delete for the user's own.
-                let turbo = UIAction(title: Bundle.localizedString(forKey: "overlay_combo_turbo"),
-                                     image: UIImage(systemName: "bolt"),
-                                     state: combo.isTurbo ? .on : .off) { [weak self] _ in
-                    self?.onComboTurboChanged?(combo.id, !combo.isTurbo)
-                }
-                var actions: [UIMenuElement] = [turbo]
-                if combo.isUserCombo {
-                    actions.append(UIAction(title: Bundle.localizedString(forKey: "overlay_layout_edit"),
-                                            image: UIImage(systemName: "pencil")) { [weak self] _ in
-                        self?.onEditCombo?(combo.id)
-                    })
-                    actions.append(UIAction(title: Bundle.localizedString(forKey: "overlay_layout_delete"),
-                                            image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
-                        self?.onDeleteCombo?(combo.id)
-                    })
-                }
-                chip.menu = UIMenu(children: actions)
                 combosStack.addArrangedSubview(chip)
             }
             // Takes any width the row has left, so no chip is stretched.
@@ -424,11 +429,11 @@ private extension GameOverlayLayoutEditPanel {
         }
     }
 
-    func makeChip(title: String, symbol: String? = nil, comboTitle: GameOverlayComboTitle? = nil,
+    func makeChip(title: String, symbol: String? = nil, comboTitle: GameOverlayComboTitle? = nil, symbolScale: CGFloat = 1,
                   onToggle: @escaping (Bool) -> Void) -> UIButton {
         var configuration = UIButton.Configuration.filled()
         configuration.title = title
-        if let symbol {
+        if let symbol, comboTitle == nil {
             configuration.image = UIImage(systemName: symbol)
             configuration.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(scale: .small)
             configuration.imagePlacement = .trailing
@@ -437,7 +442,7 @@ private extension GameOverlayLayoutEditPanel {
         configuration.cornerStyle = .capsule
         configuration.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12)
         let button = UIButton(configuration: configuration)
-        button.changesSelectionAsPrimaryAction = true
+        button.changesSelectionAsPrimaryAction = false
         // Shown: brand fill; hidden: a quiet gray chip.
         button.configurationUpdateHandler = { button in
             var configuration = button.configuration
@@ -447,7 +452,9 @@ private extension GameOverlayLayoutEditPanel {
             if let comboTitle {
                 // The symbols are text attachments; they take the color of the text around them.
                 // Side by side like on the button.
-                let text = NSMutableAttributedString(attributedString: comboTitle.attributedString(font: .preferredFont(forTextStyle: .body), joined: false))
+                let parts = comboTitle.parts + (symbol.map { [GameOverlayComboTitle.Part.symbol($0, text: "⚡")] } ?? [])
+                let displayTitle = GameOverlayComboTitle(parts: parts)
+                let text = NSMutableAttributedString(attributedString: displayTitle.attributedString(font: .preferredFont(forTextStyle: .body), joined: false, symbolScale: symbolScale, directionScale: Self.macroDirectionScale))
                 text.addAttribute(.foregroundColor, value: foreground, range: NSRange(location: 0, length: text.length))
                 configuration?.attributedTitle = AttributedString(text)
             }
