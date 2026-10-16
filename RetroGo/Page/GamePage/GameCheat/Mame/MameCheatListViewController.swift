@@ -331,13 +331,23 @@ final class MameCheatListViewController: UIViewController {
         return true
     }
 
+    /// Netplay first, then the free number of cheats on at once; `entry` is
+    /// switched on by this, so one already on passes.
+    fileprivate func allowSwitchingOn(_ entry: MameCheatSession.Entry) -> Bool {
+        guard allowEnabling() else { return false }
+        guard entry.enabled || session.canEnableAnotherCheat else {
+            return AppStoreProFeatureGate.shared.requirePro(feature: .cheats, from: self, toastContext: .game)
+        }
+        return true
+    }
+
     fileprivate func entry(at indexPath: IndexPath) -> MameCheatSession.Entry? {
         let index = sections[indexPath.section].rows[indexPath.row]
         return session.entries.first { $0.index == index }
     }
 
     private func toggle(_ entry: MameCheatSession.Entry, on: Bool) {
-        if on && !allowEnabling() {
+        if on && !allowSwitchingOn(entry) {
             tableView.reloadData()
             return
         }
@@ -345,7 +355,8 @@ final class MameCheatListViewController: UIViewController {
     }
 
     private func run(_ entry: MameCheatSession.Entry) {
-        guard allowEnabling() else { return }
+        guard allowEnabling(),
+              AppStoreProFeatureGate.shared.requirePro(feature: .cheats, from: self, toastContext: .game) else { return }
         Vibration.selection.vibrate()
         if session.activate(index: entry.index) {
             AppToastManager.shared.toast(String(format: Bundle.localizedString(forKey: "mame_cheat_activated"),
@@ -359,10 +370,13 @@ final class MameCheatListViewController: UIViewController {
         let picker = MameCheatParameterViewController(entry: entry, parameter: parameter) { [weak self] position in
             guard let self else { return false }
             if let position {
-                guard self.allowEnabling() else { return false }
                 if entry.kind == .oneShotParameter {
+                    guard self.allowEnabling(),
+                          AppStoreProFeatureGate.shared.requirePro(feature: .cheats, from: self, toastContext: .game) else { return false }
                     return self.session.activate(index: entry.index, position: position)
                 }
+                let current = self.session.entries.first { $0.index == entry.index } ?? entry
+                guard self.allowSwitchingOn(current) else { return false }
                 return self.session.setPosition(position, index: entry.index)
             }
             return self.session.setEnabled(false, index: entry.index)

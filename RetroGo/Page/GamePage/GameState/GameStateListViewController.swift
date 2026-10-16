@@ -220,6 +220,13 @@ extension GameStateListViewController {
     private func presentNewSaveAlert() {
         guard case .save(let onSave) = mode else { return }
 
+        // Loading and deleting existing slots stay open; a slot past the free
+        // number needs Pro.
+        guard manualItems.count < AppStoreProFeaturePolicy.freeManualSavesPerGame ||
+              AppStoreProFeatureGate.shared.requirePro(feature: .manualSaveSlot, from: self) else {
+            return
+        }
+
         let title = Bundle.localizedString(forKey: "gamepage_save_state")
         let message = Bundle.localizedString(forKey: "gamepage_input_state_name")
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -339,7 +346,6 @@ extension GameStateListViewController: UITableViewDataSource, UITableViewDelegat
             let cell = dequeueStateCell()
             cell.item = manualItems[indexPath.row]
             if isSaveMode {
-                cell.deleteButton.isHidden = true
                 cell.titleTextField.isEnabled = false
             }
             return cell
@@ -362,6 +368,7 @@ extension GameStateListViewController: UITableViewDataSource, UITableViewDelegat
         case .newSave:
             presentNewSaveAlert()
         case .manualSaves where isSaveMode:
+            guard AppStoreProFeatureGate.shared.requirePro(feature: .saveStateOverwrite, from: self) else { return }
             presentOverwriteConfirm(for: manualItems[indexPath.row])
         case .manualSaves:
             loadState(manualItems[indexPath.row])
@@ -403,7 +410,10 @@ extension GameStateListViewController: UITableViewDataSource, UITableViewDelegat
         let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "HintFooter")
             ?? UITableViewHeaderFooterView(reuseIdentifier: "HintFooter")
         var config = UIListContentConfiguration.plainFooter()
-        config.text = Bundle.localizedString(forKey: "gamestate_overwrite_hint")
+        config.text = canOverwrite
+            ? Bundle.localizedString(forKey: "gamestate_overwrite_hint")
+            : String(format: Bundle.localizedString(forKey: "gamestate_overwrite_hint_free_format"),
+                     AppStoreProFeaturePolicy.freeManualSavesPerGame)
         view.contentConfiguration = config
         var background = UIBackgroundConfiguration.clear()
         background.backgroundColor = .systemBackground
@@ -419,6 +429,11 @@ extension GameStateListViewController: UITableViewDataSource, UITableViewDelegat
     }
 
     // MARK: - Helpers
+
+    /// Overwriting an existing save is a Pro feature.
+    private var canOverwrite: Bool {
+        AppStoreProFeatureGate.shared.isProUnlocked
+    }
 
     private func dequeueStateCell() -> GameStateTableViewCell {
         let cellId = "GameStateTableViewCell"

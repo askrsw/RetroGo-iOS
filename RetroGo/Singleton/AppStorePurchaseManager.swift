@@ -152,6 +152,7 @@ enum AppStorePurchaseError: LocalizedError {
     case verificationFailed
     case operationInProgress
     case noActiveEntitlements
+    case purchaseNotActive
     case unknown
 
     var errorDescription: String? {
@@ -166,6 +167,8 @@ enum AppStorePurchaseError: LocalizedError {
             return Bundle.localizedString(forKey: "iap_error_another_purchase_in_progress")
         case .noActiveEntitlements:
             return Bundle.localizedString(forKey: "iap_error_no_purchase_available_to_restore")
+        case .purchaseNotActive:
+            return Bundle.localizedString(forKey: "iap_error_purchase_not_active")
         case .unknown:
             return Bundle.localizedString(forKey: "iap_error_unknown_purchase_error")
         }
@@ -216,6 +219,7 @@ enum AppStoreBootstrapState: Equatable {
 }
 
 fileprivate let cachedProEntitlementKey = "AppStorePurchaseManager.cachedProEntitlement"
+fileprivate let hadProEntitlementKey = "AppStorePurchaseManager.hadProEntitlement"
 
 @MainActor
 final class AppStorePurchaseManager: ObservableObject {
@@ -224,6 +228,7 @@ final class AppStorePurchaseManager: ObservableObject {
         activeProEntitlement = Self.loadCachedProEntitlement()
         if let activeProEntitlement {
             purchasedProductIDs.insert(activeProEntitlement.productID)
+            Self.markHadProEntitlement()
         }
         transactionUpdatesTask = observeTransactionUpdates()
         ensureBootstrapped()
@@ -257,6 +262,9 @@ final class AppStorePurchaseManager: ObservableObject {
     private(set) var purchasedProductIDs = Set<String>()
     private(set) var activeProEntitlement: AppStoreProEntitlementInfo?
     private var introOfferEligibilityByKind: [AppStoreProductKind: Bool] = [:]
+    /// Set once this launch has checked the entitlements against StoreKit, so a
+    /// missing entitlement is known rather than not loaded yet.
+    private var hasVerifiedEntitlements = false
 
     var onStateChanged: (() -> Void)?
 
@@ -275,6 +283,13 @@ final class AppStorePurchaseManager: ObservableObject {
 
     nonisolated static var hasLocallyValidCachedProEntitlement: Bool {
         loadCachedProEntitlement() != nil
+    }
+
+    /// Whether Pro was bought on this Apple ID and has since expired or been
+    /// refunded, as StoreKit confirmed this launch. False for anyone who never had
+    /// Pro, and while StoreKit has not answered yet.
+    var isProLapsed: Bool {
+        hasVerifiedEntitlements && !isProPurchased && UserDefaults.standard.bool(forKey: hadProEntitlementKey)
     }
 
     // MARK: - Public API
@@ -341,13 +356,20 @@ final class AppStorePurchaseManager: ObservableObject {
 
             switch result {
             case .success(let verification):
-                let transaction = try verified(verification)
+                var transaction = try verified(verification)
 
-                guard isUsablePurchasedTransaction(transaction, fallbackKind: kind) else {
+                if !isUsablePurchasedTransaction(transaction, fallbackKind: kind) {
+                    // Subscribing again after a lapse can hand back the lapsed
+                    // transaction while the new one is still on its way; wait for
+                    // it in the current entitlements instead of failing.
+                    RetroGoLogger.iap.notice("Purchase of \(transaction.productID, privacy: .public) returned inactive transaction \(transaction.id), expired \(String(describing: transaction.expirationDate), privacy: .public); waiting for the new one")
                     await transaction.finish()
-                    await refreshEntitlements(allowClearingActiveEntitlement: true)
-                    setFlowState(.failed(AppStorePurchaseError.noActiveEntitlements.localizedDescription))
-                    throw AppStorePurchaseError.noActiveEntitlements
+                    guard let current = await waitForActiveTransaction(productID: product.id, fallbackKind: kind) else {
+                        await refreshEntitlements(allowClearingActiveEntitlement: true)
+                        setFlowState(.failed(AppStorePurchaseError.purchaseNotActive.localizedDescription))
+                        throw AppStorePurchaseError.purchaseNotActive
+                    }
+                    transaction = current
                 }
 
                 RetroGoLogger.iap.notice("Purchased \(transaction.productID, privacy: .public) (transaction \(transaction.id))")
@@ -435,11 +457,19 @@ final class AppStorePurchaseManager: ObservableObject {
             cacheActiveProEntitlement()
         } else {
             if let activeProEntitlement {
+                Self.markHadProEntitlement()
                 RetroGoLogger.iap.notice("Clearing Pro entitlement \(activeProEntitlement.productID, privacy: .public) (transaction \(activeProEntitlement.transactionID.map { String($0) } ?? "unknown", privacy: .public))")
             }
             purchasedProductIDs = []
             activeProEntitlement = nil
             Self.clearCachedProEntitlement()
+        }
+
+        if activeProEntitlement != nil {
+            Self.markHadProEntitlement()
+        } else if allowClearingActiveEntitlement {
+            await recordPastProTransactions()
+            hasVerifiedEntitlements = true
         }
 
         if !productsByKind.isEmpty {
@@ -454,6 +484,44 @@ final class AppStorePurchaseManager: ObservableObject {
     }
 
     // MARK: - Private
+
+    /// Polls the current entitlements for an active transaction of the product,
+    /// for up to `timeout` seconds.
+    private func waitForActiveTransaction(productID: String,
+                                          fallbackKind: AppStoreProductKind,
+                                          timeout: TimeInterval = 8) async -> Transaction? {
+        let deadline = Date().addingTimeInterval(timeout)
+        repeat {
+            for await result in Transaction.currentEntitlements {
+                guard case .verified(let transaction) = result,
+                      transaction.productID == productID,
+                      isUsablePurchasedTransaction(transaction, fallbackKind: fallbackKind) else { continue }
+                RetroGoLogger.iap.info("Found active transaction \(transaction.id) of \(productID, privacy: .public) after purchase")
+                return transaction
+            }
+            try? await Task.sleep(nanoseconds: 500_000_000)
+        } while Date() < deadline
+        RetroGoLogger.iap.error("No active transaction of \(productID, privacy: .public) within \(Int(timeout))s after purchase")
+        return nil
+    }
+
+    /// Remembers that this Apple ID has had Pro when its history holds a Pro
+    /// transaction, expired or refunded ones included, e.g. a subscription that
+    /// lapsed before this version.
+    private func recordPastProTransactions() async {
+        guard !UserDefaults.standard.bool(forKey: hadProEntitlementKey) else { return }
+        for await result in Transaction.all {
+            guard case .verified(let transaction) = result,
+                  AppStoreProductKind(productID: transaction.productID) != nil else { continue }
+            RetroGoLogger.iap.notice("Found past Pro transaction \(transaction.productID, privacy: .public) (transaction \(transaction.id))")
+            Self.markHadProEntitlement()
+            return
+        }
+    }
+
+    private nonisolated static func markHadProEntitlement() {
+        UserDefaults.standard.set(true, forKey: hadProEntitlementKey)
+    }
 
     /// Whether the given transaction is still unrevoked and unexpired according
     /// to the full transaction history.

@@ -136,6 +136,54 @@ final class GameCheatSession {
         templateItems.contains { $0.enabled } || items.contains { $0.enabled }
     }
 
+    // MARK: - Free limit
+
+    /// Cheats switched on now, user cheats and templates together.
+    var enabledCheatCount: Int {
+        items.filter(\.enabled).count + templateItems.filter(\.enabled).count
+    }
+
+    /// Whether one more cheat may be switched on: always with Pro, otherwise while
+    /// fewer than the free number are on. Cheats already on stay on either way.
+    /// Uses the cached entitlement, like the rest of the runtime.
+    var canEnableAnotherCheat: Bool {
+        AppStorePurchaseManager.hasLocallyValidCachedProEntitlement ||
+            enabledCheatCount < AppStoreProFeaturePolicy.freeCheatsPerGame
+    }
+
+    /// For a Pro that expired or was refunded: keeps the first cheats on, up to the
+    /// free number (user cheats in list order, then templates), and switches the
+    /// rest off. Never called for someone who never had Pro, whose cheats from the
+    /// years everything was open all stay on.
+    func limitEnabledCheatsToFreeNumber() {
+        var allowed = AppStoreProFeaturePolicy.freeCheatsPerGame
+        var turnedOff = 0
+        for index in items.indices where items[index].enabled {
+            guard allowed == 0 else { allowed -= 1; continue }
+            var item = items[index]
+            item.enabled = false
+            item.updateAt = Date()
+            if Self.update(item) {
+                items[index] = item
+                turnedOff += 1
+            }
+        }
+        for cheat in templateItems where cheat.enabled {
+            guard allowed == 0 else { allowed -= 1; continue }
+            cheat.enabled = false
+            _ = Self.upsertTemplateState(
+                romKey: game.key,
+                coreId: core.coreId,
+                catalogCheatId: templateBinding?.stateKey(for: cheat) ?? cheat.catalogIndex,
+                enabled: false
+            )
+            turnedOff += 1
+        }
+        guard turnedOff > 0 else { return }
+        RetroGoLogger.cheat.notice("Pro lapsed; turned off \(turnedOff) cheats above the free number for core \(self.core.coreId, privacy: .public)")
+        pushToEngine()
+    }
+
     // MARK: - Mutations (persist → update memory → re-push engine)
 
     @discardableResult
@@ -167,6 +215,7 @@ final class GameCheatSession {
         // enabled flags.
         if enabled, RANetplayCoordinator.shared.isNetplayEnabled { return false }
         guard var found = items.first(where: { $0.id == item.id }) else { return false }
+        if enabled, !found.enabled, !canEnableAnotherCheat { return false }
         found.enabled = enabled
         return updateCheat(found)
     }
@@ -175,6 +224,7 @@ final class GameCheatSession {
     func setTemplateEnabled(_ enabled: Bool, for item: RACheatItem) -> Bool {
         if enabled, RANetplayCoordinator.shared.isNetplayEnabled { return false }
         guard let idx = templateItems.firstIndex(where: { $0.catalogId == item.catalogId }) else { return false }
+        if enabled, !templateItems[idx].enabled, !canEnableAnotherCheat { return false }
         templateItems[idx].enabled = enabled
         guard Self.upsertTemplateState(
             romKey: game.key,

@@ -27,16 +27,13 @@ import UIKit
 import ObjcHelper
 import RACoordinator
 
-/// Pro is unlimited play. Free users get a daily allowance per platform on that
-/// platform's free core; the platform's other cores need Pro. Counters reset at
-/// local midnight.
+/// Playing is never time-limited. Each platform has one free core; the
+/// platform's other cores need Pro.
 @MainActor
 enum GameFreePlayQuota {
-    static let dailyAllowance: TimeInterval = 10 * 60
-
     enum Access {
         case unlimited
-        case limited
+        case free
         case proOnly
     }
 
@@ -49,53 +46,27 @@ enum GameFreePlayQuota {
         "sega_saturn": "yabause",
     ]
 
-    private static let dayKey = "free_play_day"
-    private static let usedKey = "free_play_used_seconds"
+    /// Daily play-time counters of 1.10.0 to 1.13.0 (and the MAME-only one before).
+    private static let legacyUsageKeys = [
+        "free_play_day",
+        "free_play_used_seconds",
+        "mame_free_play_day",
+        "mame_free_play_used_seconds",
+    ]
 
     static func access(for core: EmuCoreInfoItem) -> Access {
         if AppStoreProFeatureGate.shared.isProUnlocked { return .unlimited }
-        return isFreeCore(core) ? .limited : .proOnly
-    }
-
-    static func remainingToday(for core: EmuCoreInfoItem) -> TimeInterval {
-        max(0, dailyAllowance - usedToday[platform(of: core), default: 0])
-    }
-
-    static func isExhausted(for core: EmuCoreInfoItem) -> Bool {
-        switch access(for: core) {
-        case .unlimited: return false
-        case .proOnly: return true
-        case .limited: return remainingToday(for: core) <= 0
-        }
-    }
-
-    static func consume(_ seconds: TimeInterval, for core: EmuCoreInfoItem) {
-        guard seconds > 0, access(for: core) == .limited else { return }
-        var used = usedToday
-        let key = platform(of: core)
-        used[key] = min(dailyAllowance, used[key, default: 0] + seconds)
-        let defaults = UserDefaults.standard
-        defaults.set(today, forKey: dayKey)
-        defaults.set(used, forKey: usedKey)
+        return isFreeCore(core) ? .free : .proOnly
     }
 
     /// Launch check: returns true when the game may start. Otherwise explains why
     /// on the current page and offers Pro.
     static func allowLaunch(core: EmuCoreInfoItem) -> Bool {
-        let message: String
-        switch access(for: core) {
-        case .unlimited:
-            return true
-        case .limited:
-            guard remainingToday(for: core) <= 0 else { return true }
-            message = dailyLimitMessage(for: core)
-        case .proOnly:
-            message = proOnlyMessage(for: core)
-        }
+        guard access(for: core) == .proOnly else { return true }
 
         let alert = UIAlertController(
             title: Bundle.localizedString(forKey: "progate_alert_title"),
-            message: message,
+            message: proOnlyMessage(for: core),
             preferredStyle: .alert
         )
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_unlock_pro"), style: .default) { _ in
@@ -106,9 +77,12 @@ enum GameFreePlayQuota {
         return false
     }
 
-    static func dailyLimitMessage(for core: EmuCoreInfoItem) -> String {
-        let formatter = Bundle.localizedString(forKey: "progate_daily_limit_reached_format")
-        return String(format: formatter, platformName(of: core))
+    /// Drops the play-time counters older versions kept.
+    static func removeLegacyUsage() {
+        let defaults = UserDefaults.standard
+        for key in legacyUsageKeys where defaults.object(forKey: key) != nil {
+            defaults.removeObject(forKey: key)
+        }
     }
 
     private static func proOnlyMessage(for core: EmuCoreInfoItem) -> String {
@@ -128,20 +102,5 @@ enum GameFreePlayQuota {
 
     private static func platform(of core: EmuCoreInfoItem) -> String {
         core.systemID ?? core.coreId
-    }
-
-    private static func platformName(of core: EmuCoreInfoItem) -> String {
-        core.systemName ?? core.displayName
-    }
-
-    private static var usedToday: [String: TimeInterval] {
-        let defaults = UserDefaults.standard
-        guard defaults.string(forKey: dayKey) == today else { return [:] }
-        return defaults.dictionary(forKey: usedKey) as? [String: TimeInterval] ?? [:]
-    }
-
-    private static var today: String {
-        let components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
-        return String(format: "%04d-%02d-%02d", components.year ?? 0, components.month ?? 0, components.day ?? 0)
     }
 }

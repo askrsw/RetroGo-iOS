@@ -54,6 +54,8 @@ typealias GameConfigSetListSelectedValue = (AnyHashable) -> Void
 
 typealias GameConfigDetailButtonTapHander = () -> Void
 
+typealias GameConfigRequiredProFeatureForSegmentIndex = (Int) -> AppStoreProFeature?
+
 final class GameConfigEntry: NSObject {
     let type: GameConfigEntryType
     let ui: GameConfigEntryUIType
@@ -64,6 +66,8 @@ final class GameConfigEntry: NSObject {
         self.ui    = ui
         self.title = title
     }
+
+    var requiredProFeatureForSegmentIndex: GameConfigRequiredProFeatureForSegmentIndex?
 
     var enabled: Bool = true
     var opensCoreOptions = false
@@ -186,9 +190,10 @@ extension GameConfigSession {
             entry.setSegmentSelectedIndex = { [weak self] index in
                 guard let self = self else { return }
                 let v = array[index].1
-                RetroArchX.shared().setFastForwardMultiplier(v)
+                RetroArchX.shared().setFastForwardMultiplier(AppStoreProFeatureGate.effectiveFastForwardMultiplierForRuntime(v, shouldNotify: false))
                 setFastForwardMultiplier(value: v)
             }
+            entry.requiredProFeatureForSegmentIndex = { _ in .fastForward }
             entries.append(entry)
         }
 

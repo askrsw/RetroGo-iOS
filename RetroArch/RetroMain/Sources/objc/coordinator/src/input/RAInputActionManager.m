@@ -791,6 +791,11 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
         if (!isfinite(value) || value <= 0) {
             value = 2.0;
         }
+
+        /* A provider answering 1x means fast-forward is not available (it needs Pro). */
+        if (provider != nil && value <= 1.0) {
+            return;
+        }
     }
 
     [[RetroArchX shared] setFastForwardEnabled:enabled multiplier:value];

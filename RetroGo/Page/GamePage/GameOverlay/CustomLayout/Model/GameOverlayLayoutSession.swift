@@ -294,6 +294,14 @@ extension GameOverlayLayoutSession {
         return "\(prefix) \(number)"
     }
 
+    /// Whether another layout may be added for this platform and device class:
+    /// always with Pro, otherwise up to the free number. Layouts made before
+    /// stay, and can still be edited, chosen and deleted.
+    var canCreateAnotherLayout: Bool {
+        AppStorePurchaseManager.hasLocallyValidCachedProEntitlement ||
+            layouts().count < AppStoreProFeaturePolicy.freeOverlayLayoutsPerPlatform
+    }
+
     /// Adds a layout at the end of the list; nil when the name is empty or taken, or saving fails.
     func createLayout(name: String, data: GameOverlayLayoutData) -> GameOverlayLayoutItem? {
         let T = Self.self

@@ -205,6 +205,8 @@ final class GameOverlayLayoutListViewController: UITableViewController {
         case .layouts:
             session.choose(layoutId: layoutItem(at: indexPath.row)?.id, applyToPlatform: choosesForPlatform)
         case .create:
+            guard session.canCreateAnotherLayout ||
+                  AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayout, from: self) else { return }
             editHandler?(.create)
         case .scope:
             if scopeRows[indexPath.row] == .followPlatform {
@@ -333,6 +335,8 @@ final class GameOverlayLayoutListViewController: UITableViewController {
     }
 
     private func duplicate(_ item: GameOverlayLayoutItem) {
+        guard session.canCreateAnotherLayout ||
+              AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayout, from: self) else { return }
         let base = "\(item.name) \(Bundle.localizedString(forKey: "overlay_layout_copy_suffix"))"
         let name = session.isNameTaken(base) ? session.suggestedName(prefix: base) : base
         if session.duplicateLayout(id: item.id, name: name) == nil {

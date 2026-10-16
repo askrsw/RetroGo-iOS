@@ -701,6 +701,16 @@ extension GamePageToolbarView {
         // loop and stall the peer, so save instantly with an auto (timestamp) name.
         // The capture itself (core_serialize) is read-only and does not desync peers.
         if RANetplayCoordinator.shared.isNetplayEnabled {
+            // An alert would stall the peer too, so the free limit only shows a toast.
+            let manualCount = (holder?.romItem?.sha256).map {
+                (RetroRomPersistence.shared.getGameStateItems(coreId: currentCoreItem.coreId, sha256: $0) ?? []).filter { !$0.isAutoSaved }.count
+            } ?? 0
+            guard manualCount < AppStoreProFeaturePolicy.freeManualSavesPerGame ||
+                  AppStoreProFeatureGate.shared.requirePro(feature: .manualSaveSlot, presentation: .silent) else {
+                let msg = EmuInGameMessage(message: AppStoreProFeature.manualSaveSlot.lockedMessage, title: nil, type: .info, duration: 3.5, priority: 0)
+                holder?.inGameInfoView.showMessage(msg)
+                return
+            }
             let rawName = DateFormatter.yyyyMMddHHmmss().string(from: Date())
             let ret = RetroRomFileManager.shared.saveState(rawName: rawName, showName: rawName, sha256: holder?.romItem?.sha256, romKey: holder?.romItem?.key, autoSave: false)
             let key = ret ? "gamepage_state_saved" : "gamepage_state_save_failed"
