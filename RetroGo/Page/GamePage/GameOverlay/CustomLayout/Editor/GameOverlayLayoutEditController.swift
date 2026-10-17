@@ -439,13 +439,20 @@ final class GameOverlayLayoutEditController {
         // Show what the game resolves to now: the saved layout if it was chosen, else the one it had.
         overlayView.endEditing(showing: nil)
         gamePage?.toolbarView.isHidden = false
-        gamePage?.setLayoutEditingOrientation(nil)
-        pauseLease?.release()
+        let lease = pauseLease
         pauseLease = nil
 
         let completion = self.completion
         self.completion = nil
-        completion?(saved)
+        let restored = {
+            completion?(saved)
+            lease?.release()
+        }
+        if let gamePage {
+            gamePage.restoreLayoutEditingOrientation(completion: restored)
+        } else {
+            restored()
+        }
     }
 }
 

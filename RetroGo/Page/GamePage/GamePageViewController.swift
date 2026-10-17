@@ -45,6 +45,8 @@ final class GamePageViewController: RAGameViewController {
     private(set) var isLandscapeLocked = false
     /// The orientation the control layout editor shows; overrides the landscape lock while it runs.
     private(set) var layoutEditingOrientation: UIInterfaceOrientationMask?
+    private var layoutEditingReturnOrientation: UIInterfaceOrientation?
+    private var layoutEditingRestoration: (mask: UIInterfaceOrientationMask, completion: () -> Void)?
 
     let romItem: RetroRomFileItem?
     let romUrl: URL?
@@ -270,7 +272,8 @@ final class GamePageViewController: RAGameViewController {
 
     /// Shows this platform's control layouts; editing one returns to the list when done.
     func showOverlayLayoutList() {
-        guard !RANetplayCoordinator.shared.isNetplayEnabled, !overlayLayoutEditController.isEditing else { return }
+        guard isGameReady, presentedViewController == nil,
+              !RANetplayCoordinator.shared.isNetplayEnabled, !overlayLayoutEditController.isEditing else { return }
         let list = GameOverlayLayoutListViewController(session: myOverlayView.layoutSession)
         let card = GameOverlayLayoutListCardController(listController: list)
         list.editHandler = { [weak self, weak card] request in
@@ -307,10 +310,15 @@ final class GamePageViewController: RAGameViewController {
     override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         coordinator.animate(alongsideTransition: nil) { [weak self] _ in
-            guard let self, overlayLayoutEditController.isEditing else { return }
-            // The paused game still shows its frame at the old size; let it draw a few at the new one,
-            // so the controls are edited against the real picture.
-            GamePauseCoordinator.shared.runFramesWhilePaused(keepMuted: myToolbarView.isGameMuted)
+            guard let self else { return }
+            // Commit the base controller's final video constraints before running frames.
+            view.layoutIfNeeded()
+            if layoutEditingRestoration != nil {
+                // Let UIKit finish its rotation transaction before presenting another card.
+                DispatchQueue.main.async { [weak self] in self?.completeLayoutEditingRestoration() }
+            } else if isGameReady, overlayLayoutEditController.isEditing {
+                GamePauseCoordinator.shared.runFramesWhilePaused(keepMuted: myToolbarView.isGameMuted)
+            }
         }
     }
 
@@ -338,17 +346,73 @@ final class GamePageViewController: RAGameViewController {
 
     /// Applies the current (runtime) landscape-lock state to the app-wide mask
     /// and this VC's `supportedInterfaceOrientations`.
-    func applyOrientationLock() {
-        AppDelegate.setOrientationLock(supportedInterfaceOrientations)
+    func applyOrientationLock(requestedOrientation: UIInterfaceOrientationMask? = nil,
+                              onGeometryError: ((Error) -> Void)? = nil) {
         setNeedsUpdateOfSupportedInterfaceOrientations()
+        AppDelegate.setOrientationLock(supportedInterfaceOrientations,
+                                       requestedOrientation: requestedOrientation, onGeometryError: onGeometryError)
     }
 
     /// Turns the screen for the control layout editor (portrait or landscape); nil gives
     /// rotation back to the device and the landscape lock.
     func setLayoutEditingOrientation(_ mask: UIInterfaceOrientationMask?) {
         guard layoutEditingOrientation != mask else { return }
+        if layoutEditingOrientation == nil, mask != nil {
+            layoutEditingReturnOrientation = view.window?.windowScene?.interfaceOrientation
+        }
         layoutEditingOrientation = mask
         applyOrientationLock()
+    }
+
+    /// Finish rotation before presenting the layout list, keeping the editor's pause
+    /// owner alive through the handoff. A geometry request itself is asynchronous.
+    func restoreLayoutEditingOrientation(completion: @escaping () -> Void) {
+        guard let scene = view.window?.windowScene, layoutEditingOrientation != nil else {
+            setLayoutEditingOrientation(nil)
+            completion()
+            return
+        }
+        let target: UIInterfaceOrientationMask
+        if isLandscapeLocked {
+            target = .landscape
+        } else {
+            switch UIDevice.current.orientation {
+            case .portrait: target = .portrait
+            case .landscapeLeft, .landscapeRight: target = .landscape
+            default:
+                switch layoutEditingReturnOrientation ?? scene.interfaceOrientation {
+                case .landscapeLeft, .landscapeRight: target = .landscape
+                default: target = .portrait
+                }
+            }
+        }
+        layoutEditingOrientation = nil
+        layoutEditingReturnOrientation = nil
+        layoutEditingRestoration = (target, completion)
+        applyOrientationLock(requestedOrientation: target) { [weak self] error in
+            RetroGoLogger.game.error("Failed to restore layout editing orientation: \(error)")
+            self?.completeLayoutEditingRestoration(force: true)
+        }
+        // No transition callback is sent if the requested orientation already matches.
+        if target.contains(UIInterfaceOrientationMask(rawValue: 1 << scene.interfaceOrientation.rawValue)),
+           transitionCoordinator == nil {
+            completeLayoutEditingRestoration()
+        }
+    }
+
+    private func completeLayoutEditingRestoration(force: Bool = false) {
+        guard let restoration = layoutEditingRestoration else { return }
+        if !force, let orientation = view.window?.windowScene?.interfaceOrientation {
+            let current = UIInterfaceOrientationMask(rawValue: 1 << orientation.rawValue)
+            guard restoration.mask.contains(current),
+                  (view.bounds.width < view.bounds.height) == orientation.isPortrait else { return }
+        }
+        layoutEditingRestoration = nil
+        view.layoutIfNeeded()
+        if isGameReady {
+            GamePauseCoordinator.shared.runFramesWhilePaused(keepMuted: myToolbarView.isGameMuted)
+        }
+        restoration.completion()
     }
 
     /// Toggles the runtime landscape lock (called by the toolbar button).

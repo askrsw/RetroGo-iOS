@@ -82,24 +82,23 @@ extension AppDelegate {
     /// is deprecated in iOS 16; its replacement
     /// `setNeedsUpdateOfSupportedInterfaceOrientations()` is called on
     /// the topmost VC as a belt-and-suspenders hint.
-    static func setOrientationLock(_ mask: UIInterfaceOrientationMask) {
+    static func setOrientationLock(_ mask: UIInterfaceOrientationMask,
+                                   requestedOrientation: UIInterfaceOrientationMask? = nil,
+                                   onGeometryError: ((Error) -> Void)? = nil) {
         guard let delegate = UIApplication.shared.delegate as? AppDelegate else { return }
         delegate.orientationLock = mask
 
-        // Per-scene geometry request. The error handler is intentionally
-        // a no-op: failures occur when the requested mask is incompatible
-        // with the current device orientation, which is fine — UIKit
-        // picks a valid orientation from the new mask on its own.
+        // Keep the allowed mask separate from an explicit rotation target.
+        // Callers waiting to present UI after rotation can handle rejected requests.
         UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .forEach { scene in
-                let pref = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: mask)
-                scene.requestGeometryUpdate(pref) { _ in }
-
                 // Tell the topmost VC that its effective supported
                 // orientations may have changed, so any cached state
                 // keyed off them gets refreshed.
                 topViewController(of: scene)?.setNeedsUpdateOfSupportedInterfaceOrientations()
+                let pref = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: requestedOrientation ?? mask)
+                scene.requestGeometryUpdate(pref) { error in onGeometryError?(error) }
             }
     }
 
