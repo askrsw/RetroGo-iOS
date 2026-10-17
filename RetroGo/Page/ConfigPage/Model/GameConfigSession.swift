@@ -148,7 +148,7 @@ final class GameConfigSession {
     }
 
     /// Pushes the resolved turbo speed to the engine-side (physical-controller)
-    /// turbo ticker. The overlay's own X/Y turbo is driven separately by the
+    /// turbo ticker. The overlay's single-button and combo turbo is driven separately by the
     /// overlay scene. Both read the same `TurboSpeed` preset.
     func applyTurboSpeedToEngine() {
         let speed = getOverlayTurboSpeed()

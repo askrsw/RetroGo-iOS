@@ -332,10 +332,10 @@
 "configpage_game_mute_when_fast"  = "快进时静音";
 "configpage_game_mute_when_fast_desc" = "未开启独立游戏线程时，高倍速快进可能产生明显杂音。如遇到此问题，可开启快进静音。";
 "configpage_overlay_touch_player" = "按键玩家";
-"configpage_overlay_turbo_tap_latch" = "X/Y 点按锁定连发";
-"configpage_overlay_turbo_tap_latch_desc" = "快速点按 X/Y 即锁定 A/B 连发，手可松开；再次点按取消。关闭后 X/Y 仅在按住时连发。";
+"configpage_overlay_turbo_tap_latch" = "点按锁定连发";
+"configpage_overlay_turbo_tap_latch_desc" = "开启后，快速点按屏幕上的连发键即可持续连发，松手后仍会保持；再次点按取消。适用于单键和组合连发键。关闭后，仅在按住时连发。";
 "configpage_turbo_speed" = "连发速度";
-"configpage_turbo_speed_desc" = "连发的快慢（A/B 反复触发的频率）。同时影响屏幕虚拟 X/Y 按键和外接手柄上的 X/Y 连发。";
+"configpage_turbo_speed_desc" = "控制单键和组合连发键反复触发的速度，包括屏幕按键和物理手柄映射触发的连发。不影响宏的执行速度。";
 "configpage_turbo_speed_very_slow" = "非常慢";
 "configpage_turbo_speed_slow" = "慢";
 "configpage_turbo_speed_medium" = "中";

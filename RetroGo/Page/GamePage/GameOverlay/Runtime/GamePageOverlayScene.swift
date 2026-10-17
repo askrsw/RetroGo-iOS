@@ -137,7 +137,7 @@ final class GamePageOverlayScene: SKScene, GameOverlaySceneLayouting {
 
     @objc private func handleTurboTapLatchChanged() {
         let enabled = turboTapLatchEnabled
-        actionButtons.forEach { $0.setAutoKeepTurbo(enabled) }
+        actionButtons.forEach { $0.setAutoKeepTurbo($0.isTurboSupported && enabled) }
     }
 
     @objc private func handleTurboSpeedChanged() {
@@ -351,9 +351,8 @@ extension GamePageOverlayScene {
     }
 
     private func makeButtonNode(element: GamePageOverlayElement) -> SKNode {
-        // JSON decides which buttons *can* latch (`is_turbo_auto_keep`); the game
-        // config switch decides whether tap-latch is allowed at all. Default off.
-        let autoKeep = element.isTurboAutoKeep && turboTapLatchEnabled
+        // All turbo buttons follow the same game-level tap-latch setting.
+        let autoKeep = element.isTurbo && turboTapLatchEnabled
         let speed = currentTurboSpeed
         let node = GameOverlayActionButton(element: element, isTurboSupported: element.isTurbo, autoKeepTurbo: autoKeep, turboPeriod: speed.period, turboDuty: speed.duty, theme: theme,
                                            digitalChangeHandler: inputMixer.handler())

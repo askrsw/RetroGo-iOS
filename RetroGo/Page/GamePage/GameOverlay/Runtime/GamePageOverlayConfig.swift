@@ -308,16 +308,6 @@ extension GamePageOverlayElement {
         }
     }
 
-    // Determines if the turbo latch (auto-fire) should be activated
-    // after a short tap (less than the long-press threshold).
-    // Default to false: turbo requires a sustained press unless explicitly enabled.
-    var isTurboAutoKeep: Bool {
-        guard let v = meta?["is_turbo_auto_keep"], case .bool(let b) = v else {
-            return false
-        }
-        return b
-    }
-
     var binds: [GamePageOverlayAction] {
         guard let v = meta?["binds"], case .array(let array) = v else {
             return []

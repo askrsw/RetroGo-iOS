@@ -330,10 +330,10 @@
 "configpage_game_mute_when_fast"  = "Mute on Fast-Forward";
 "configpage_game_mute_when_fast_desc" = "When the separate game thread is disabled, high-speed fast-forward may cause noticeable audio noise. Enable this option if that happens.";
 "configpage_overlay_touch_player" = "Touch Player";
-"configpage_overlay_turbo_tap_latch" = "X/Y Tap to Lock Turbo";
-"configpage_overlay_turbo_tap_latch_desc" = "A quick tap on X/Y locks turbo A/B on so you can let go; tap again to release. When off, X/Y fire turbo only while held.";
+"configpage_overlay_turbo_tap_latch" = "Tap to Lock Turbo";
+"configpage_overlay_turbo_tap_latch_desc" = "When enabled, a quick tap on an on-screen turbo button keeps it firing after you let go. Tap again to stop. Works with both single-button and combo turbo controls. When off, turbo fires only while held.";
 "configpage_turbo_speed" = "Turbo Speed";
-"configpage_turbo_speed_desc" = "How fast turbo fires (the A/B auto-repeat rate). Applies to both the on-screen X/Y buttons and the X/Y turbo on a connected controller.";
+"configpage_turbo_speed_desc" = "How fast single-button and combo turbo controls repeat, whether triggered on screen or through a physical controller mapping. Does not affect macro playback speed.";
 "configpage_turbo_speed_very_slow" = "Very Slow";
 "configpage_turbo_speed_slow" = "Slow";
 "configpage_turbo_speed_medium" = "Medium";

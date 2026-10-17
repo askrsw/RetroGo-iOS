@@ -69,8 +69,7 @@
                 "title": "X",
                 "binds": ["A"],
                 "is_turbo": true,
-                "title_font_scale": 0.6,
-                "is_turbo_auto_keep": true
+                "title_font_scale": 0.6
             }
         },
         {
@@ -89,8 +88,7 @@
                 "title": "Y",
                 "binds": ["B"],
                 "is_turbo": true,
-                "title_font_scale": 0.6,
-                "is_turbo_auto_keep": true
+                "title_font_scale": 0.6
             }
         },
         {
