@@ -58,7 +58,7 @@ struct GameOverlayComboTitle: Equatable {
     enum Part: Equatable {
         case text(String)
         /// A symbol, and the name it stands for where only text fits.
-        case symbol(String, text: String)
+        case symbol(String, text: String, mirrored: Bool = false)
     }
 
     static let startSymbol = "line.3.horizontal"
@@ -74,7 +74,7 @@ struct GameOverlayComboTitle: Equatable {
     var plainText: String {
         parts.map { part in
             switch part {
-            case .text(let text), .symbol(_, let text): return text
+            case .text(let text), .symbol(_, let text, _): return text
             }
         }.joined(separator: "+")
     }
@@ -86,7 +86,7 @@ struct GameOverlayComboTitle: Equatable {
             let spacing = compactSpacing(before: index) / 0.55
             switch part {
             case .text(let text): return total + spacing + Double(text.count)
-            case .symbol(let name, _): return total + spacing + (name == Self.startSymbol ? 1.1 : 1.6)
+            case .symbol(let name, _, _): return total + spacing + (name == Self.startSymbol ? 1.1 : 1.6)
             }
         }
     }
@@ -98,14 +98,14 @@ struct GameOverlayComboTitle: Equatable {
 
     func compactSpacing(before index: Int) -> Double {
         guard index > 0, index < parts.count else { return 0 }
-        if case .symbol("bolt.fill", _) = parts[index] { return Self.turboGap }
+        if case .symbol("bolt.fill", _, _) = parts[index] { return Self.turboGap }
         let hasDirection = [parts[index - 1], parts[index]].contains {
-            if case .symbol(let name, _) = $0 { return name == "arrow.left" || name == "arrow.right" }
+            if case .symbol(let name, _, _) = $0 { return name == "arrow.left" || name == "arrow.right" }
             return false
         }
         if hasDirection { return 0.3 }
         let hasMenuSymbol = [parts[index - 1], parts[index]].contains { part in
-            guard case .symbol(let name, _) = part else { return false }
+            guard case .symbol(let name, _, _) = part else { return false }
             return name == Self.startSymbol || name == Self.selectSymbol
         }
         return hasMenuSymbol ? Self.menuGap : 0
@@ -144,9 +144,22 @@ struct GameOverlayComboTitle: Equatable {
     /// the shape, more for round shapes, so sizing the uncropped image left them smaller
     /// than the letters. Medium weight matches the labels' strokes. Template, so text
     /// attachments take the text color; SpriteKit tints the white.
-    static func symbolImage(_ name: String, pointSize: CGFloat = 60, compactDirections: Bool = true) -> UIImage? {
-        let cacheKey = "\(name):\(pointSize):\(compactDirections)" as NSString
+    static func symbolImage(_ name: String, pointSize: CGFloat = 60, compactDirections: Bool = true, mirrored: Bool = false) -> UIImage? {
+        let cacheKey = "\(name):\(pointSize):\(compactDirections):\(mirrored)" as NSString
         if let cached = symbolCache.object(forKey: cacheKey) { return cached }
+        if mirrored {
+            guard let original = symbolImage(name, pointSize: pointSize, compactDirections: compactDirections) else { return nil }
+            let format = UIGraphicsImageRendererFormat()
+            format.scale = original.scale
+            // Mirror after trimming so facing never changes the icon's size or spacing.
+            let image = UIGraphicsImageRenderer(size: original.size, format: format).image { context in
+                context.cgContext.translateBy(x: original.size.width, y: 0)
+                context.cgContext.scaleBy(x: -1, y: 1)
+                original.withTintColor(.white, renderingMode: .alwaysOriginal).draw(at: .zero)
+            }.withRenderingMode(.alwaysTemplate)
+            symbolCache.setObject(image, forKey: cacheKey)
+            return image
+        }
         let weight: UIImage.SymbolWeight = compactDirections && (name == "arrow.left" || name == "arrow.right") ? .heavy : .medium
         let configuration = UIImage.SymbolConfiguration(pointSize: pointSize, weight: weight)
         guard let symbol = UIImage(systemName: name, withConfiguration: configuration) else { return nil }
@@ -194,11 +207,11 @@ struct GameOverlayComboTitle: Equatable {
             switch part {
             case .text(let text):
                 result.append(NSAttributedString(string: text))
-            case .symbol(let name, let text):
+            case .symbol(let name, let text, let mirrored):
                 let isMarker = compactDirections && (name == "arrow.left" || name == "arrow.right")
                 // Tiny UIKit markers need SF Symbols' optical weight at their display size.
                 let pointSize = isMarker ? font.capHeight * 0.45 * directionScale : 60
-                if let image = Self.symbolImage(name, pointSize: pointSize, compactDirections: compactDirections) {
+                if let image = Self.symbolImage(name, pointSize: pointSize, compactDirections: compactDirections, mirrored: mirrored) {
                     // The image convenience initializer can discard custom attachment bounds.
                     let attachment = NSTextAttachment()
                     attachment.image = image
@@ -221,7 +234,10 @@ struct GameOverlayComboTitle: Equatable {
         .array(parts.map { part in
             switch part {
             case .text(let text): return .string(text)
-            case .symbol(let name, let text): return .object(["symbol": .string(name), "text": .string(text)])
+            case .symbol(let name, let text, let mirrored):
+                var object: [String: JSONValue] = ["symbol": .string(name), "text": .string(text)]
+                if mirrored { object["mirrored"] = .bool(true) }
+                return .object(object)
             }
         })
     }
@@ -238,7 +254,9 @@ struct GameOverlayComboTitle: Equatable {
                 return .text(text)
             case .object(let object):
                 guard case .string(let name) = object["symbol"], case .string(let text) = object["text"] else { return nil }
-                return .symbol(name, text: text)
+                let mirrored: Bool
+                if case .bool(let value) = object["mirrored"] { mirrored = value } else { mirrored = false }
+                return .symbol(name, text: text, mirrored: mirrored)
             default:
                 return nil
             }
@@ -376,7 +394,7 @@ extension GamePageOverlayConfig {
 
 extension GameOverlayMacro {
     var buttonTitle: GameOverlayComboTitle {
-        var parts: [GameOverlayComboTitle.Part] = [.symbol(resolvedSymbol, text: name)]
+        var parts: [GameOverlayComboTitle.Part] = [.symbol(resolvedSymbol, text: name, mirrored: direction == .left)]
         if let direction {
             let marker = GameOverlayComboTitle.Part.symbol(direction.symbol, text: direction.marker)
             if direction == .left { parts.insert(marker, at: 0) } else { parts.append(marker) }

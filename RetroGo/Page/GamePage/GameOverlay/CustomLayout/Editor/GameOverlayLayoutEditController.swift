@@ -214,6 +214,11 @@ final class GameOverlayLayoutEditController {
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_macro_title"), style: .default) { [weak self, weak alert] _ in
             alert?.dismiss(animated: true) { self?.presentMacroEditor(buttonId: nil) }
         })
+        if !macroCopyCandidates().isEmpty {
+            alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_macro_copy"), style: .default) { [weak self, weak alert] _ in
+                alert?.dismiss(animated: true) { self?.presentMacroCopyPicker() }
+            })
+        }
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel))
         alert.popoverPresentationController?.sourceView = button
         alert.popoverPresentationController?.sourceRect = button.bounds
@@ -221,21 +226,45 @@ final class GameOverlayLayoutEditController {
     }
 
     private func presentMacroEditor(buttonId: String?) {
-        guard let gamePage, let editor = editorScene, gamePage.presentedViewController == nil else { return }
-        let macro = buttonId.flatMap(editor.userMacro(id:))
-        let directions = [("UP", "↑", "arrow.up"), ("DOWN", "↓", "arrow.down"), ("LEFT", "←", "arrow.left"), ("RIGHT", "→", "arrow.right")].map {
-            GameOverlayComboKey(bind: GamePageOverlayAction($0.0), title: $0.1, symbol: $0.2)
-        }
-        let controller = GameOverlayMacroEditViewController(macro: macro, keys: directions + editor.comboKeys,
-            shown: buttonId.flatMap(editor.element(id:)).map(editor.isShown) ?? true,
-            usedSymbols: Set(editor.macrosToSave.map(\.resolvedSymbol)))
-        controller.onSave = { [weak editor] macro, shown in editor?.saveMacro(macro, shown: shown) }
-        if let buttonId { controller.onDelete = { [weak editor] in editor?.removeMacro(id: buttonId) } }
+        guard let gamePage, gamePage.presentedViewController == nil,
+              let controller = makeMacroEditor(buttonId: buttonId) else { return }
         let navigation = UINavigationController(rootViewController: controller)
         navigation.sheetPresentationController?.detents = [.large()]
         navigation.sheetPresentationController?.prefersGrabberVisible = true
         navigation.presentationController?.delegate = controller
         gamePage.present(navigation, animated: true)
+    }
+
+    private func macroCopyCandidates() -> [GameOverlayMacroStore.Candidate] {
+        let layoutId: String?
+        if case .edit(let item) = target { layoutId = item.id } else { layoutId = nil }
+        return GameOverlayMacroStore.candidates(templateId: session.templateId, excluding: layoutId)
+    }
+
+    private func presentMacroCopyPicker() {
+        guard let gamePage, editorScene != nil, gamePage.presentedViewController == nil else { return }
+        let picker = GameOverlayMacroCopyViewController(
+            loadCandidates: { [weak self] in self?.macroCopyCandidates() ?? [] },
+            makeEditor: { [weak self] macro in self?.makeMacroEditor(buttonId: nil, copiedMacro: macro) })
+        let navigation = UINavigationController(rootViewController: picker)
+        navigation.sheetPresentationController?.detents = [.large()]
+        navigation.sheetPresentationController?.prefersGrabberVisible = true
+        gamePage.present(navigation, animated: true)
+    }
+
+    private func makeMacroEditor(buttonId: String?, copiedMacro: GameOverlayMacro? = nil) -> GameOverlayMacroEditViewController? {
+        guard let editor = editorScene else { return nil }
+        let macro = copiedMacro ?? buttonId.flatMap(editor.userMacro(id:))
+        let directions = [("UP", "↑", "arrow.up"), ("DOWN", "↓", "arrow.down"), ("LEFT", "←", "arrow.left"), ("RIGHT", "→", "arrow.right")].map {
+            GameOverlayComboKey(bind: GamePageOverlayAction($0.0), title: $0.1, symbol: $0.2)
+        }
+        let controller = GameOverlayMacroEditViewController(macro: macro, keys: directions + editor.comboKeys,
+            shown: buttonId.flatMap(editor.element(id:)).map(editor.isShown) ?? true,
+            isNew: copiedMacro == nil ? nil : true,
+            usedSymbols: Set(editor.macrosToSave.map(\.resolvedSymbol)))
+        controller.onSave = { [weak editor] macro, shown in editor?.saveMacro(macro, shown: shown) }
+        if let buttonId { controller.onDelete = { [weak editor] in editor?.removeMacro(id: buttonId) } }
+        return controller
     }
 
     /// Makes a combo (nil) or edits one of the user's in a sheet over the paused game.

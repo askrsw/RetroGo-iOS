@@ -873,6 +873,11 @@
 "overlay_extension_new" = "新建扩展按键";
 "overlay_extension_combo" = "组合／连发按键";
 "overlay_macro_title" = "按键宏";
+"overlay_macro_copy" = "复制按键宏…";
+"overlay_macro_copy_title" = "复制按键宏";
+"overlay_macro_copy_empty" = "本平台其他布局暂无按键宏";
+"overlay_macro_copy_details" = "%d 步 · %d 帧";
+"overlay_macro_intro_footer" = "将一连串按键和间隔设为一个按钮，游戏时轻点即可按顺序执行。例如，把一套必杀技指令设为一键触发。";
 "overlay_macro_icon" = "宏图标";
 "overlay_macro_direction" = "方向标记";
 "overlay_macro_direction_none" = "无";

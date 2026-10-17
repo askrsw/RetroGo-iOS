@@ -871,6 +871,11 @@
 "overlay_extension_new" = "New Extra Button";
 "overlay_extension_combo" = "Combo / Turbo Button";
 "overlay_macro_title" = "Button Macro";
+"overlay_macro_copy" = "Copy Macro…";
+"overlay_macro_copy_title" = "Copy Macro";
+"overlay_macro_copy_empty" = "No macros in other layouts for this platform.";
+"overlay_macro_copy_details" = "%d steps · %d frames";
+"overlay_macro_intro_footer" = "Turn a sequence of button presses and pauses into a single button. Tap it during play to run the sequence—for example, to perform a special move with one tap.";
 "overlay_macro_icon" = "Macro Icon";
 "overlay_macro_direction" = "Direction Marker";
 "overlay_macro_direction_none" = "None";

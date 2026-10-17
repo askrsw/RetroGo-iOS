@@ -596,8 +596,8 @@ private final class GameOverlayComboTitleNode: SKNode {
             switch part {
             case .text(let text):
                 items.append(makeLabel(text))
-            case .symbol(let name, let text):
-                items.append(makeSymbol(name) ?? makeLabel(text))
+            case .symbol(let name, let text, let mirrored):
+                items.append(makeSymbol(name, mirrored: mirrored) ?? makeLabel(text))
             }
         }
         let spacings = items.indices.map { Self.referenceFontSize * CGFloat(displayTitle.compactSpacing(before: $0)) }
@@ -647,8 +647,8 @@ private final class GameOverlayComboTitleNode: SKNode {
         return label
     }
 
-    private func makeSymbol(_ name: String) -> SKSpriteNode? {
-        guard let image = GameOverlayComboTitle.symbolImage(name) else { return nil }
+    private func makeSymbol(_ name: String, mirrored: Bool) -> SKSpriteNode? {
+        guard let image = GameOverlayComboTitle.symbolImage(name, mirrored: mirrored) else { return nil }
         // As tall as the labels' capitals, so START/SELECT and the PlayStation shapes match the letters.
         let capHeight = UIFont(name: "Helvetica", size: Self.referenceFontSize)?.capHeight ?? Self.referenceFontSize * 0.72
         let sprite = SKSpriteNode(texture: SKTexture(image: image),

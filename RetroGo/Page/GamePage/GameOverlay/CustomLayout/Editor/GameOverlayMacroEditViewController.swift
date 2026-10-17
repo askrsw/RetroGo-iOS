@@ -113,6 +113,7 @@ final class GameOverlayMacroEditViewController: UITableViewController, UIAdaptiv
     }
     private func footerTitle(for section: Int) -> String? {
         switch section {
+        case 0: return Bundle.localizedString(forKey: "overlay_macro_intro_footer")
         case 1: return Bundle.localizedString(forKey: "overlay_macro_steps_footer")
         case 2: return Bundle.localizedString(forKey: "overlay_macro_shared_footer")
         case 3: return Bundle.localizedString(forKey: "overlay_macro_mirror_footer")
@@ -274,6 +275,110 @@ final class GameOverlayMacroEditViewController: UITableViewController, UIAdaptiv
     }
 }
 
+/// Browses saved macros without creating a destination draft until a row is picked.
+final class GameOverlayMacroCopyViewController: UITableViewController, UISearchResultsUpdating {
+    private let loadCandidates: () -> [GameOverlayMacroStore.Candidate]
+    private let makeEditor: (GameOverlayMacro) -> GameOverlayMacroEditViewController?
+    private var candidates: [GameOverlayMacroStore.Candidate] = []
+    private var groups: [[GameOverlayMacroStore.Candidate]] = []
+    private let search = UISearchController(searchResultsController: nil)
+
+    init(loadCandidates: @escaping () -> [GameOverlayMacroStore.Candidate],
+         makeEditor: @escaping (GameOverlayMacro) -> GameOverlayMacroEditViewController?) {
+        self.loadCandidates = loadCandidates
+        self.makeEditor = makeEditor
+        super.init(style: .insetGrouped)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        title = Bundle.localizedString(forKey: "overlay_macro_copy_title")
+        tableView.register(RGSectionHeaderView.self, forHeaderFooterViewReuseIdentifier: RGSectionHeaderView.className)
+        tableView.sectionHeaderHeight = UITableView.automaticDimension
+        tableView.estimatedSectionHeaderHeight = 40
+        tableView.separatorInset = .zero
+        navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in
+            self?.dismiss(animated: true)
+        })
+        search.searchResultsUpdater = self
+        search.obscuresBackgroundDuringPresentation = false
+        navigationItem.searchController = search
+        definesPresentationContext = true
+        reloadCandidates()
+    }
+
+    private func reloadCandidates() {
+        candidates = loadCandidates()
+        updateGroups()
+    }
+
+    func updateSearchResults(for searchController: UISearchController) {
+        updateGroups()
+    }
+
+    private func updateGroups() {
+        let query = (search.searchBar.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        groups = []
+        for candidate in candidates where query.isEmpty || candidate.macro.name.localizedStandardContains(query)
+            || candidate.layoutName.localizedStandardContains(query) {
+            if groups.last?.first?.layoutId == candidate.layoutId {
+                groups[groups.count - 1].append(candidate)
+            } else {
+                groups.append([candidate])
+            }
+        }
+        if candidates.isEmpty {
+            var empty = UIContentUnavailableConfiguration.empty()
+            empty.image = UIImage(systemName: "rectangle.on.rectangle")
+            empty.text = Bundle.localizedString(forKey: "overlay_macro_copy_empty")
+            contentUnavailableConfiguration = empty
+        } else {
+            contentUnavailableConfiguration = groups.isEmpty ? UIContentUnavailableConfiguration.search() : nil
+        }
+        tableView.reloadData()
+    }
+
+    override func numberOfSections(in tableView: UITableView) -> Int { groups.count }
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { groups[section].count }
+
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        guard let source = groups[section].first else { return nil }
+        let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as! RGSectionHeaderView
+        header.text = "\(source.layoutName) · \(source.idiom == .pad ? "iPad" : "iPhone")"
+        return header
+    }
+
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let macro = groups[indexPath.section][indexPath.row].macro
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
+        cell.separatorInset = .zero
+        var content = cell.defaultContentConfiguration()
+        let title = NSMutableAttributedString(attributedString: macro.buttonTitle.attributedString(
+            font: content.textProperties.font, joined: false))
+        title.append(NSAttributedString(string: "  \(macro.name)", attributes: [.font: content.textProperties.font]))
+        content.attributedText = title
+        content.secondaryText = String(format: Bundle.localizedString(forKey: "overlay_macro_copy_details"), macro.steps.count, macro.totalFrames)
+        cell.contentConfiguration = content
+        cell.accessoryType = .disclosureIndicator
+        return cell
+    }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let selected = groups[indexPath.section][indexPath.row]
+        // Recheck saved data so a removed source never creates a stale copy.
+        reloadCandidates()
+        guard let current = candidates.first(where: { $0.layoutId == selected.layoutId && $0.macro.id == selected.macro.id }),
+              let editor = makeEditor(current.macro.copyForLayout()) else { return }
+        search.isActive = false
+        navigationController?.setViewControllers([editor], animated: true)
+        navigationController?.presentationController?.delegate = editor
+    }
+}
+
 /// Only the curated, available symbols can be selected; the direction is a
 /// visual marker and does not change the sequence's input.
 final class GameOverlayMacroIconViewController: UITableViewController, UIAdaptivePresentationControllerDelegate {
@@ -364,8 +469,9 @@ final class GameOverlayMacroIconViewController: UITableViewController, UIAdaptiv
             control.selectedSegmentIndex = direction == nil ? 0 : (direction == .left ? 1 : 2)
             control.accessibilityLabel = Bundle.localizedString(forKey: "overlay_macro_direction")
             control.addAction(UIAction { [weak self, weak control] _ in
-                guard let control else { return }
-                self?.direction = control.selectedSegmentIndex == 0 ? nil : (control.selectedSegmentIndex == 1 ? .left : .right)
+                guard let self, let control else { return }
+                self.direction = control.selectedSegmentIndex == 0 ? nil : (control.selectedSegmentIndex == 1 ? .left : .right)
+                self.tableView.reloadSections(IndexSet(integersIn: 1..<(self.categories.count + 1)), with: .none)
             }, for: .valueChanged)
             row = control
         } else {
@@ -377,7 +483,8 @@ final class GameOverlayMacroIconViewController: UITableViewController, UIAdaptiv
                 guard index < symbols.count else { stack.addArrangedSubview(UIView()); continue }
                 let name = symbols[index]
                 let button = UIButton(type: .system)
-                button.setImage(UIImage(systemName: name, withConfiguration: UIImage.SymbolConfiguration(pointSize: 26)), for: .normal)
+                let image = UIImage(systemName: name, withConfiguration: UIImage.SymbolConfiguration(pointSize: 26))
+                button.setImage(direction == .left ? image?.withHorizontallyFlippedOrientation() : image, for: .normal)
                 button.tintColor = .label
                 button.backgroundColor = name == symbol ? UIColor.mainColor.withAlphaComponent(0.3) : .clear
                 button.layer.cornerRadius = 10
