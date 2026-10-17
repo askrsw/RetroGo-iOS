@@ -39,6 +39,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithCore:(EmuCoreInfoItem *)core;
+/// Call only after the core has stopped using this page's render view.
+- (void)releasePlatformOwnership;
 - (void)showInGameMessage:(EmuInGameMessage *)message NS_SWIFT_NAME(showInGameMessage(_:));
 @end
 

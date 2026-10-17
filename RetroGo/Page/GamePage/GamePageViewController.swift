@@ -64,6 +64,7 @@ final class GamePageViewController: RAGameViewController {
     private var loaded = false
     private var closeRequested = false
     private var closeFinished = false
+    private var hasLeftPresentation = false
     private var pauseSessionID: UUID?
 
     var isGameReady: Bool { loaded && !closeRequested }
@@ -329,7 +330,9 @@ final class GamePageViewController: RAGameViewController {
 
         // The game is over once the page is gone, however it was closed.
         if isBeingDismissed || isMovingFromParent {
-            GameHapticEngine.shared.stop()
+            hasLeftPresentation = true
+            if Self.instance === self { GameHapticEngine.shared.stop() }
+            releaseLaunchReservationIfClosed()
         }
     }
 
@@ -408,15 +411,42 @@ final class GamePageViewController: RAGameViewController {
         myLoadingView?.uninstall()
         myLoadingView = nil
         GameHapticEngine.shared.stop()
+        myOverlayView.endGame()
+        releasePlatformOwnership()
+        NotificationCenter.default.removeObserver(self)
         if isBeingPresented, let transitionCoordinator {
             transitionCoordinator.animate(alongsideTransition: nil) { [weak self] _ in
-                self?.dismiss(animated: true)
+                self?.dismissClosedPage()
             }
             return
         }
-        if presentingViewController != nil, !isBeingDismissed {
-            dismiss(animated: true)
+        dismissClosedPage()
+    }
+
+    private func dismissClosedPage() {
+        if hasLeftPresentation {
+            releaseLaunchReservationIfClosed()
+        } else if presentingViewController != nil, !isBeingDismissed {
+            dismiss(animated: true) { [weak self] in self?.releaseLaunchReservationIfClosed() }
+        } else if !isBeingDismissed {
+            releaseLaunchReservationIfClosed()
         }
+    }
+
+    /// Rejected UIKit presentations never reach the normal disappearance path.
+    fileprivate func verifyPresentationWasAccepted() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, !closeRequested, presentingViewController == nil, !isBeingPresented else { return }
+            RetroGoLogger.game.notice("Closing unpresented game page for core \(self.core.coreId, privacy: .public)")
+            closeGame()
+        }
+    }
+
+    /// A finished session must not reserve launch until ARC releases its page.
+    private func releaseLaunchReservationIfClosed() {
+        guard closeFinished, Self.instance === self else { return }
+        Self.instance = nil
+        RetroGoLogger.game.debug("Released closed game page launch reservation for core \(self.core.coreId, privacy: .public)")
     }
 
     private func endPauseSession() {
@@ -505,6 +535,7 @@ extension RetroArchX {
             let controller = GamePageViewController(romUrl: romUrl, core: core)
             controller.modalPresentationStyle = .fullScreen
             currentViewController.present(controller, animated: true)
+            controller.verifyPresentationWasAccepted()
         }
     }
 
@@ -528,6 +559,7 @@ extension RetroArchX {
         let controller = GamePageViewController(romItem: romItem, core: core)
         controller.modalPresentationStyle = .fullScreen
         currentViewController.present(controller, animated: true)
+        controller.verifyPresentationWasAccepted()
 
         // CRC32 + cheat-template binding are launch-adjacent conveniences, not
         // launch requirements. Keep them on a serial utility queue so playing a

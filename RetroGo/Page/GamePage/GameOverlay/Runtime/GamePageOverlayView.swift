@@ -35,6 +35,7 @@ final class GamePageOverlayView: SKView {
     /// The game whose layout choice applies; nil uses the platform choice.
     let game: RetroRomFileItem?
     private(set) var layoutSession: GameOverlayLayoutSession
+    private var hasEndedGame = false
 
     init(coreInfoItem: EmuCoreInfoItem, game: RetroRomFileItem?) {
         self.coreInfoItem = coreInfoItem
@@ -65,11 +66,13 @@ final class GamePageOverlayView: SKView {
 
     /// Re-reads which custom layout applies and shows it in place.
     func reloadCustomLayout() {
+        guard !hasEndedGame else { return }
         overlayScene?.applyLayoutData(layoutSession.resolvedLayout().item?.data)
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        guard !hasEndedGame else { return }
         if let editorScene {
             if scene !== editorScene {
                 presentScene(editorScene)
@@ -81,6 +84,18 @@ final class GamePageOverlayView: SKView {
             presentScene(overlayScene)
         }
         overlayScene?.updateLayout(for: size)
+    }
+
+    /// Retire callbacks now rather than waiting for UIKit to release the old page.
+    func endGame() {
+        guard !hasEndedGame else { return }
+        hasEndedGame = true
+        NotificationCenter.default.removeObserver(self)
+        presentScene(nil)
+        editorScene = nil
+        overlayScene = nil
+        isUserInteractionEnabled = false
+        isPaused = true
     }
 
     /// Replaces the game controls with an editor of `layoutData`; nil when this core has no overlay.
