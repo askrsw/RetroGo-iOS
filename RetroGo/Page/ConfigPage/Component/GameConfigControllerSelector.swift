@@ -134,6 +134,7 @@ private extension GameConfigControllerSelector {
                 button.configuration = configuration
                 button.accessibilityLabel = "\(editTitle), \(name)"
                 button.addAction(UIAction { [weak self] _ in
+                    Vibration.selection.vibrate()
                     self?.editMapping(layoutId: id)
                 }, for: .touchUpInside)
                 button.sizeToFit()

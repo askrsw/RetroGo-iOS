@@ -223,7 +223,7 @@ final class GameOverlayLayoutEditPanel: UIView {
             configuration.attributedTitle = AttributedString(text)
             configuration.baseBackgroundColor = member.id == state.selectedSlotId ? .mainColor : .tertiarySystemFill
             configuration.contentInsets = .init(top: 4, leading: 10, bottom: 4, trailing: 10)
-            let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in self?.onSelectMember?(member.id) })
+            let button = UIButton(configuration: configuration, primaryAction: UIAction { [weak self] _ in Vibration.selection.vibrate(); self?.onSelectMember?(member.id) })
             button.accessibilityLabel = member.title.plainText
             if member.id == state.selectedSlotId { button.accessibilityTraits.insert(.selected) }
             membersStack.addArrangedSubview(button)

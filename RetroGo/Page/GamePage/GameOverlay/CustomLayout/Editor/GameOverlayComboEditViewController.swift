@@ -89,12 +89,13 @@ final class GameOverlayComboEditViewController: UITableViewController, UIAdaptiv
         tableView.separatorInsetReference = .fromCellEdges
         title = Bundle.localizedString(forKey: combo == nil ? "overlay_combo_new" : "overlay_combo_edit_title")
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.didFinish = true
             self?.closeSheet()
         })
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: Bundle.localizedString(forKey: "overlay_layout_save"),
-            primaryAction: UIAction { [weak self] _ in self?.save() }
+            primaryAction: UIAction { [weak self] _ in Vibration.selection.vibrate(); self?.save() }
         )
         navigationItem.rightBarButtonItem?.style = .done
         updateSaveState()
@@ -197,6 +198,7 @@ final class GameOverlayComboEditViewController: UITableViewController, UIAdaptiv
             toggle.isEnabled = selected.count != 1
             toggle.onTintColor = .mainColor
             toggle.addAction(UIAction { [weak self, weak toggle] _ in
+                Vibration.selection.vibrate()
                 guard let self, let toggle else { return }
                 turbo = toggle.isOn
                 multiKeyTurbo = turbo
@@ -210,6 +212,7 @@ final class GameOverlayComboEditViewController: UITableViewController, UIAdaptiv
             toggle.isOn = shown
             toggle.onTintColor = .mainColor
             toggle.addAction(UIAction { [weak self, weak toggle] _ in
+                Vibration.selection.vibrate()
                 self?.shown = toggle?.isOn ?? true
             }, for: .valueChanged)
             cell.accessoryView = toggle
@@ -251,6 +254,7 @@ final class GameOverlayComboEditViewController: UITableViewController, UIAdaptiv
             updateSaveState()
             tableView.reloadData()
         case .delete:
+            Vibration.selection.vibrate()
             didFinish = true
             onDelete?()
             closeSheet()
@@ -346,15 +350,19 @@ final class GameOverlayComboEditViewController: UITableViewController, UIAdaptiv
         let alert = UIAlertController(title: Bundle.localizedString(forKey: "overlay_combo_unsaved_title"),
                                       message: Bundle.localizedString(forKey: "overlay_combo_unsaved_message"), preferredStyle: .alert)
         let save = UIAlertAction(title: Bundle.localizedString(forKey: "overlay_layout_save"), style: .default) { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.save()
         }
         save.isEnabled = isComplete && !isDuplicate
         alert.addAction(save)
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_combo_discard"), style: .destructive) { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.didFinish = true
             self?.closeSheet()
         })
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel))
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { _ in
+            Vibration.selection.vibrate()
+        })
         present(alert, animated: true)
     }
 }

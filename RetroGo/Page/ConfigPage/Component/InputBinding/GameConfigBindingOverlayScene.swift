@@ -291,6 +291,7 @@ private extension GameConfigBindingOverlayScene {
             presenter.configureBindingBubble(for: actionId, in: bindingBubbleLayer) { [weak self, weak presenter] in
                 guard let self, let presenter, !self.isReadOnly, !presenter.isHidden,
                       let target = self.bindingTarget(for: presenter, actionId: actionId) else { return }
+                Vibration.selection.vibrate()
                 self.setActiveBinding(presenter: presenter, actionId: actionId, target: target)
             }
         }

@@ -42,8 +42,8 @@ final class GameOverlayMacroEditViewController: UITableViewController, UIAdaptiv
         tableView.separatorInset = .zero
         tableView.separatorInsetReference = .fromCellEdges
         title = Bundle.localizedString(forKey: "overlay_macro_title")
-        navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in self?.close() })
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: Bundle.localizedString(forKey: "overlay_layout_save"), primaryAction: UIAction { [weak self] _ in self?.save() })
+        navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in Vibration.selection.vibrate(); self?.close() })
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: Bundle.localizedString(forKey: "overlay_layout_save"), primaryAction: UIAction { [weak self] _ in Vibration.selection.vibrate(); self?.save() })
         nameField.text = macro.name
         nameField.clearButtonMode = .whileEditing
         nameField.autocorrectionType = .no
@@ -54,7 +54,7 @@ final class GameOverlayMacroEditViewController: UITableViewController, UIAdaptiv
             self?.updateSaveState()
         }, for: .editingChanged)
         iconButton.tintColor = .label
-        iconButton.addAction(UIAction { [weak self] _ in self?.selectIcon() }, for: .touchUpInside)
+        iconButton.addAction(UIAction { [weak self] _ in Vibration.selection.vibrate(); self?.selectIcon() }, for: .touchUpInside)
         updateIcon()
         updateSaveState()
     }
@@ -167,7 +167,7 @@ final class GameOverlayMacroEditViewController: UITableViewController, UIAdaptiv
                 content.text = Bundle.localizedString(forKey: "overlay_combo_show_current_orientation")
                 let toggle = UISwitch()
                 toggle.isOn = shown
-                toggle.addAction(UIAction { [weak self, weak toggle] _ in self?.shown = toggle?.isOn ?? true }, for: .valueChanged)
+                toggle.addAction(UIAction { [weak self, weak toggle] _ in Vibration.selection.vibrate(); self?.shown = toggle?.isOn ?? true }, for: .valueChanged)
                 cell.accessoryView = toggle
                 cell.selectionStyle = .none
             } else {
@@ -180,6 +180,8 @@ final class GameOverlayMacroEditViewController: UITableViewController, UIAdaptiv
     }
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        guard indexPath.section == 1 || indexPath.section == 3 || (indexPath.section == 2 && indexPath.row == 1) else { return }
+        Vibration.selection.vibrate()
         view.endEditing(true)
         switch indexPath.section {
         case 1:
@@ -230,6 +232,7 @@ final class GameOverlayMacroEditViewController: UITableViewController, UIAdaptiv
     }
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         guard editingStyle == .delete, case .input(let index) = stepRows[indexPath.row] else { return }
+        Vibration.selection.vibrate()
         macro.steps.remove(at: index)
         // Remove/merge orphan waits after deleting their neighboring input.
         var clean: [GameOverlayMacro.Step] = []
@@ -245,8 +248,11 @@ final class GameOverlayMacroEditViewController: UITableViewController, UIAdaptiv
     private func refresh() { updateSaveState(); tableView.reloadData() }
     private func confirmDiscard(title: String, action: @escaping () -> Void) {
         let alert = UIAlertController(title: Bundle.localizedString(forKey: title), message: nil, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel))
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { _ in
+            Vibration.selection.vibrate()
+        })
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_macro_continue"), style: .destructive) { [weak alert] _ in
+            Vibration.selection.vibrate()
             alert?.dismiss(animated: true, completion: action)
         })
         present(alert, animated: true)
@@ -268,9 +274,11 @@ final class GameOverlayMacroEditViewController: UITableViewController, UIAdaptiv
     }
     func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
         let alert = UIAlertController(title: Bundle.localizedString(forKey: "overlay_combo_unsaved_title"), message: Bundle.localizedString(forKey: macro.isValid ? "overlay_combo_unsaved_message" : "overlay_macro_invalid"), preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel))
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_combo_discard"), style: .destructive) { [weak self] _ in self?.close() })
-        if macro.isValid { alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_layout_save"), style: .default) { [weak self] _ in self?.save() }) }
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { _ in
+            Vibration.selection.vibrate()
+        })
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_combo_discard"), style: .destructive) { [weak self] _ in Vibration.selection.vibrate(); self?.close() })
+        if macro.isValid { alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_layout_save"), style: .default) { [weak self] _ in Vibration.selection.vibrate(); self?.save() }) }
         present(alert, animated: true)
     }
 }
@@ -300,6 +308,7 @@ final class GameOverlayMacroCopyViewController: UITableViewController, UISearchR
         tableView.estimatedSectionHeaderHeight = 40
         tableView.separatorInset = .zero
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.dismiss(animated: true)
         })
         search.searchResultsUpdater = self
@@ -369,6 +378,7 @@ final class GameOverlayMacroCopyViewController: UITableViewController, UISearchR
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let selected = groups[indexPath.section][indexPath.row]
+        Vibration.selection.vibrate()
         // Recheck saved data so a removed source never creates a stale copy.
         reloadCandidates()
         guard let current = candidates.first(where: { $0.layoutId == selected.layoutId && $0.macro.id == selected.macro.id }),
@@ -409,10 +419,12 @@ final class GameOverlayMacroIconViewController: UITableViewController, UIAdaptiv
         tableView.estimatedSectionFooterHeight = 60
         tableView.separatorStyle = .none
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.finished = true
             self?.dismiss(animated: true)
         })
         navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in
+            Vibration.selection.vibrate()
             guard let self else { return }
             self.commit()
             self.dismiss(animated: true)
@@ -469,6 +481,7 @@ final class GameOverlayMacroIconViewController: UITableViewController, UIAdaptiv
             control.selectedSegmentIndex = direction == nil ? 0 : (direction == .left ? 1 : 2)
             control.accessibilityLabel = Bundle.localizedString(forKey: "overlay_macro_direction")
             control.addAction(UIAction { [weak self, weak control] _ in
+                Vibration.selection.vibrate()
                 guard let self, let control else { return }
                 self.direction = control.selectedSegmentIndex == 0 ? nil : (control.selectedSegmentIndex == 1 ? .left : .right)
                 self.tableView.reloadSections(IndexSet(integersIn: 1..<(self.categories.count + 1)), with: .none)
@@ -491,7 +504,7 @@ final class GameOverlayMacroIconViewController: UITableViewController, UIAdaptiv
                 button.accessibilityLabel = name
                 button.accessibilityTraits = name == symbol ? [.button, .selected] : .button
                 button.heightAnchor.constraint(greaterThanOrEqualToConstant: 48).isActive = true
-                button.addAction(UIAction { [weak self] _ in self?.symbol = name; self?.tableView.reloadData() }, for: .touchUpInside)
+                button.addAction(UIAction { [weak self] _ in Vibration.selection.vibrate(); self?.symbol = name; self?.tableView.reloadData() }, for: .touchUpInside)
                 stack.addArrangedSubview(button)
             }
             row = stack
@@ -504,6 +517,7 @@ final class GameOverlayMacroIconViewController: UITableViewController, UIAdaptiv
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard indexPath.section > 0, indexPath.row == 0 else { return }
+        Vibration.selection.vibrate()
         let key = categories[indexPath.section - 1].key
         if !collapsed.insert(key).inserted { collapsed.remove(key) }
         tableView.reloadSections(IndexSet(integer: indexPath.section), with: .automatic)
@@ -534,6 +548,7 @@ final class GameOverlayMacroStepViewController: UITableViewController {
         tableView.separatorInsetReference = .fromCellEdges
         title = Bundle.localizedString(forKey: isGap ? "overlay_macro_gap_title" : "overlay_macro_step_title")
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: Bundle.localizedString(forKey: "overlay_layout_save"), primaryAction: UIAction { [weak self] _ in
+            Vibration.selection.vibrate()
             guard let self, let frames = Int(self.frameField.text ?? ""), (self.isGap ? 0...600 : 1...600).contains(frames), self.isGap || !self.step.binds.isEmpty else { return }
             let binds = Set(self.step.binds)
             guard !binds.isSuperset(of: ["UP", "DOWN"]), !binds.isSuperset(of: ["LEFT", "RIGHT"]) else { return }
@@ -549,6 +564,7 @@ final class GameOverlayMacroStepViewController: UITableViewController {
         stepper.maximumValue = 600
         stepper.value = Double(step.frames)
         stepper.addAction(UIAction { [weak self] _ in
+            Vibration.selection.vibrate()
             guard let self else { return }
             self.frameField.text = String(Int(self.stepper.value))
             self.step.frames = Int(self.stepper.value)
@@ -601,6 +617,7 @@ final class GameOverlayMacroStepViewController: UITableViewController {
     }
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard indexPath.section == 1 else { return }
+        Vibration.selection.vibrate()
         let bind = keys[indexPath.row].bind.rawValue
         if let index = step.binds.firstIndex(of: bind) { step.binds.remove(at: index) }
         else { step.binds.append(bind) }

@@ -76,11 +76,12 @@ final class GameOverlayLayoutSaveViewController: UITableViewController {
         super.viewDidLoad()
         title = Bundle.localizedString(forKey: "overlay_layout_save_title")
         navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.dismiss(animated: true)
         })
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: Bundle.localizedString(forKey: "overlay_layout_save"),
-            primaryAction: UIAction { [weak self] _ in self?.save() }
+            primaryAction: UIAction { [weak self] _ in Vibration.selection.vibrate(); self?.save() }
         )
         navigationItem.rightBarButtonItem?.style = .done
 
@@ -151,6 +152,7 @@ final class GameOverlayLayoutSaveViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         guard indexPath.section == 1 else { return }
+        Vibration.selection.vibrate()
         selectedScope = sections[indexPath.section][indexPath.row]
         tableView.reloadSections(IndexSet(integer: 1), with: .none)
     }
@@ -198,7 +200,9 @@ final class GameOverlayLayoutSaveViewController: UITableViewController {
     private func completeSave(_ result: Result) {
         guard onSave(result) else {
             let alert = UIAlertController(title: nil, message: Bundle.localizedString(forKey: "overlay_layout_save_failed"), preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
+            alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default) { _ in
+                Vibration.selection.vibrate()
+            })
             present(alert, animated: true)
             return
         }

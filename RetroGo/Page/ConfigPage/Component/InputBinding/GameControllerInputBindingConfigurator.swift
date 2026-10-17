@@ -273,6 +273,7 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
 
     @objc private func resetBindings() {
         guard !isReadOnly else { return }
+        Vibration.selection.vibrate()
         overlayView?.resetToDefault()
         updateResetButton()
     }

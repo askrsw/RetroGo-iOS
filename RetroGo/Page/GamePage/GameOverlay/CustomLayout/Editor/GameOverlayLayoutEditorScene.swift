@@ -806,6 +806,7 @@ extension GameOverlayLayoutEditorScene {
         if let slot = overlayLayoutResolver.fanSlotElements.first(where: {
             overlayLayoutResolver.occupant(of: $0.id) == nil && overlayLayoutResolver.slotRect($0.id)?.contains(point) == true
         }) {
+            Vibration.selection.vibrate()
             selectFanSlot(slot.id)
             onEditSlot?(slot.id)
             return
@@ -820,6 +821,7 @@ extension GameOverlayLayoutEditorScene {
 
         drag = DragState(touch: ObjectIdentifier(touch), startPoint: point, startRect: rect,
                          startData: layoutData)
+        Vibration.selection.vibrate()
         refresh()
     }
 

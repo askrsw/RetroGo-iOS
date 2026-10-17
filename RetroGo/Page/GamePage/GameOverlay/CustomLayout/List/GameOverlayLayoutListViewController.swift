@@ -342,17 +342,21 @@ final class GameOverlayLayoutListViewController: UITableViewController {
         var actions: [UIMenuElement] = []
         if let editHandler {
             actions.append(UIAction(title: Bundle.localizedString(forKey: "overlay_layout_edit"), image: UIImage(systemName: "slider.horizontal.3")) { [weak self] _ in
+                Vibration.selection.vibrate()
                 guard let self, session.canEditLayout(id: item.id) || AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayoutEditing, from: self) else { return }
                 editHandler(.edit(item))
             })
         }
         actions.append(UIAction(title: Bundle.localizedString(forKey: "overlay_layout_rename"), image: UIImage(systemName: "pencil")) { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.rename(item)
         })
         actions.append(UIAction(title: Bundle.localizedString(forKey: "overlay_layout_duplicate"), image: UIImage(systemName: "plus.square.on.square")) { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.duplicate(item)
         })
         let delete = UIAction(title: Bundle.localizedString(forKey: "overlay_layout_delete"), image: UIImage(systemName: "trash"), attributes: .destructive) { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.confirmDelete(item)
         }
         return UIMenu(children: [UIMenu(options: .displayInline, children: actions), delete])
@@ -366,8 +370,11 @@ final class GameOverlayLayoutListViewController: UITableViewController {
             field.clearButtonMode = .whileEditing
             field.autocorrectionType = .no
         }
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel))
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { _ in
+            Vibration.selection.vibrate()
+        })
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default) { [weak self, weak alert] _ in
+            Vibration.selection.vibrate()
             guard let self, let name = alert?.textFields?.first?.text else { return }
             let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard trimmed != item.name, !trimmed.isEmpty else { return }
@@ -405,8 +412,11 @@ final class GameOverlayLayoutListViewController: UITableViewController {
             message: inUse ? Bundle.localizedString(forKey: "overlay_layout_delete_in_use") : nil,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel))
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { _ in
+            Vibration.selection.vibrate()
+        })
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_layout_delete"), style: .destructive) { [weak self] _ in
+            Vibration.selection.vibrate()
             guard let self else { return }
             if !session.deleteLayout(id: item.id) {
                 showMessage(Bundle.localizedString(forKey: "overlay_layout_save_failed"))
@@ -417,7 +427,9 @@ final class GameOverlayLayoutListViewController: UITableViewController {
 
     private func showMessage(_ message: String) {
         let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default) { _ in
+            Vibration.selection.vibrate()
+        })
         present(alert, animated: true)
     }
 

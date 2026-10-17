@@ -60,7 +60,7 @@ final class GameOverlayLayoutListCardController: UIViewController {
         view.backgroundColor = .clear
 
         let background = UIControl()
-        background.addAction(UIAction { [weak self] _ in self?.close() }, for: .touchUpInside)
+        background.addAction(UIAction { [weak self] _ in Vibration.selection.vibrate(); self?.close() }, for: .touchUpInside)
         view.addSubview(background)
         background.snp.makeConstraints { make in make.edges.equalToSuperview() }
 
@@ -78,6 +78,7 @@ final class GameOverlayLayoutListCardController: UIViewController {
         navigation.view.layer.cornerCurve = .continuous
         navigation.view.clipsToBounds = true
         listController.navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .close, primaryAction: UIAction { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.close()
         })
         addChild(navigation)

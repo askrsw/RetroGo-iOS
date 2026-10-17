@@ -66,7 +66,6 @@ final class GameOverlayLayoutEditController {
     private var panel: GameOverlayLayoutEditPanel?
     private var pauseLease: GamePauseCoordinator.Lease?
     private var completion: ((GameOverlayLayoutItem?) -> Void)?
-
     private var creationReview = GameOverlayLayoutCreationReview()
 
     var isEditing: Bool { editorScene != nil }
@@ -227,17 +226,22 @@ final class GameOverlayLayoutEditController {
         guard let gamePage, gamePage.presentedViewController == nil else { return }
         let alert = UIAlertController(title: Bundle.localizedString(forKey: "overlay_extension_new"), message: nil, preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_extension_combo"), style: .default) { [weak self, weak alert] _ in
+            Vibration.selection.vibrate()
             alert?.dismiss(animated: true) { self?.presentComboEditor(comboId: nil) }
         })
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_macro_title"), style: .default) { [weak self, weak alert] _ in
+            Vibration.selection.vibrate()
             alert?.dismiss(animated: true) { self?.presentMacroEditor(buttonId: nil) }
         })
         if !macroCopyCandidates().isEmpty {
             alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "overlay_macro_copy"), style: .default) { [weak self, weak alert] _ in
+                Vibration.selection.vibrate()
                 alert?.dismiss(animated: true) { self?.presentMacroCopyPicker() }
             })
         }
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel))
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "cancel"), style: .cancel) { _ in
+            Vibration.selection.vibrate()
+        })
         alert.popoverPresentationController?.sourceView = button
         alert.popoverPresentationController?.sourceRect = button.bounds
         gamePage.present(alert, animated: true)
@@ -406,12 +410,14 @@ final class GameOverlayLayoutEditController {
             message: String(format: Bundle.localizedString(forKey: "overlay_layout_review_orientation_message"), orientation),
             preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [weak self, weak alert] _ in
+            Vibration.selection.vibrate()
             alert?.dismiss(animated: true) {
                 guard let self, let editor = self.editorScene else { return }
                 self.presentSaveSheet(data: editor.layoutData)
             }
         })
         let edit = UIAlertAction(title: Bundle.localizedString(forKey: "overlay_layout_review_orientation_edit"), style: .default) { [weak self, weak alert] _ in
+            Vibration.selection.vibrate()
             alert?.dismiss(animated: true) {
                 guard let self, self.editorScene != nil else { return }
                 self.gamePage?.setLayoutEditingOrientation(portrait ? .portrait : .landscape)
@@ -424,7 +430,9 @@ final class GameOverlayLayoutEditController {
 
     private func showSaveFailed() {
         let alert = UIAlertController(title: nil, message: Bundle.localizedString(forKey: "overlay_layout_save_failed"), preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default) { _ in
+            Vibration.selection.vibrate()
+        })
         gamePage?.present(alert, animated: true)
     }
 
@@ -476,7 +484,7 @@ private final class GameOverlayFanSlotPickerViewController: UITableViewControlle
     override func viewDidLoad() {
         super.viewDidLoad()
         title = Bundle.localizedString(forKey: currentId == nil ? "overlay_slot_add" : "overlay_slot_replace")
-        navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in self?.dismiss(animated: true) })
+        navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .cancel, primaryAction: UIAction { [weak self] _ in Vibration.selection.vibrate(); self?.dismiss(animated: true) })
         if currentId != nil {
             navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: isHidden ? "eye.slash" : "eye"),
                 style: .plain, target: self, action: #selector(toggleHidden))
@@ -527,7 +535,7 @@ private final class GameOverlayFanSlotPickerViewController: UITableViewControlle
             text.addAttribute(.foregroundColor, value: UIColor.label, range: NSRange(location: 0, length: text.length))
             config.attributedTitle = AttributedString(text)
             if element.type == .macro { config.subtitle = element.buttonTitle }
-            let button = UIButton(configuration: config, primaryAction: UIAction { [weak self] _ in self?.choose(element.id) })
+            let button = UIButton(configuration: config, primaryAction: UIAction { [weak self] _ in Vibration.selection.vibrate(); self?.choose(element.id) })
             button.heightAnchor.constraint(greaterThanOrEqualToConstant: 48).isActive = true
             button.accessibilityLabel = element.type == .macro ? element.buttonTitle : GameOverlayComboTitle(parts: parts).plainText
             stack.addArrangedSubview(button)
@@ -541,11 +549,15 @@ private final class GameOverlayFanSlotPickerViewController: UITableViewControlle
         return cell
     }
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if indexPath.section == 3 { choose(nil) }
+        if indexPath.section == 3 {
+            Vibration.selection.vibrate()
+            choose(nil)
+        }
     }
     private func choose(_ id: String?) { onPick(id); dismiss(animated: true) }
 
     @objc private func toggleHidden() {
+        Vibration.selection.vibrate()
         isHidden.toggle()
         onToggleHidden()
         navigationItem.rightBarButtonItem?.image = UIImage(systemName: isHidden ? "eye.slash" : "eye")
@@ -583,6 +595,7 @@ private final class GameOverlayFanEditViewController: UITableViewController, UIA
         super.viewDidLoad()
         title = Bundle.localizedString(forKey: "overlay_layout_edit_fan")
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: Bundle.localizedString(forKey: "overlay_layout_reset"), primaryAction: UIAction { [weak self] _ in
+            Vibration.selection.vibrate()
             guard let self else { return }
             self.fan = .init()
             self.onChange(self.fan)
@@ -590,6 +603,7 @@ private final class GameOverlayFanEditViewController: UITableViewController, UIA
             self.updatePreview()
         })
         navigationItem.rightBarButtonItem = UIBarButtonItem(systemItem: .done, primaryAction: UIAction { [weak self] _ in
+            Vibration.selection.vibrate()
             self?.finish()
             self?.dismiss(animated: true)
         })
@@ -719,6 +733,7 @@ private final class GameOverlayFanEditViewController: UITableViewController, UIA
     @objc private func tapSlot(_ gesture: UITapGestureRecognizer) {
         let point = gesture.location(in: previewView)
         guard presentedViewController == nil, let id = previewHits.first(where: { $0.1.contains(point) })?.0 else { return }
+        Vibration.selection.vibrate()
         let current = preview().first { $0.id == id }?.element?.id
         let slot = preview().first { $0.id == id }
         let picker = GameOverlayFanSlotPickerViewController(currentId: current,
