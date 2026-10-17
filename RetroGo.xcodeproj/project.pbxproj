@@ -1577,7 +1577,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Use your camera to capture images in games that support it, such as Game Boy Camera.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "RetroGo uses the local network to find nearby players and connect for LAN multiplayer (netplay).";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location Usage";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Photo Library Usage";
@@ -1634,7 +1634,7 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "Camera Usage";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Use your camera to capture images in games that support it, such as Game Boy Camera.";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "RetroGo uses the local network to find nearby players and connect for LAN multiplayer (netplay).";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location Usage";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Photo Library Usage";
