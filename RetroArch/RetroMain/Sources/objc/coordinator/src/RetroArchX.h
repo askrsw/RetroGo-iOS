@@ -68,6 +68,8 @@ NS_ENUM(unsigned, RetroArchJoypadAxis) {
 @property(nonatomic, assign, readonly) BOOL initialized;
 @property(nonatomic, assign, readonly) BOOL dummyCoreRunning;
 @property(nonatomic, assign, readonly) BOOL inputDriverOnlyRunning;
+/// Main-thread state: a game is loading, cancelling its load, or stopping.
+@property(nonatomic, assign, readonly) BOOL gameTransitionInProgress;
 
 + (instancetype)shared;
 - (instancetype)init NS_UNAVAILABLE;

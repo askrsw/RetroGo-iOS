@@ -123,6 +123,13 @@ final class GamePageToolbarView: UIView {
     /// then rebuilds the toolbar so both the bar buttons and the More menu reflect
     /// it. save/load need savestate support; the cheat entry needs cheat support.
     func refreshActionAvailability() {
+        guard holder?.isGameReady == true else {
+            savestateSupported = false
+            cheatSupported = false
+            netplaySupported = false
+            rebuildToolbar()
+            return
+        }
         savestateSupported = RetroArchX.shared().isCurrentCoreSupportsSavestate()
         // Cheats need both engine support AND a cheat session (the rom-item-keyed
         // store); the document-browser launch path has no session.
@@ -136,6 +143,7 @@ final class GamePageToolbarView: UIView {
     /// capabilities. Drives both the bar button `isEnabled` and the menu item's
     /// `.disabled` attribute, so the two stay in sync.
     private func isActionEnabled(_ action: GameToolbarAction) -> Bool {
+        guard holder?.isGameReady == true else { return false }
         switch action {
         case .saveState, .loadState: return savestateSupported
         case .cheat:                 return cheatSupported
@@ -253,6 +261,7 @@ extension GamePageToolbarView {
     }
 
     private func rebuildToolbar() {
+        moreButton.isEnabled = holder?.isGameReady == true
         let split = currentSplit()
         rebuildBar(split.bar)
         rebuildMoreMenu(split.menu)
@@ -660,6 +669,7 @@ extension GamePageToolbarView {
 
 extension GamePageToolbarView {
     private func perform(_ action: GameToolbarAction) {
+        guard holder?.isGameReady == true else { return }
         switch action {
         case .saveState: saveStateAction()
         case .loadState: loadStateAction()
@@ -910,26 +920,7 @@ extension GamePageToolbarView {
     @objc
     func closeAction() {
         Vibration.selection.vibrate()
-
-        // Drop the engine's cheat list so it never leaks into the next game. The
-        // Swift/SQLite library is untouched; cheats are re-pushed on next launch.
-        RetroArchX.shared().clearCheats()
-        // The MAME core keeps the handed-over cheat XML for the whole process.
-        holder?.mameCheatSession?.endSession()
-
-        if AppSettings.shared.autoSaveLoadState {
-            let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: holder?.romItem)
-            _ = RetroRomFileManager.shared.saveState(rawName: name, showName: nil, sha256: holder?.romItem?.sha256, romKey: holder?.romItem?.key, autoSave: true)
-            holder?.romItem?.pulseImage = !(holder?.romItem?.pulseImage ?? false)
-            NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
-            RetroArchX.shared().stop()
-        } else {
-            NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
-            RetroArchX.shared().stop()
-        }
-
-        holder?.romUrl?.stopAccessingSecurityScopedResource()
-        holder?.dismiss(animated: true)
+        holder?.closeGame()
     }
 }
 

@@ -17,6 +17,7 @@
 "skip" = "Skip";
 "info" = "Info";
 "error" = "Error";
+"gamepage_game_closing" = "Closing game…";
 "warning" = "Warning";
 "refresh" = "Refresh";
 "tags" = "Tags";

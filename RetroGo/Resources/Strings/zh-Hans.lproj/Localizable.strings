@@ -17,6 +17,7 @@
 "skip" = "跳过";
 "info" = "信息";
 "error" = "错误";
+"gamepage_game_closing" = "正在关闭游戏…";
 "warning" = "警告";
 "refresh" = "刷新";
 "tags" = "标签";

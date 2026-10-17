@@ -62,6 +62,10 @@ final class GamePageViewController: RAGameViewController {
 
     private var myLoadingView: GamePageLoadingView?
     private var loaded = false
+    private var closeRequested = false
+    private var closeFinished = false
+
+    var isGameReady: Bool { loaded && !closeRequested }
 
     init(romUrl: URL?, core: EmuCoreInfoItem) {
         self.romItem   = nil
@@ -169,12 +173,20 @@ final class GamePageViewController: RAGameViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        myOverlayView.isUserInteractionEnabled = false
         AppStoreProFeatureGate.resetFastForwardNotice()
         configSession.configRetroArch()
         GameHapticEngine.shared.start(level: configSession.getOverlayHapticLevel())
 
-        RetroArchX.shared().start(romUrl?.path(percentEncoded: false), core: core) { [unowned self] success in
+        // Keep the render owner alive until loading (and any cancelled-load
+        // teardown) completes. A dismissed page must never leave an orphan core.
+        RetroArchX.shared().start(romUrl?.path(percentEncoded: false), core: core) { [self] success in
+            guard success, !closeRequested else {
+                finishClosing()
+                return
+            }
             loaded = true
+            myOverlayView.isUserInteractionEnabled = true
             myLoadingView?.uninstall()
             myLoadingView = nil
 
@@ -229,8 +241,13 @@ final class GamePageViewController: RAGameViewController {
         super.viewWillAppear(animated)
 
         if !loaded {
-            myLoadingView = GamePageLoadingView(frame: .zero)
-            myLoadingView?.install()
+            if myLoadingView == nil, !closeFinished {
+                myLoadingView = GamePageLoadingView(frame: .zero)
+                if closeRequested {
+                    myLoadingView?.messageLabel.text = Bundle.localizedString(forKey: "gamepage_game_closing")
+                }
+                myLoadingView?.install()
+            }
         }
 
         // Apply persisted orientation lock on entry.
@@ -289,6 +306,10 @@ final class GamePageViewController: RAGameViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
+        if isBeingDismissed || isMovingFromParent {
+            closeGame()
+        }
+
         // Restore free rotation for all other pages.
         AppDelegate.setOrientationLock(.allButUpsideDown)
     }
@@ -331,9 +352,58 @@ final class GamePageViewController: RAGameViewController {
         if Thread.isMainThread {
             inGameInfoView.showMessage(message)
         } else {
-            DispatchQueue.main.async { [unowned self] in
-                inGameInfoView.showMessage(message)
+            DispatchQueue.main.async { [weak self] in
+                self?.inGameInfoView.showMessage(message)
             }
+        }
+    }
+
+    /// A core cannot abort arbitrary ROM loading safely. Keep the page/render
+    /// owner until the cancelled load has returned and RetroArch has unloaded it.
+    func closeGame() {
+        guard !closeRequested else { return }
+        let wasReady = loaded
+        closeRequested = true
+        myToolbarView.closeButton.isEnabled = false
+        myToolbarView.isUserInteractionEnabled = false
+        myOverlayView.isUserInteractionEnabled = false
+        NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
+
+        if RetroArchX.shared().gameTransitionInProgress {
+            myLoadingView?.messageLabel.text = Bundle.localizedString(forKey: "gamepage_game_closing")
+            RetroArchX.shared().stop()
+            return
+        }
+
+        if wasReady {
+            // Do not touch cheats or save states during a background core load.
+            RetroArchX.shared().clearCheats()
+            mameCheatSession?.endSession()
+            if AppSettings.shared.autoSaveLoadState {
+                let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: romItem)
+                _ = RetroRomFileManager.shared.saveState(rawName: name, showName: nil, sha256: romItem?.sha256, romKey: romItem?.key, autoSave: true)
+                romItem?.pulseImage = !(romItem?.pulseImage ?? false)
+            }
+            RetroArchX.shared().stop()
+        }
+        finishClosing()
+    }
+
+    private func finishClosing() {
+        guard !closeFinished else { return }
+        closeRequested = true
+        closeFinished = true
+        myLoadingView?.uninstall()
+        myLoadingView = nil
+        GameHapticEngine.shared.stop()
+        if isBeingPresented, let transitionCoordinator {
+            transitionCoordinator.animate(alongsideTransition: nil) { [weak self] _ in
+                self?.dismiss(animated: true)
+            }
+            return
+        }
+        if presentingViewController != nil, !isBeingDismissed {
+            dismiss(animated: true)
         }
     }
 }
@@ -341,7 +411,7 @@ final class GamePageViewController: RAGameViewController {
 extension GamePageViewController {
     @objc
     private func appWillResignActive() {
-        if Self.instance == self {
+        if Self.instance == self, isGameReady {
             NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
             if let startDate = startDate {
                 let diff = Date().timeIntervalSince(startDate)
@@ -362,7 +432,7 @@ extension GamePageViewController {
 
     @objc
     private func appWillBecomeActive() {
-        if Self.instance == self {
+        if Self.instance == self, isGameReady {
             if self.startDate == nil {
                 startDate = Date()
             }
@@ -403,8 +473,10 @@ enum GameLaunchBackgroundPreparation {
 
 extension RetroArchX {
     static func playGame(romUrl: URL?, core: EmuCoreInfoItem) {
+        guard !shared().gameTransitionInProgress, GamePageViewController.instance == nil else { return }
         guard MainActor.assumeIsolated({ GameFreePlayQuota.allowLaunch(core: core) }) else { return }
         CoreBiosLaunchCheck.run(core: core) {
+            guard !shared().gameTransitionInProgress, GamePageViewController.instance == nil else { return }
             guard let currentViewController = UIViewController.currentActive() else {
                 return
             }
@@ -415,6 +487,7 @@ extension RetroArchX {
     }
 
     static func playGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
+        guard !shared().gameTransitionInProgress, GamePageViewController.instance == nil else { return }
         guard MainActor.assumeIsolated({ GameFreePlayQuota.allowLaunch(core: core) }) else { return }
         // Cores that need a BIOS are checked for it, MAME sets for missing files.
         CoreBiosLaunchCheck.run(core: core) {
@@ -425,6 +498,7 @@ extension RetroArchX {
     }
 
     private static func presentGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
+        guard !shared().gameTransitionInProgress, GamePageViewController.instance == nil else { return }
         guard let currentViewController = UIViewController.currentActive() else {
             return
         }

@@ -67,6 +67,8 @@ typedef void (^RetroArchXEmuFrameCallback)(void);
 @property(nonatomic, strong, nullable, readonly) EmuCoreInfoItem *currentCoreItem;
 @property(nonatomic, assign, readonly) BOOL initialized;
 @property(nonatomic, assign, readonly) BOOL dummyCoreRunning;
+/// Main-thread state: a game is loading, cancelling its load, or stopping.
+@property(nonatomic, assign, readonly) BOOL gameTransitionInProgress;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)shared;
