@@ -73,11 +73,16 @@ final class GameOverlayLayoutEditController {
             guard session.canEditLayout(id: item.id) || AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayoutEditing, from: gamePage) else { return false }
             data = item.data
         }
-        guard !isEditing, let gamePage, let editor = overlayView.beginEditing(layoutData: data) else { return false }
+        guard !isEditing, let gamePage, gamePage.isGameReady,
+              let lease = GamePauseCoordinator.shared.acquire(reason: "overlay-layout-edit") else { return false }
+        guard let editor = overlayView.beginEditing(layoutData: data) else {
+            lease.release()
+            return false
+        }
         self.target = target
         self.completion = completion
         editorScene = editor
-        pauseLease = GamePauseCoordinator.shared.acquire(reason: "overlay-layout-edit")
+        pauseLease = lease
         gamePage.toolbarView.isHidden = true
         // The screen stays in the orientation being edited until the panel switches it.
         gamePage.setLayoutEditingOrientation(editor.isPortrait ? .portrait : .landscape)

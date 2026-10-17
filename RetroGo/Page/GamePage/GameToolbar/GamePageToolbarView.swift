@@ -51,7 +51,8 @@ final class GamePageToolbarView: UIView {
     /// still-closing overlay.
     private var menuPauseLease: GamePauseCoordinator.Lease?
 
-    private var isGamePaused = false
+    private var manualPauseLease: GamePauseCoordinator.Lease?
+    private var isGamePaused: Bool { manualPauseLease != nil }
     private(set) var isGameMuted = false
 
     /// Brand-color plate shown behind the lock glyph when landscape is locked,
@@ -117,6 +118,8 @@ final class GamePageToolbarView: UIView {
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+        menuPauseLease?.release()
+        manualPauseLease?.release()
     }
 
     /// Refreshes per-action availability from the running core's capabilities,
@@ -188,12 +191,14 @@ extension GamePageToolbarView {
         // for as long as the menu is open (resumed when it dismisses).
         moreButton.onMenuWillShow = { [weak self] in
             Vibration.selection.vibrate()
-            self?.menuPauseLease = GamePauseCoordinator.shared.acquire(reason: "toolbar-more-menu")
+            guard let self, menuPauseLease == nil else { return }
+            menuPauseLease = GamePauseCoordinator.shared.acquire(reason: "toolbar-more-menu")
         }
         moreButton.onMenuWillHide = { [weak self] _ in
-            DispatchQueue.main.async { [weak self] in
-                self?.menuPauseLease?.release()
-                self?.menuPauseLease = nil
+            let lease = self?.menuPauseLease
+            self?.menuPauseLease = nil
+            DispatchQueue.main.async {
+                lease?.release()
             }
         }
         moreButton.sizeToFit()
@@ -802,23 +807,13 @@ extension GamePageToolbarView {
     private func pauseResumeAction() {
         Vibration.selection.vibrate()
 
-        let success: Bool
-        if isGamePaused {
-            success = RetroArchX.shared().resume()
-            if success {
-                isGamePaused = false
-            }
+        if let lease = manualPauseLease {
+            manualPauseLease = nil
+            lease.release()
         } else {
-            NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
-            success = RetroArchX.shared().pause()
-            if success {
-                isGamePaused = true
-            }
+            manualPauseLease = GamePauseCoordinator.shared.acquire(reason: "toolbar-manual-pause")
         }
-
-        if success {
-            updatePauseResumeAppearance()
-        }
+        updatePauseResumeAppearance()
     }
 
     private func muteAction() {

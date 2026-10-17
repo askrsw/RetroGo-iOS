@@ -36,6 +36,7 @@ final class GameOverlayLayoutListCardController: UIViewController {
     private let card = UIView()
     private var pauseLease: GamePauseCoordinator.Lease?
     private var contentSizeObservation: NSKeyValueObservation?
+    private var isClosing = false
 
     init(listController: GameOverlayLayoutListViewController) {
         self.listController = listController
@@ -119,11 +120,24 @@ final class GameOverlayLayoutListCardController: UIViewController {
         }
     }
 
-    func close(completion: (() -> Void)? = nil) {
-        dismiss(animated: true) { [weak self] in
-            self?.pauseLease?.release()
-            self?.pauseLease = nil
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if isClosingOrBeingDismissedFromGamePauseContext() {
+            pauseLease?.release()
+            pauseLease = nil
+        }
+    }
+
+    @discardableResult
+    func close(completion: (() -> Void)? = nil) -> Bool {
+        guard !isClosing else { return false }
+        isClosing = true
+        let lease = pauseLease
+        pauseLease = nil
+        dismiss(animated: true) {
+            lease?.release()
             completion?()
         }
+        return true
     }
 }

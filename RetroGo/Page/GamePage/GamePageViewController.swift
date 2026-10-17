@@ -64,6 +64,7 @@ final class GamePageViewController: RAGameViewController {
     private var loaded = false
     private var closeRequested = false
     private var closeFinished = false
+    private var pauseSessionID: UUID?
 
     var isGameReady: Bool { loaded && !closeRequested }
 
@@ -186,6 +187,13 @@ final class GamePageViewController: RAGameViewController {
                 return
             }
             loaded = true
+            // RetroArchX delivers completion on the main thread, but its ObjC
+            // block type does not express MainActor isolation to Swift.
+            pauseSessionID = MainActor.assumeIsolated {
+                GamePauseCoordinator.shared.beginSession(
+                    applicationIsActive: UIApplication.shared.applicationState == .active
+                )
+            }
             myOverlayView.isUserInteractionEnabled = true
             myLoadingView?.uninstall()
             myLoadingView = nil
@@ -265,12 +273,14 @@ final class GamePageViewController: RAGameViewController {
         let list = GameOverlayLayoutListViewController(session: myOverlayView.layoutSession)
         let card = GameOverlayLayoutListCardController(listController: list)
         list.editHandler = { [weak self, weak card] request in
+            guard let card else { return }
             // Keeps the game paused from the list closing until the editor takes over.
             let bridge = GamePauseCoordinator.shared.acquire(reason: "overlay-layout-list-to-edit")
-            card?.close { [weak self] in
+            let closing = card.close { [weak self] in
                 self?.editOverlayLayout(request)
                 bridge?.release()
             }
+            if !closing { bridge?.release() }
         }
         present(card, animated: true)
     }
@@ -364,6 +374,7 @@ final class GamePageViewController: RAGameViewController {
         guard !closeRequested else { return }
         let wasReady = loaded
         closeRequested = true
+        endPauseSession()
         myToolbarView.closeButton.isEnabled = false
         myToolbarView.isUserInteractionEnabled = false
         myOverlayView.isUserInteractionEnabled = false
@@ -393,6 +404,7 @@ final class GamePageViewController: RAGameViewController {
         guard !closeFinished else { return }
         closeRequested = true
         closeFinished = true
+        endPauseSession()
         myLoadingView?.uninstall()
         myLoadingView = nil
         GameHapticEngine.shared.stop()
@@ -405,6 +417,12 @@ final class GamePageViewController: RAGameViewController {
         if presentingViewController != nil, !isBeingDismissed {
             dismiss(animated: true)
         }
+    }
+
+    private func endPauseSession() {
+        guard let id = pauseSessionID else { return }
+        pauseSessionID = nil
+        GamePauseCoordinator.shared.endSession(id)
     }
 }
 
@@ -426,7 +444,9 @@ extension GamePageViewController {
                 romItem?.pulseImage = !(romItem?.pulseImage ?? false)
             }
 
-            RetroArchX.shared().pause()
+            if let id = pauseSessionID {
+                GamePauseCoordinator.shared.setApplicationActive(false, for: id)
+            }
         }
     }
 
@@ -437,7 +457,9 @@ extension GamePageViewController {
                 startDate = Date()
             }
 
-            if !GamePauseCoordinator.shared.isHoldingPause { RetroArchX.shared().resume() }
+            if let id = pauseSessionID {
+                GamePauseCoordinator.shared.setApplicationActive(true, for: id)
+            }
         }
     }
 
