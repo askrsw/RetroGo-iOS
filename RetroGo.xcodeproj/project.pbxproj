@@ -232,6 +232,7 @@
 		C01920260919000000000001 /* GameCoreOptionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000003 /* GameCoreOptionCatalog.swift */; };
 		C01920260919000000000002 /* GameCoreOptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000004 /* GameCoreOptionViewController.swift */; };
 		C02120260921000000000001 /* emu.mame.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C02120260921000000000002 /* emu.mame.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AC1610160000000000000001 /* emu.mgba.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AC1610160000000000000002 /* emu.mgba.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -259,6 +260,7 @@
 				AB11A5692F9941BF00C32E39 /* emu.pcsx-rearmed.framework in CopyFiles */,
 				AB11A56A2F9941BF00C32E39 /* emu.ppsspp.framework in CopyFiles */,
 				AB11A56B2F9941BF00C32E39 /* emu.vbam.framework in CopyFiles */,
+				AC1610160000000000000001 /* emu.mgba.framework in CopyFiles */,
 				AB11A56C2F9941BF00C32E39 /* emu.yabause.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -500,6 +502,7 @@
 		C01920260919000000000003 /* GameCoreOptionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionCatalog.swift; sourceTree = "<group>"; };
 		C01920260919000000000004 /* GameCoreOptionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoreOptionViewController.swift; sourceTree = "<group>"; };
 		C02120260921000000000002 /* emu.mame.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.mame.framework; sourceTree = "<group>"; };
+		AC1610160000000000000002 /* emu.mgba.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = emu.mgba.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -846,6 +849,7 @@
 				ABBC8ACB2F5E5504007E1669 /* emu.pcsx-rearmed.framework */,
 				ABBC8ACC2F5E5504007E1669 /* emu.ppsspp.framework */,
 				ABBC8ACD2F5E5504007E1669 /* emu.vbam.framework */,
+				AC1610160000000000000002 /* emu.mgba.framework */,
 				ABBC8ACE2F5E5504007E1669 /* emu.yabause.framework */,
 			);
 			path = Cores;

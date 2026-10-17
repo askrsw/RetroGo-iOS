@@ -39,9 +39,10 @@ enum GameFreePlayQuota {
 
     /// The free core of each platform that has more than one; a platform with a
     /// single core uses that core.
-    private static let freeCoreByPlatform: [String: String] = [
+    nonisolated private static let freeCoreByPlatform: [String: String] = [
         "nes": "fceumm",
         "game_boy": "gambatte",
+        "game_boy_advance": "vbam",
         "playstation": "pcsx-rearmed",
         "sega_saturn": "yabause",
     ]
@@ -95,12 +96,18 @@ enum GameFreePlayQuota {
         return String(format: formatter, core.displayName, freeCore.displayName)
     }
 
-    private static func isFreeCore(_ core: EmuCoreInfoItem) -> Bool {
+    /// Automatic launches prefer a free core for every user. Keep candidate
+    /// order as the tie-breaker, independent of StoreKit entitlement updates.
+    nonisolated static func preferredDefaultCore(in cores: [EmuCoreInfoItem]) -> EmuCoreInfoItem? {
+        cores.first(where: isFreeCore) ?? cores.first
+    }
+
+    nonisolated private static func isFreeCore(_ core: EmuCoreInfoItem) -> Bool {
         guard let freeCoreId = freeCoreByPlatform[platform(of: core)] else { return true }
         return core.coreId == freeCoreId
     }
 
-    private static func platform(of core: EmuCoreInfoItem) -> String {
+    nonisolated private static func platform(of core: EmuCoreInfoItem) -> String {
         core.systemID ?? core.coreId
     }
 }

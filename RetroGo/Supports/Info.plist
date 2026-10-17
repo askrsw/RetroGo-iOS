@@ -299,6 +299,27 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
+			<string>Nintendo - Game Boy Advance (mGBA)</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.haharsw.pudge.mgba</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>gb</string>
+					<string>gbc</string>
+					<string>gba</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/x-mgba-rom</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
 			<string>Nintendo - Game Boy / Color (Gearboy)</string>
 			<key>UTTypeIdentifier</key>
 			<string>com.haharsw.pudge.gearboy</string>

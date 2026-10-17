@@ -1,0 +1,17 @@
+{
+    "desc": {
+        "en": "mGBA is a Game Boy Advance emulator focused on accuracy, performance and compatibility. This libretro core also supports Game Boy and Game Boy Color games. BIOS files are optional.",
+        "zh": "mGBA 是一款注重模拟精度、性能和兼容性的 Game Boy Advance 模拟器。此 Libretro 核心也支持 Game Boy 和 Game Boy Color 游戏，无需 BIOS 即可运行。"
+    },
+    "licenses": [
+        {
+            "show_name": "MPL 2.0",
+            "file_name": "mpl-2.0.txt"
+        }
+    ],
+    "src_url": "https://github.com/libretro/mgba",
+    "supports_analog": false,
+    "overlay": "gba",
+    "supports_logic_thread": true,
+    "allows_default_turbo_xy_hijack": true
+}
