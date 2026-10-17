@@ -787,6 +787,9 @@
 
 "overlay_layout_edit_title" = "Edit Controls";
 "overlay_layout_portrait" = "Portrait";
+"overlay_layout_review_orientation_title" = "%@ Layout Not Edited";
+"overlay_layout_review_orientation_message" = "The %@ button positions have not been adjusted. Would you like to edit them now?";
+"overlay_layout_review_orientation_edit" = "Edit Now";
 "overlay_layout_rotate_to" = "Switch to %@";
 "overlay_layout_members" = "Members";
 "overlay_layout_detach" = "Remove from Fan";

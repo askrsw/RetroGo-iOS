@@ -136,6 +136,8 @@ final class GameOverlayLayoutEditPanel: UIView {
         onEditCombo?(id)
     }
     private let detailStack = UIStackView()
+    private let contentStack = UIStackView()
+    private static let contentInsets = UIEdgeInsets(top: 19, left: 12, bottom: 12, right: 12)
     private let groupBlock = UIStackView()
     private let membersStack = UIStackView()
     private lazy var fanButton = makeIconButton(Self.editSymbol, label: "overlay_layout_edit_fan") { [weak self] in self?.onEditFan?() }
@@ -230,6 +232,19 @@ final class GameOverlayLayoutEditPanel: UIView {
         if noteChanged || groupChanged {
             onSizeChanged?()
         }
+    }
+
+    /// Measure the content independently of the panel's previous frame height.
+    func fittingHeight(for width: CGFloat) -> CGFloat {
+        // Match the horizontal constraints before measuring after a rotation.
+        bounds.size.width = width
+        let insets = Self.contentInsets
+        let contentHeight = contentStack.systemLayoutSizeFitting(
+            CGSize(width: max(1, width - insets.left - insets.right), height: UIView.layoutFittingCompressedSize.height),
+            withHorizontalFittingPriority: .required,
+            verticalFittingPriority: .fittingSizeLevel
+        ).height
+        return insets.top + ceil(contentHeight) + insets.bottom
     }
 
     /// Keeps the panel inside `area` after a drag, a fold or a rotation.
@@ -361,7 +376,8 @@ private extension GameOverlayLayoutEditPanel {
         toolRow.spacing = 8
         toolRow.alignment = .center
 
-        let stack = UIStackView(arrangedSubviews: [titleRow, noteLabel, detailStack, toolRow])
+        let stack = contentStack
+        [titleRow, noteLabel, detailStack, toolRow].forEach(stack.addArrangedSubview)
         stack.axis = .vertical
         stack.spacing = 10
 
@@ -374,9 +390,11 @@ private extension GameOverlayLayoutEditPanel {
             make.height.equalTo(5)
         }
         stack.snp.makeConstraints { make in
-            make.top.equalTo(handle.snp.bottom).offset(8)
-            make.leading.trailing.equalToSuperview().inset(12)
-            make.bottom.equalToSuperview().inset(12)
+            make.top.equalToSuperview().offset(Self.contentInsets.top)
+            make.leading.equalToSuperview().offset(Self.contentInsets.left)
+            make.trailing.equalToSuperview().inset(Self.contentInsets.right)
+            // Height follows the stack's content. A bottom constraint would tie
+            // unfolding content to the panel's still-collapsed frame height.
         }
 
         // The whole panel is the drag handle; its controls keep their own touches.

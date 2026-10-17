@@ -29,6 +29,21 @@ import os
 import RACoordinator
 import SpriteKit
 
+/// Review belongs to one new-layout draft, not to persisted layout JSON.
+struct GameOverlayLayoutCreationReview {
+    private var confirmedOrientations: Set<Bool> = []
+    private(set) var didRemind = false
+
+    mutating func confirm(portrait: Bool) { confirmedOrientations.insert(portrait) }
+
+    mutating func orientationNeedingReview(currentPortrait: Bool, editedOrientations: Set<Bool>, hasCustomChanges: Bool) -> Bool? {
+        let other = !currentPortrait
+        guard hasCustomChanges, !didRemind, !confirmedOrientations.contains(other), !editedOrientations.contains(other) else { return nil }
+        didRemind = true
+        return other
+    }
+}
+
 /// Runs one editing session of a control layout on the game page: the game is
 /// paused and its toolbar hidden, the overlay shows the editor scene, and a
 /// floating panel holds the editing tools.
@@ -51,6 +66,8 @@ final class GameOverlayLayoutEditController {
     private var panel: GameOverlayLayoutEditPanel?
     private var pauseLease: GamePauseCoordinator.Lease?
     private var completion: ((GameOverlayLayoutItem?) -> Void)?
+
+    private var creationReview = GameOverlayLayoutCreationReview()
 
     var isEditing: Bool { editorScene != nil }
 
@@ -80,6 +97,7 @@ final class GameOverlayLayoutEditController {
             return false
         }
         self.target = target
+        creationReview = GameOverlayLayoutCreationReview()
         self.completion = completion
         editorScene = editor
         pauseLease = lease
@@ -286,9 +304,10 @@ final class GameOverlayLayoutEditController {
             controller.onDelete = { [weak editor] in editor?.removeCombo(id: combo.id) }
         }
         let navigation = UINavigationController(rootViewController: controller)
-        if let sheet = navigation.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.selectedDetentIdentifier = .large
+        if gamePage.traitCollection.userInterfaceIdiom == .pad {
+            navigation.modalPresentationStyle = .formSheet
+        } else if let sheet = navigation.sheetPresentationController {
+            sheet.detents = [.large()]
             sheet.prefersGrabberVisible = true
         }
         navigation.presentationController?.delegate = controller
@@ -309,11 +328,7 @@ final class GameOverlayLayoutEditController {
         guard let panel, let view = gamePage?.view else { return }
         let area = view.bounds.inset(by: view.safeAreaInsets)
         let width = min(Self.panelMaxWidth, area.width - 32)
-        let height = panel.systemLayoutSizeFitting(
-            CGSize(width: width, height: UIView.layoutFittingCompressedSize.height),
-            withHorizontalFittingPriority: .required,
-            verticalFittingPriority: .fittingSizeLevel
-        ).height
+        let height = panel.fittingHeight(for: width)
         let center = panel.center
         panel.bounds = CGRect(x: 0, y: 0, width: width, height: height)
         panel.center = center
@@ -338,7 +353,14 @@ final class GameOverlayLayoutEditController {
             // Checked again here: the list may have been opened before a purchase was refunded.
             guard session.canCreateAnotherLayout ||
                   AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayout, from: gamePage) else { return }
-            presentSaveSheet(data: editor.layoutData)
+            creationReview.confirm(portrait: editor.isPortrait)
+            if let portrait = creationReview.orientationNeedingReview(
+                currentPortrait: editor.isPortrait, editedOrientations: editor.editedOrientations,
+                hasCustomChanges: editor.hasCustomChanges) {
+                presentOrientationReminder(portrait: portrait)
+            } else {
+                presentSaveSheet(data: editor.layoutData)
+            }
         }
     }
 
@@ -377,6 +399,29 @@ final class GameOverlayLayoutEditController {
         gamePage.present(navigation, animated: true)
     }
 
+    private func presentOrientationReminder(portrait: Bool) {
+        let orientation = Bundle.localizedString(forKey: portrait ? "overlay_layout_portrait" : "overlay_layout_landscape")
+        let alert = UIAlertController(
+            title: String(format: Bundle.localizedString(forKey: "overlay_layout_review_orientation_title"), orientation),
+            message: String(format: Bundle.localizedString(forKey: "overlay_layout_review_orientation_message"), orientation),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "skip"), style: .default) { [weak self, weak alert] _ in
+            alert?.dismiss(animated: true) {
+                guard let self, let editor = self.editorScene else { return }
+                self.presentSaveSheet(data: editor.layoutData)
+            }
+        })
+        let edit = UIAlertAction(title: Bundle.localizedString(forKey: "overlay_layout_review_orientation_edit"), style: .default) { [weak self, weak alert] _ in
+            alert?.dismiss(animated: true) {
+                guard let self, self.editorScene != nil else { return }
+                self.gamePage?.setLayoutEditingOrientation(portrait ? .portrait : .landscape)
+            }
+        }
+        alert.addAction(edit)
+        alert.preferredAction = edit
+        gamePage?.present(alert, animated: true)
+    }
+
     private func showSaveFailed() {
         let alert = UIAlertController(title: nil, message: Bundle.localizedString(forKey: "overlay_layout_save_failed"), preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
@@ -387,6 +432,7 @@ final class GameOverlayLayoutEditController {
         guard editorScene != nil else { return }
         editorScene = nil
         target = nil
+        creationReview = GameOverlayLayoutCreationReview()
 
         panel?.removeFromSuperview()
         panel = nil

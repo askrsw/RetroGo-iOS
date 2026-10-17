@@ -52,6 +52,10 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
     let usePolarLayout = true
 
     private(set) var layoutData: GameOverlayLayoutData
+    private let initialLayoutData: GameOverlayLayoutData
+    var hasCustomChanges: Bool { layoutData != initialLayoutData }
+    /// Session-only: automatic placement in the other orientation does not count as review.
+    private(set) var editedOrientations: Set<Bool> = []
     var macroDefinitions: [GameOverlayMacro] { layoutData.macros ?? [] }
     var macrosToSave: [GameOverlayMacro] { macroDefinitions }
     private(set) var selectedSlotId: String?
@@ -98,6 +102,7 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
         self.config = config.withCombos(from: layoutData)
         self.supportsAnalog = supportsAnalog
         self.layoutData = layoutData
+        self.initialLayoutData = layoutData
         self.overlayLayoutResolver = GameOverlayLayoutResolver(config: self.config)
         self.overlayLayoutResolver.layoutData = layoutData
         super.init(size: size)
@@ -629,6 +634,9 @@ private extension GameOverlayLayoutEditorScene {
     }
 
     func setLayoutData(_ data: GameOverlayLayoutData) {
+        if data.orientation(portrait: isPortrait) != layoutData.orientation(portrait: isPortrait) {
+            editedOrientations.insert(isPortrait)
+        }
         let combosChanged = data.combos != layoutData.combos || data.macros != layoutData.macros
         layoutData = data
         overlayLayoutResolver.layoutData = data

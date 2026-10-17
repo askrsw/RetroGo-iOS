@@ -789,6 +789,9 @@
 
 "overlay_layout_edit_title" = "编辑屏幕按键";
 "overlay_layout_portrait" = "竖屏";
+"overlay_layout_review_orientation_title" = "%@布局尚未编辑";
+"overlay_layout_review_orientation_message" = "尚未调整%@布局的按键位置，是否现在去编辑？";
+"overlay_layout_review_orientation_edit" = "去编辑";
 "overlay_layout_rotate_to" = "切换为%@";
 "overlay_layout_members" = "按键成员";
 "overlay_layout_detach" = "移出扇形";
