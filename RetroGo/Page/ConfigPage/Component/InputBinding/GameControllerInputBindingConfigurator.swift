@@ -2,7 +2,7 @@
 //  GameControllerInputBindingConfigurator.swift
 //  RetroGo
 //
-//  Created by haharsw on 2026/4/29.
+//  Created by haharsw on 2026/5/8.
 //  Copyright © 2026 haharsw. All rights reserved.
 //
 //  ---------------------------------------------------------------------------------
