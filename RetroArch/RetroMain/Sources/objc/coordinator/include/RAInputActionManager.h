@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger, RAInputActionKind) {
     RAInputActionKindJoypadOutput = 0,
     RAInputActionKindFastForward,
+    RAInputActionKindMacro,
 };
 
 typedef NS_ENUM(NSInteger, RAInputActionHandlingResult) {
@@ -59,6 +60,8 @@ typedef void (^RAInputTopologyChangedHandler)(void);
 @property(nonatomic, assign, readonly) RAInputActionKind kind;
 @property(nonatomic, copy, readonly) NSArray<NSNumber *> *outputJoypadCodes;
 @property(nonatomic, assign, readonly) BOOL turboEnabled;
+@property(nonatomic, copy, readonly) NSArray<RAMacroInputStep *> *macroSteps;
++ (instancetype)macroActionWithIdentifier:(NSString *)identifier displayName:(NSString *)displayName steps:(NSArray<RAMacroInputStep *> *)steps;
 
 + (instancetype)joypadOutputActionWithIdentifier:(NSString *)identifier displayName:(NSString *)displayName outputJoypadCodes:(NSArray<NSNumber *> *)outputJoypadCodes turboEnabled:(BOOL)turboEnabled;
 + (instancetype)comboActionWithIdentifier:(NSString *)identifier displayName:(NSString *)displayName outputJoypadCodes:(NSArray<NSNumber *> *)outputJoypadCodes;
@@ -98,6 +101,9 @@ typedef void (^RAInputTopologyChangedHandler)(void);
 
 - (void)applyInputBindingProfile:(nullable RAInputBindingProfile *)profile coreCapabilities:(nullable RAInputCoreCapabilities *)capabilities useLock:(BOOL)useLock;
 - (void)setActionDescriptor:(RAInputActionDescriptor *)descriptor useLock:(BOOL)useLock;
+- (void)unbindActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;
+- (void)cancelMacrosUseLock:(BOOL)useLock;
+- (void)acceptCurrentBindingsUseLock:(BOOL)useLock;
 - (void)bindPhysicalSourceIdentifier:(NSString *)sourceIdentifier toActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;
 - (void)bindPhysicalSource:(RAInputPhysicalSource *)source toActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;
 - (nullable NSString *)physicalSourceIdentifierForActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;

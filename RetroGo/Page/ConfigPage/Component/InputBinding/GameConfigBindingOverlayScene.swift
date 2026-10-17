@@ -32,6 +32,9 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
     private var actionButtons: [GameOverlayActionButton] = []
     private var n64CButton: GameOverlayN64CButton?
     private var fastButton: GameOverLayFastButton?
+    private var previewNodes: [GameOverlayElementLayout] = []
+    private let bindingBubbleLayer = SKNode()
+    private let previewCamera = SKCameraNode()
     private var bindingDisplayNames: [RetroArchJoypadCode: String] = [:]
     private var activeBinding: ActiveBinding?
 
@@ -46,9 +49,10 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
     let inputActionManager: RAInputActionManager
     let overlayTheme: GameOverlayTheme
     let isReadOnly: Bool
+    let layoutData: GameOverlayLayoutData?
 
     var overlayLayoutResolver: GameOverlayLayoutResolver
-    var usePolarLayout = false
+    var usePolarLayout = true
 
     var onDirtyChanged: ((Bool) -> Void)?
     var shouldAllowBindingChange: (() -> Bool)?
@@ -57,11 +61,15 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
         size: CGSize,
         config: GamePageOverlayConfig,
         playerIndex: Int,
+        layoutData: GameOverlayLayoutData? = nil,
         overlayTheme: GameOverlayTheme = .bindingConfiguration,
         isReadOnly: Bool = false
     ) {
-        self.config = config
-        self.overlayLayoutResolver = GameOverlayLayoutResolver(config: config)
+        let resolvedConfig = config.withCombos(from: layoutData)
+        self.config = resolvedConfig
+        self.layoutData = layoutData
+        self.overlayLayoutResolver = GameOverlayLayoutResolver(config: resolvedConfig)
+        self.overlayLayoutResolver.layoutData = layoutData
         self.playerIndex = playerIndex
         self.inputActionManager = RAInputActionManager.shared()
         self.overlayTheme = overlayTheme
@@ -79,6 +87,10 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
         }
 
         updateOverlayLayout(for: size)
+        bindingBubbleLayer.zPosition = 1000
+        addChild(bindingBubbleLayer)
+        addChild(previewCamera)
+        camera = previewCamera
         buildNodes()
 
         if !isReadOnly {
@@ -88,7 +100,6 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
 
     deinit {
         inputActionManager.physicalSourcePressHandler = nil
-        inputActionManager.fastForwardMultiplierProvider = nil
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -99,6 +110,11 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
         updateOverlayLayout(for: size)
         layoutNodes()
     }
+
+    /// Resolve at gameplay size, then scale the entire scene uniformly into the card.
+    /// Resolving in a shorter/narrower viewport changes distances between edge-anchored
+    /// custom controls and polar groups, even when their saved geometry is identical.
+
 
     func resetToDefault() {
         guard !isReadOnly else { return }
@@ -111,6 +127,14 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
 
     func exportBindingProfileForPersistence() -> RAInputBindingProfile? {
         inputActionManager.exportInputBindingProfileUseLock(true)
+    }
+
+    func resumeBindingCapture() {
+        guard !isReadOnly else { return }
+        activeBinding = nil
+        registerPhysicalSourcePressHandler()
+        reloadBindingDisplayNames()
+        refreshBindingBubbles()
     }
 }
 
@@ -155,10 +179,15 @@ private extension GameConfigBindingOverlayScene {
 
     func layoutNodes() {
         let nodes: [GameOverlayElementLayout] = [dpad, n64CButton, fastButton].compactMap({ $0 }) + actionButtons
-        for node in nodes {
+        for node in nodes + previewNodes {
             let rect = resolveOverlayRect(node.element)
+            if let button = node as? GameOverlayActionButton {
+                button.usesFanStyle = overlayLayoutResolver.fanGroup(for: node.element) != nil
+            }
             _ = node.updateRect(rect, shouldUpdatePosition: true)
-            configureBindingBubbles(for: node)
+            node.zRotation = resolveOverlayRotation(node.element, rotatesWithPolarLayout: node is GameOverlayActionButton || node is GameOverLayFastButton)
+            node.isHidden = node.element.isHidden || overlayLayoutResolver.isHiddenByCustomLayout(node.element)
+            if node.isUserInteractionEnabled { configureBindingBubbles(for: node) }
         }
     }
 
@@ -173,13 +202,16 @@ private extension GameConfigBindingOverlayScene {
             }
             self.dpad = dpad
             node = dpad
-        case .button:
+        case .button, .combo, .macro:
             let button = GameOverlayActionButton(element: element, isTurboSupported: false, autoKeepTurbo: false, theme: overlayTheme) { [weak self] code, down in
                 guard down else { return }
                 Vibration.selection.vibrate()
                 self?.activateBinding(elementId: element.id, joypadCode: code)
             }
             self.actionButtons.append(button)
+            if element.type == .macro {
+                button.onTap = { [weak self] in self?.activateBinding(elementId: element.id) }
+            }
             node = button
         case .n64CButton:
             let button = GameOverlayN64CButton(element: element, theme: overlayTheme) { [weak self] code, down in
@@ -199,8 +231,21 @@ private extension GameConfigBindingOverlayScene {
             }
             self.fastButton = button
             node = button
-        default:
-            node = nil
+        case .stick:
+            let stick = GameOverlayThumbStick(element: element, theme: overlayTheme)
+            stick.isUserInteractionEnabled = false
+            previewNodes.append(stick)
+            node = stick
+        case .ndsLayoutButton:
+            let button = GameOverlayNDSLayoutButton(element: element, theme: overlayTheme, digitalChangeHandler: nil)
+            button.isUserInteractionEnabled = false
+            previewNodes.append(button)
+            node = button
+        case .overlayCollapse:
+            let button = GameOverlayCollapseButton(element: element, theme: overlayTheme, handler: nil)
+            button.isUserInteractionEnabled = false
+            previewNodes.append(button)
+            node = button
         }
 
         return node
@@ -224,6 +269,11 @@ private extension GameConfigBindingOverlayScene {
         for actionId in presenter.bindingActionIds() {
             updateBindingBubble(for: presenter, actionId: actionId)
             presenter.setBindingBubbleActive(isActiveBinding(presenter: presenter, actionId: actionId), for: actionId)
+            presenter.configureBindingBubble(for: actionId, in: bindingBubbleLayer) { [weak self, weak presenter] in
+                guard let self, let presenter, !self.isReadOnly, !presenter.isHidden,
+                      let target = self.bindingTarget(for: presenter, actionId: actionId) else { return }
+                self.setActiveBinding(presenter: presenter, actionId: actionId, target: target)
+            }
         }
     }
 
@@ -257,17 +307,18 @@ private extension GameConfigBindingOverlayScene {
         }
 
         activeBinding = ActiveBinding(presenter: presenter, actionId: actionId, target: target)
-        updateBindingBubble(for: presenter, actionId: actionId)
-        presenter.setBindingBubbleActive(true, for: actionId)
+        refreshBindingBubbles()
     }
 
     func registerPhysicalSourcePressHandler() {
         inputActionManager.physicalSourcePressHandler = { [weak self] source in
-            if let ret = self?.handlePhysicalSourcePress(source) {
-                return ret
-            } else {
-                return false
+            guard let self, source.playerIndex == self.playerIndex else { return false }
+            if Thread.isMainThread {
+                _ = MainActor.assumeIsolated { self.handlePhysicalSourcePress(source) }
+                return true
             }
+            DispatchQueue.main.async { [weak self] in _ = self?.handlePhysicalSourcePress(source) }
+            return true
         }
     }
 
@@ -275,7 +326,8 @@ private extension GameConfigBindingOverlayScene {
         guard !isReadOnly else { return false }
         guard source.playerIndex == playerIndex,
               let activeBinding,
-              let presenter = activeBinding.presenter else {
+              let presenter = activeBinding.presenter,
+              !presenter.isHidden else {
             return false
         }
 
@@ -317,6 +369,7 @@ private extension GameConfigBindingOverlayScene {
             configureBindingBubbles(for: node)
         }
     }
+
 
     func updateBindingBubble(for presenter: any GameConfigBindingSettingPresenting, actionId: String) {
         if !isReadOnly, isActiveBinding(presenter: presenter, actionId: actionId) {
@@ -418,6 +471,10 @@ private extension GameConfigBindingOverlayScene {
         }
 
         let element = node.element
+        if element.type == .combo || element.type == .macro {
+            return GameLayoutInputBindingStore.descriptor(elementId: element.id, port: playerIndex, data: layoutData)
+                .map { .inputAction($0) }
+        }
         let code = presenter.bindingJoypadCode(for: actionId)
         if element.isNative || element.type == .dpad || element.type == .directional || element.type == .n64CButton {
             guard code != .none else { return nil }
@@ -473,7 +530,7 @@ private extension GameConfigBindingOverlayScene {
     }
 
     func defaultPhysicalSourceIdentifier(for element: GamePageOverlayElement) -> String? {
-        guard element.isTurbo,
+        guard element.type == .button, element.isTurbo,
               element.binds.count == 1 else {
             return nil
         }

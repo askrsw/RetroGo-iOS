@@ -360,7 +360,7 @@ extension GamePageOverlayScene {
         node.hapticHandler = hapticHandler
         if case .string(let id) = element.meta?["macro_id"] {
             node.onTap = { [weak self] in
-                guard let self, let macro = GameOverlayMacroStore.load(ids: [id]).first else { return }
+                guard let self, let macro = self.overlayLayoutResolver.layoutData?.macros?.first(where: { $0.id == id }) else { return }
                 self.macroPlayer.toggle(macro)
             }
         }

@@ -195,8 +195,7 @@ extension GameConfigViewController {
 
     func applyInputBindingIfNeeded() {
         guard applyInputBinding else { return }
-        let cfg = session.config
-        RAInputActionManager.shared().apply(cfg?.inputBindingProfile, coreCapabilities: cfg?.coreCaps, useLock: true)
+        session.refreshInputBindingProfile(apply: true)
     }
 
     func installTopologyChangedHandler() {

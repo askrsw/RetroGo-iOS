@@ -327,7 +327,7 @@ extension GamePageOverlayConfig {
 
     /// Recommendations are creation templates only. Every runtime combo is
     /// defined by the user's data, including combos migrated from version 1.
-    func withCombos(from layoutData: GameOverlayLayoutData?, macros: [GameOverlayMacro]? = nil) -> Self {
+    func withCombos(from layoutData: GameOverlayLayoutData?) -> Self {
         var result = elements.map { element -> GamePageOverlayElement in
             guard element.type == .button, element.isTurbo, element.binds.count == 1 else { return element }
             var meta = element.meta ?? [:]
@@ -345,13 +345,11 @@ extension GamePageOverlayConfig {
             result.append(resolvedCombo(GamePageOverlayElement(id: combo.id, type: .combo,
                                                                geometry: .comboPlaceholder, meta: meta)))
         }
-        let definitions = macros ?? GameOverlayMacroStore.load(ids: layoutData?.macros?.map(\.macroId) ?? [])
-        for button in layoutData?.macros ?? [] where !result.contains(where: { $0.id == button.id }) {
-            guard let macro = definitions.first(where: { $0.id == button.macroId }) else { continue }
+        for macro in layoutData?.macros ?? [] where !macro.id.isEmpty && macro.isValid && !result.contains(where: { $0.id == macro.id }) {
             let title = macro.buttonTitle
             let meta: [String: JSONValue] = ["title": .string(macro.name), "macro_id": .string(macro.id), "title_parts": title.jsonValue,
                                            "title_font_scale": .double(1.4)]
-            result.append(GamePageOverlayElement(id: button.id, type: .macro, geometry: .combo(width: macro.direction == nil ? 50 : 68), meta: meta))
+            result.append(GamePageOverlayElement(id: macro.id, type: .macro, geometry: .combo(width: macro.direction == nil ? 50 : 68), meta: meta))
         }
         return GamePageOverlayConfig(
             platformId: platformId,

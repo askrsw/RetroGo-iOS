@@ -116,7 +116,7 @@ final class GameOverlayLayoutListViewController: UITableViewController {
     }
 
     @objc private func layoutsChanged(_ notification: Notification) {
-        guard notification.object as? String == session.overlayName else { return }
+        guard notification.object as? String == session.templateId else { return }
         reload()
     }
 
@@ -254,7 +254,7 @@ final class GameOverlayLayoutListViewController: UITableViewController {
         let sourceKey: String
         switch resolved.source {
         case .game: sourceKey = "overlay_layout_source_game"
-        case .platform: sourceKey = "overlay_layout_source_platform"
+        case .platform, .driver: sourceKey = "overlay_layout_source_platform"
         case .builtIn: return Bundle.localizedString(forKey: "overlay_layout_current_game_builtin")
         }
         return String(format: Bundle.localizedString(forKey: "overlay_layout_current_game_format"),
@@ -390,7 +390,7 @@ final class GameOverlayLayoutListViewController: UITableViewController {
         present(alert, animated: true)
     }
 
-    private func requireLayoutSelection(id: Int64?) -> Bool {
+    private func requireLayoutSelection(id: String?) -> Bool {
         session.canChooseLayout(id: id) || AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayoutSelection, from: self)
     }
 }

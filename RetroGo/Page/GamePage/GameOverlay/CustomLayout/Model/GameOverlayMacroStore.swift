@@ -3,43 +3,32 @@ import Foundation
 import SQLite
 import os
 
+/// Read-only copy candidates. Macro definitions are owned by layout JSON.
 enum GameOverlayMacroStore {
-    enum SaveError: Error { case invalidDefinition, platformMismatch }
-    private static let table = Table("overlay_macro")
-    private static let id = Expression<String>("id")
-    private static let payload = Expression<String>("data")
-    private static let scope = Expression<String>("overlay_name")
-
-    static func load(ids: [String]) -> [GameOverlayMacro] {
-        do {
-            let decoder = JSONDecoder()
-            return try Set(ids).sorted().compactMap { key in
-                guard let row = try RetroRomPersistence.sqlite.pluck(table.filter(id == key)),
-                      let data = row[payload].data(using: .utf8),
-                      let macro = try? decoder.decode(GameOverlayMacro.self, from: data), macro.isValid, macro.id == key else { return nil }
-                return macro
-            }
-        } catch {
-            RetroGoLogger.game.error("Failed to read overlay macros: \(String(describing: error))")
-            return []
-        }
+    struct Candidate {
+        let layoutId: String
+        let layoutName: String
+        let idiom: GameOverlayLayoutIdiom
+        let macro: GameOverlayMacro
     }
 
-    /// Called in the same transaction as the layout save, never by a draft editor.
-    static func save(_ macros: [GameOverlayMacro], overlayName: String, db: Connection) throws {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        for macro in macros {
-            guard macro.isValid else { throw SaveError.invalidDefinition }
-            if let existing = try db.pluck(table.filter(id == macro.id)), existing[scope] != overlayName {
-                throw SaveError.platformMismatch
+    static func candidates(templateId: String, excluding layoutId: String?) -> [Candidate] {
+        typealias L = GameOverlayLayoutSession
+        do {
+            let query = L.layoutTable.filter(L.templateId == templateId)
+                .order(L.createAt.asc, SQLite.Expression<Int64>("rowid").asc)
+            var result: [Candidate] = []
+            for row in try RetroRomPersistence.sqlite.prepare(query) where row[L.id] != layoutId {
+                guard let data = try? GameOverlayLayoutData.decode(row[L.data]), data.hasValidMacros,
+                      let idiom = GameOverlayLayoutIdiom(rawValue: row[L.idiom]) else { continue }
+                for macro in data.macros ?? [] where macro.isValid && !macro.id.isEmpty {
+                    result.append(Candidate(layoutId: row[L.id], layoutName: row[L.name], idiom: idiom, macro: macro))
+                }
             }
-            let json = String(decoding: try encoder.encode(macro), as: UTF8.self)
-            try db.run("""
-                INSERT INTO overlay_macro(id, overlay_name, data, create_at, update_at) VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT(id) DO UPDATE SET data = excluded.data, update_at = excluded.update_at
-                WHERE overlay_macro.overlay_name = excluded.overlay_name
-                """, macro.id, overlayName, json, Date().timeIntervalSince1970, Date().timeIntervalSince1970)
+            return result
+        } catch {
+            RetroGoLogger.game.error("Failed to read layout macro copy candidates: \(String(describing: error))")
+            return []
         }
     }
 }

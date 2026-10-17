@@ -98,7 +98,7 @@ final class GameOverlayLayoutEditController {
         panel.center = CGPoint(x: area.midX, y: area.minY + panel.bounds.height * 0.5 + 8)
 
         editor.onChange = { [weak self] in self?.refreshPanel() }
-        RetroGoLogger.game.info("Started editing an overlay layout of \(self.session.overlayName, privacy: .public)")
+        RetroGoLogger.game.info("Started editing an overlay layout of \(self.session.templateId, privacy: .public)")
         return true
     }
 
@@ -299,11 +299,11 @@ final class GameOverlayLayoutEditController {
         switch target {
         case .edit(let item):
             guard session.canEditLayout(id: item.id) || AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayoutEditing, from: gamePage) else { return }
-            guard session.updateLayout(id: item.id, data: editor.layoutData, macros: editor.macrosToSave) else {
+            guard session.updateLayout(id: item.id, data: editor.layoutData) else {
                 showSaveFailed()
                 return
             }
-            RetroGoLogger.game.info("Saved overlay layout \(item.id, privacy: .public) of \(self.session.overlayName, privacy: .public)")
+            RetroGoLogger.game.info("Saved overlay layout \(item.id, privacy: .public) of \(self.session.templateId, privacy: .public)")
             finish(saved: session.layout(id: item.id))
         case .create:
             // Checked again here: the list may have been opened before a purchase was refunded.
@@ -316,14 +316,13 @@ final class GameOverlayLayoutEditController {
     private func presentSaveSheet(data: GameOverlayLayoutData) {
         guard let gamePage else { return }
         let session = self.session
-        let macros = editorScene?.macrosToSave ?? []
         var saved: GameOverlayLayoutItem?
         let controller = GameOverlayLayoutSaveViewController(session: session, showsGameOption: session.game != nil) { result in
-            guard let item = session.createLayout(name: result.name, data: data, macros: macros) else { return false }
+            guard let item = session.createLayout(name: result.name, data: data) else { return false }
             if result.useForGame || result.applyToPlatform {
                 session.choose(layoutId: item.id, applyToPlatform: result.applyToPlatform)
             }
-            RetroGoLogger.game.info("Saved new overlay layout \(item.id, privacy: .public) of \(session.overlayName, privacy: .public)")
+            RetroGoLogger.game.info("Saved new overlay layout \(item.id, privacy: .public) of \(session.templateId, privacy: .public)")
             saved = item
             return true
         }

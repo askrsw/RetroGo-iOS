@@ -43,6 +43,8 @@ enum virtual_joypad_axis
 
 void virtual_joypad_set_button(unsigned id, bool down);
 void virtual_joypad_set_button_for_port(unsigned port, unsigned id, bool down);
+/// Independent physical extended-action producer, merged with touch input.
+void virtual_joypad_set_action_mask(unsigned port, uint32_t mask);
 void virtual_joypad_set_axis(unsigned axis, int16_t value);
 void virtual_joypad_set_axis_for_port(unsigned port, unsigned axis, int16_t value);
 void virtual_joypad_set_connected(unsigned port, bool connected);

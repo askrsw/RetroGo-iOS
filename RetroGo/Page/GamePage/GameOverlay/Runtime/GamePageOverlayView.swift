@@ -68,6 +68,7 @@ final class GamePageOverlayView: SKView {
     func reloadCustomLayout() {
         guard !hasEndedGame else { return }
         overlayScene?.applyLayoutData(layoutSession.resolvedLayout().item?.data)
+        GamePageViewController.instance?.configSession.refreshInputBindingProfile(apply: true)
     }
 
     override func layoutSubviews() {
@@ -122,6 +123,7 @@ final class GamePageOverlayView: SKView {
         } else {
             reloadCustomLayout()
         }
+        GamePageViewController.instance?.configSession.refreshInputBindingProfile(apply: true)
     }
 }
 
@@ -134,7 +136,7 @@ extension GamePageOverlayView {
     }
 
     @objc private func handleOverlayLayoutChanged(_ notification: Notification) {
-        guard notification.object as? String == layoutSession.overlayName, editorScene == nil else { return }
+        guard notification.object as? String == layoutSession.templateId, editorScene == nil else { return }
         reloadCustomLayout()
     }
 

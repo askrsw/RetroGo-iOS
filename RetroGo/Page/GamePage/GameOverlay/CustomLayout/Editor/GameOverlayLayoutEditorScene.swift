@@ -52,11 +52,8 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
     let usePolarLayout = true
 
     private(set) var layoutData: GameOverlayLayoutData
-    private(set) var macroDefinitions: [GameOverlayMacro]
-    var macrosToSave: [GameOverlayMacro] {
-        let used = Set(layoutData.macros?.map(\.macroId) ?? [])
-        return macroDefinitions.filter { used.contains($0.id) }
-    }
+    var macroDefinitions: [GameOverlayMacro] { layoutData.macros ?? [] }
+    var macrosToSave: [GameOverlayMacro] { macroDefinitions }
     private(set) var selectedSlotId: String?
     private(set) var selection: Selection?
 
@@ -98,9 +95,7 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
 
     init(size: CGSize, config: GamePageOverlayConfig, supportsAnalog: Bool, layoutData: GameOverlayLayoutData) {
         self.baseConfig = config
-        let macros = GameOverlayMacroStore.load(ids: layoutData.macros?.map(\.macroId) ?? [])
-        self.macroDefinitions = macros
-        self.config = config.withCombos(from: layoutData, macros: macros)
+        self.config = config.withCombos(from: layoutData)
         self.supportsAnalog = supportsAnalog
         self.layoutData = layoutData
         self.overlayLayoutResolver = GameOverlayLayoutResolver(config: self.config)
@@ -145,7 +140,6 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
     func undo() {
         guard let previous = undoStack.popLast() else { return }
         cancelDrag()
-        macroDefinitions = previous.macros
         setLayoutData(previous.data)
         updateComboNodes()
         refresh()
@@ -381,22 +375,25 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
     }
 
     func userMacro(id: String) -> GameOverlayMacro? {
-        guard let ref = layoutData.macros?.first(where: { $0.id == id }) else { return nil }
-        return macroDefinitions.first { $0.id == ref.macroId }
+        layoutData.macros?.first { $0.id == id }
     }
 
-    func saveMacro(_ macro: GameOverlayMacro, shown: Bool) {
+    func saveMacro(_ definition: GameOverlayMacro, shown: Bool) {
         cancelDrag()
         undoStack.append(.init(data: layoutData, macros: macroDefinitions))
-        let buttonId = layoutData.macros?.first(where: { $0.macroId == macro.id })?.id ?? "user-macro-" + macro.id
+        var macro = definition
+        if macro.id.isEmpty {
+            let reserved = Set(config.elements.map(\.id) + macroDefinitions.map(\.id))
+            macro.id = GameOverlayMacro.makeId(reservedIds: reserved)
+        }
+        let buttonId = macro.id
         let isNew = userMacro(id: buttonId) == nil
-        macroDefinitions.removeAll { $0.id == macro.id }
-        macroDefinitions.append(macro)
         var data = layoutData
+        var macros = data.macros ?? []
+        macros.removeAll { $0.id == macro.id }
+        macros.append(macro)
+        data.macros = macros
         if isNew {
-            var refs = data.macros ?? []
-            refs.append(.init(id: buttonId, macroId: macro.id))
-            data.macros = refs
             data = placingCombo(buttonId, in: data)
             data = placingCombo(buttonId, in: data, portrait: !isPortrait)
         }
@@ -414,14 +411,7 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
 
     func removeMacro(id: String) {
         var data = layoutData
-        data.macros = data.macros?.filter { $0.id != id }
-        if data.macros?.isEmpty == true { data.macros = nil }
-        for portrait in [true, false] {
-            var orientation = data.orientation(portrait: portrait)
-            orientation?.elements[id] = nil
-            for slot in orientation?.slots?.keys.filter({ orientation?.slots?[$0] == id }) ?? [] { orientation?.slots?[slot] = "" }
-            data.setOrientation(orientation, portrait: portrait)
-        }
+        data.removeMacro(id: id)
         if selection == .element(id) { selection = nil }
         commit(data)
         refresh()
@@ -649,7 +639,7 @@ private extension GameOverlayLayoutEditorScene {
 
     /// Rebuilds the combo nodes after the user's combos changed (made, edited, removed, undone).
     func updateComboNodes() {
-        config = baseConfig.withCombos(from: layoutData, macros: macroDefinitions)
+        config = baseConfig.withCombos(from: layoutData)
         let previousResolver = overlayLayoutResolver
         overlayLayoutResolver = GameOverlayLayoutResolver(config: config)
         overlayLayoutResolver.update(size: previousResolver.size, contentOffset: previousResolver.contentOffset)
@@ -945,7 +935,7 @@ private extension GameOverlayLayoutEditorScene {
             resolver.update(size: CGSize(width: self.size.height, height: self.size.width))
         }
         resolver.layoutData = data
-        let elements = baseConfig.withCombos(from: data, macros: macroDefinitions).elements
+        let elements = baseConfig.withCombos(from: data).elements
         guard let element = elements.first(where: { $0.id == id }) else { return data }
         let size = resolver.resolveRect(element, usePolarLayout: usePolarLayout).size
         let rect = freeRect(size: size, for: element, resolver: resolver, elements: elements)

@@ -1,7 +1,15 @@
 // Copyright © 2026 haharsw. Part of RetroGo, GPL-3.0-or-later.
-#import <RAMacroInputEngine.h>
+#import "RAMacroInputEngine.h"
 
 @implementation RAMacroInputStep
++ (BOOL)supportsSecureCoding { return YES; }
+- (void)encodeWithCoder:(NSCoder *)coder {
+    [coder encodeInt32:(int32_t)_buttons forKey:@"buttons"];
+    [coder encodeInteger:_frames forKey:@"frames"];
+}
+- (instancetype)initWithCoder:(NSCoder *)coder {
+    return [self initWithButtons:(uint32_t)[coder decodeInt32ForKey:@"buttons"] frames:[coder decodeIntegerForKey:@"frames"]];
+}
 - (instancetype)initWithButtons:(uint32_t)buttons frames:(NSUInteger)frames {
     if ((self = [super init])) { _buttons = buttons; _frames = frames; }
     return self;

@@ -883,11 +883,11 @@
 "overlay_macro_default_name" = "Macro";
 "overlay_macro_steps_header" = "Sequence · %d Frames";
 "overlay_macro_steps_footer" = "Each step holds all selected inputs together. Tap a step to edit it, swipe to delete, or tap the gap between steps to set released waiting frames. The entire macro must fit within 600 frames.";
-"overlay_macro_shared_footer" = "This layout references a separate macro. Changes apply to layouts that share it. Removing this button does not remove it from other layouts. Changes are committed when you save the layout.";
+"overlay_macro_shared_footer" = "This macro belongs to this layout. Deleting it removes its button and placement in both orientations. Changes are committed when you save the layout.";
 "overlay_macro_add_step" = "Add Input Step";
 "overlay_macro_hold_frames" = "Hold %d Frames";
 "overlay_macro_gap_frames" = "Gap · %d Frames";
-"overlay_macro_remove_button" = "Remove Macro Button";
+"overlay_macro_remove_button" = "Delete Macro";
 "overlay_macro_continue" = "Continue";
 "overlay_macro_invalid" = "Enter a name and at least one input step. Use valid directions and keep the total within 600 frames.";
 "overlay_macro_gap_title" = "Frame Gap";
@@ -899,3 +899,9 @@
 "overlay_combo_unsaved_message" = "Save your new extra button, or discard it.";
 "overlay_combo_discard" = "Discard";
 "overlay_layout_copy_created" = "Created “%@”";
+"configpage_binding_save_failed" = "The binding could not be saved. Please try again.";
+"configpage_binding_edit" = "Edit Mapping";
+"configpage_binding_layout_link_footer" = "Each player independently chooses a layout’s controller mappings. This does not change other players or the on-screen layout. Tap Edit Mapping to configure this player’s inputs in that layout.";
+"configpage_binding_current_layout" = "Current Layout: %@";
+"configpage_binding_layout_upgrade" = "Hidden buttons keep saved bindings. Show them to make changes. Controller mapping was updated in v1.14.0; previous mappings may need to be set up again.";
+"configpage_binding_layout_instructions" = "Tap a button or bubble below, then press a controller button or stick direction. Bubbles show assigned controller inputs. Changes apply only to this layout’s mappings.";

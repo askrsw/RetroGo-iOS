@@ -32,6 +32,12 @@ final class RGSectionHeaderView: UITableViewHeaderFooterView {
     private let label = UILabel()
     private var leadingConstraint: Constraint?
     private var trailingConstraint: Constraint?
+    private var topConstraint: Constraint?
+
+    /// Extra breathing room can be added before individual section titles.
+    var topInset: CGFloat = 12 {
+        didSet { topConstraint?.update(offset: topInset) }
+    }
 
     var text: String? {
         didSet { label.text = text }
@@ -66,7 +72,7 @@ final class RGSectionHeaderView: UITableViewHeaderFooterView {
 
         contentView.addSubview(label)
         label.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(12)
+            topConstraint = make.top.equalToSuperview().offset(topInset).constraint
             leadingConstraint = make.leading.equalToSuperview().constraint
             trailingConstraint = make.trailing.equalToSuperview().constraint
             make.bottom.equalToSuperview().offset(-8).priority(.high)

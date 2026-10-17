@@ -44,6 +44,7 @@ struct MameMachineRecord {
     let runnable: Bool
     let driverStatus: String?
     let defaultBios: String?
+    var sourceFile: String? = nil
 
     /// BIOS and device sets live in the MAME BIOS folder instead of the Library.
     var isSupportSet: Bool {

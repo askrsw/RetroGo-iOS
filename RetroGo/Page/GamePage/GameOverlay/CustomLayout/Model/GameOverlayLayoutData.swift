@@ -25,8 +25,8 @@
 
 import UIKit
 
-/// Device class a custom layout was made for. iPhone and iPad layouts are kept
-/// apart: the space around the game screen differs too much to share positions.
+/// Device class a layout belongs to. iPhone and iPad layouts are independent
+/// because the space around the game screen differs between them.
 enum GameOverlayLayoutIdiom: String {
     case phone
     case pad
@@ -55,12 +55,13 @@ struct GameOverlayLayoutData: Codable, Equatable {
     /// `elements` like any other control. Each definition is self-contained;
     /// migrated IDs never require a lookup in a built-in recommendation.
     var combos: [Combo]?
-    /// Stable references to independently stored macro definitions.
-    var macros: [MacroButton]?
+    /// Definitions belong to this layout; positions reference their local IDs.
+    var macros: [GameOverlayMacro]?
 
-    struct MacroButton: Codable, Equatable {
-        var id: String
-        var macroId: String
+    var hasValidMacros: Bool {
+        let definitions = macros ?? []
+        let ids = definitions.map(\.id)
+        return Set(ids).count == ids.count && definitions.allSatisfy { !$0.id.isEmpty && $0.isValid }
     }
 
     struct Orientation: Codable, Equatable {
@@ -171,6 +172,20 @@ extension GameOverlayLayoutData {
             orientation.elements[id] = nil
             for slot in orientation.slots?.keys.filter({ orientation.slots?[$0] == id }) ?? [] { orientation.slots?[slot] = "" }
             setOrientation(orientation, portrait: key)
+        }
+    }
+
+    /// Delete the definition and every orientation's placement/slot reference.
+    mutating func removeMacro(id: String) {
+        let remaining = (macros ?? []).filter { $0.id != id }
+        macros = remaining.isEmpty ? nil : remaining
+        for portrait in Self.allOrientations {
+            guard var orientation = orientation(portrait: portrait) else { continue }
+            orientation.elements[id] = nil
+            for slot in orientation.slots?.keys.filter({ orientation.slots?[$0] == id }) ?? [] {
+                orientation.slots?[slot] = ""
+            }
+            setOrientation(orientation, portrait: portrait)
         }
     }
 }

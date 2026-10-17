@@ -885,11 +885,11 @@
 "overlay_macro_default_name" = "按键宏";
 "overlay_macro_steps_header" = "序列 · %d 帧";
 "overlay_macro_steps_footer" = "每一步同时按住选中的按键。点击步骤可编辑，左滑可删除；点击步骤之间的间隔可设置松开后的等待帧数。整个宏不能超过 600 帧。";
-"overlay_macro_shared_footer" = "此布局引用独立的宏定义。修改会应用到引用它的布局；移除按钮不影响其他布局。完成布局编辑时才会保存这些修改。";
+"overlay_macro_shared_footer" = "此宏属于当前布局。删除后将清除横竖屏中的宏按钮和位置配置。完成布局编辑时才会保存这些修改。";
 "overlay_macro_add_step" = "添加按键步骤";
 "overlay_macro_hold_frames" = "按住 %d 帧";
 "overlay_macro_gap_frames" = "间隔 · %d 帧";
-"overlay_macro_remove_button" = "移除宏按钮";
+"overlay_macro_remove_button" = "删除宏";
 "overlay_macro_continue" = "继续";
 "overlay_macro_invalid" = "请填写名称并添加至少一个按键步骤。避免相反方向同时按下，总时长不能超过 600 帧。";
 "overlay_macro_gap_title" = "帧间隔";
@@ -901,3 +901,9 @@
 "overlay_combo_unsaved_message" = "保存新建的扩展按键，或放弃本次创建。";
 "overlay_combo_discard" = "放弃";
 "overlay_layout_copy_created" = "已创建“%@”";
+"configpage_binding_save_failed" = "未能保存绑定，请重试。";
+"configpage_binding_edit" = "编辑映射";
+"configpage_binding_layout_link_footer" = "每位玩家可独立选择一套布局的物理按键映射，不影响其他玩家或屏幕按键布局。点击“编辑映射”可配置此布局中当前玩家的物理按键。";
+"configpage_binding_current_layout" = "当前布局：%@";
+"configpage_binding_layout_upgrade" = "隐藏按键保留已有绑定，重新显示后才能修改。v1.14.0 升级了手柄映射，以前的映射可能需要重新设置。";
+"configpage_binding_layout_instructions" = "点击下方按键或气泡，再按下手柄按键或推动摇杆。气泡显示已占用的物理按键。当前修改仅作用于此布局的映射。";

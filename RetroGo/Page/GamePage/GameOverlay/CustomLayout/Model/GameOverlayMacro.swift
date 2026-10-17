@@ -7,7 +7,14 @@ struct GameOverlayMacro: Codable, Equatable {
     static let maxFrames = 600
     static let maxSteps = 128
     var version = 1
-    var id: String = UUID().uuidString.lowercased()
+    /// Empty only in a new draft; the layout assigns a short local ID on insertion.
+    var id: String = ""
+
+    static func makeId(reservedIds: Set<String>) -> String {
+        var number = 1
+        while reservedIds.contains("macro-\(number)") { number += 1 }
+        return "macro-\(number)"
+    }
     var name: String
     var steps: [Step]
     // Optional fields keep existing version-1 definitions readable.
@@ -35,6 +42,12 @@ struct GameOverlayMacro: Codable, Equatable {
 
     static let allowedBinds = ["UP", "DOWN", "LEFT", "RIGHT", "B", "Y", "SELECT", "START", "A", "X", "L1", "R1", "L2", "R2", "L3", "R3"]
     var totalFrames: Int { steps.reduce(0) { $0 + $1.frames } }
+    /// A copy becomes a new draft; its destination assigns a local identity on save.
+    func copyForLayout() -> Self {
+        var copy = self
+        copy.id = ""
+        return copy
+    }
     /// Creates an independent definition; only horizontal directions change.
     func mirroredCopy(name: String) -> Self {
         var copy = Self(name: name, steps: steps.map { step in
@@ -51,7 +64,7 @@ struct GameOverlayMacro: Codable, Equatable {
         return copy
     }
     var isValid: Bool {
-        version == 1 && !id.isEmpty && !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        version == 1 && !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         && !steps.isEmpty && steps.count <= Self.maxSteps
         && steps.allSatisfy { (1...Self.maxFrames).contains($0.frames) && Set($0.binds).count == $0.binds.count
             && $0.binds.allSatisfy(Self.allowedBinds.contains)

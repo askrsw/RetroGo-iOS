@@ -34,47 +34,53 @@ extension RetroRomPersistence {
     /// when the game asks for it, and the controller type of the core's ports.
     static func migrationV8ToV9(db: Connection) throws {
         typealias L = GameOverlayLayoutSession
+        // Historical schemas must not inherit the current UUID column types.
+        let id = SQLite.Expression<Int64>("id")
+        let layoutId = SQLite.Expression<Int64>("layout_id")
+        let optionalLayoutId = SQLite.Expression<Int64?>("layout_id")
+        let overlayName = SQLite.Expression<String>("overlay_name")
+        let data = SQLite.Expression<String>("data")
         try db.transaction {
             try db.run(L.layoutTable.create(temporary: false, ifNotExists: true, block: { t in
-                t.column(L.id, primaryKey: .autoincrement)
-                t.column(L.overlayName)
+                t.column(id, primaryKey: .autoincrement)
+                t.column(overlayName)
                 t.column(L.idiom)
                 t.column(L.name)
-                t.column(L.data)
+                t.column(data)
                 t.column(L.position)
                 t.column(L.createAt)
                 t.column(L.updateAt)
-                t.unique(L.overlayName, L.idiom, L.name)
+                t.unique(overlayName, L.idiom, L.name)
             }))
             try db.run(L.platformChoiceTable.create(temporary: false, ifNotExists: true, withoutRowid: true, block: { t in
-                t.column(L.overlayName)
+                t.column(overlayName)
                 t.column(L.idiom)
-                t.column(L.layoutId)
+                t.column(layoutId)
                 t.column(L.updateAt)
-                t.primaryKey(L.overlayName, L.idiom)
-                t.foreignKey(L.layoutId, references: L.layoutTable, L.id, delete: .cascade)
+                t.primaryKey(overlayName, L.idiom)
+                t.foreignKey(layoutId, references: L.layoutTable, id, delete: .cascade)
             }))
             try db.run(L.gameChoiceTable.create(temporary: false, ifNotExists: true, withoutRowid: true, block: { t in
                 t.column(L.romKey)
-                t.column(L.overlayName)
+                t.column(overlayName)
                 t.column(L.idiom)
-                t.column(L.optionalLayoutId)
+                t.column(optionalLayoutId)
                 t.column(L.updateAt)
-                t.primaryKey(L.romKey, L.overlayName, L.idiom)
+                t.primaryKey(L.romKey, overlayName, L.idiom)
                 t.foreignKey(L.romKey, references: Self.romGameTable, Self.key, delete: .cascade)
-                t.foreignKey(L.optionalLayoutId, references: L.layoutTable, L.id, delete: .cascade)
+                t.foreignKey(optionalLayoutId, references: L.layoutTable, id, delete: .cascade)
             }))
             // Usage counts look choices up by layout.
-            try db.run(L.gameChoiceTable.createIndex(L.optionalLayoutId, ifNotExists: true))
+            try db.run(L.gameChoiceTable.createIndex(optionalLayoutId, ifNotExists: true))
             // Retain the historical v9 schema; v10 removes this obsolete table.
             let legacyGameStateTable = SQLite.Table("overlay_game_state")
             let legacyFourButtonLayout = SQLite.Expression<Bool>("four_button_layout")
             try db.run(legacyGameStateTable.create(temporary: false, ifNotExists: true, withoutRowid: true, block: { t in
                 t.column(L.romKey)
-                t.column(L.overlayName)
+                t.column(overlayName)
                 t.column(legacyFourButtonLayout)
                 t.column(L.updateAt)
-                t.primaryKey(L.romKey, L.overlayName)
+                t.primaryKey(L.romKey, overlayName)
                 t.foreignKey(L.romKey, references: Self.romGameTable, Self.key, delete: .cascade)
             }))
             try addColumnIfNeeded(db: db, table: "romconfig", column: "overlay_haptic_level", type: "INTEGER")
@@ -87,50 +93,5 @@ extension RetroRomPersistence {
     static func databaseV9(db: Connection) throws {
         try databaseV8(db: db)
         try migrationV8ToV9(db: db)
-    }
-
-    /// v1.14.0 upgrades the released v9 schema directly to v10. Schema changes,
-    /// layout cleanup and geometry migration share one transaction.
-    static func migrationV9ToV10(db: Connection) throws {
-        typealias L = GameOverlayLayoutSession
-        try db.transaction {
-            // Macro definitions are independent assets referenced by layout UUIDs.
-            try db.run("""
-                CREATE TABLE IF NOT EXISTS overlay_macro (
-                    id TEXT PRIMARY KEY NOT NULL,
-                    overlay_name TEXT NOT NULL,
-                    data TEXT NOT NULL,
-                    create_at REAL NOT NULL,
-                    update_at REAL NOT NULL
-                )
-                """)
-            try db.run("DROP TABLE IF EXISTS overlay_game_state")
-            // Preserve layout ids, timestamps, choices, combos and six-button
-            // overrides. Leave malformed JSON intact for the existing read fallback.
-            try db.run("""
-                UPDATE overlay_layout SET data = json_remove(data,
-                    '$.opacity',
-                    '$.portrait_four_button', '$.landscape_four_button',
-                    '$.portrait.elements."arcade-layout"',
-                    '$.landscape.elements."arcade-layout"')
-                WHERE json_valid(data)
-                """)
-            // Freeze retired non-fan groups into independent positions. Layout
-            // JSON v1 still uses its separate frozen v1-to-v2 reader on access.
-            for row in try db.prepare(L.layoutTable) {
-                guard let original = try? GameOverlayLayoutData.decode(row[L.data]), original.version == 2 else { continue }
-                let config = GamePageOverlayConfig.loadOverlayConfig(row[L.overlayName])
-                let updated = GameOverlayLayoutResolver.migrateIndependentGroups(original, config: config)
-                if updated != original {
-                    try db.run(L.layoutTable.filter(L.id == row[L.id]).update(L.data <- updated.encodedString()))
-                }
-            }
-            try db.run("PRAGMA user_version = 10")
-        }
-    }
-
-    static func databaseV10(db: Connection) throws {
-        try databaseV9(db: db)
-        try migrationV9ToV10(db: db)
     }
 }

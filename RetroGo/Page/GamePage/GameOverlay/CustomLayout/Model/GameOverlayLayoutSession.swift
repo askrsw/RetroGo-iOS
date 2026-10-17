@@ -30,8 +30,10 @@ import os
 
 /// A named on-screen control layout the user made for one platform overlay.
 struct GameOverlayLayoutItem: Equatable {
-    let id: Int64
-    let overlayName: String
+    /// Portable identity retained across edits and future export/import.
+    let id: String
+    let templateId: String
+    /// Device class this layout belongs to.
     let idiom: GameOverlayLayoutIdiom
     let name: String
     let data: GameOverlayLayoutData
@@ -42,16 +44,17 @@ struct GameOverlayLayoutItem: Equatable {
 
 /// Which layout one game uses on one platform overlay.
 enum GameOverlayLayoutGameChoice: Equatable {
-    /// No game-level choice: the platform choice applies.
+    /// No choice at this level: inherit from the driver/platform.
     case followPlatform
     /// The built-in layout, chosen for this game even if the platform uses a custom one.
     case builtIn
-    case custom(Int64)
+    case custom(String)
 }
 
 /// Where the layout a game ends up with comes from.
 enum GameOverlayLayoutSource: Equatable {
     case game
+    case driver
     case platform
     case builtIn
 }
@@ -59,35 +62,47 @@ enum GameOverlayLayoutSource: Equatable {
 /// Custom overlay layouts of one platform overlay (`nes`, `snes`...) on this
 /// device class, and which one a game uses.
 ///
-/// Like `GameConfigSession`, the choice cascades, but over two levels:
-/// game -> platform -> built-in layout. The platform is the overlay name rather
-/// than the core, so every core sharing `nes.json` shares the NES layouts. A
-/// game-level choice is also kept per overlay, so a game opened in cores with
-/// different overlays keeps a separate choice for each.
+/// Choices cascade: game -> MAME driver -> platform -> built-in layout.
+/// Layouts are scoped by the bundle template ID, so every core sharing
+/// `nes.json` shares the NES layouts. A game-level choice is also kept per
+/// template and device class. Each layout row belongs to one device class.
 ///
-/// Tables are created by `RetroRomPersistence.migrationV8ToV9`. Deleting
+/// Tables are created by v9 and upgraded to UUID keys in v10. Deleting
 /// a layout cascades to the choices that point at it, which then fall back to
 /// the next level; deleting a game drops its choices.
 final class GameOverlayLayoutSession {
-    let overlayName: String
+    let templateId: String
     let idiom: GameOverlayLayoutIdiom
     let game: RetroRomFileItem?
+    private let coreId: String?
 
-    init(overlayName: String, idiom: GameOverlayLayoutIdiom = .current, game: RetroRomFileItem?) {
-        self.overlayName = overlayName
+    init(templateId: String, idiom: GameOverlayLayoutIdiom = .current, game: RetroRomFileItem?, coreId: String? = nil) {
+        self.templateId = templateId
         self.idiom = idiom
         self.game = game
+        self.coreId = coreId
     }
 
     convenience init(core: EmuCoreInfoItem, game: RetroRomFileItem?) {
-        self.init(overlayName: GamePageOverlayConfig.resolvedOverlayName(core.overlayName), game: game)
+        self.init(templateId: GamePageOverlayConfig.resolvedOverlayName(core.overlayName), game: game, coreId: core.coreId)
+    }
+
+    /// Only recognized MAME games participate. Never guess from the archive name.
+    var driverIdentifier: String? {
+        guard coreId == MameImportScreener.mameCoreId, let game,
+              let archive = MameRomSetPersistence.shared.archiveRecord(owner: .game(romgameKey: game.key)),
+              let machine = MameRomSetPersistence.shared.machine(named: archive.matchedSet),
+              let source = machine.sourceFile else { return nil }
+        let normalized = source.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\\", with: "/").lowercased()
+        return normalized.isEmpty ? nil : normalized
     }
 }
 
 extension GameOverlayLayoutSession {
     /// Short name of the platform the layouts belong to, for "all NES games"; nil when the overlay has none.
     var platformTitle: String? {
-        switch overlayName {
+        switch templateId {
         case "nes": return "NES"
         case "snes": return "SNES"
         case "gbc": return "Game Boy"
@@ -121,53 +136,127 @@ extension GameOverlayLayoutSession {
             break
         }
 
+        return inheritedLayout()
+    }
+
+    /// Resolution without this game's override; used for both display and gating.
+    private func inheritedLayout() -> (item: GameOverlayLayoutItem?, source: GameOverlayLayoutSource) {
+        switch driverChoice() {
+        case .builtIn: return (nil, .driver)
+        case .custom(let id):
+            if let item = layout(id: id) { return (item, .driver) }
+        case .followPlatform: break
+        }
+
         if let id = platformLayoutId(), let item = layout(id: id) {
             return (item, .platform)
         }
         return (nil, .builtIn)
     }
 
+    /// No row inherits the platform; NULL explicitly selects the built-in layout.
+    func driverChoice() -> GameOverlayLayoutGameChoice {
+        guard let driver = driverIdentifier else { return .followPlatform }
+        let T = Self.self
+        do {
+            guard let row = try RetroRomPersistence.sqlite.pluck(driverChoiceRow(driver: driver)) else { return .followPlatform }
+            return row[T.optionalLayoutId].map { .custom($0) } ?? .builtIn
+        } catch {
+            RetroGoLogger.game.error("Failed to read driver overlay choice: \(String(describing: error))")
+            return .followPlatform
+        }
+    }
+
+    @discardableResult
+    @MainActor func chooseForDriver(layoutId: String?) -> Bool {
+        guard let driver = driverIdentifier, let romKey = game?.key,
+              canChooseLayout(id: layoutId) else { return false }
+        let T = Self.self
+        let db = RetroRomPersistence.sqlite
+        do {
+            try db.transaction {
+                try db.run(T.driverChoiceTable.insert(or: .replace,
+                    T.driverId <- driver, T.templateId <- templateId, T.idiom <- idiom.rawValue,
+                    T.optionalLayoutId <- layoutId, T.updateAt <- Date()))
+                try db.run(gameChoiceRow(romKey: romKey).delete())
+            }
+            postChange()
+            return true
+        } catch {
+            RetroGoLogger.game.error("Failed to choose driver overlay layout: \(String(describing: error))")
+            return false
+        }
+    }
+
+    @MainActor var canResetDriver: Bool {
+        let target = platformLayoutId()
+        return canChooseLayout(id: target) || target == resolvedLayout().item?.id
+    }
+
+    /// Remove the driver's binding, preserving other games' explicit choices.
+    @discardableResult
+    @MainActor func resetDriver() -> Bool {
+        guard let driver = driverIdentifier, let romKey = game?.key, canResetDriver else { return false }
+        let db = RetroRomPersistence.sqlite
+        do {
+            try db.transaction {
+                try db.run(driverChoiceRow(driver: driver).delete())
+                try db.run(gameChoiceRow(romKey: romKey).delete())
+            }
+            postChange()
+            return true
+        } catch {
+            RetroGoLogger.game.error("Failed to reset driver overlay choice: \(String(describing: error))")
+            return false
+        }
+    }
+
+    private func driverChoiceRow(driver: String) -> SQLite.Table {
+        let T = Self.self
+        return T.driverChoiceTable.filter(T.driverId == driver && T.templateId == templateId && T.idiom == idiom.rawValue)
+    }
+
     func gameChoice() -> GameOverlayLayoutGameChoice {
         guard let romKey = game?.key else { return .followPlatform }
         let T = Self.self
         do {
-            let query = T.gameChoiceTable.filter(T.romKey == romKey && T.overlayName == overlayName && T.idiom == idiom.rawValue)
+            let query = T.gameChoiceTable.filter(T.romKey == romKey && T.templateId == templateId && T.idiom == idiom.rawValue)
             guard let row = try RetroRomPersistence.sqlite.pluck(query) else { return .followPlatform }
             return row[T.optionalLayoutId].map { .custom($0) } ?? .builtIn
         } catch {
-            RetroGoLogger.game.error("Failed to read game overlay layout choice for \(self.overlayName, privacy: .public): \(String(describing: error))")
+            RetroGoLogger.game.error("Failed to read game overlay layout choice for \(self.templateId, privacy: .public): \(String(describing: error))")
             return .followPlatform
         }
     }
 
     /// Custom layout chosen for the whole platform; nil means the built-in layout.
-    func platformLayoutId() -> Int64? {
+    func platformLayoutId() -> String? {
         let T = Self.self
         do {
-            let query = T.platformChoiceTable.filter(T.overlayName == overlayName && T.idiom == idiom.rawValue)
+            let query = T.platformChoiceTable.filter(T.templateId == templateId && T.idiom == idiom.rawValue)
             return try RetroRomPersistence.sqlite.pluck(query)?[T.layoutId]
         } catch {
-            RetroGoLogger.game.error("Failed to read platform overlay layout choice for \(self.overlayName, privacy: .public): \(String(describing: error))")
+            RetroGoLogger.game.error("Failed to read platform overlay layout choice for \(self.templateId, privacy: .public): \(String(describing: error))")
             return nil
         }
     }
 
     /// Uses a layout (nil = built-in) for this game, or for the whole platform.
     ///
-    /// Applying to the platform also drops this game's own choice, so the game
-    /// visibly switches too; other games keep their game-level choices.
+    /// Applying to the platform drops this game's choice. Existing driver
+    /// choices still take priority; other games keep their game-level choices.
     @discardableResult
-    @MainActor func choose(layoutId: Int64?, applyToPlatform: Bool) -> Bool {
+    @MainActor func choose(layoutId: String?, applyToPlatform: Bool) -> Bool {
         guard canChooseLayout(id: layoutId) else { return false }
         let T = Self.self
         let db = RetroRomPersistence.sqlite
         do {
             try db.transaction {
                 if applyToPlatform {
-                    let platformRow = T.platformChoiceTable.filter(T.overlayName == overlayName && T.idiom == idiom.rawValue)
+                    let platformRow = T.platformChoiceTable.filter(T.templateId == templateId && T.idiom == idiom.rawValue)
                     if let layoutId {
                         try db.run(T.platformChoiceTable.insert(or: .replace,
-                            T.overlayName <- overlayName,
+                            T.templateId <- templateId,
                             T.idiom <- idiom.rawValue,
                             T.layoutId <- layoutId,
                             T.updateAt <- Date()
@@ -182,23 +271,23 @@ extension GameOverlayLayoutSession {
                     guard let romKey = game?.key else { return }
                     try db.run(T.gameChoiceTable.insert(or: .replace,
                         T.romKey <- romKey,
-                        T.overlayName <- overlayName,
+                        T.templateId <- templateId,
                         T.idiom <- idiom.rawValue,
                         T.optionalLayoutId <- layoutId,
                         T.updateAt <- Date()
                     ))
                 }
             }
-            RetroGoLogger.game.info("Overlay layout \(layoutId.map { String($0) } ?? "built-in", privacy: .public) chosen for \(self.overlayName, privacy: .public) \(applyToPlatform ? "platform" : "game", privacy: .public)")
+            RetroGoLogger.game.info("Overlay layout \(layoutId.map { String($0) } ?? "built-in", privacy: .public) chosen for \(self.templateId, privacy: .public) \(applyToPlatform ? "platform" : "game", privacy: .public)")
             postChange()
             return true
         } catch {
-            RetroGoLogger.game.error("Failed to choose overlay layout for \(self.overlayName, privacy: .public): \(String(describing: error))")
+            RetroGoLogger.game.error("Failed to choose overlay layout for \(self.templateId, privacy: .public): \(String(describing: error))")
             return false
         }
     }
 
-    /// Drops this game's own choice so the platform choice applies again.
+    /// Drops this game's choice so its driver (when available), then platform applies.
     @discardableResult
     @MainActor func followPlatform() -> Bool {
         guard canFollowPlatform else { return false }
@@ -208,14 +297,14 @@ extension GameOverlayLayoutSession {
             postChange()
             return true
         } catch {
-            RetroGoLogger.game.error("Failed to reset game overlay layout choice for \(self.overlayName, privacy: .public): \(String(describing: error))")
+            RetroGoLogger.game.error("Failed to reset game overlay layout choice for \(self.templateId, privacy: .public): \(String(describing: error))")
             return false
         }
     }
 
     private func gameChoiceRow(romKey: String) -> SQLite.Table {
         let T = Self.self
-        return T.gameChoiceTable.filter(T.romKey == romKey && T.overlayName == overlayName && T.idiom == idiom.rawValue)
+        return T.gameChoiceTable.filter(T.romKey == romKey && T.templateId == templateId && T.idiom == idiom.rawValue)
     }
 }
 
@@ -226,20 +315,20 @@ extension GameOverlayLayoutSession {
         let T = Self.self
         do {
             let query = T.layoutTable
-                .filter(T.overlayName == overlayName && T.idiom == idiom.rawValue)
-                .order(T.createAt.asc, T.id.asc)
+                .filter(T.templateId == templateId && T.idiom == idiom.rawValue)
+                .order(T.createAt.asc, SQLite.Expression<Int64>("rowid").asc)
             return try RetroRomPersistence.sqlite.prepare(query).compactMap(makeItem)
         } catch {
-            RetroGoLogger.game.error("Failed to load overlay layouts for \(self.overlayName, privacy: .public): \(String(describing: error))")
+            RetroGoLogger.game.error("Failed to load overlay layouts for \(self.templateId, privacy: .public): \(String(describing: error))")
             return []
         }
     }
 
-    func layout(id: Int64) -> GameOverlayLayoutItem? {
+    func layout(id: String) -> GameOverlayLayoutItem? {
         let T = Self.self
         do {
             // Scoped to this overlay and idiom so a stale id never brings in another platform's layout.
-            let query = T.layoutTable.filter(T.id == id && T.overlayName == overlayName && T.idiom == idiom.rawValue)
+            let query = T.layoutTable.filter(T.id == id && T.templateId == templateId && T.idiom == idiom.rawValue)
             return try RetroRomPersistence.sqlite.pluck(query).flatMap(makeItem)
         } catch {
             RetroGoLogger.game.error("Failed to load overlay layout \(id, privacy: .public): \(String(describing: error))")
@@ -248,7 +337,7 @@ extension GameOverlayLayoutSession {
     }
 
     /// Whether another layout of this platform already has the name (trimmed, case-insensitive).
-    func isNameTaken(_ name: String, excluding id: Int64? = nil) -> Bool {
+    func isNameTaken(_ name: String, excluding id: String? = nil) -> Bool {
         let key = Self.nameKey(name)
         return layouts().contains { $0.id != id && Self.nameKey($0.name) == key }
     }
@@ -264,18 +353,18 @@ extension GameOverlayLayoutSession {
     }
 
     /// The oldest surviving layout is free, per platform and device class.
-    @MainActor func canEditLayout(id: Int64) -> Bool {
+    @MainActor func canEditLayout(id: String) -> Bool {
         AppStoreProFeatureGate.shared.isProUnlocked || layouts().first?.id == id
     }
 
     /// Only explicit selections are gated; startup resolution retains existing choices.
-    @MainActor func canChooseLayout(id: Int64?) -> Bool {
+    @MainActor func canChooseLayout(id: String?) -> Bool {
         guard let id else { return true }
         return canEditLayout(id: id)
     }
 
     @MainActor var canFollowPlatform: Bool {
-        let platformId = platformLayoutId()
+        let platformId = inheritedLayout().item?.id
         return canChooseLayout(id: platformId) || platformId == resolvedLayout().item?.id
     }
 
@@ -285,8 +374,8 @@ extension GameOverlayLayoutSession {
     }
 
     /// Adds a layout at the end of the list; nil when the name is empty or taken, or saving fails.
-    @MainActor func createLayout(name: String, data: GameOverlayLayoutData, macros: [GameOverlayMacro] = []) -> GameOverlayLayoutItem? {
-        guard canCreateAnotherLayout else { return nil }
+    @MainActor func createLayout(name: String, data: GameOverlayLayoutData, bindings: RAInputBindingProfile? = nil) -> GameOverlayLayoutItem? {
+        guard canCreateAnotherLayout, data.hasValidMacros else { return nil }
         let T = Self.self
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, !isNameTaken(name) else { return nil }
@@ -294,14 +383,14 @@ extension GameOverlayLayoutSession {
         let db = RetroRomPersistence.sqlite
         do {
             let json = try data.encodedString()
-            let scope = T.layoutTable.filter(T.overlayName == overlayName && T.idiom == idiom.rawValue)
+            let scope = T.layoutTable.filter(T.templateId == templateId && T.idiom == idiom.rawValue)
             let position = (try db.scalar(scope.select(T.position.max)) ?? -1) + 1
             let now = Date()
-            var id: Int64 = 0
+            let id = UUID().uuidString.lowercased()
             try db.transaction {
-                try GameOverlayMacroStore.save(macros, overlayName: overlayName, db: db)
-                id = try db.run(T.layoutTable.insert(
-                    T.overlayName <- overlayName,
+                try db.run(T.layoutTable.insert(
+                    T.id <- id,
+                    T.templateId <- templateId,
                     T.idiom <- idiom.rawValue,
                     T.name <- name,
                     T.data <- json,
@@ -309,19 +398,22 @@ extension GameOverlayLayoutSession {
                     T.createAt <- now,
                     T.updateAt <- now
                 ))
+                if let bindings {
+                    try GameLayoutInputBindingStore(templateId: templateId, idiom: idiom, layoutId: id).write(bindings, db: db)
+                }
             }
-            RetroGoLogger.game.info("Created overlay layout \(id, privacy: .public) for \(self.overlayName, privacy: .public)")
+            RetroGoLogger.game.info("Created overlay layout \(id, privacy: .public) for \(self.templateId, privacy: .public)")
             postChange()
             return layout(id: id)
         } catch {
-            RetroGoLogger.game.error("Failed to create overlay layout for \(self.overlayName, privacy: .public): \(String(describing: error))")
+            RetroGoLogger.game.error("Failed to create overlay layout for \(self.templateId, privacy: .public): \(String(describing: error))")
             return nil
         }
     }
 
     @discardableResult
-    @MainActor func updateLayout(id: Int64, data: GameOverlayLayoutData, macros: [GameOverlayMacro] = []) -> Bool {
-        guard canEditLayout(id: id) else { return false }
+    @MainActor func updateLayout(id: String, data: GameOverlayLayoutData) -> Bool {
+        guard canEditLayout(id: id), data.hasValidMacros else { return false }
         let T = Self.self
         do {
             let json = try data.encodedString()
@@ -329,7 +421,12 @@ extension GameOverlayLayoutSession {
             var changes = 0
             try db.transaction {
                 changes = try db.run(layoutRow(id: id).update(T.data <- json, T.updateAt <- Date()))
-                if changes > 0 { try GameOverlayMacroStore.save(macros, overlayName: overlayName, db: db) }
+                if changes > 0 {
+                    let bindings = GameLayoutInputBindingStore(templateId: templateId, idiom: idiom, layoutId: id)
+                    if let profile = try bindings.read(db: db) {
+                        try bindings.write(GameLayoutInputBindingStore.resolve(profile, data: data, forStorage: true), db: db)
+                    }
+                }
             }
             guard changes > 0 else { return false }
             postChange()
@@ -342,7 +439,7 @@ extension GameOverlayLayoutSession {
 
     /// False when the name is empty or used by another layout of this platform.
     @discardableResult
-    @MainActor func renameLayout(id: Int64, name: String) -> Bool {
+    @MainActor func renameLayout(id: String, name: String) -> Bool {
         let T = Self.self
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, !isNameTaken(name, excluding: id) else { return false }
@@ -357,18 +454,24 @@ extension GameOverlayLayoutSession {
         }
     }
 
-    @MainActor func duplicateLayout(id: Int64, name: String) -> GameOverlayLayoutItem? {
+    @MainActor func duplicateLayout(id: String, name: String) -> GameOverlayLayoutItem? {
         guard let source = layout(id: id) else { return nil }
-        return createLayout(name: name, data: source.data)
+        do {
+            let profile = try GameLayoutInputBindingStore(templateId: templateId, idiom: idiom, layoutId: id).read()
+            return createLayout(name: name, data: source.data, bindings: profile)
+        } catch {
+            RetroGoLogger.game.error("Failed to copy layout controller mapping: \(String(describing: error))")
+            return nil
+        }
     }
 
     /// Choices pointing at the layout fall back to the next level (cascade delete).
     @discardableResult
-    func deleteLayout(id: Int64) -> Bool {
+    func deleteLayout(id: String) -> Bool {
         do {
             let changes = try RetroRomPersistence.sqlite.run(layoutRow(id: id).delete())
             guard changes > 0 else { return false }
-            RetroGoLogger.game.info("Deleted overlay layout \(id, privacy: .public) for \(self.overlayName, privacy: .public)")
+            RetroGoLogger.game.info("Deleted overlay layout \(id, privacy: .public) for \(self.templateId, privacy: .public)")
             postChange()
             return true
         } catch {
@@ -377,30 +480,32 @@ extension GameOverlayLayoutSession {
         }
     }
 
-    /// Who uses the layout: games that chose it, and whether it is the platform choice.
-    func usage(of id: Int64) -> (games: Int, platform: Bool) {
+    /// Explicit game/driver references and whether it is the platform choice.
+    func usage(of id: String) -> (games: Int, platform: Bool, drivers: Int) {
         let T = Self.self
         do {
             let db = RetroRomPersistence.sqlite
             let games = try db.scalar(T.gameChoiceTable.filter(T.optionalLayoutId == id).count)
-            return (games, platformLayoutId() == id)
+            let drivers = try db.scalar(T.driverChoiceTable.filter(T.optionalLayoutId == id).count)
+            return (games, platformLayoutId() == id, drivers)
         } catch {
             RetroGoLogger.game.error("Failed to count overlay layout \(id, privacy: .public) usage: \(String(describing: error))")
-            return (0, false)
+            return (0, false, 0)
         }
     }
 
-    private func layoutRow(id: Int64) -> SQLite.Table {
+    private func layoutRow(id: String) -> SQLite.Table {
         let T = Self.self
-        return T.layoutTable.filter(T.id == id && T.overlayName == overlayName && T.idiom == idiom.rawValue)
+        return T.layoutTable.filter(T.id == id && T.templateId == templateId && T.idiom == idiom.rawValue)
     }
 
     private func makeItem(_ row: Row) -> GameOverlayLayoutItem? {
         let T = Self.self
         let id = row[T.id]
+        let source = row[T.data]
         var data: GameOverlayLayoutData
         do {
-            data = try GameOverlayLayoutData.decode(row[T.data])
+            data = try GameOverlayLayoutData.decode(source)
         } catch {
             // Keep the layout listed (so it can still be deleted or renamed) but without changes.
             RetroGoLogger.game.notice("Overlay layout \(id, privacy: .public) has unreadable data, using the built-in positions: \(String(describing: error))")
@@ -408,8 +513,8 @@ extension GameOverlayLayoutSession {
         }
         if data.version == 1 {
             do {
-                data = try GameOverlayLayoutV1Migration.upgrade(data, source: row[T.data], overlayName: overlayName)
-                data = GameOverlayLayoutResolver.migrateIndependentGroups(data, config: .loadOverlayConfig(overlayName))
+                data = try GameOverlayLayoutV1Migration.upgrade(data, source: source, overlayName: templateId)
+                data = GameOverlayLayoutResolver.migrateIndependentGroups(data, config: .loadOverlayConfig(templateId))
                 // Preserve the edit timestamp and migrate regardless of Pro status.
                 try RetroRomPersistence.sqlite.run(layoutRow(id: id).update(T.data <- data.encodedString()))
             } catch {
@@ -419,7 +524,7 @@ extension GameOverlayLayoutSession {
         }
         return GameOverlayLayoutItem(
             id: id,
-            overlayName: row[T.overlayName],
+            templateId: row[T.templateId],
             idiom: GameOverlayLayoutIdiom(rawValue: row[T.idiom]) ?? idiom,
             name: row[T.name],
             data: data,
@@ -434,7 +539,7 @@ extension GameOverlayLayoutSession {
     }
 
     private func postChange() {
-        NotificationCenter.default.post(name: .overlayLayoutChanged, object: overlayName)
+        NotificationCenter.default.post(name: .overlayLayoutChanged, object: templateId)
     }
 }
 
@@ -444,17 +549,19 @@ extension GameOverlayLayoutSession {
     static let layoutTable         = SQLite.Table("overlay_layout")
     static let platformChoiceTable = SQLite.Table("overlay_layout_platform_choice")
     static let gameChoiceTable     = SQLite.Table("overlay_layout_game_choice")
+    static let driverChoiceTable   = SQLite.Table("overlay_layout_driver_choice")
+    static let driverId           = SQLite.Expression<String>("driver_id")
 
-    static let id               = SQLite.Expression<Int64>("id")
-    static let overlayName      = SQLite.Expression<String>("overlay_name")
+    static let id               = SQLite.Expression<String>("id")
+    static let templateId      = SQLite.Expression<String>("template_id")
     static let idiom            = SQLite.Expression<String>("idiom")
     static let name             = SQLite.Expression<String>("name")
     static let data             = SQLite.Expression<String>("data")
     static let position         = SQLite.Expression<Int>("position")
     static let romKey           = SQLite.Expression<String>("rom_key")
-    static let layoutId         = SQLite.Expression<Int64>("layout_id")
+    static let layoutId         = SQLite.Expression<String>("layout_id")
     /// Game-level `layout_id`: NULL is an explicit choice of the built-in layout.
-    static let optionalLayoutId = SQLite.Expression<Int64?>("layout_id")
+    static let optionalLayoutId = SQLite.Expression<String?>("layout_id")
     static let createAt         = SQLite.Expression<Date>("create_at")
     static let updateAt         = SQLite.Expression<Date>("update_at")
 }
