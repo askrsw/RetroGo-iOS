@@ -55,6 +55,8 @@ final class GameOverlayLayoutListViewController: UITableViewController {
     private enum ScopeRow {
         case applyToPlatform
         case followPlatform
+        case applyToDriver
+        case resetDriver
     }
 
     private var sections: [Section] {
@@ -65,7 +67,12 @@ final class GameOverlayLayoutListViewController: UITableViewController {
     }
 
     private var scopeRows: [ScopeRow] {
-        session.gameChoice() == .followPlatform ? [.applyToPlatform] : [.applyToPlatform, .followPlatform]
+        var rows: [ScopeRow] = []
+        if session.driverIdentifier != nil { rows.append(.applyToDriver) }
+        rows.append(.applyToPlatform)
+        if session.gameChoice() != .followPlatform { rows.append(.followPlatform) }
+        if session.driverIdentifier != nil, session.driverChoice() != .followPlatform { rows.append(.resetDriver) }
+        return rows
     }
 
     /// Picking a layout in a game changes only that game: someone switching
@@ -151,7 +158,7 @@ final class GameOverlayLayoutListViewController: UITableViewController {
         case .layouts:
             return editHandler == nil ? Bundle.localizedString(forKey: "overlay_layout_manage_hint") : nil
         case .scope:
-            return Bundle.localizedString(forKey: "overlay_layout_apply_to_platform_footer")
+            return Bundle.localizedString(forKey: session.driverIdentifier == nil ? "overlay_layout_apply_to_platform_footer" : "overlay_layout_driver_footer")
         case .create:
             return nil
         }
@@ -183,6 +190,10 @@ final class GameOverlayLayoutListViewController: UITableViewController {
             switch scopeRows[indexPath.row] {
             case .applyToPlatform:
                 content.text = applyToPlatformTitle
+                if session.driverIdentifier != nil {
+                    content.textProperties.color = .mainColor
+                    break
+                }
                 let toggle = UISwitch()
                 toggle.isOn = usesPlatformLayout
                 toggle.onTintColor = .mainColor
@@ -193,7 +204,13 @@ final class GameOverlayLayoutListViewController: UITableViewController {
                 cell.accessoryView = toggle
                 cell.selectionStyle = .none
             case .followPlatform:
-                content.text = Bundle.localizedString(forKey: "overlay_layout_follow_platform")
+                content.text = Bundle.localizedString(forKey: session.driverIdentifier == nil ? "overlay_layout_follow_platform" : "overlay_layout_follow_driver")
+                content.textProperties.color = .mainColor
+            case .applyToDriver:
+                content.text = String(format: Bundle.localizedString(forKey: "overlay_layout_apply_to_driver"), session.driverIdentifier ?? "")
+                content.textProperties.color = .mainColor
+            case .resetDriver:
+                content.text = Bundle.localizedString(forKey: "overlay_layout_driver_follow_platform")
                 content.textProperties.color = .mainColor
             }
         }
@@ -202,7 +219,7 @@ final class GameOverlayLayoutListViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
-        !(sections[indexPath.section] == .scope && scopeRows[indexPath.row] == .applyToPlatform)
+        !(sections[indexPath.section] == .scope && scopeRows[indexPath.row] == .applyToPlatform && session.driverIdentifier == nil)
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -220,9 +237,19 @@ final class GameOverlayLayoutListViewController: UITableViewController {
                   AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayout, from: self) else { return }
             editHandler?(.create)
         case .scope:
-            if scopeRows[indexPath.row] == .followPlatform {
+            switch scopeRows[indexPath.row] {
+            case .followPlatform:
                 guard session.canFollowPlatform || AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayoutSelection, from: self) else { return }
                 session.followPlatform()
+            case .applyToDriver:
+                let id = session.resolvedLayout().item?.id
+                guard requireLayoutSelection(id: id) else { return }
+                session.chooseForDriver(layoutId: id)
+            case .resetDriver:
+                guard session.canResetDriver || AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayoutSelection, from: self) else { return }
+                session.resetDriver()
+            case .applyToPlatform:
+                if session.driverIdentifier != nil { setUsesPlatformLayout(true) }
             }
         }
     }
@@ -254,7 +281,8 @@ final class GameOverlayLayoutListViewController: UITableViewController {
         let sourceKey: String
         switch resolved.source {
         case .game: sourceKey = "overlay_layout_source_game"
-        case .platform, .driver: sourceKey = "overlay_layout_source_platform"
+        case .driver: sourceKey = "overlay_layout_source_driver"
+        case .platform: sourceKey = "overlay_layout_source_platform"
         case .builtIn: return Bundle.localizedString(forKey: "overlay_layout_current_game_builtin")
         }
         return String(format: Bundle.localizedString(forKey: "overlay_layout_current_game_format"),
@@ -271,6 +299,9 @@ final class GameOverlayLayoutListViewController: UITableViewController {
     private func usageText(_ item: GameOverlayLayoutItem) -> String? {
         let usage = session.usage(of: item.id)
         var parts: [String] = []
+        if usage.drivers > 0 {
+            parts.append(String(format: Bundle.localizedString(forKey: "overlay_layout_usage_drivers"), usage.drivers))
+        }
         if usage.platform {
             if let platform = session.platformTitle {
                 parts.append(String(format: Bundle.localizedString(forKey: "overlay_layout_usage_platform"), platform))
@@ -368,7 +399,7 @@ final class GameOverlayLayoutListViewController: UITableViewController {
 
     private func confirmDelete(_ item: GameOverlayLayoutItem) {
         let usage = session.usage(of: item.id)
-        let inUse = usage.platform || usage.games > 0
+        let inUse = usage.platform || usage.games > 0 || usage.drivers > 0
         let alert = UIAlertController(
             title: String(format: Bundle.localizedString(forKey: "overlay_layout_delete_title"), item.name),
             message: inUse ? Bundle.localizedString(forKey: "overlay_layout_delete_in_use") : nil,

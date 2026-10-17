@@ -121,8 +121,8 @@ final class MameCatalogWriter {
     fileprivate init(db: Connection) throws {
         insertMachine = try BulkInsertStatement(db, """
             INSERT INTO machine (name, description, year, manufacturer, cloneof, romof,
-                                 is_bios, is_device, runnable, driver_status, default_bios)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                 is_bios, is_device, runnable, driver_status, default_bios, source_file)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """)
         insertRom = try BulkInsertStatement(db, """
             INSERT INTO machine_rom (machine, name, size, crc, sha1, merge, bios, status, optional)
@@ -147,6 +147,7 @@ final class MameCatalogWriter {
         insertMachine.bind(machine.runnable)
         insertMachine.bind(machine.driverStatus)
         insertMachine.bind(machine.defaultBios)
+        insertMachine.bind(machine.sourceFile)
         try insertMachine.execute()
 
         for rom in machine.roms {

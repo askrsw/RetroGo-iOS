@@ -847,7 +847,14 @@
 "overlay_layout_delete" = "删除";
 "overlay_layout_copy_suffix" = "副本";
 "overlay_layout_delete_title" = "删除「%@」？";
-"overlay_layout_delete_in_use" = "正在使用它的游戏会改用平台布局或默认布局。";
+"overlay_layout_delete_in_use" = "正在使用它的游戏会按继承顺序改用下一级可用布局。";
+"overlay_layout_apply_to_driver" = "应用到驱动 %@";
+"overlay_layout_follow_driver" = "跟随驱动布局";
+"overlay_layout_driver_follow_platform" = "让驱动跟随平台";
+"overlay_layout_source_driver" = "驱动";
+"overlay_layout_usage_drivers" = "%ld 个驱动";
+"overlay_layout_save_only" = "仅保存，不应用";
+"overlay_layout_driver_footer" = "优先使用游戏单独选择的布局，其次是驱动布局，再是平台布局。应用到驱动或平台时，其他游戏的单独选择保持不变。让驱动跟随平台会移除此驱动对所有游戏的绑定。";
 "overlay_layout_manage_hint" = "编辑或新建布局：游戏中从菜单打开「屏幕按键布局」。";
 "overlay_layout_combos" = "扩展按键";
 "overlay_combo_new" = "新建扩展按键";

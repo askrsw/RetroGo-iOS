@@ -27,13 +27,13 @@ import UIKit
 import SnapKit
 import ObjcHelper
 
-/// Names a new control layout and says who uses it. Neither switch on means
-/// the layout is only saved, to be picked from the list later.
+/// Names a new layout and selects one application scope.
 final class GameOverlayLayoutSaveViewController: UITableViewController {
     struct Result {
         let name: String
         let useForGame: Bool
         let applyToPlatform: Bool
+        let applyToDriver: Bool
     }
 
     private let session: GameOverlayLayoutSession
@@ -44,16 +44,18 @@ final class GameOverlayLayoutSaveViewController: UITableViewController {
     var onDismiss: (() -> Void)?
 
     private let nameField = UITextField()
-    private var useForGame = true
-    private var applyToPlatform = false
+    private var selectedScope: Row = .useForGame
 
     private enum Row {
-        case name, useForGame, applyToPlatform
+        case name, saveOnly, useForGame, applyToDriver, applyToPlatform
     }
 
     private var sections: [[Row]] {
         // Without a game (opened outside a game) only the platform choice makes sense.
-        let usage: [Row] = showsGameOption ? [.useForGame, .applyToPlatform] : [.applyToPlatform]
+        var usage: [Row] = [.saveOnly]
+        if showsGameOption { usage.append(.useForGame) }
+        if showsGameOption, session.driverIdentifier != nil { usage.append(.applyToDriver) }
+        usage.append(.applyToPlatform)
         return [[.name], usage]
     }
 
@@ -63,7 +65,7 @@ final class GameOverlayLayoutSaveViewController: UITableViewController {
         self.showsGameOption = showsGameOption
         self.onSave = onSave
         super.init(style: .insetGrouped)
-        useForGame = showsGameOption
+        selectedScope = showsGameOption ? .useForGame : .saveOnly
     }
 
     required init?(coder: NSCoder) {
@@ -128,30 +130,36 @@ final class GameOverlayLayoutSaveViewController: UITableViewController {
             return cell
         case .useForGame:
             content.text = Bundle.localizedString(forKey: "overlay_layout_use_for_game")
-            cell.accessoryView = makeSwitch(isOn: useForGame) { [weak self] isOn in
-                self?.useForGame = isOn
-                self?.refreshPlatformSwitch()
-            }
+        case .saveOnly:
+            content.text = Bundle.localizedString(forKey: "overlay_layout_save_only")
+        case .applyToDriver:
+            content.text = String(format: Bundle.localizedString(forKey: "overlay_layout_apply_to_driver"), session.driverIdentifier ?? "")
         case .applyToPlatform:
             if let platform = session.platformTitle {
                 content.text = String(format: Bundle.localizedString(forKey: "overlay_layout_apply_to_platform"), platform)
             } else {
                 content.text = Bundle.localizedString(forKey: "overlay_layout_apply_to_platform_generic")
             }
-            cell.accessoryView = makeSwitch(isOn: applyToPlatform) { [weak self] isOn in
-                self?.applyToPlatform = isOn
-            }
-            (cell.accessoryView as? UISwitch)?.isEnabled = useForGame || !showsGameOption
         }
+        cell.selectionStyle = .default
+        cell.tintColor = .mainColor
+        cell.accessoryType = sections[indexPath.section][indexPath.row] == selectedScope ? .checkmark : .none
         cell.contentConfiguration = content
         return cell
+    }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        guard indexPath.section == 1 else { return }
+        selectedScope = sections[indexPath.section][indexPath.row]
+        tableView.reloadSections(IndexSet(integer: 1), with: .none)
     }
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         if section == 0 {
             return isNameTaken ? Bundle.localizedString(forKey: "overlay_layout_name_taken") : nil
         }
-        return Bundle.localizedString(forKey: "overlay_layout_apply_to_platform_footer")
+        return Bundle.localizedString(forKey: session.driverIdentifier == nil ? "overlay_layout_apply_to_platform_footer" : "overlay_layout_driver_footer")
     }
 
     private var trimmedName: String {
@@ -175,36 +183,19 @@ final class GameOverlayLayoutSaveViewController: UITableViewController {
         }
     }
 
-    private func refreshPlatformSwitch() {
-        guard showsGameOption else { return }
-        if !useForGame {
-            applyToPlatform = false
-        }
-        guard let row = sections[1].firstIndex(of: .applyToPlatform),
-              let cell = tableView.cellForRow(at: IndexPath(row: row, section: 1)),
-              let toggle = cell.accessoryView as? UISwitch else { return }
-        toggle.isEnabled = useForGame
-        toggle.setOn(applyToPlatform, animated: true)
-    }
-
-    private func makeSwitch(isOn: Bool, onChange: @escaping (Bool) -> Void) -> UISwitch {
-        let toggle = UISwitch()
-        toggle.isOn = isOn
-        toggle.onTintColor = .mainColor
-        toggle.addAction(UIAction { [weak toggle] _ in
-            guard let toggle else { return }
-            onChange(toggle.isOn)
-        }, for: .valueChanged)
-        return toggle
-    }
-
     private func save() {
+        guard presentedViewController == nil else { return }
         // Commits text still being composed (pinyin, suggestions) before reading the name.
         view.endEditing(true)
         guard !trimmedName.isEmpty, !isNameTaken else { return }
         let result = Result(name: trimmedName,
-                            useForGame: showsGameOption && useForGame,
-                            applyToPlatform: applyToPlatform)
+                            useForGame: selectedScope == .useForGame,
+                            applyToPlatform: selectedScope == .applyToPlatform,
+                            applyToDriver: selectedScope == .applyToDriver)
+        completeSave(result)
+    }
+
+    private func completeSave(_ result: Result) {
         guard onSave(result) else {
             let alert = UIAlertController(title: nil, message: Bundle.localizedString(forKey: "overlay_layout_save_failed"), preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))

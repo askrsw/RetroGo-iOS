@@ -68,7 +68,7 @@ extension MameRomSetPersistence {
         guard let db else { return nil }
         do {
             let sql = """
-                SELECT name, description, cloneof, romof, is_bios, is_device, runnable, driver_status, default_bios
+                SELECT name, description, cloneof, romof, is_bios, is_device, runnable, driver_status, default_bios, source_file
                 FROM machine WHERE name = ?
                 """
             for row in try db.prepare(sql, name.lowercased()) {
@@ -258,7 +258,8 @@ extension MameRomSetPersistence {
             isDevice: (row[5] as? Int64) == 1,
             runnable: (row[6] as? Int64) != 0,
             driverStatus: row[7] as? String,
-            defaultBios: row[8] as? String
+            defaultBios: row[8] as? String,
+            sourceFile: row[9] as? String
         )
     }
 }

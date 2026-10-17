@@ -271,7 +271,7 @@ final class GameOverlayLayoutEditController {
         guard case .edit(let item) = target else { return nil }
         let usage = session.usage(of: item.id)
         let ownGame = session.gameChoice() == .custom(item.id) ? 1 : 0
-        guard usage.platform || usage.games - ownGame > 0 else { return nil }
+        guard usage.platform || usage.drivers > 0 || usage.games - ownGame > 0 else { return nil }
         return Bundle.localizedString(forKey: "overlay_layout_editing_shared")
     }
 
@@ -319,8 +319,17 @@ final class GameOverlayLayoutEditController {
         var saved: GameOverlayLayoutItem?
         let controller = GameOverlayLayoutSaveViewController(session: session, showsGameOption: session.game != nil) { result in
             guard let item = session.createLayout(name: result.name, data: data) else { return false }
-            if result.useForGame || result.applyToPlatform {
-                session.choose(layoutId: item.id, applyToPlatform: result.applyToPlatform)
+            let applied: Bool
+            if result.applyToDriver {
+                applied = session.chooseForDriver(layoutId: item.id)
+            } else if result.useForGame || result.applyToPlatform {
+                applied = session.choose(layoutId: item.id, applyToPlatform: result.applyToPlatform)
+            } else {
+                applied = true
+            }
+            guard applied else {
+                session.deleteLayout(id: item.id)
+                return false
             }
             RetroGoLogger.game.info("Saved new overlay layout \(item.id, privacy: .public) of \(session.templateId, privacy: .public)")
             saved = item

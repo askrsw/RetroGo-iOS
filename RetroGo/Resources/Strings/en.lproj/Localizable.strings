@@ -845,7 +845,14 @@
 "overlay_layout_delete" = "Delete";
 "overlay_layout_copy_suffix" = "Copy";
 "overlay_layout_delete_title" = "Delete “%@”?";
-"overlay_layout_delete_in_use" = "Games using it will switch to the platform layout or the default layout.";
+"overlay_layout_delete_in_use" = "Games using it will fall back to the next available layout.";
+"overlay_layout_apply_to_driver" = "Apply to Driver %@";
+"overlay_layout_follow_driver" = "Follow Driver Layout";
+"overlay_layout_driver_follow_platform" = "Let Driver Follow Platform";
+"overlay_layout_source_driver" = "Driver";
+"overlay_layout_usage_drivers" = "%ld drivers";
+"overlay_layout_save_only" = "Save Without Applying";
+"overlay_layout_driver_footer" = "Game choices take priority over driver choices, then the platform layout. Applying to a driver or platform keeps other games’ own choices. Letting a driver follow the platform removes its binding for all games in that driver.";
 "overlay_layout_manage_hint" = "To edit a layout or create one, open Control Layouts from the menu while playing.";
 "overlay_layout_combos" = "Extra Buttons";
 "overlay_combo_new" = "New Extra Button";
