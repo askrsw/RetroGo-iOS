@@ -114,7 +114,26 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
     /// Resolve at gameplay size, then scale the entire scene uniformly into the card.
     /// Resolving in a shorter/narrower viewport changes distances between edge-anchored
     /// custom controls and polar groups, even when their saved geometry is identical.
-
+    func fitLayout(for referenceSize: CGSize, canvasWidth: CGFloat) -> CGFloat {
+        updateLayout(for: referenceSize)
+        let nodes: [GameOverlayElementLayout] = [dpad, n64CButton, fastButton].compactMap { $0 } + actionButtons + previewNodes
+        var bounds = CGRect.null
+        for node in nodes where !node.isHidden {
+            let size = resolveOverlayRect(node.element).size
+            let rect = CGRect(x: -size.width / 2, y: -size.height / 2, width: size.width, height: size.height)
+            // Leave room for a waiting-for-input bubble on an unmapped button too.
+            bounds = bounds.union(convert(rect, from: node).insetBy(dx: 0, dy: -32))
+        }
+        for bubble in bindingBubbleLayer.children where !bubble.isHidden {
+            bounds = bounds.union(bubble.calculateAccumulatedFrame())
+        }
+        let scale = canvasWidth / referenceSize.width
+        let height = bounds.isNull ? 80 : ceil(bounds.height * scale + 40)
+        self.size = CGSize(width: canvasWidth, height: height)
+        previewCamera.setScale(1 / scale)
+        previewCamera.position = CGPoint(x: referenceSize.width / 2, y: bounds.isNull ? referenceSize.height / 2 : bounds.midY)
+        return height
+    }
 
     func resetToDefault() {
         guard !isReadOnly else { return }

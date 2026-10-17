@@ -36,6 +36,8 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
     private var selectedLayoutId: String?
     private var didRestoreOnExit = false
     private var canvasHeight: CGFloat = 440
+    private var canvasReferenceSize: CGSize = .zero
+    private var canvasFittingWidth: CGFloat = 0
     private let manager = RAInputActionManager.shared()
 
     let session: GameConfigSession?
@@ -151,10 +153,35 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        overlayView?.size = skView.bounds.size
+        guard skView.bounds.width > 0, let overlayView else { return }
+        let referenceSize = mappingReferenceSize()
+        guard canvasReferenceSize != referenceSize || canvasFittingWidth != skView.bounds.width else { return }
+        canvasReferenceSize = referenceSize
+        canvasFittingWidth = skView.bounds.width
+        let height = overlayView.fitLayout(for: referenceSize, canvasWidth: canvasFittingWidth)
+        guard abs(canvasHeight - height) > 0.5 else { return }
+        canvasHeight = height
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            UIView.performWithoutAnimation {
+                self.tableView.beginUpdates()
+                self.tableView.endUpdates()
+            }
+        }
     }
 
-
+    private func mappingReferenceSize() -> CGSize {
+        if let window = view.window, let overlay = GamePageViewController.instance?.myOverlayView,
+           overlay.window === window, overlay.bounds.width > 0, overlay.bounds.height > 0 {
+            return overlay.bounds.size
+        }
+        let bounds = view.window?.bounds ?? view.bounds
+        let safeArea = view.window?.safeAreaInsets ?? view.safeAreaInsets
+        // Match RAGameViewController: safe horizontal edges, below its 44pt toolbar,
+        // extending to the bottom of the window (including the home indicator area).
+        return CGSize(width: max(1, bounds.width - safeArea.left - safeArea.right),
+                      height: max(1, bounds.height - safeArea.top - 44))
+    }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -205,6 +232,7 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
             config: .loadOverlayConfig(layouts.templateId), playerIndex: playerIndex,
             layoutData: data, isReadOnly: isReadOnly)
         overlayView = scene
+        canvasReferenceSize = .zero
         scene.shouldAllowBindingChange = { [weak self] in
             guard let self, self.viewIfLoaded?.window != nil, self.presentedViewController == nil,
                   self.navigationController?.visibleViewController === self else { return false }

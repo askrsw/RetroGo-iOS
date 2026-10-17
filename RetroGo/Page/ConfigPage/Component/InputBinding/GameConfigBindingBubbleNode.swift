@@ -158,7 +158,7 @@ final class GameConfigBindingBubbleNode: SKNode {
             return
         }
 
-        isPressed = contains(touch.location(in: self))
+        isPressed = shapeNode.path?.contains(touch.location(in: shapeNode)) == true
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -169,6 +169,7 @@ final class GameConfigBindingBubbleNode: SKNode {
         endTracking(touches)
     }
 }
+
 
 private extension GameConfigBindingBubbleNode {
     struct LayoutMetrics {
@@ -281,13 +282,14 @@ private extension GameConfigBindingBubbleNode {
     }
 
     func updateAppearance() {
+        alpha = isActive ? 1 : 0.55
         let textColor = labelTextColor
         if isActive {
-            shapeNode.fillColor = UIColor(red: 0.72, green: 0.32, blue: 0.08, alpha: 1.0)
-            shapeNode.strokeColor = UIColor.white
+            shapeNode.fillColor = UIColor(red: 0.72, green: 0.32, blue: 0.08, alpha: 1)
+            shapeNode.strokeColor = .white
         } else {
-            shapeNode.fillColor = UIColor(red: 0.18, green: 0.18, blue: 0.20, alpha: 1.0)
-            shapeNode.strokeColor = UIColor(red: 0.78, green: 0.78, blue: 0.84, alpha: 1.0)
+            shapeNode.fillColor = UIColor(red: 0.18, green: 0.18, blue: 0.20, alpha: 1)
+            shapeNode.strokeColor = UIColor(red: 0.78, green: 0.78, blue: 0.84, alpha: 1)
         }
         labelNode.fontColor = textColor
         updateIcon(systemImageName, color: textColor)
