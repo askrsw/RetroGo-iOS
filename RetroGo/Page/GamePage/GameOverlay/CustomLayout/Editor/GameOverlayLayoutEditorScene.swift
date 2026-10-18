@@ -38,13 +38,6 @@ import ObjcHelper
 /// switches to the other orientation's data. The edited layout is `layoutData`;
 /// nothing is saved here.
 final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
-    enum SelectionMode {
-        /// Group members (the face buttons) move and scale together.
-        case group
-        /// Every control moves on its own; moving a group member takes it out of the group.
-        case single
-    }
-
     enum Selection: Equatable {
         case group(String)
         case element(String)
@@ -59,20 +52,31 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
     let usePolarLayout = true
 
     private(set) var layoutData: GameOverlayLayoutData
-    private(set) var selectionMode: SelectionMode = .group
+    private let initialLayoutData: GameOverlayLayoutData
+    var hasCustomChanges: Bool { layoutData != initialLayoutData }
+    /// Session-only: automatic placement in the other orientation does not count as review.
+    private(set) var editedOrientations: Set<Bool> = []
+    var macroDefinitions: [GameOverlayMacro] { layoutData.macros ?? [] }
+    var macrosToSave: [GameOverlayMacro] { macroDefinitions }
+    private(set) var selectedSlotId: String?
     private(set) var selection: Selection?
-    /// Which arcade layout is edited; the four- and six-button layouts keep separate data.
-    private(set) var usesFourButtonLayout = false
 
     /// Called whenever the layout, the selection or the undo state changes.
     var onChange: (() -> Void)?
+    var onEditSlot: ((String) -> Void)?
 
     private var nodes: [GameOverlayElementLayout] = []
-    private var arcadeLayoutButton: GameOverlayArcadeLayoutButton?
     private let selectionFrame = SKShapeNode()
+    private let memberFrame = SKShapeNode()
+    private let emptySlotsNode = SKNode()
     private let verticalGuide = SKShapeNode()
     private let horizontalGuide = SKShapeNode()
-    private var undoStack: [GameOverlayLayoutData] = []
+    private let grid = SKShapeNode()
+    private struct UndoState {
+        let data: GameOverlayLayoutData
+        let macros: [GameOverlayMacro]
+    }
+    private var undoStack: [UndoState] = []
     /// Layout before a slider drag; the whole drag becomes one undo step.
     private var continuousEditStart: GameOverlayLayoutData?
     private var drag: DragState?
@@ -82,8 +86,6 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
         let startPoint: CGPoint
         let startRect: CGRect
         let startData: GameOverlayLayoutData
-        /// Data the drag applies offsets to (a group member taken out of its group already has its own scale).
-        let baseData: GameOverlayLayoutData
         var moved = false
         var snappedX: CGFloat?
         var snappedY: CGFloat?
@@ -95,15 +97,14 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
     private static let hiddenAlpha: CGFloat = 0.3
     private static let dragThreshold: CGFloat = 4
 
-    init(size: CGSize, config: GamePageOverlayConfig, supportsAnalog: Bool, layoutData: GameOverlayLayoutData,
-         fourButtonLayout: Bool = false) {
+    init(size: CGSize, config: GamePageOverlayConfig, supportsAnalog: Bool, layoutData: GameOverlayLayoutData) {
         self.baseConfig = config
         self.config = config.withCombos(from: layoutData)
         self.supportsAnalog = supportsAnalog
         self.layoutData = layoutData
-        self.overlayLayoutResolver = GameOverlayLayoutResolver(config: config)
+        self.initialLayoutData = layoutData
+        self.overlayLayoutResolver = GameOverlayLayoutResolver(config: self.config)
         self.overlayLayoutResolver.layoutData = layoutData
-        self.usesFourButtonLayout = fourButtonLayout && config.hasArcadeLayoutSwitch
         super.init(size: size)
         backgroundColor = .clear
         scaleMode = .resizeFill
@@ -111,6 +112,7 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
         isUserInteractionEnabled = true
 
         updateOverlayLayout(for: size)
+        updateGrid()
         buildNodes()
         buildDecorations()
     }
@@ -122,10 +124,12 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
     func updateLayout(for size: CGSize) {
         let orientationChanged = (size.width < size.height) != (self.size.width < self.size.height)
         updateOverlayLayout(for: size)
+        updateGrid()
         if orientationChanged {
             // Another orientation has its own data; the old selection and undo steps no longer apply.
             cancelDrag()
             selection = nil
+            selectedSlotId = nil
             undoStack.removeAll()
         }
         refresh()
@@ -133,55 +137,31 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
 
     var isPortrait: Bool { overlayLayoutResolver.mode == .portrait }
     var canUndo: Bool { !undoStack.isEmpty }
-    var hasArcadeLayoutSwitch: Bool { config.hasArcadeLayoutSwitch }
-
-    /// Edits the arcade four- or six-button layout. Undo steps stay: they hold the whole layout.
-    func setFourButtonLayout(_ fourButtons: Bool) {
-        guard hasArcadeLayoutSwitch, usesFourButtonLayout != fourButtons else { return }
-        cancelDrag()
-        selection = nil
-        usesFourButtonLayout = fourButtons
-        arcadeLayoutButton?.applyFourButtonLayout(fourButtons)
-        refresh()
-    }
-
-    /// Custom data of what is being edited: this orientation, this arcade layout.
+    /// Custom data of what is being edited: this orientation.
     var editedOrientation: GameOverlayLayoutData.Orientation? {
-        layoutData.orientation(portrait: isPortrait, fourButton: usesFourButtonLayout)
-    }
-
-    func setSelectionMode(_ mode: SelectionMode) {
-        guard selectionMode != mode else { return }
-        selectionMode = mode
-        cancelDrag()
-        // A group selection means nothing in single mode, and the other way round.
-        if case .group = selection, mode == .single { selection = nil }
-        if mode == .group, case .element(let id) = selection, let element = element(id: id),
-           let group = element.group, !hasCustomPosition(element) {
-            selection = .group(group)
-        }
-        refresh()
+        layoutData.orientation(portrait: isPortrait)
     }
 
     func undo() {
         guard let previous = undoStack.popLast() else { return }
         cancelDrag()
-        setLayoutData(previous)
+        setLayoutData(previous.data)
+        updateComboNodes()
         refresh()
     }
 
-    /// Back to the built-in layout for the orientation (and arcade layout) being edited.
+    /// Back to the built-in layout for the orientation being edited.
     func resetCurrentOrientation() {
         guard editedOrientation != nil else { return }
         var data = layoutData
-        data.setOrientation(nil, portrait: isPortrait, fourButton: usesFourButtonLayout)
+        data.setOrientation(nil, portrait: isPortrait)
         commit(data)
     }
 
     /// Records an edit made outside the scene (panel controls) as one undo step.
     func commit(_ data: GameOverlayLayoutData) {
         guard data != layoutData else { return }
-        undoStack.append(layoutData)
+        undoStack.append(.init(data: layoutData, macros: macroDefinitions))
         setLayoutData(data)
         refresh()
     }
@@ -229,15 +209,11 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
             return Bundle.localizedString(forKey: "overlay_layout_element_collapse")
         case .n64CButton:
             return "C"
-        case .ndsLayoutButton, .arcadeLayoutButton:
+        case .ndsLayoutButton:
             return Bundle.localizedString(forKey: "overlay_layout_element_layout_switch")
-        case .button, .combo:
+        case .button, .combo, .macro:
             return element.buttonTitle
         }
-    }
-
-    var opacity: Double {
-        Double(overlayLayoutResolver.customOpacity)
     }
 
     /// Whether the selected control is hidden; nil for a group or a control that always stays.
@@ -245,6 +221,104 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
         guard case .element(let id) = selection, let element = element(id: id), element.isHideableInCustomLayout else { return nil }
         return isHiddenInLayout(element)
     }
+
+    struct FanSlot {
+        let id: String
+        let element: GamePageOverlayElement?
+        let rect: CGRect
+        let rotation: CGFloat
+        let hidden: Bool
+    }
+    var selectedGroupName: String? {
+        guard case .group(let name) = selection else { return nil }
+        return name
+    }
+    var fanSlots: [FanSlot] {
+        guard let name = selectedGroupName else { return [] }
+        return overlayLayoutResolver.fanSlotElements.filter { $0.group == name }.compactMap { slot in
+            guard let rect = overlayLayoutResolver.slotRect(slot.id) else { return nil }
+            let occupant = overlayLayoutResolver.occupant(of: slot.id)
+            return FanSlot(id: slot.id, element: occupant, rect: occupant.map(frame) ?? rect,
+                rotation: occupant.map { resolveOverlayRotation($0, rotatesWithPolarLayout: true) } ?? 0,
+                hidden: occupant.map(isHiddenInLayout) ?? false)
+        }
+    }
+    var canEditFan: Bool { !fanSlots.isEmpty }
+    var selectedFan: GameOverlayLayoutData.Fan {
+        selectedGroupName.flatMap { currentOrientation.groups[$0]?.fan } ?? .init()
+    }
+    var fanHasOuterRing: Bool {
+        let radii = overlayLayoutResolver.fanSlotElements.compactMap {
+            isPortrait ? $0.geometry.polarPortraitLayout?.radius : $0.geometry.polarLandscapeLayout?.radius
+        }
+        return (radii.max() ?? 0) - (radii.min() ?? 0) > 1
+    }
+    func selectFanSlot(_ id: String) {
+        guard let slot = overlayLayoutResolver.fanSlotElements.first(where: { $0.id == id }), let name = slot.group else { return }
+        cancelDrag()
+        selectedSlotId = id
+        selection = .group(name)
+        refresh()
+    }
+    func slotCandidates(_ id: String) -> [GamePageOverlayElement] {
+        config.elements.filter { isAvailable($0) && GameOverlayLayoutResolver.canEnterFan($0)
+            && (overlayLayoutResolver.slot(for: $0) == nil || overlayLayoutResolver.slot(for: $0)?.id == id) }
+    }
+    func toggleGroupMemberHidden() {
+        guard let id = selectedSlotId, let member = overlayLayoutResolver.occupant(of: id), member.isHideableInCustomLayout else { return }
+        setHidden(!isHiddenInLayout(member), element: member.id)
+    }
+    func removeSelectedSlot() {
+        guard let id = selectedSlotId else { return }
+        assignSlot(id, elementId: nil)
+    }
+    func assignSlot(_ slotId: String, elementId: String?) {
+        guard let slot = overlayLayoutResolver.fanSlotElements.first(where: { $0.id == slotId }) else { return }
+        let old = overlayLayoutResolver.occupant(of: slotId)
+        guard old?.id != elementId else { return }
+        if let elementId, !slotCandidates(slotId).contains(where: { $0.id == elementId }) { return }
+        cancelDrag()
+        var data = layoutData
+        var orientation = currentOrientation
+        if orientation.slots == nil {
+            orientation.slots = Dictionary(uniqueKeysWithValues: overlayLayoutResolver.fanSlotElements.map {
+                ($0.id, overlayLayoutResolver.occupant(of: $0.id)?.id ?? "")
+            })
+        }
+        orientation.slots?[slotId] = elementId ?? ""
+        if let elementId {
+            var custom = orientation.elements[elementId] ?? .init()
+            custom.layout = nil; custom.rotation = nil
+            custom.scale = nil; custom.hidden = false
+            orientation.elements[elementId] = custom
+        }
+        data.setOrientation(orientation, portrait: isPortrait)
+        if let old {
+            // The fan's group scale is only a presentation transform. Restore
+            // the element's default size when it leaves the fan.
+            var detached = orientation.elements[old.id] ?? .init()
+            detached.scale = nil
+            detached.rotation = nil
+            detached.hidden = false
+            orientation.elements[old.id] = detached
+            data.setOrientation(orientation, portrait: isPortrait)
+            data = placingCombo(old.id, in: data)
+        }
+        selection = .group(slot.group ?? "action")
+        selectedSlotId = slotId
+        if continuousEditStart != nil { applyContinuous(data) } else { commit(data) }
+    }
+    func setFan(_ fan: GameOverlayLayoutData.Fan) {
+        guard canEditFan, let name = selectedGroupName else { return }
+        var orientation = currentOrientation
+        var group = orientation.groups[name] ?? .init()
+        group.fan = fan.isDefault ? nil : fan
+        orientation.groups[name] = group.isEmpty ? nil : group
+        var data = layoutData
+        data.setOrientation(orientation, portrait: isPortrait)
+        applyContinuous(keptOnScreen(data, selection: .group(name)))
+    }
+    func fanPreview() -> [FanSlot] { fanSlots }
 
     /// Hides the selected control or shows it again; a hidden one stays faintly drawn so it can be picked.
     func toggleSelectionHidden() {
@@ -254,17 +328,17 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
 
     /// The platform's combos, then the user's, shown or not.
     var comboElements: [GamePageOverlayElement] {
-        config.elements.filter { $0.type == .combo && isAvailable($0) }
+        config.elements.filter { ($0.type == .combo || $0.type == .macro) && isAvailable($0) }
     }
 
     func isHiddenInLayout(_ element: GamePageOverlayElement) -> Bool {
-        overlayLayoutResolver.isHiddenByCustomLayout(element, fourButtonLayout: usesFourButtonLayout)
+        overlayLayoutResolver.isHiddenByCustomLayout(element)
     }
 
     func setHidden(_ hidden: Bool, element id: String) {
         guard let element = element(id: id) else { return }
         // Combos are hidden unless the layout says otherwise; other controls are shown.
-        if element.type == .combo, !hidden, !hasCustomPosition(element) {
+        if (element.type == .combo || element.type == .macro), !hidden, !hasCustomPosition(element), overlayLayoutResolver.slot(for: element) == nil {
             commit(placingCombo(id, in: layoutData))
             selection = .element(id)
             refresh()
@@ -275,7 +349,7 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
         custom.hidden = hidden == element.isHiddenByDefaultInCustomLayout ? nil : hidden
         orientation.elements[id] = custom.isEmpty ? nil : custom
         var data = layoutData
-        data.setOrientation(orientation, portrait: isPortrait, fourButton: usesFourButtonLayout)
+        data.setOrientation(orientation, portrait: isPortrait)
         commit(data)
     }
 
@@ -283,14 +357,69 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
 
     var comboKeys: [GameOverlayComboKey] { baseConfig.comboKeys }
 
-    /// The selection's combo title when it draws Start/Select as symbols.
+    var suggestedComboBinds: [String] {
+        guard layoutData.combos?.isEmpty ?? true else { return [] }
+        let available = Set(comboKeys.map(\.bind.rawValue))
+        let recommendation = baseConfig.recommendedCombo?.binds.map(\.rawValue)
+            ?? ["A", "B"]
+        return recommendation.filter(available.contains)
+    }
+
+    var suggestedComboTurbo: Bool { baseConfig.recommendedCombo?.isTurbo ?? true }
+
+    /// Every combo title uses compact labels in the layout panel, including
+    /// text-only combos that would otherwise fall back to a joined title.
     var selectionComboTitle: GameOverlayComboTitle? {
-        guard case .element(let id) = selection, let title = element(id: id)?.comboTitle, title.hasSymbols else { return nil }
+        guard case .element(let id) = selection, let element = element(id: id),
+              let title = element.comboTitle else { return nil }
         return title
     }
 
     func userCombo(id: String) -> GameOverlayLayoutData.Combo? {
         layoutData.combos?.first { $0.id == id }
+    }
+
+    func userMacro(id: String) -> GameOverlayMacro? {
+        layoutData.macros?.first { $0.id == id }
+    }
+
+    func saveMacro(_ definition: GameOverlayMacro, shown: Bool) {
+        cancelDrag()
+        undoStack.append(.init(data: layoutData, macros: macroDefinitions))
+        var macro = definition
+        if macro.id.isEmpty {
+            let reserved = Set(config.elements.map(\.id) + macroDefinitions.map(\.id))
+            macro.id = GameOverlayMacro.makeId(reservedIds: reserved)
+        }
+        let buttonId = macro.id
+        let isNew = userMacro(id: buttonId) == nil
+        var data = layoutData
+        var macros = data.macros ?? []
+        macros.removeAll { $0.id == macro.id }
+        macros.append(macro)
+        data.macros = macros
+        if isNew {
+            data = placingCombo(buttonId, in: data)
+            data = placingCombo(buttonId, in: data, portrait: !isPortrait)
+        }
+        var orientation = data.orientation(portrait: isPortrait) ?? .init()
+        var custom = orientation.elements[buttonId] ?? .init()
+        custom.hidden = !shown
+        orientation.elements[buttonId] = custom
+        data.setOrientation(orientation, portrait: isPortrait)
+        selection = .element(buttonId)
+        selectedSlotId = nil
+        setLayoutData(data)
+        updateComboNodes()
+        refresh()
+    }
+
+    func removeMacro(id: String) {
+        var data = layoutData
+        data.removeMacro(id: id)
+        if selection == .element(id) { selection = nil }
+        commit(data)
+        refresh()
     }
 
     /// The selection when it is a combo the user made.
@@ -299,41 +428,42 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
         return userCombo(id: id)
     }
 
+    var selectedMacroButtonId: String? {
+        guard case .element(let id) = selection, userMacro(id: id) != nil else { return nil }
+        return id
+    }
+
     /// Another combo, built-in or the user's, that already presses these buttons. Turbo does not
     /// make a second one: A+B and turbo A+B count as the same combo.
     func combo(binds: [String], excluding id: String?) -> GamePageOverlayElement? {
         let keys = Set(binds)
         return config.elements.first {
-            $0.type == .combo && $0.id != id && Set($0.binds.map(\.rawValue)) == keys
+            ($0.type == .combo || ($0.type == .button && $0.isTurbo)) && $0.id != id && Set($0.binds.map(\.rawValue)) == keys
         }
     }
 
-    /// Saves a combo; a new one is shown in the orientation being edited, at a free spot, and selected.
-    func saveCombo(_ combo: GameOverlayLayoutData.Combo) {
+    /// A new combo gets independent free positions in both orientations and is selected.
+    func saveCombo(_ combo: GameOverlayLayoutData.Combo, shown: Bool = true) {
         cancelDrag()
         var data = layoutData
         let isNew = userCombo(id: combo.id) == nil
         data.saveCombo(combo)
         if isNew {
             data = placingCombo(combo.id, in: data)
+            data = placingCombo(combo.id, in: data, portrait: !isPortrait)
             selection = .element(combo.id)
+            selectedSlotId = nil
         }
-        commit(data)
-    }
-
-    /// Turns turbo on or off for a combo in this layout: a user combo changes itself,
-    /// a built-in one keeps the change only where it differs from the overlay JSON.
-    func setComboTurbo(_ turbo: Bool, combo id: String) {
-        cancelDrag()
-        var data = layoutData
-        if var combo = userCombo(id: id) {
-            combo.turbo = turbo
-            data.saveCombo(combo)
-        } else if let preset = baseConfig.elements.first(where: { $0.id == id && $0.type == .combo }) {
-            var overrides = data.presetComboTurbo ?? [:]
-            overrides[id] = turbo == preset.isTurbo ? nil : turbo
-            data.presetComboTurbo = overrides.isEmpty ? nil : overrides
+        if shown, !isNew, element(id: combo.id).map(isShown) != true,
+           element(id: combo.id).flatMap({ overlayLayoutResolver.slot(for: $0) }) == nil,
+           data.orientation(portrait: isPortrait)?.elements[combo.id]?.layout == nil {
+            data = placingCombo(combo.id, in: data)
         }
+        var orientation = data.orientation(portrait: isPortrait) ?? .init()
+        var custom = orientation.elements[combo.id] ?? .init()
+        custom.hidden = !shown
+        orientation.elements[combo.id] = custom
+        data.setOrientation(orientation, portrait: isPortrait)
         commit(data)
     }
 
@@ -358,7 +488,7 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
         guard let start = continuousEditStart else { return }
         continuousEditStart = nil
         if start != layoutData {
-            undoStack.append(start)
+            undoStack.append(.init(data: start, macros: macroDefinitions))
         }
         onChange?()
     }
@@ -378,7 +508,7 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
             orientation.elements[id] = custom.isEmpty ? nil : custom
         }
         var data = layoutData
-        data.setOrientation(orientation, portrait: isPortrait, fourButton: usesFourButtonLayout)
+        data.setOrientation(orientation, portrait: isPortrait)
         applyContinuous(keptOnScreen(data, selection: selection))
     }
 
@@ -386,9 +516,11 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
     private func keptOnScreen(_ data: GameOverlayLayoutData, selection: Selection) -> GameOverlayLayoutData {
         var resolver = overlayLayoutResolver
         resolver.layoutData = data
-        let rects = selectedElements(selection).map {
-            resolver.resolveRect($0.arcadeLayoutElement(fourButtons: usesFourButtonLayout), usePolarLayout: usePolarLayout,
-                                 fourButtonLayout: usesFourButtonLayout)
+        let rects: [CGRect]
+        if case .group(let name) = selection {
+            rects = resolver.fanSlotElements.filter { $0.group == name }.compactMap { resolver.slotRect($0.id) }
+        } else {
+            rects = selectedElements(selection).map { resolver.resolveRect($0, usePolarLayout: usePolarLayout) }
         }
         guard !rects.isEmpty else { return data }
         let rect = rects.reduce(CGRect.null) { $0.union($1) }
@@ -400,9 +532,9 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
         case .group:
             break
         case .element(let id):
-            guard let element = element(id: id), resolver.hasCustomPosition(element, fourButtonLayout: usesFourButtonLayout) else { return data }
+            guard let element = element(id: id), resolver.hasCustomPosition(element) else { return data }
         }
-        var orientation = data.orientation(portrait: isPortrait, fourButton: usesFourButtonLayout) ?? GameOverlayLayoutData.Orientation()
+        var orientation = data.orientation(portrait: isPortrait) ?? GameOverlayLayoutData.Orientation()
         switch selection {
         case .group(let name):
             let scale = max(resolver.scaleFactor, 0.001)
@@ -416,21 +548,14 @@ final class GameOverlayLayoutEditorScene: SKScene, GameOverlaySceneLayouting {
             orientation.elements[id] = custom
         }
         var result = data
-        result.setOrientation(orientation, portrait: isPortrait, fourButton: usesFourButtonLayout)
+        result.setOrientation(orientation, portrait: isPortrait)
         return result
-    }
-
-    /// Opacity belongs to the whole layout, both orientations.
-    func setOpacity(_ opacity: Double) {
-        var data = layoutData
-        data.opacity = opacity >= 0.995 ? nil : opacity
-        applyContinuous(data)
     }
 
     private func applyContinuous(_ data: GameOverlayLayoutData) {
         guard data != layoutData else { return }
         if continuousEditStart == nil {
-            undoStack.append(layoutData)
+            undoStack.append(.init(data: layoutData, macros: macroDefinitions))
         }
         setLayoutData(data)
         refresh()
@@ -463,7 +588,7 @@ private extension GameOverlayLayoutEditorScene {
             return GameOverlayThumbStick(element: element)
         case .directional:
             return GameOverlayDirectionalControl(element: element, supportsAnalog: supportsAnalog, digitalHandler: nil, analogHandler: nil)
-        case .button, .combo:
+        case .button, .combo, .macro:
             return GameOverlayActionButton(element: element, isTurboSupported: false, autoKeepTurbo: false, digitalChangeHandler: nil)
         case .fastButton:
             return GameOverLayFastButton(element: element, fastStateChangeHander: nil)
@@ -473,21 +598,31 @@ private extension GameOverlayLayoutEditorScene {
             return GameOverlayN64CButton(element: element, digitalHandler: nil)
         case .ndsLayoutButton:
             return GameOverlayNDSLayoutButton(element: element, digitalChangeHandler: nil)
-        case .arcadeLayoutButton:
-            let node = GameOverlayArcadeLayoutButton(element: element) { }
-            node.applyFourButtonLayout(usesFourButtonLayout)
-            arcadeLayoutButton = node
-            return node
+
         }
     }
 
     func buildDecorations() {
+        grid.strokeColor = SKColor.white.withAlphaComponent(0.16)
+        grid.lineWidth = 0.5
+        grid.zPosition = -1
+        grid.isHidden = true
+        addChild(grid)
+        updateGrid()
         selectionFrame.strokeColor = .mainColor
         selectionFrame.lineWidth = 2
         selectionFrame.fillColor = SKColor.mainColor.withAlphaComponent(0.12)
         selectionFrame.zPosition = 100
         selectionFrame.isHidden = true
         addChild(selectionFrame)
+        memberFrame.strokeColor = .mainColor
+        memberFrame.lineWidth = 3
+        memberFrame.fillColor = .clear
+        memberFrame.zPosition = 101
+        memberFrame.isHidden = true
+        addChild(memberFrame)
+        emptySlotsNode.zPosition = 50
+        addChild(emptySlotsNode)
 
         for guide in [verticalGuide, horizontalGuide] {
             guide.strokeColor = SKColor.mainColor.withAlphaComponent(0.8)
@@ -499,7 +634,10 @@ private extension GameOverlayLayoutEditorScene {
     }
 
     func setLayoutData(_ data: GameOverlayLayoutData) {
-        let combosChanged = data.combos != layoutData.combos || data.presetComboTurbo != layoutData.presetComboTurbo
+        if data.orientation(portrait: isPortrait) != layoutData.orientation(portrait: isPortrait) {
+            editedOrientations.insert(isPortrait)
+        }
+        let combosChanged = data.combos != layoutData.combos || data.macros != layoutData.macros
         layoutData = data
         overlayLayoutResolver.layoutData = data
         if combosChanged {
@@ -510,12 +648,16 @@ private extension GameOverlayLayoutEditorScene {
     /// Rebuilds the combo nodes after the user's combos changed (made, edited, removed, undone).
     func updateComboNodes() {
         config = baseConfig.withCombos(from: layoutData)
+        let previousResolver = overlayLayoutResolver
+        overlayLayoutResolver = GameOverlayLayoutResolver(config: config)
+        overlayLayoutResolver.update(size: previousResolver.size, contentOffset: previousResolver.contentOffset)
+        overlayLayoutResolver.layoutData = layoutData
         nodes.removeAll { node in
-            guard node.element.type == .combo else { return false }
+            guard node.element.type == .combo || node.element.type == .macro else { return false }
             node.removeFromParent()
             return true
         }
-        for element in config.elements where element.type == .combo {
+        for element in config.elements where element.type == .combo || element.type == .macro {
             let node = makeNode(for: element)
             disableInteraction(node)
             addChild(node)
@@ -524,26 +666,44 @@ private extension GameOverlayLayoutEditorScene {
     }
 
     func refresh() {
-        // A selected combo that was hidden or removed is no longer there to edit.
-        if case .element(let id) = selection, let element = element(id: id), !isShown(element) {
+        emptySlotsNode.removeAllChildren()
+        for slot in overlayLayoutResolver.fanSlotElements where overlayLayoutResolver.occupant(of: slot.id) == nil {
+            guard let rect = overlayLayoutResolver.slotRect(slot.id) else { continue }
+            let node = SKShapeNode(ellipseOf: rect.size)
+            node.position = CGPoint(x: rect.midX, y: rect.midY)
+            node.strokeColor = SKColor.white.withAlphaComponent(0.45)
+            node.fillColor = .clear
+            node.lineWidth = 1
+            let plus = SKLabelNode(text: "+")
+            plus.fontName = "Helvetica"
+            plus.fontSize = min(rect.height * 0.7, 28)
+            plus.fontColor = .mainColor
+            plus.verticalAlignmentMode = .center
+            node.addChild(plus)
+            emptySlotsNode.addChild(node)
+        }
+        // Hidden controls stay selectable in the editor; unavailable/removed ones do not.
+        if case .element(let id) = selection, let element = element(id: id), !isAvailable(element) {
             selection = nil
         } else if case .element(let id) = selection, element(id: id) == nil {
             selection = nil
         }
-        let opacity = overlayLayoutResolver.customOpacity
         for node in nodes {
-            let element = node.element.arcadeLayoutElement(fourButtons: usesFourButtonLayout)
+            let element = node.element
+            if let actionButton = node as? GameOverlayActionButton {
+                let group = overlayLayoutResolver.fanGroup(for: element)
+                actionButton.usesFanStyle = group != nil
+            }
             _ = node.updateRect(resolveOverlayRect(element), shouldUpdatePosition: true)
             let rotates = node is GameOverlayActionButton || node is GameOverLayFastButton
             node.zRotation = resolveOverlayRotation(element, rotatesWithPolarLayout: rotates)
 
-            // Hidden controls stay faintly visible so they can be picked and shown again;
-            // hidden combos are shown again from the panel.
-            if !isShown(element) {
+            // Hidden controls, including combos, stay faintly visible and movable.
+            if !isAvailable(element) {
                 node.isHidden = true
             } else {
                 node.isHidden = false
-                node.alpha = isHiddenInLayout(element) ? opacity * Self.hiddenAlpha : opacity
+                node.alpha = isHiddenInLayout(element) ? Self.hiddenAlpha : 1
             }
         }
         updateSelectionFrame()
@@ -551,6 +711,12 @@ private extension GameOverlayLayoutEditorScene {
     }
 
     func updateSelectionFrame() {
+        memberFrame.isHidden = true
+        if case .group = selection, let id = selectedSlotId, let member = overlayLayoutResolver.occupant(of: id) {
+            let rect = frame(member).insetBy(dx: -3, dy: -3)
+            memberFrame.path = CGPath(roundedRect: rect, cornerWidth: 6, cornerHeight: 6, transform: nil)
+            memberFrame.isHidden = false
+        }
         guard let rect = selection.flatMap(selectionRect) else {
             selectionFrame.isHidden = true
             return
@@ -569,35 +735,39 @@ extension GameOverlayLayoutEditorScene {
     }
 
     /// Elements the selection moves: a group's members still in the group, or one element.
-    /// Frame of a control in the arcade layout being edited.
+    /// Frame of a control in the orientation being edited.
     func frame(_ element: GamePageOverlayElement) -> CGRect {
-        resolveOverlayRect(element.arcadeLayoutElement(fourButtons: usesFourButtonLayout))
+        resolveOverlayRect(element)
     }
 
-    /// Not hidden by the JSON, nor a six-button-only key in the four-button layout.
+    /// Not hidden by the built-in JSON.
     func isAvailable(_ element: GamePageOverlayElement) -> Bool {
-        !element.isHidden && !(usesFourButtonLayout && element.isSixButtonOnly)
+        !element.isHidden
     }
 
-    /// Drawn and selectable: available, and for a combo, shown by the layout.
+    /// Enabled in the layout; hidden controls are still drawn/selectable in the editor.
     func isShown(_ element: GamePageOverlayElement) -> Bool {
-        isAvailable(element) && !(element.type == .combo && isHiddenInLayout(element))
+        isAvailable(element) && !((element.type == .combo || element.type == .macro) && isHiddenInLayout(element))
     }
 
     func hasCustomPosition(_ element: GamePageOverlayElement) -> Bool {
-        overlayLayoutResolver.hasCustomPosition(element, fourButtonLayout: usesFourButtonLayout)
+        overlayLayoutResolver.hasCustomPosition(element)
     }
 
     func selectedElements(_ selection: Selection) -> [GamePageOverlayElement] {
         switch selection {
         case .group(let name):
-            return config.elements.filter { $0.group == name && isShown($0) && !hasCustomPosition($0) }
+            return config.elements.filter { overlayLayoutResolver.fanGroup(for: $0) == name && isAvailable($0) }
         case .element(let id):
             return element(id: id).map { [$0] } ?? []
         }
     }
 
     func selectionRect(_ selection: Selection) -> CGRect? {
+        if case .group(let name) = selection {
+            let rects = overlayLayoutResolver.fanSlotElements.filter { $0.group == name }.compactMap { overlayLayoutResolver.slotRect($0.id) }
+            if !rects.isEmpty { return rects.reduce(CGRect.null) { $0.union($1) } }
+        }
         let rects = selectedElements(selection).map(frame)
         guard !rects.isEmpty else { return nil }
         return rects.reduce(CGRect.null) { $0.union($1) }
@@ -605,15 +775,22 @@ extension GameOverlayLayoutEditorScene {
 
     private func hitSelection(at point: CGPoint) -> Selection? {
         let hits = config.elements
-            .filter(isShown)
+            .filter(isAvailable)
             .map { ($0, frame($0)) }
             .filter { $0.1.insetBy(dx: -Self.hitSlop, dy: -Self.hitSlop).contains(point) }
         // The smallest frame wins, so a small button over a large control stays reachable.
         guard let element = hits.min(by: { $0.1.width * $0.1.height < $1.1.width * $1.1.height })?.0 else {
+            selectedSlotId = nil
+            if let rect = selectionRect(.group("action")), rect.contains(point),
+               let member = overlayLayoutResolver.fanSlotElements.first {
+                selectedSlotId = member.id
+                return .group("action")
+            }
             return nil
         }
         // A hidden group member is picked on its own, so it can be shown again without leaving group mode.
-        if selectionMode == .group, let group = element.group, !hasCustomPosition(element), !isHiddenInLayout(element) {
+        selectedSlotId = overlayLayoutResolver.slot(for: element)?.id
+        if let group = overlayLayoutResolver.fanGroup(for: element) {
             return .group(group)
         }
         return .element(element.id)
@@ -626,6 +803,14 @@ extension GameOverlayLayoutEditorScene {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard drag == nil, let touch = touches.first else { return }
         let point = touch.location(in: self)
+        if let slot = overlayLayoutResolver.fanSlotElements.first(where: {
+            overlayLayoutResolver.occupant(of: $0.id) == nil && overlayLayoutResolver.slotRect($0.id)?.contains(point) == true
+        }) {
+            Vibration.selection.vibrate()
+            selectFanSlot(slot.id)
+            onEditSlot?(slot.id)
+            return
+        }
 
         selection = hitSelection(at: point)
         guard let selection, let rect = selectionRect(selection) else {
@@ -635,7 +820,8 @@ extension GameOverlayLayoutEditorScene {
         }
 
         drag = DragState(touch: ObjectIdentifier(touch), startPoint: point, startRect: rect,
-                         startData: layoutData, baseData: dataForMoving(selection))
+                         startData: layoutData)
+        Vibration.selection.vibrate()
         refresh()
     }
 
@@ -648,13 +834,15 @@ extension GameOverlayLayoutEditorScene {
             return
         }
         drag.moved = true
+        grid.isHidden = false
 
         var rect = drag.startRect.offsetBy(dx: point.x - drag.startPoint.x, dy: point.y - drag.startPoint.y)
         let snap = snapTargets(excluding: selection)
         let snappedX = Self.snap(values: [rect.minX, rect.midX, rect.maxX], to: snap.x)
         let snappedY = Self.snap(values: [rect.minY, rect.midY, rect.maxY], to: snap.y)
-        rect.origin.x += snappedX?.delta ?? 0
-        rect.origin.y += snappedY?.delta ?? 0
+        let step = gridStep
+        rect.origin.x += snappedX?.delta ?? ((rect.midX / step).rounded() * step - rect.midX)
+        rect.origin.y += snappedY?.delta ?? ((rect.midY / step).rounded() * step - rect.midY)
         rect = clamped(rect)
 
         if (snappedX?.line != nil && snappedX?.line != drag.snappedX) || (snappedY?.line != nil && snappedY?.line != drag.snappedY) {
@@ -666,7 +854,7 @@ extension GameOverlayLayoutEditorScene {
         self.drag = drag
         showGuides(x: snappedX?.line, y: snappedY?.line)
 
-        setLayoutData(moved(drag.baseData, selection: selection, from: drag.startRect, to: rect))
+        setLayoutData(moved(drag.startData, selection: selection, from: drag.startRect, to: rect))
         refresh()
     }
 
@@ -682,9 +870,10 @@ extension GameOverlayLayoutEditorScene {
 
     private func finishDrag(_ drag: DragState) {
         self.drag = nil
+        grid.isHidden = true
         showGuides(x: nil, y: nil)
         if drag.moved, layoutData != drag.startData {
-            undoStack.append(drag.startData)
+            undoStack.append(.init(data: drag.startData, macros: macroDefinitions))
         } else {
             setLayoutData(drag.startData)
         }
@@ -692,6 +881,7 @@ extension GameOverlayLayoutEditorScene {
     }
 
     private func cancelDrag() {
+        grid.isHidden = true
         guard let drag else { return }
         self.drag = nil
         showGuides(x: nil, y: nil)
@@ -709,25 +899,27 @@ extension GameOverlayLayoutEditorScene {
 
 private extension GameOverlayLayoutEditorScene {
 
-    /// The layout before a drag of the selection: a group member moved on its
-    /// own first takes the group's scale into its own, so it keeps its size.
-    func dataForMoving(_ selection: Selection) -> GameOverlayLayoutData {
-        guard case .element(let id) = selection, let element = element(id: id),
-              let group = element.group, !hasCustomPosition(element),
-              let groupScale = currentOrientation.groups[group]?.scale, groupScale != 1 else {
-            return layoutData
+    var gridStep: CGFloat { max(4, 10 * overlayLayoutResolver.scaleFactor) }
+
+    func updateGrid() {
+        let path = CGMutablePath()
+        var x: CGFloat = 0
+        while x <= size.width {
+            path.move(to: CGPoint(x: x, y: 0))
+            path.addLine(to: CGPoint(x: x, y: size.height))
+            x += gridStep
         }
-        var orientation = currentOrientation
-        var custom = orientation.elements[id] ?? GameOverlayLayoutData.Element()
-        custom.scale = (custom.scale ?? 1) * groupScale
-        orientation.elements[id] = custom
-        var data = layoutData
-        data.setOrientation(orientation, portrait: isPortrait, fourButton: usesFourButtonLayout)
-        return data
+        var y: CGFloat = 0
+        while y <= size.height {
+            path.move(to: CGPoint(x: 0, y: y))
+            path.addLine(to: CGPoint(x: size.width, y: y))
+            y += gridStep
+        }
+        grid.path = path
     }
 
     func moved(_ base: GameOverlayLayoutData, selection: Selection, from start: CGRect, to rect: CGRect) -> GameOverlayLayoutData {
-        var orientation = base.orientation(portrait: isPortrait, fourButton: usesFourButtonLayout) ?? GameOverlayLayoutData.Orientation()
+        var orientation = base.orientation(portrait: isPortrait) ?? GameOverlayLayoutData.Orientation()
         switch selection {
         case .group(let name):
             let scale = max(overlayLayoutResolver.scaleFactor, 0.001)
@@ -741,65 +933,102 @@ private extension GameOverlayLayoutEditorScene {
             orientation.elements[id] = custom
         }
         var data = base
-        data.setOrientation(orientation, portrait: isPortrait, fourButton: usesFourButtonLayout)
+        data.setOrientation(orientation, portrait: isPortrait)
         return data
     }
 
-    /// Shows a combo in the orientation being edited at a free spot near the face buttons.
-    func placingCombo(_ id: String, in data: GameOverlayLayoutData) -> GameOverlayLayoutData {
+    /// Give each orientation its own position without rotating the editor.
+    func placingCombo(_ id: String, in data: GameOverlayLayoutData, portrait: Bool? = nil) -> GameOverlayLayoutData {
+        let portrait = portrait ?? isPortrait
         var resolver = overlayLayoutResolver
+        if portrait != isPortrait {
+            resolver.update(size: CGSize(width: self.size.height, height: self.size.width))
+        }
         resolver.layoutData = data
-        guard let element = baseConfig.withCombos(from: data).elements.first(where: { $0.id == id }) else { return data }
-        let size = resolver.resolveRect(element, usePolarLayout: usePolarLayout, fourButtonLayout: usesFourButtonLayout).size
-        let rect = freeRect(size: size, excluding: id)
+        let elements = baseConfig.withCombos(from: data).elements
+        guard let element = elements.first(where: { $0.id == id }) else { return data }
+        let size = resolver.resolveRect(element, usePolarLayout: usePolarLayout).size
+        let rect = freeRect(size: size, for: element, resolver: resolver, elements: elements)
 
-        var orientation = data.orientation(portrait: isPortrait, fourButton: usesFourButtonLayout) ?? GameOverlayLayoutData.Orientation()
+        var orientation = data.orientation(portrait: portrait) ?? GameOverlayLayoutData.Orientation()
         var custom = orientation.elements[id] ?? GameOverlayLayoutData.Element()
         custom.layout = resolver.plainInsets(for: rect)
         custom.hidden = false
         orientation.elements[id] = custom
         var result = data
-        result.setOrientation(orientation, portrait: isPortrait, fourButton: usesFourButtonLayout)
+        result.setOrientation(orientation, portrait: portrait)
         return result
     }
 
-    /// The spot closest to the face buttons where a control of `size` covers no other
-    /// control; the screen center when the controls leave no room.
-    func freeRect(size: CGSize, excluding id: String) -> CGRect {
-        let gap: CGFloat = 6
-        // Hidden controls leave their space free; that is what hiding them is for.
-        let occupied = config.elements
-            .filter { isShown($0) && !isHiddenInLayout($0) && $0.id != id }
-            .map { frame($0).insetBy(dx: -gap, dy: -gap) }
-        let faceButtons = selectedElements(.group("action")).map(frame).reduce(CGRect.null) { $0.union($1) }
-        let target = faceButtons.isNull
-            ? CGRect(x: self.size.width * 0.75, y: self.size.height * 0.25, width: 0, height: 0)
-            : faceButtons.insetBy(dx: -gap, dy: -gap)
+    /// Prefer the nearest free spot to the combo's first native button. Hidden
+    /// controls still occupy space in the editor, where they can be moved.
+    func freeRect(size: CGSize, for combo: GamePageOverlayElement,
+                  resolver: GameOverlayLayoutResolver, elements: [GamePageOverlayElement]) -> CGRect {
+        let gap: CGFloat = 14
+        func rect(_ element: GamePageOverlayElement) -> CGRect {
+            resolver.resolveRect(element,
+                                 usePolarLayout: usePolarLayout)
+        }
+        let existing = elements.filter { isAvailable($0) && $0.id != combo.id }
+        var occupied = existing.map { (rect: rect($0).insetBy(dx: -gap, dy: -gap), combo: $0.type == .combo || $0.type == .macro) }
+        let fanBounds = resolver.fanSlotElements.compactMap { resolver.slotRect($0.id) }.reduce(CGRect.null) { $0.union($1) }
+        if !fanBounds.isNull { occupied.append((rect: fanBounds.insetBy(dx: -gap, dy: -gap), combo: false)) }
+        let macroId: String? = {
+            if case .string(let id) = combo.meta?["macro_id"] { return id }
+            return nil
+        }()
+        let macroBind = macroDefinitions.first { $0.id == macroId }?.steps.first(where: { !$0.binds.isEmpty })?.binds.first
+        let initialBind = combo.binds.first ?? macroBind.map(GamePageOverlayAction.init)
+        let firstButton = initialBind.flatMap { bind in
+            elements.first { $0.type == .button && $0.isNative && $0.binds == [bind] && isAvailable($0) }
+        }
+        let target = firstButton.map(rect).map { CGPoint(x: $0.midX, y: $0.midY) }
+            ?? CGPoint(x: resolver.size.width * 0.75, y: resolver.size.height * 0.25)
 
         let margin = Self.screenMargin
         let step: CGFloat = 6
         var best: (rect: CGRect, distance: CGFloat)?
+        var fallback: (rect: CGRect, fanOverlap: CGFloat, comboOverlap: CGFloat, overlap: CGFloat, distance: CGFloat)?
         var y = margin
-        while y + size.height <= self.size.height - margin {
+        while y + size.height <= resolver.size.height - margin {
             var x = margin
-            while x + size.width <= self.size.width - margin {
+            while x + size.width <= resolver.size.width - margin {
                 let rect = CGRect(origin: CGPoint(x: x, y: y), size: size)
-                // Not between the face buttons either: a combo there is easy to press by mistake.
-                if !rect.intersects(target), !occupied.contains(where: { $0.intersects(rect) }) {
-                    let dx = max(target.minX - rect.maxX, 0, rect.minX - target.maxX)
-                    let dy = max(target.minY - rect.maxY, 0, rect.minY - target.maxY)
-                    let distance = hypot(dx, dy)
+                let distance = hypot(rect.midX - target.x, rect.midY - target.y)
+                let fanIntersection = fanBounds.insetBy(dx: -gap, dy: -gap).intersection(rect)
+                let fanOverlap = fanIntersection.isNull ? 0 : fanIntersection.width * fanIntersection.height
+                var overlap: CGFloat = 0
+                var comboOverlap: CGFloat = 0
+                for obstacle in occupied {
+                    let intersection = obstacle.rect.intersection(rect)
+                    if !intersection.isNull {
+                        let area = intersection.width * intersection.height
+                        overlap += area
+                        if obstacle.combo { comboOverlap += area }
+                    }
+                }
+                if overlap == 0 {
                     if distance < best?.distance ?? .greatestFiniteMagnitude {
                         best = (rect, distance)
                     }
+                }
+                // Keep displaced buttons outside the fan, even on crowded screens.
+                if fallback == nil || fanOverlap < fallback!.fanOverlap ||
+                    (fanOverlap == fallback!.fanOverlap && comboOverlap < fallback!.comboOverlap) ||
+                    (fanOverlap == fallback!.fanOverlap && comboOverlap == fallback!.comboOverlap && overlap < fallback!.overlap) ||
+                    (fanOverlap == fallback!.fanOverlap && comboOverlap == fallback!.comboOverlap && overlap == fallback!.overlap && distance < fallback!.distance) {
+                    fallback = (rect, fanOverlap, comboOverlap, overlap, distance)
                 }
                 x += step
             }
             y += step
         }
-        return best?.rect ?? CGRect(x: (self.size.width - size.width) * 0.5, y: (self.size.height - size.height) * 0.5,
-                                    width: size.width, height: size.height)
+        return best?.rect ?? fallback?.rect ?? CGRect(
+            x: min(max(margin, target.x - size.width * 0.5), max(margin, resolver.size.width - margin - size.width)),
+            y: min(max(margin, target.y - size.height * 0.5), max(margin, resolver.size.height - margin - size.height)),
+            width: size.width, height: size.height)
     }
+
 
     /// Lines the selection's edges or center snap to: the screen center and
     /// edges, and the centers of the other visible controls.

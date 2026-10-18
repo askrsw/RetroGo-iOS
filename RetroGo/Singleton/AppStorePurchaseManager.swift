@@ -225,7 +225,7 @@ fileprivate let hadProEntitlementKey = "AppStorePurchaseManager.hadProEntitlemen
 final class AppStorePurchaseManager: ObservableObject {
     static let shared = AppStorePurchaseManager()
     private init() {
-        activeProEntitlement = Self.loadCachedProEntitlement()
+        storedProEntitlement = Self.loadCachedProEntitlement()
         if let activeProEntitlement {
             purchasedProductIDs.insert(activeProEntitlement.productID)
             Self.markHadProEntitlement()
@@ -260,7 +260,13 @@ final class AppStorePurchaseManager: ObservableObject {
     private var bootstrapTask: Task<Void, Never>?
     private var productsByKind: [AppStoreProductKind: Product] = [:]
     private(set) var purchasedProductIDs = Set<String>()
-    private(set) var activeProEntitlement: AppStoreProEntitlementInfo?
+    private var storedProEntitlement: AppStoreProEntitlementInfo?
+    /// UI and feature gates must agree even if a subscription expires between StoreKit updates.
+    var activeProEntitlement: AppStoreProEntitlementInfo? {
+        guard let entitlement = storedProEntitlement,
+              Self.isLocallyValidEntitlement(kind: entitlement.kind, expirationDate: entitlement.expirationDate) else { return nil }
+        return entitlement
+    }
     private var introOfferEligibilityByKind: [AppStoreProductKind: Bool] = [:]
     /// Set once this launch has checked the entitlements against StoreKit, so a
     /// missing entitlement is known rather than not loaded yet.
@@ -269,11 +275,7 @@ final class AppStorePurchaseManager: ObservableObject {
     var onStateChanged: (() -> Void)?
 
     var isProPurchased: Bool {
-        guard let activeProEntitlement else { return false }
-        return Self.isLocallyValidEntitlement(
-            kind: activeProEntitlement.kind,
-            expirationDate: activeProEntitlement.expirationDate
-        )
+        activeProEntitlement != nil
     }
 
     var isReady: Bool {
@@ -434,6 +436,12 @@ final class AppStorePurchaseManager: ObservableObject {
                 continue
             }
 
+            Self.markHadProEntitlement()
+            guard isUsablePurchasedTransaction(transaction, fallbackKind: kind) else {
+                RetroGoLogger.iap.notice("Ignoring expired entitlement for \(transaction.productID, privacy: .public), expiration \(String(describing: transaction.expirationDate), privacy: .public)")
+                continue
+            }
+
             ids.insert(transaction.productID)
             entitlements.append(makeProEntitlementInfo(kind: kind, transaction: transaction))
         }
@@ -445,7 +453,7 @@ final class AppStorePurchaseManager: ObservableObject {
 
         if let entitlement = preferredProEntitlement(from: entitlements) {
             purchasedProductIDs = ids
-            activeProEntitlement = entitlement
+            storedProEntitlement = entitlement
             cacheActiveProEntitlement()
         } else if let activeProEntitlement,
                   Self.isLocallyValidEntitlement(kind: activeProEntitlement.kind, expirationDate: activeProEntitlement.expirationDate),
@@ -461,7 +469,7 @@ final class AppStorePurchaseManager: ObservableObject {
                 RetroGoLogger.iap.notice("Clearing Pro entitlement \(activeProEntitlement.productID, privacy: .public) (transaction \(activeProEntitlement.transactionID.map { String($0) } ?? "unknown", privacy: .public))")
             }
             purchasedProductIDs = []
-            activeProEntitlement = nil
+            storedProEntitlement = nil
             Self.clearCachedProEntitlement()
         }
 
@@ -566,13 +574,15 @@ final class AppStorePurchaseManager: ObservableObject {
         guard transaction.revocationDate == nil else { return }
 
         let kind = AppStoreProductKind(productID: transaction.productID) ?? fallbackKind
+        Self.markHadProEntitlement()
+        guard isUsablePurchasedTransaction(transaction, fallbackKind: kind) else { return }
         purchasedProductIDs.insert(transaction.productID)
 
         let entitlement = makeProEntitlementInfo(kind: kind, transaction: transaction)
         if let current = activeProEntitlement {
-            activeProEntitlement = preferredProEntitlement(from: [current, entitlement])
+            storedProEntitlement = preferredProEntitlement(from: [current, entitlement])
         } else {
-            activeProEntitlement = entitlement
+            storedProEntitlement = entitlement
         }
         cacheActiveProEntitlement()
     }
@@ -581,15 +591,7 @@ final class AppStorePurchaseManager: ObservableObject {
         guard transaction.revocationDate == nil else { return false }
 
         let kind = AppStoreProductKind(productID: transaction.productID) ?? fallbackKind
-        if kind.isLifetime {
-            return true
-        }
-
-        guard let expirationDate = transaction.expirationDate else {
-            return true
-        }
-
-        return expirationDate > Date()
+        return Self.isLocallyValidEntitlement(kind: kind, expirationDate: transaction.expirationDate)
     }
 
     private func makeProEntitlementInfo(kind: AppStoreProductKind, transaction: Transaction) -> AppStoreProEntitlementInfo {
@@ -619,8 +621,14 @@ final class AppStorePurchaseManager: ObservableObject {
     }
 
     private func preferredProEntitlement(from entitlements: [AppStoreProEntitlementInfo]) -> AppStoreProEntitlementInfo? {
-        entitlements.sorted { lhs, rhs in
-            entitlementPriority(lhs.kind) > entitlementPriority(rhs.kind)
+        entitlements.filter {
+            Self.isLocallyValidEntitlement(kind: $0.kind, expirationDate: $0.expirationDate)
+        }.sorted { lhs, rhs in
+            let leftPriority = entitlementPriority(lhs.kind)
+            let rightPriority = entitlementPriority(rhs.kind)
+            if leftPriority != rightPriority { return leftPriority > rightPriority }
+            // A renewal of the same plan must replace its older cached transaction.
+            return (lhs.expirationDate ?? .distantFuture) > (rhs.expirationDate ?? .distantFuture)
         }.first
     }
 

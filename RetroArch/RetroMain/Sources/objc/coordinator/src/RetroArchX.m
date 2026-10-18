@@ -59,6 +59,10 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     BOOL d_initialized;
     BOOL d_dummyCoreRunning;
     BOOL d_inputDriverOnlyRunning;
+    // Owned by the main thread, including the load completion handoff.
+    BOOL d_gameStarting;
+    BOOL d_cancelGameStart;
+    BOOL d_gameStopping;
 }
 
 @synthesize gameLogicRunner    = d_gameLogicRuner;
@@ -127,6 +131,10 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 
 - (BOOL)inputDriverOnlyRunning {
     return d_inputDriverOnlyRunning;
+}
+
+- (BOOL)gameTransitionInProgress {
+    return d_gameStarting || d_gameStopping;
 }
 
 - (NSArray<UTType *> *)allSupportedExtensions {
@@ -220,6 +228,13 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 #pragma mark - Core Control
 
 - (void)start:(nullable NSString *)romPath core:(EmuCoreInfoItem *)core completion:(nullable void (^)(BOOL success))completion {
+    NSAssert([NSThread isMainThread], @"Game start must be requested on the main thread");
+    if (self.gameTransitionInProgress || (d_gameLogicRuner && !d_dummyCoreRunning)) {
+        RETROGO_LOGN(GAME, "Rejected overlapping game start for core %{public}@", core.coreId);
+        if (completion) completion(NO);
+        return;
+    }
+
     if (d_dummyCoreRunning) {
         [self stopDummyCoreIfNeeded];
     }
@@ -233,10 +248,12 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         return;
     }
 
+    d_gameStarting = YES;
+    d_cancelGameStart = NO;
     ra_phone_rumble_reset();
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        content_ctx_info_t content_info;
+        content_ctx_info_t content_info = {0};
         NSString *corePath = core.corePath;
         NSString *finalRomPath = [core checkIsMameCore:romPath];
 
@@ -260,8 +277,28 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
             load_ret = task_push_start_current_core(&content_info);
         }
 
-        if (!load_ret) ra_core_options_clear();
         dispatch_async(dispatch_get_main_queue(), ^{
+            if (d_cancelGameStart || !load_ret) {
+                // Loading cannot be interrupted safely. Retain the render owner
+                // and the transition reservation until teardown has finished.
+                // No runner has started; unload on a background execution domain.
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+                    retrogo_unload_core_full_stop();
+                    [core cleanupMameSession];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        apple_platform = nil;
+                        ra_phone_rumble_reset();
+                        [self clearCoreOptionConfiguration];
+                        d_gameStarting = NO;
+                        d_cancelGameStart = NO;
+                        RETROGO_LOGI(GAME, "Finished abandoned game load cleanup for core %{public}@", core.coreId);
+                        if (completion) completion(NO);
+                    });
+                });
+                return;
+            }
+
+            d_gameStarting = NO;
             if(load_ret) {
                 d_dummyCoreRunning = NO;
                 if(video_driver_is_threaded()) {
@@ -282,6 +319,10 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 }
 
 - (void)startDummyCoreIfNeeded:(nullable void (^)(BOOL success))completion {
+    if (self.gameTransitionInProgress) {
+        if (completion) completion(NO);
+        return;
+    }
     // Don't start the dummy while a real game is running.
     if (self.currentCoreItem != nil || d_gameLogicRuner != nil || d_dummyCoreRunning) {
         if (completion) {
@@ -338,6 +379,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 }
 
 - (BOOL)startInputDriverOnlyIfNeeded {
+    if (self.gameTransitionInProgress) return NO;
     // Skip input-only while a real game or the dummy loop is running
     if (self.currentCoreItem != nil || d_dummyCoreRunning || d_gameLogicRuner != nil) {
         return YES;
@@ -369,6 +411,15 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
 }
 
 - (BOOL)stop {
+    NSAssert([NSThread isMainThread], @"Game stop must be requested on the main thread");
+    if (d_gameStarting) {
+        // retro_load_game still owns the global runtime; defer all teardown.
+        d_cancelGameStart = YES;
+        return YES;
+    }
+    if (d_gameStopping) return YES;
+    d_gameStopping = YES;
+
     EmuCoreInfoItem *runningCore = [self currentCoreItem];
     NSString *coreId = runningCore.coreId.lowercaseString ?: @"";
     BOOL isYabause = [coreId containsString:@"yabause"];
@@ -421,6 +472,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         [[RAInputActionManager shared] endCoreTeardownGuard];
     }
 
+    d_gameStopping = NO;
     return ret;
 }
 

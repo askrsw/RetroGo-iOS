@@ -41,7 +41,7 @@ final class MameRomSetPersistence {
     static let shared = MameRomSetPersistence()
 
     /// Stored in `PRAGMA user_version`. Bump on any schema change; old files are recreated.
-    static let schemaVersion: Int64 = 1
+    static let schemaVersion: Int64 = 2
 
     enum MetaKey: String {
         /// Fingerprint of the MAME binary the catalog was exported from ("uuid:<LC_UUID>").
@@ -226,7 +226,8 @@ final class MameRomSetPersistence {
             is_device     INTEGER NOT NULL,
             runnable      INTEGER NOT NULL,
             driver_status TEXT,
-            default_bios  TEXT
+            default_bios  TEXT,
+            source_file   TEXT
         );
 
         CREATE TABLE IF NOT EXISTS machine_rom (

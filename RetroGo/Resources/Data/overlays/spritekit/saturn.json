@@ -6,6 +6,7 @@
     "portrait_polar_anchor": { "right": 35, "bottom": -30 },
     "landscape_polar_anchor": { "right": 35, "bottom": -160 },
     "retroarch_source": "gamepads/Named_Overlays/Sega - Saturn.cfg",
+    "recommended_combo": { "binds": ["B", "A", "R1"], "is_turbo": true },
     "elements": [
         {
             "id": "left-dpad",
@@ -167,20 +168,6 @@
                 "title": "START",
                 "binds": ["START"],
                 "is_native": true
-            }
-        },
-        {
-            "id": "combo-abc",
-            "type": "combo",
-            "meta": {
-                "binds": ["B", "A", "R1"]
-            }
-        },
-        {
-            "id": "combo-xyz",
-            "type": "combo",
-            "meta": {
-                "binds": ["Y", "X", "L1"]
             }
         },
         {

@@ -53,6 +53,8 @@ struct MameCatalogMachine {
     }
 
     var name: String
+    /// Exact driver source path exported by MAME listxml.
+    var sourceFile: String?
     var description: String?
     var year: String?
     var manufacturer: String?

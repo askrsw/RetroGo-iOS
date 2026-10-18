@@ -37,7 +37,8 @@ enum AppStoreProFeature {
     case saveStateOverwrite
     case controllerMapping
     case overlayLayout
-    case overlayCombo
+    case overlayLayoutEditing
+    case overlayLayoutSelection
 
     var lockedMessage: String {
         switch self {
@@ -54,8 +55,10 @@ enum AppStoreProFeature {
             return Bundle.localizedString(forKey: "progate_controller_mapping_locked")
         case .overlayLayout:
             return Bundle.localizedString(forKey: "progate_overlay_layout_locked")
-        case .overlayCombo:
-            return Bundle.localizedString(forKey: "progate_overlay_combo_locked")
+        case .overlayLayoutEditing:
+            return Bundle.localizedString(forKey: "progate_overlay_layout_editing_locked")
+        case .overlayLayoutSelection:
+            return Bundle.localizedString(forKey: "progate_overlay_layout_selection_locked")
         }
     }
 }
@@ -95,7 +98,11 @@ final class AppStoreProFeatureGate {
     private weak var visibleLockedAlert: UIAlertController?
 
     var isProUnlocked: Bool {
-        AppStorePurchaseManager.shared.isProPurchased
+        #if targetEnvironment(simulator)
+        return true
+        #else
+        return AppStorePurchaseManager.shared.isProPurchased
+        #endif
     }
 
     /// Whether fast-forward may run. Read from the game and input paths, so it
@@ -201,7 +208,14 @@ private extension AppStoreProFeatureGate {
             }
         })
 
-        alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "progate_not_now"), style: .cancel) { [weak self, weak alert] _ in
+        let cancelTitle: String
+        switch feature {
+        case .overlayLayout, .overlayLayoutEditing, .overlayLayoutSelection:
+            cancelTitle = Bundle.localizedString(forKey: "cancel")
+        default:
+            cancelTitle = Bundle.localizedString(forKey: "progate_not_now")
+        }
+        alert.addAction(UIAlertAction(title: cancelTitle, style: .cancel) { [weak self, weak alert] _ in
             alert?.releaseGamePauseIfNeeded()
             self?.visibleLockedAlert = nil
         })

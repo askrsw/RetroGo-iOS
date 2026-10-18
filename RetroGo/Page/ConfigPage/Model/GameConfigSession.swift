@@ -108,6 +108,7 @@ final class GameConfigSession {
     }
 
     func configRetroArch() {
+        refreshInputBindingProfile()
         // Re-read persisted options for every launch, never a stale UI snapshot.
         config.coreOptionsCoreId = nil
         config.coreOptions = nil
@@ -147,7 +148,7 @@ final class GameConfigSession {
     }
 
     /// Pushes the resolved turbo speed to the engine-side (physical-controller)
-    /// turbo ticker. The overlay's own X/Y turbo is driven separately by the
+    /// turbo ticker. The overlay's single-button and combo turbo is driven separately by the
     /// overlay scene. Both read the same `TurboSpeed` preset.
     func applyTurboSpeedToEngine() {
         let speed = getOverlayTurboSpeed()
@@ -349,26 +350,45 @@ extension GameConfigSession {
         return setOptionalValue(column: Self.portDevice, value: device.name)
     }
 
-    @discardableResult
-    func saveInputBindingProfile(_ profile: RAInputBindingProfile?) -> Bool {
-        config.inputBindingProfile = profile
-
-        let data: Data?
-        if let profile {
-            do {
-                data = try profile.encodedData()
-            } catch {
-            #if DEBUG
-                fatalError("Encode inputBindingProfile failed: \(error.localizedDescription)")
-            #else
-                return false
-            #endif
-            }
-        } else {
-            data = nil
+    func refreshInputBindingProfile(apply: Bool = false) {
+        config.inputBindingProfile = resolvedInputBindingProfile()
+        if apply {
+            RAInputActionManager.shared().apply(config.inputBindingProfile, coreCapabilities: config.coreCaps, useLock: true)
         }
+    }
 
-        return setOptionalValue(column: Self.inputBindingProfile, value: data)
+    private var inputBindingChoiceStore: GamePlayerInputBindingSelectionStore? {
+        guard let core else { return nil }
+        return .init(templateId: GamePageOverlayConfig.resolvedOverlayName(core.overlayName), idiom: .current)
+    }
+
+    func inputBindingLayoutId(for port: Int) throws -> String? {
+        let scopes = makeConfigScopeKeyPairs().reversed().filter { $0.scope != GameConfigScope.global.rawValue }
+        return try inputBindingChoiceStore?.layoutId(port: port, scopes: Array(scopes))
+    }
+
+    func chooseInputBindingLayout(_ id: String?, for port: Int) throws {
+        guard let key = resolveKey(), let store = inputBindingChoiceStore else { throw CocoaError(.coderInvalidValue) }
+        try store.choose(layoutId: id, port: port, scope: scope.rawValue, key: key)
+    }
+
+    private func resolvedInputBindingProfile() -> RAInputBindingProfile? {
+        guard let core else { return nil }
+        let layouts = GameOverlayLayoutSession(core: core, game: game)
+        do {
+            var result: RAInputBindingProfile?
+            for port in 0..<4 {
+                let id = try inputBindingLayoutId(for: port)
+                let layout = id.flatMap { layouts.layout(id: $0) }
+                let profile = try GameLayoutInputBindingStore(templateId: layouts.templateId, idiom: layouts.idiom, layoutId: layout?.id)
+                    .runtimeProfile(data: layout?.data)
+                result = GameLayoutInputBindingStore.replacingPlayer(in: result, with: profile, port: port)
+            }
+            return result
+        } catch {
+            RetroGoLogger.game.error("Failed to load layout controller mapping: \(String(describing: error))")
+            return nil
+        }
     }
 }
 
@@ -571,6 +591,7 @@ private extension GameConfigSession {
             }
         }
 
+        cfg.inputBindingProfile = resolvedInputBindingProfile()
         return cfg
     }
 
@@ -636,21 +657,6 @@ private extension GameConfigSession {
         }
         if let v = row[Self.portDevice] {
             config.portDevice = v
-        }
-        if let v = row[Self.inputBindingProfile] {
-            do {
-               let profile = try RAInputBindingProfile.decode(from: v)
-                config.inputBindingProfile = profile
-            #if DEBUG
-                RetroGoLogger.game.debug("Loaded input binding profile: \(String(describing: profile), privacy: .public)")
-            #endif
-            } catch {
-            #if DEBUG
-                fatalError("Decode inputBindingProfile failed: \(error.localizedDescription)")
-            #else
-                RetroGoLogger.game.fault("Failed to decode input binding profile: \(error.localizedDescription, privacy: .public)")
-            #endif
-            }
         }
     }
 }
@@ -790,7 +796,6 @@ extension GameConfigSession {
     static let audioDriver         = SQLite.Expression<String?>("audio_driver")
     static let muteOnFastForward   = SQLite.Expression<Bool?>("mute_on_fastforward")
     static let overlayTouchPlayer  = SQLite.Expression<Int?>("overlay_touch_player")
-    static let inputBindingProfile = SQLite.Expression<Data?>("input_binding_profile")
 
     // v5
     static let toolbarLayout = SQLite.Expression<Data?>("toolbar_layout")
@@ -812,11 +817,12 @@ extension GameConfigSession {
      * key, configScope, updateAt
      * v3: threadEnabled, fastForwardMultiplier
      * v4: videoDriver, audioDriver, muteOnFastForward,
-     *     overlayTouchPlayer, inputBindingProfile
+     *     overlayTouchPlayer (input_binding_profile retired in v10)
      * v5: toolbarLayout, overlayTurboTapLatch, overlayTurboSpeed
      * v6: autoEnableCheats
      * v7: coreOptions
      * v9: overlayHapticLevel, gameRumbleEnabled, portDevice
+     * v10: per-player mapping choices in input_binding_layout_choice (separate table)
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

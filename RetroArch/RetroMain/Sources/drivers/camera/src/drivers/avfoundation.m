@@ -39,14 +39,24 @@
 @property (strong, nonatomic) AVCaptureSession *session;
 @property (strong, nonatomic) AVCaptureDeviceInput *input;
 @property (strong, nonatomic) AVCaptureVideoDataOutput *output;
+@property (strong, nonatomic) dispatch_queue_t sessionQueue;
 @property (assign) uint32_t *frameBuffer;
 @property (assign) size_t width;
 @property (assign) size_t height;
 
 - (bool)setupCameraSession;
+- (void)tearDownCameraSession;
 @end
 
 @implementation AVCameraManager
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _sessionQueue = dispatch_queue_create("com.retrogo.camera.session", DISPATCH_QUEUE_SERIAL);
+    }
+    return self;
+}
 
 + (AVCameraManager *)sharedInstance {
     static AVCameraManager *instance = nil;
@@ -103,8 +113,9 @@
 - (void)captureOutput:(AVCaptureOutput *)output
 didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
        fromConnection:(AVCaptureConnection *)connection {
+    @synchronized (self) {
     @autoreleasepool {
-        if (!self.frameBuffer)
+        if (output != self.output || !self.frameBuffer)
             return;
 
         CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
@@ -365,6 +376,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         free(intermediateBuffer);
         CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
     } // End of autorelease pool
+    }
 }
 
 - (AVCaptureDevice *)selectCameraDevice {
@@ -478,7 +490,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     // Create device input
     NSError *error = nil;
     self.input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
-    if (error) {
+    if (!self.input || error) {
         RARCH_ERR("[Camera] Failed to create device input: %s.\n",
                   [error.localizedDescription UTF8String]);
         return false;
@@ -487,6 +499,8 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     if ([self.session canAddInput:self.input]) {
         [self.session addInput:self.input];
         RARCH_LOG("[Camera] Added camera input to session.\n");
+    } else {
+        return false;
     }
 
     // Create and configure video output
@@ -499,9 +513,43 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     if ([self.session canAddOutput:self.output]) {
         [self.session addOutput:self.output];
         RARCH_LOG("[Camera] Added video output to session.\n");
+    } else {
+        return false;
     }
 
     return true;
+}
+
+- (void)tearDownCameraSession {
+    AVCaptureSession *session;
+    @synchronized (self) {
+        // Detach first; queued frames are rejected by the output identity check.
+        [self.output setSampleBufferDelegate:nil queue:NULL];
+        self.output = nil;
+        session = self.session;
+    }
+
+    // Serialize with start/stop and wait for capture to stop before freeing buffers.
+    dispatch_sync(self.sessionQueue, ^{
+        [session stopRunning];
+        [session beginConfiguration];
+        for (AVCaptureInput *input in session.inputs) {
+            [session removeInput:input];
+        }
+        for (AVCaptureOutput *output in session.outputs) {
+            [session removeOutput:output];
+        }
+        [session commitConfiguration];
+    });
+
+    @synchronized (self) {
+        self.input = nil;
+        self.session = nil;
+        free(self.frameBuffer);
+        self.frameBuffer = NULL;
+        self.width = 0;
+        self.height = 0;
+    }
 }
 
 @end
@@ -563,6 +611,7 @@ static void *avfoundation_init(const char *device, uint64_t caps,
     if (!granted)
     {
         RARCH_ERR("[Camera] Camera access not authorized.\n");
+        avf->manager = nil;
         free(avf);
         return NULL;
     }
@@ -572,6 +621,7 @@ static void *avfoundation_init(const char *device, uint64_t caps,
     if (!avf->manager.frameBuffer)
     {
         RARCH_ERR("[Camera] Failed to allocate frame buffer.\n");
+        avf->manager = nil;
         free(avf);
         return NULL;
     }
@@ -603,7 +653,8 @@ static void *avfoundation_init(const char *device, uint64_t caps,
     if (!setupSuccess)
     {
         RARCH_ERR("[Camera] Failed to setup camera.\n");
-        free(avf->manager.frameBuffer);
+        [avf->manager tearDownCameraSession];
+        avf->manager = nil;
         free(avf);
         return NULL;
     }
@@ -620,15 +671,8 @@ static void avfoundation_free(void *data)
 
     RARCH_LOG("[Camera] Freeing AVFoundation camera.\n");
 
-    if (avf->manager.session)
-        [avf->manager.session stopRunning];
-
-    if (avf->manager.frameBuffer)
-    {
-        free(avf->manager.frameBuffer);
-        avf->manager.frameBuffer = NULL;
-    }
-
+    [avf->manager tearDownCameraSession];
+    avf->manager = nil;
     free(avf);
     RARCH_LOG("[Camera] AVFoundation camera freed.\n");
 }
@@ -645,12 +689,12 @@ static bool avfoundation_start(void *data)
 
     RARCH_LOG("[Camera] Starting AVFoundation camera.\n");
 
-    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [avf->manager.session startRunning];
-        RARCH_LOG("[Camera] Camera session started on background thread.\n");
+    AVCaptureSession *session = avf->manager.session;
+    dispatch_sync(avf->manager.sessionQueue, ^{
+        [session startRunning];
     });
 
-    isRunning = avf->manager.session.isRunning;
+    isRunning = session.isRunning;
     RARCH_LOG("[Camera] Camera session running: %s.\n", isRunning ? "YES" : "NO");
     return isRunning;
 }
@@ -663,9 +707,9 @@ static void avfoundation_stop(void *data)
 
     RARCH_LOG("[Camera] Stopping AVFoundation camera...\n");
 
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [avf->manager.session stopRunning];
-        RARCH_LOG("[Camera] Camera session stopped on background thread.\n");
+    AVCaptureSession *session = avf->manager.session;
+    dispatch_sync(avf->manager.sessionQueue, ^{
+        [session stopRunning];
     });
 }
 
@@ -697,7 +741,11 @@ static bool avfoundation_poll(void *data,
 #ifdef DEBUG
     RARCH_LOG("[Camera] Delivering camera frame.\n");
 #endif
-    frame_raw_cb(avf->manager.frameBuffer, avf->width, avf->height, avf->width * 4);
+    @synchronized (avf->manager) {
+        if (!avf->manager.frameBuffer)
+            return false;
+        frame_raw_cb(avf->manager.frameBuffer, avf->width, avf->height, avf->width * 4);
+    }
     return true;
 }
 

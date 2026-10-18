@@ -26,6 +26,7 @@
 import UIKit
 import ObjectiveC
 import RACoordinator
+import os
 
 /// Swift-side owner for temporary UI pauses.
 ///
@@ -36,14 +37,18 @@ import RACoordinator
 final class GamePauseCoordinator {
     static let shared = GamePauseCoordinator()
 
-    final class Lease {
+    // Immutable identity; release state is protected by the lock. Teardown
+    // fallbacks may release off-main, but coordinator work stays on MainActor.
+    final class Lease: @unchecked Sendable {
         fileprivate let id = UUID()
+        fileprivate let sessionID: UUID
         private let lock = NSLock()
         fileprivate var isReleased = false
         fileprivate weak var coordinator: GamePauseCoordinator?
 
-        fileprivate init(coordinator: GamePauseCoordinator) {
+        fileprivate init(coordinator: GamePauseCoordinator, sessionID: UUID) {
             self.coordinator = coordinator
+            self.sessionID = sessionID
         }
 
         func release() {
@@ -59,51 +64,111 @@ final class GamePauseCoordinator {
             guard let coordinator else { return }
             if Thread.isMainThread {
                 MainActor.assumeIsolated {
-                    coordinator.release(id: id)
+                    coordinator.release(id: id, sessionID: sessionID)
                 }
             } else {
                 Task { @MainActor in
-                    coordinator.release(id: id)
+                    coordinator.release(id: id, sessionID: sessionID)
                 }
             }
         }
     }
 
-    private var activeLeaseIDs: Set<UUID> = []
+    private var sessionID: UUID?
+    private var activeLeases: [UUID: String] = [:]
+    private var ownsRunnerPause = false
+    private var applicationIsActive = true
+    private var inactiveLease: Lease?
     /// Emulator frame callback of a frame run (`runFramesWhilePaused`); nil when none is going.
     private var frameRunToken: String?
+    private var frameRunID: UUID?
     private var frameRunKeepsMuted = false
 
     private init() {}
 
-    /// True while any UI lease keeps the game paused.
+    /// True while a UI or application-lifecycle owner requests a pause.
     var isHoldingPause: Bool {
-        !activeLeaseIDs.isEmpty
+        !activeLeases.isEmpty
+    }
+
+    /// Called after the new runner starts. Leases never transfer across games.
+    func beginSession(applicationIsActive: Bool) -> UUID {
+        if let previous = sessionID {
+            endSession(previous)
+        }
+        let id = UUID()
+        sessionID = id
+        self.applicationIsActive = true
+        setApplicationActive(applicationIsActive, for: id)
+        return id
+    }
+
+    /// Invalidate owners before stopping the runner. Do not resume a closing game.
+    func endSession(_ id: UUID) {
+        guard sessionID == id else { return }
+        cancelFrameRun(reconcile: false)
+        RetroGoLogger.game.debug("Ending pause session with \(self.activeLeases.count, privacy: .public) owners")
+        activeLeases.removeAll()
+        inactiveLease = nil
+        ownsRunnerPause = false
+        sessionID = nil
+    }
+
+    func setApplicationActive(_ active: Bool, for id: UUID) {
+        guard sessionID == id, applicationIsActive != active else { return }
+        applicationIsActive = active
+        if active {
+            let lease = inactiveLease
+            inactiveLease = nil
+            lease?.release()
+        } else {
+            // A temporary rotation redraw must not keep the game running behind
+            // a system alert or while the application is inactive.
+            cancelFrameRun()
+            inactiveLease = acquire(reason: "application-inactive")
+        }
     }
 
     func acquire(reason: String) -> Lease? {
-        guard shouldPauseGameLoop else { return nil }
+        guard shouldPauseGameLoop, let sessionID else { return nil }
+        NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
 
-        let lease = Lease(coordinator: self)
-        let wasEmpty = activeLeaseIDs.isEmpty
-        activeLeaseIDs.insert(lease.id)
+        let lease = Lease(coordinator: self, sessionID: sessionID)
+        activeLeases[lease.id] = reason
 
-        if wasEmpty, !RetroArchX.shared().pause() {
-            activeLeaseIDs.remove(lease.id)
+        if !reconcilePause() {
+            activeLeases.removeValue(forKey: lease.id)
             lease.isReleased = true
             return nil
         }
 
+        RetroGoLogger.game.debug("Acquired pause owner \(reason, privacy: .public); count=\(self.activeLeases.count, privacy: .public)")
         return lease
     }
 
-    private func release(id: UUID) {
-        guard activeLeaseIDs.remove(id) != nil else { return }
-        guard activeLeaseIDs.isEmpty else { return }
-        guard shouldPauseGameLoop else { return }
-        // A frame run has the game going already; it ends without pausing again.
-        guard frameRunToken == nil else { return }
-        _ = RetroArchX.shared().resume()
+    private func release(id: UUID, sessionID: UUID) {
+        guard self.sessionID == sessionID,
+              let reason = activeLeases.removeValue(forKey: id) else { return }
+        RetroGoLogger.game.debug("Released pause owner \(reason, privacy: .public); count=\(self.activeLeases.count, privacy: .public)")
+        _ = reconcilePause()
+    }
+
+    /// Leases describe desired state; the coordinator owns at most one runner
+    /// pause, including when owners change during a temporary frame run.
+    @discardableResult
+    private func reconcilePause() -> Bool {
+        guard runtimeAvailable else { return false }
+        let shouldPause = !activeLeases.isEmpty && frameRunID == nil
+            && !RANetplayCoordinator.shared.isNetplayEnabled
+        guard shouldPause != ownsRunnerPause else { return true }
+        let ra = RetroArchX.shared()
+        let success = shouldPause ? ra.pause() : ra.resume()
+        if success {
+            ownsRunnerPause = shouldPause
+        } else {
+            RetroGoLogger.game.error("Failed to reconcile game pause; requested=\(shouldPause, privacy: .public), owners=\(self.activeLeases.count, privacy: .public)")
+        }
+        return success
     }
 
     /// Lets the paused game run a few frames, muted, then pauses it again. A paused game
@@ -111,40 +176,54 @@ final class GamePauseCoordinator {
     /// is stretched; a few frames draw it at the new size. The game moves on by those frames.
     /// Does nothing unless a lease holds the pause.
     func runFramesWhilePaused(_ frames: Int = 6, keepMuted: Bool) {
-        guard isHoldingPause, frameRunToken == nil, shouldPauseGameLoop else { return }
+        guard isHoldingPause, ownsRunnerPause, frameRunID == nil,
+              applicationIsActive, shouldPauseGameLoop, let sessionID else { return }
         let ra = RetroArchX.shared()
+        let runID = UUID()
+        frameRunID = runID
+        frameRunKeepsMuted = keepMuted
         ra.mute(true)
-        guard ra.resume() else {
+        guard reconcilePause() else {
+            frameRunID = nil
             ra.mute(keepMuted)
             return
         }
-        frameRunKeepsMuted = keepMuted
         // Counted on the thread that runs the frames; the end goes back to the main thread once.
         var remaining = max(1, frames)
         frameRunToken = ra.addEmuPrevFrameAction { [weak self] in
             remaining -= 1
             guard remaining == 0 else { return }
             DispatchQueue.main.async {
-                self?.finishFrameRun()
+                self?.finishFrameRun(sessionID: sessionID, runID: runID)
             }
         }
     }
 
-    private func finishFrameRun() {
-        guard let token = frameRunToken else { return }
-        let ra = RetroArchX.shared()
-        ra.removeEmuPrevFrameAction(forToken: token)
+    private func finishFrameRun(sessionID: UUID, runID: UUID) {
+        guard self.sessionID == sessionID, frameRunID == runID else { return }
+        cancelFrameRun()
+    }
+
+    private func cancelFrameRun(reconcile: Bool = true) {
+        guard frameRunID != nil else { return }
+        let token = frameRunToken
+        frameRunID = nil
         frameRunToken = nil
-        // Paused again only if something still holds the pause; a lease released meanwhile left it running.
-        if !activeLeaseIDs.isEmpty {
-            _ = ra.pause()
-        }
+        let ra = RetroArchX.shared()
+        if let token { ra.removeEmuPrevFrameAction(forToken: token) }
+        // Re-pause before restoring audio so the redraw cannot emit an unmuted frame.
+        if reconcile { _ = reconcilePause() }
         ra.mute(frameRunKeepsMuted)
     }
 
-    private var shouldPauseGameLoop: Bool {
+    private var runtimeAvailable: Bool {
         let ra = RetroArchX.shared()
-        guard ra.currentCoreItem != nil, !ra.dummyCoreRunning else { return false }
+        return sessionID != nil && !ra.gameTransitionInProgress
+            && ra.currentCoreItem != nil && !ra.dummyCoreRunning
+    }
+
+    private var shouldPauseGameLoop: Bool {
+        guard runtimeAvailable else { return false }
         // Never pause emulation during a netplay session: netplay is lockstep and
         // can't pause unilaterally — pausing one side stalls (and would eventually
         // drop) the peer. So UI that normally pauses the game (state list, save

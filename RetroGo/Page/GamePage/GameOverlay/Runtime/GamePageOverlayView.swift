@@ -35,6 +35,7 @@ final class GamePageOverlayView: SKView {
     /// The game whose layout choice applies; nil uses the platform choice.
     let game: RetroRomFileItem?
     private(set) var layoutSession: GameOverlayLayoutSession
+    private var hasEndedGame = false
 
     init(coreInfoItem: EmuCoreInfoItem, game: RetroRomFileItem?) {
         self.coreInfoItem = coreInfoItem
@@ -65,11 +66,14 @@ final class GamePageOverlayView: SKView {
 
     /// Re-reads which custom layout applies and shows it in place.
     func reloadCustomLayout() {
+        guard !hasEndedGame else { return }
         overlayScene?.applyLayoutData(layoutSession.resolvedLayout().item?.data)
+        GamePageViewController.instance?.configSession.refreshInputBindingProfile(apply: true)
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        guard !hasEndedGame else { return }
         if let editorScene {
             if scene !== editorScene {
                 presentScene(editorScene)
@@ -83,15 +87,25 @@ final class GamePageOverlayView: SKView {
         overlayScene?.updateLayout(for: size)
     }
 
+    /// Retire callbacks now rather than waiting for UIKit to release the old page.
+    func endGame() {
+        guard !hasEndedGame else { return }
+        hasEndedGame = true
+        NotificationCenter.default.removeObserver(self)
+        presentScene(nil)
+        editorScene = nil
+        overlayScene = nil
+        isUserInteractionEnabled = false
+        isPaused = true
+    }
+
     /// Replaces the game controls with an editor of `layoutData`; nil when this core has no overlay.
     @discardableResult
     func beginEditing(layoutData: GameOverlayLayoutData) -> GameOverlayLayoutEditorScene? {
         guard overlayScene != nil else { return nil }
         let config = GamePageOverlayConfig.loadOverlayConfig(coreInfoItem.overlayName)
-        // The editor starts on the arcade 4/6-button layout the game shows.
         let editor = GameOverlayLayoutEditorScene(size: bounds.size, config: config,
-                                                  supportsAnalog: overlaySupportsAnalog, layoutData: layoutData,
-                                                  fourButtonLayout: overlayScene?.usesFourButtonLayout ?? false)
+                                                  supportsAnalog: overlaySupportsAnalog, layoutData: layoutData)
         editorScene = editor
         presentScene(editor)
         editor.updateLayout(for: bounds.size)
@@ -99,14 +113,9 @@ final class GamePageOverlayView: SKView {
     }
 
     /// Back to the game controls, showing `layoutData` (nil = the layout this game resolves to)
-    /// in the arcade 4/6-button layout the editor ended on.
     func endEditing(showing layoutData: GameOverlayLayoutData?) {
-        guard let editor = editorScene else { return }
+        guard editorScene != nil else { return }
         editorScene = nil
-        if let overlayScene, overlayScene.usesFourButtonLayout != editor.usesFourButtonLayout {
-            overlayScene.setFourButtonLayout(editor.usesFourButtonLayout)
-            layoutSession.saveFourButtonLayout(editor.usesFourButtonLayout)
-        }
         presentScene(overlayScene)
         overlayScene?.updateLayout(for: bounds.size)
         if let layoutData {
@@ -114,6 +123,7 @@ final class GamePageOverlayView: SKView {
         } else {
             reloadCustomLayout()
         }
+        GamePageViewController.instance?.configSession.refreshInputBindingProfile(apply: true)
     }
 }
 
@@ -126,7 +136,7 @@ extension GamePageOverlayView {
     }
 
     @objc private func handleOverlayLayoutChanged(_ notification: Notification) {
-        guard notification.object as? String == layoutSession.overlayName, editorScene == nil else { return }
+        guard notification.object as? String == layoutSession.templateId, editorScene == nil else { return }
         reloadCustomLayout()
     }
 
@@ -143,10 +153,7 @@ extension GamePageOverlayView {
             let overlayConfig = GamePageOverlayConfig.loadOverlayConfig(coreInfoItem.overlayName)
             let layoutData = layoutSession.resolvedLayout().item?.data
             let scene = GamePageOverlayScene(size: .zero, config: overlayConfig, supportsAnalog: overlaySupportsAnalog,
-                                             layoutData: layoutData, fourButtonLayout: layoutSession.savedFourButtonLayout())
-            scene.onFourButtonLayoutChanged = { [weak self] fourButtons in
-                self?.layoutSession.saveFourButtonLayout(fourButtons)
-            }
+                                             layoutData: layoutData)
             overlayScene = scene
         } else {
             isHidden = true

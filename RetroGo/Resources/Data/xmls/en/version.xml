@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.14.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.14.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>October 18, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.14.0" style="number">
+            <p-item>Added the <b>mGBA core</b> as another option for Game Boy Advance games, with a localized set of core options. VBA-M remains the free default GBA core; mGBA requires Pro.</p-item>
+            <p-item><b>More flexible on-screen control layouts</b>: arrange action buttons in a fan, adjust the group's position, size and fan settings, replace its buttons with combos or macros, or move buttons out of the fan to place them individually. Portrait and landscape can be configured separately.</p-item>
+            <p-item>Added <b>button macros</b>: build a sequence of directional and action inputs, set how long each step lasts and the gaps between steps, then tap once to play it or tap again to cancel. Choose an icon, add a direction marker, make a left/right mirrored copy, or copy a macro from another layout to reuse common actions across games.</p-item>
+            <p-item><b>Combos and turbo buttons now share the Extra Buttons editor</b>: add turbo to a single button, or combine two to four buttons with optional turbo, including on arcade platforms. With <b>Tap to Lock Turbo</b> enabled, a quick tap keeps a turbo button firing after you let go; tap again to stop. <b>Turbo Speed</b> controls both single-button and combo turbo.</p-item>
+            <p-item><b>Physical controller mappings now belong to control layouts</b>: each layout can save its own mapping scheme, with controller buttons assigned to custom combos, turbo buttons or macros. Switching layouts during play also switches the mappings, and each player can choose a scheme separately. The mapping page shows the selected layout, with bubbles marking physical buttons already in use. <b>After this update, you may need to set up your previous controller mappings again.</b></p-item>
+            <p-item><b>Share arcade layouts across related games</b>: in addition to choosing a layout for one game or a whole platform, MAME can now apply a layout to games using the same driver, making it easier to configure games built for the same arcade hardware. Games with their own layout choice keep it.</p-item>
+            <p-item>Improved layout editing and configuration: when creating a layout, if you have adjusted only one screen orientation, saving offers to edit the other. Refined editor presentation, collapsing and expanding on iPhone and iPad, refreshed the game picture after rotation, and added missing haptic feedback when tapping controls. Long layout and disc names no longer squeeze out setting titles.</p-item>
+            <p-item>Fixed Pro features being blocked even when the Pro page showed an active entitlement, and improved recognition of subscription renewals. Also fixed issues when pausing, closing and reopening some games.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.13.1" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.13.1</p-title>
         <p-paragraph fontsize="13">

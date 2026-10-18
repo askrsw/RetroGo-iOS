@@ -111,8 +111,12 @@ static inline double RASanitizeFastForwardMultiplier(double multiplier) {
         [d_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
 
         // Turn on the audio latency logic
+        __weak __typeof__(self) weakSelf = self;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            command_event(CMD_EVENT_AUDIO_START, NULL);
+            __strong __typeof__(weakSelf) strongSelf = weakSelf;
+            if (strongSelf && strongSelf->d_displayLink && strongSelf->d_pauseCounter == 0) {
+                command_event(CMD_EVENT_AUDIO_START, NULL);
+            }
         });
     }
     return YES;

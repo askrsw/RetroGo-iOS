@@ -6,6 +6,7 @@
     "portrait_polar_anchor": { "right": 35, "bottom": 150 },
     "landscape_polar_anchor": { "right": 35, "bottom": 50 },
     "retroarch_source": "gamepads/Named_Overlays/Sega - Master System - Mark III.cfg",
+    "recommended_combo": { "binds": ["B", "A"], "is_turbo": true },
     "elements": [
         {
             "id": "left-dpad",
@@ -68,7 +69,7 @@
                 "title": "X",
                 "binds": ["A"],
                 "is_turbo": true,
-                "is_turbo_auto_keep": true
+                "title_font_scale": 0.6
             }
         },
         {
@@ -87,15 +88,7 @@
                 "title": "Y",
                 "binds": ["B"],
                 "is_turbo": true,
-                "is_turbo_auto_keep": true
-            }
-        },
-        {
-            "id": "a-b",
-            "type": "combo",
-            "meta": {
-                "binds": ["B", "A"],
-                "is_turbo": true
+                "title_font_scale": 0.6
             }
         },
         {

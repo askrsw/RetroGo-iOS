@@ -27,12 +27,21 @@ import UIKit
 import SnapKit
 import ObjcHelper
 import RACoordinator
+import GameController
 
 final class GameConfigControllerSelector: UIViewController {
-    private lazy var tableView  = self.configUI()
-    private lazy var dataSource = self.configDS()
-
-    private var oldSelectedIndex: IndexPath?
+    private lazy var tableView = configUI()
+    private lazy var dataSource = configDS()
+    private lazy var layouts = GameOverlayLayoutSession(
+        templateId: GamePageOverlayConfig.resolvedOverlayName(entry.session?.core?.overlayName),
+        game: entry.session?.game, coreId: entry.session?.core?.coreId
+    )
+    private var selectedControllerValue: AnyHashable?
+    private var selectedLayoutId: String?
+    private lazy var emptyTipView = makeEmptyTipView()
+    private var hasConnectedControllers: Bool {
+        !GCController.controllers().isEmpty && entry.getListArray?().list.isEmpty == false
+    }
 
     let entry: GameConfigEntry
     let playerIndex: Int
@@ -43,38 +52,53 @@ final class GameConfigControllerSelector: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .systemGroupedBackground
         navigationItem.title = entry.title
-
         _ = tableView
         _ = dataSource
-        applySnapshot(animated: false)
+        for name in [Notification.Name.GCControllerDidConnect, .GCControllerDidDisconnect, UIApplication.didBecomeActiveNotification] {
+            NotificationCenter.default.addObserver(self, selector: #selector(inputDevicesChanged), name: name, object: nil)
+        }
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        applySnapshot()
+    }
+
+    deinit { NotificationCenter.default.removeObserver(self) }
+
+    @objc private func inputDevicesChanged() {
+        // Let the MFi driver finish updating device slots before reading the list.
+        DispatchQueue.main.async { [weak self] in self?.applySnapshot() }
+        // Autoconfiguration publishes device names through the task queue.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in self?.applySnapshot() }
     }
 }
 
 private extension GameConfigControllerSelector {
-    typealias DataSource = UITableViewDiffableDataSource<String, Item>
-    typealias Snapshot   = NSDiffableDataSourceSnapshot<String, Item>
-
-    struct Item: Hashable {
-        let title: String
-        let value: AnyHashable
+    enum Item: Hashable {
+        case controller(title: String, value: AnyHashable)
+        case layout(id: String?, name: String)
     }
+    typealias DataSource = UITableViewDiffableDataSource<String, Item>
+    typealias Snapshot = NSDiffableDataSourceSnapshot<String, Item>
 
     func configUI() -> UITableView {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.delegate = self
         tableView.estimatedRowHeight = 50
-        tableView.estimatedSectionFooterHeight = 44
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedSectionHeaderHeight = 40
+        tableView.sectionHeaderHeight = UITableView.automaticDimension
+        tableView.estimatedSectionFooterHeight = 60
         tableView.sectionFooterHeight = UITableView.automaticDimension
         tableView.tintColor = .mainColor
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "controller")
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
@@ -85,225 +109,171 @@ private extension GameConfigControllerSelector {
     }
 
     func configDS() -> DataSource {
-        let ds = DataSource(tableView: tableView) { [weak self] tableView, indexPath, item in
-            guard let self = self else { return nil }
-            let cell = {
-                if let cell = tableView.dequeueReusableCell(withIdentifier: "UITableViewCell") {
-                    return cell
-                } else {
-                    return UITableViewCell(style: .default, reuseIdentifier: "UITableViewCell")
-                }
-            }()
-
-            cell.textLabel?.text = item.title
-            if indexPath.section == 0 {
-                cell.accessoryType = indexPath == oldSelectedIndex ? .checkmark : .none
-            } else {
-                cell.accessoryType = .disclosureIndicator
+        DataSource(tableView: tableView) { [weak self] tableView, indexPath, item in
+            guard let self else { return nil }
+            let cell = tableView.dequeueReusableCell(withIdentifier: "controller", for: indexPath)
+            cell.accessoryView = nil
+            cell.accessoryType = .none
+            cell.accessibilityTraits.remove(.selected)
+            var content = cell.defaultContentConfiguration()
+            content.textProperties.color = .label
+            switch item {
+            case .controller(let title, let value):
+                content.text = title
+                cell.accessoryType = value == selectedControllerValue ? .checkmark : .none
+            case .layout(let id, let name):
+                let selected = id == selectedLayoutId
+                content.text = name
+                content.image = UIImage(systemName: "checkmark")
+                content.imageProperties.tintColor = selected ? .mainColor : .clear
+                if selected { cell.accessibilityTraits.insert(.selected) }
+                let editTitle = Bundle.localizedString(forKey: "configpage_binding_edit")
+                let button = UIButton(type: .system)
+                var configuration = UIButton.Configuration.plain()
+                configuration.title = editTitle
+                button.configuration = configuration
+                button.accessibilityLabel = "\(editTitle), \(name)"
+                button.addAction(UIAction { [weak self] _ in
+                    Vibration.selection.vibrate()
+                    self?.editMapping(layoutId: id)
+                }, for: .touchUpInside)
+                button.sizeToFit()
+                cell.accessoryView = button
             }
+            cell.contentConfiguration = content
             return cell
         }
-        return ds
     }
 
-    func applySnapshot(animated: Bool) {
-        guard let result = entry.getListArray?() else {
+    func applySnapshot() {
+        let result = entry.getListArray?()
+        guard !GCController.controllers().isEmpty, let result, !result.list.isEmpty else {
+            selectedControllerValue = nil
+            selectedLayoutId = nil
+            tableView.backgroundView = emptyTipView
+            tableView.separatorStyle = .none
+            dataSource.apply(Snapshot(), animatingDifferences: false)
             return
         }
-
-        if result.list.isEmpty {
-            updateEmptyTip(isEmpty: true)
-            return
+        tableView.backgroundView = nil
+        tableView.separatorStyle = .singleLine
+        selectedControllerValue = result.selected.flatMap { index in
+            guard result.list.indices.contains(index) else { return nil }
+            return result.list[index].value
         }
-
-        oldSelectedIndex = nil
-        if let selected = result.selected {
-            oldSelectedIndex = IndexPath(item: selected, section: 0)
+        do {
+            selectedLayoutId = try entry.session?.inputBindingLayoutId(for: playerIndex)
+        } catch {
+            selectedLayoutId = nil
         }
-
         var snapshot = Snapshot()
-        snapshot.appendSections(["main", "config"])
-        snapshot.appendItems(result.list.map({ Item(title: $0.title, value: $0.value) }), toSection: "main")
-
-        if oldSelectedIndex != nil {
-            snapshot.appendItems([makeConfigItem()], toSection: "config")
-        }
-
-        dataSource.apply(snapshot, animatingDifferences: animated)
+        snapshot.appendSections(["controllers", "layouts"])
+        snapshot.appendItems(result.list.map { .controller(title: $0.title, value: $0.value) }, toSection: "controllers")
+        snapshot.appendItems([.layout(id: nil, name: Bundle.localizedString(forKey: "overlay_layout_builtin"))]
+            + layouts.layouts().map { .layout(id: $0.id, name: $0.name) }, toSection: "layouts")
+        // Reconfigure reused rows as the selected identities are separate from item identity.
+        let existing = Set(dataSource.snapshot().itemIdentifiers)
+        snapshot.reconfigureItems(snapshot.itemIdentifiers.filter { existing.contains($0) })
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
 
-    func insertConfigItemIfNeeded(animated: Bool) {
-        var snapshot = dataSource.snapshot()
-        guard snapshot.sectionIdentifiers.contains("config"),
-              snapshot.itemIdentifiers(inSection: "config").isEmpty else {
+    func editMapping(layoutId: String?) {
+        guard hasConnectedControllers else { applySnapshot(); return }
+        let editingLayout: GameOverlayLayoutGameChoice = layoutId.map { .custom($0) } ?? .builtIn
+        let configurator = GameControllerInputBindingConfigurator(
+            session: entry.session, playerIndex: playerIndex, editingLayout: editingLayout)
+        navigationController?.pushViewController(configurator, animated: true)
+    }
+
+    func chooseLayout(_ id: String?) {
+        guard hasConnectedControllers else { applySnapshot(); return }
+        guard id != selectedLayoutId else { return }
+        guard layouts.canChooseLayout(id: id)
+            || AppStoreProFeatureGate.shared.requirePro(feature: .overlayLayoutSelection, from: self) else { return }
+        do {
+            guard let session = entry.session else { return }
+            try session.chooseInputBindingLayout(id, for: playerIndex)
+        } catch {
+            let alert = UIAlertController(title: Bundle.localizedString(forKey: "overlay_layout_save_failed"),
+                                          message: nil, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: Bundle.localizedString(forKey: "ok"), style: .default))
+            present(alert, animated: true)
             return
         }
-
-        snapshot.appendItems([makeConfigItem()], toSection: "config")
-        dataSource.apply(snapshot, animatingDifferences: animated)
+        entry.session?.refreshInputBindingProfile()
+        (GamePageViewController.instance?.configSession ?? entry.session)?.refreshInputBindingProfile(apply: true)
+        entry.refresh.toggle()
+        applySnapshot()
     }
 
-    func makeConfigItem() -> Item {
-        Item(title: Bundle.localizedString(forKey: "configpage_button_mapping"), value: "")
-    }
-
-    func hasConfigItem() -> Bool {
-        let snapshot = dataSource.snapshot()
-        guard snapshot.sectionIdentifiers.contains("config") else {
-            return false
+    func makeEmptyTipView() -> UIView {
+        let view = UIView()
+        let icon = UIImageView(image: UIImage(systemName: "gamecontroller"))
+        icon.tintColor = .mainColor
+        icon.contentMode = .scaleAspectFit
+        let label = UILabel()
+        label.font = .preferredFont(forTextStyle: .body)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = .secondaryLabel
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        paragraph.lineSpacing = 6
+        label.attributedText = NSAttributedString(
+            string: Bundle.localizedString(forKey: "configpage_no_controllers_connected_tip"),
+            attributes: [.paragraphStyle: paragraph])
+        let stack = UIStackView(arrangedSubviews: [icon, label])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 16
+        view.addSubview(stack)
+        icon.snp.makeConstraints { $0.size.equalTo(120) }
+        label.snp.makeConstraints { $0.width.lessThanOrEqualTo(320) }
+        stack.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(60)
+            make.centerX.equalToSuperview()
+            make.leading.greaterThanOrEqualToSuperview().offset(36)
+            make.trailing.lessThanOrEqualToSuperview().offset(-36)
         }
-
-        return !snapshot.itemIdentifiers(inSection: "config").isEmpty
-    }
-
-    func updateEmptyTip(isEmpty: Bool) {
-        guard isEmpty else {
-            tableView.backgroundView = nil
-            tableView.separatorStyle = .singleLine
-            return
-        }
-
-        let tipText = Bundle.localizedString(forKey: "configpage_no_controllers_connected_tip")
-        let tipImage = UIImage(systemName: "gamecontroller")
-
-        tableView.backgroundView = makeEmptyTipView(text: tipText, image: tipImage)
-        tableView.separatorStyle = .none
-    }
-
-    func makeEmptyTipView(text: String, image: UIImage?) -> UIView {
-        GameConfigListEmptyTipView(text: text, image: image)
+        return view
     }
 }
 
 extension GameConfigControllerSelector: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-
+        guard hasConnectedControllers else { applySnapshot(); return }
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         Vibration.selection.vibrate()
-
-        if indexPath.section == 0 {
-            let needsInsertConfigItem = oldSelectedIndex == nil
-
-            if let oldSelectedIndex {
-                if let cell = tableView.cellForRow(at: oldSelectedIndex) {
-                    cell.accessoryType = .none
-                }
-            }
-
-            if let cell = tableView.cellForRow(at: indexPath) {
-                cell.accessoryType = .checkmark
-            }
-            oldSelectedIndex = indexPath
-
-            if let item = dataSource.itemIdentifier(for: indexPath) {
-                entry.setListSelectedValue?(item.value)
-                entry.refresh.toggle()
-
-                if needsInsertConfigItem {
-                    insertConfigItemIfNeeded(animated: true)
-                }
-            }
-        } else if indexPath.section == 1 {
-            let configurator = GameControllerInputBindingConfigurator(session: entry.session, playerIndex: playerIndex)
-            navigationController?.pushViewController(configurator, animated: true)
+        switch item {
+        case .controller(_, let value):
+            entry.setListSelectedValue?(value)
+            entry.refresh.toggle()
+            applySnapshot()
+        case .layout(let id, _):
+            chooseLayout(id)
         }
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        if section == 0 {
-            return makeHeaderView(Bundle.localizedString(forKey: "configpage_connected_controllers"))
-        } else if section == 1, hasConfigItem() {
-            return makeHeaderView(Bundle.localizedString(forKey: "setting"))
-        } else {
-            return UIView(frame: .zero)
-        }
-    }
-
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if section == 0 || (section == 1 && hasConfigItem()) {
-            return UITableView.automaticDimension
-        } else {
-            return .leastNormalMagnitude
-        }
-    }
-
-    private func makeHeaderView(_ text: String) -> UITableViewHeaderFooterView {
-        if tableView.backgroundView != nil {
-            return UITableViewHeaderFooterView(frame: .zero)
-        }
-        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
+        guard tableView.backgroundView == nil else { return nil }
+        let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
             ?? RGSectionHeaderView(reuseIdentifier: RGSectionHeaderView.className)
-        view.text = text
-        return view
-    }
-}
-
-private final class GameConfigListEmptyTipView: UIView {
-    private let maxContentWidth: CGFloat = 320
-    private let horizontalPadding: CGFloat = 36
-    private var contentWidthConstraint: Constraint?
-
-    init(text: String, image: UIImage?) {
-        super.init(frame: .zero)
-        configUI(text: text, image: image)
+        header.text = Bundle.localizedString(forKey: section == 0 ? "configpage_connected_controllers" : "configpage_button_mapping")
+        header.topInset = section == 1 ? 48 : 12
+        return header
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        guard section == 1, tableView.backgroundView == nil else { return nil }
+        let footer = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionFooterView.className) as? RGSectionFooterView
+            ?? RGSectionFooterView(reuseIdentifier: RGSectionFooterView.className)
+        footer.text = Bundle.localizedString(forKey: "configpage_binding_layout_link_footer")
+        return footer
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        let availableWidth = max(0, bounds.width - horizontalPadding * 2)
-        contentWidthConstraint?.update(offset: min(maxContentWidth, availableWidth))
-    }
-
-    private func configUI(text: String, image: UIImage?) {
-        let iconView = UIImageView(image: image)
-        iconView.tintColor = .mainColor
-        iconView.contentMode = .scaleAspectFit
-
-        let label = UILabel(frame: .zero)
-        label.font = UIFont.systemFont(ofSize: UIFont.labelFontSize)
-        label.textColor = .secondaryLabel
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        label.lineBreakMode = .byWordWrapping
-        label.attributedText = makeAttributedText(text)
-
-        let stackView = UIStackView(arrangedSubviews: [iconView, label])
-        stackView.axis = .vertical
-        stackView.alignment = .center
-        stackView.spacing = 16
-
-        addSubview(stackView)
-        iconView.snp.makeConstraints { make in
-            make.width.height.equalTo(120)
-        }
-
-        label.snp.makeConstraints { make in
-            contentWidthConstraint = make.width.lessThanOrEqualTo(maxContentWidth).constraint
-        }
-
-        stackView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(60)
-            make.centerX.equalToSuperview()
-        }
-    }
-
-    private func makeAttributedText(_ text: String) -> NSAttributedString {
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = .center
-        paragraphStyle.lineBreakMode = .byWordWrapping
-        paragraphStyle.lineSpacing = 6
-
-        return NSAttributedString(
-            string: text,
-            attributes: [
-                .font: UIFont.systemFont(ofSize: UIFont.labelFontSize),
-                .foregroundColor: UIColor.secondaryLabel,
-                .paragraphStyle: paragraphStyle
-            ]
-        )
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        section == 1 ? UITableView.automaticDimension : .leastNormalMagnitude
     }
 }

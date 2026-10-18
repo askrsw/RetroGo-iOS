@@ -207,6 +207,7 @@ final class MameListXMLParser {
             return
         }
         var machine = MameCatalogMachine(name: name)
+        machine.sourceFile = attributes["sourcefile"]
         machine.cloneOf = attributes["cloneof"]
         machine.romOf = attributes["romof"]
         machine.isBios = attributes.isYes("isbios")

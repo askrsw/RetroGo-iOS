@@ -51,7 +51,8 @@ final class GamePageToolbarView: UIView {
     /// still-closing overlay.
     private var menuPauseLease: GamePauseCoordinator.Lease?
 
-    private var isGamePaused = false
+    private var manualPauseLease: GamePauseCoordinator.Lease?
+    private var isGamePaused: Bool { manualPauseLease != nil }
     private(set) var isGameMuted = false
 
     /// Brand-color plate shown behind the lock glyph when landscape is locked,
@@ -117,12 +118,21 @@ final class GamePageToolbarView: UIView {
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+        menuPauseLease?.release()
+        manualPauseLease?.release()
     }
 
     /// Refreshes per-action availability from the running core's capabilities,
     /// then rebuilds the toolbar so both the bar buttons and the More menu reflect
     /// it. save/load need savestate support; the cheat entry needs cheat support.
     func refreshActionAvailability() {
+        guard holder?.isGameReady == true else {
+            savestateSupported = false
+            cheatSupported = false
+            netplaySupported = false
+            rebuildToolbar()
+            return
+        }
         savestateSupported = RetroArchX.shared().isCurrentCoreSupportsSavestate()
         // Cheats need both engine support AND a cheat session (the rom-item-keyed
         // store); the document-browser launch path has no session.
@@ -136,6 +146,7 @@ final class GamePageToolbarView: UIView {
     /// capabilities. Drives both the bar button `isEnabled` and the menu item's
     /// `.disabled` attribute, so the two stay in sync.
     private func isActionEnabled(_ action: GameToolbarAction) -> Bool {
+        guard holder?.isGameReady == true else { return false }
         switch action {
         case .saveState, .loadState: return savestateSupported
         case .cheat:                 return cheatSupported
@@ -180,12 +191,14 @@ extension GamePageToolbarView {
         // for as long as the menu is open (resumed when it dismisses).
         moreButton.onMenuWillShow = { [weak self] in
             Vibration.selection.vibrate()
-            self?.menuPauseLease = GamePauseCoordinator.shared.acquire(reason: "toolbar-more-menu")
+            guard let self, menuPauseLease == nil else { return }
+            menuPauseLease = GamePauseCoordinator.shared.acquire(reason: "toolbar-more-menu")
         }
         moreButton.onMenuWillHide = { [weak self] _ in
-            DispatchQueue.main.async { [weak self] in
-                self?.menuPauseLease?.release()
-                self?.menuPauseLease = nil
+            let lease = self?.menuPauseLease
+            self?.menuPauseLease = nil
+            DispatchQueue.main.async {
+                lease?.release()
             }
         }
         moreButton.sizeToFit()
@@ -253,6 +266,7 @@ extension GamePageToolbarView {
     }
 
     private func rebuildToolbar() {
+        moreButton.isEnabled = holder?.isGameReady == true
         let split = currentSplit()
         rebuildBar(split.bar)
         rebuildMoreMenu(split.menu)
@@ -660,6 +674,7 @@ extension GamePageToolbarView {
 
 extension GamePageToolbarView {
     private func perform(_ action: GameToolbarAction) {
+        guard holder?.isGameReady == true else { return }
         switch action {
         case .saveState: saveStateAction()
         case .loadState: loadStateAction()
@@ -792,22 +807,13 @@ extension GamePageToolbarView {
     private func pauseResumeAction() {
         Vibration.selection.vibrate()
 
-        let success: Bool
-        if isGamePaused {
-            success = RetroArchX.shared().resume()
-            if success {
-                isGamePaused = false
-            }
+        if let lease = manualPauseLease {
+            manualPauseLease = nil
+            lease.release()
         } else {
-            success = RetroArchX.shared().pause()
-            if success {
-                isGamePaused = true
-            }
+            manualPauseLease = GamePauseCoordinator.shared.acquire(reason: "toolbar-manual-pause")
         }
-
-        if success {
-            updatePauseResumeAppearance()
-        }
+        updatePauseResumeAppearance()
     }
 
     private func muteAction() {
@@ -869,6 +875,7 @@ extension GamePageToolbarView {
 
         // MAME cheats rewrite memory every frame; left on, they break the boot self-test.
         holder?.mameCheatSession?.prepareForReset()
+        NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
         RetroArchX.shared().reset()
     }
 
@@ -908,24 +915,7 @@ extension GamePageToolbarView {
     @objc
     func closeAction() {
         Vibration.selection.vibrate()
-
-        // Drop the engine's cheat list so it never leaks into the next game. The
-        // Swift/SQLite library is untouched; cheats are re-pushed on next launch.
-        RetroArchX.shared().clearCheats()
-        // The MAME core keeps the handed-over cheat XML for the whole process.
-        holder?.mameCheatSession?.endSession()
-
-        if AppSettings.shared.autoSaveLoadState {
-            let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: holder?.romItem)
-            _ = RetroRomFileManager.shared.saveState(rawName: name, showName: nil, sha256: holder?.romItem?.sha256, romKey: holder?.romItem?.key, autoSave: true)
-            holder?.romItem?.pulseImage = !(holder?.romItem?.pulseImage ?? false)
-            RetroArchX.shared().stop()
-        } else {
-            RetroArchX.shared().stop()
-        }
-
-        holder?.romUrl?.stopAccessingSecurityScopedResource()
-        holder?.dismiss(animated: true)
+        holder?.closeGame()
     }
 }
 

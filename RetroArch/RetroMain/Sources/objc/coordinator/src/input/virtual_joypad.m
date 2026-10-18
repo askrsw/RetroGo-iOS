@@ -34,6 +34,7 @@
 #include "RAPhoneRumble.h"
 
 static input_bits_t virtual_pending_buttons[DEFAULT_MAX_PADS];
+static uint32_t virtual_action_masks[DEFAULT_MAX_PADS];
 static int16_t virtual_pending_axes[DEFAULT_MAX_PADS][4];
 static bool virtual_pending_connected[DEFAULT_MAX_PADS];
 
@@ -61,6 +62,7 @@ static void virtual_joypad_init_state(void)
     for (i = 0; i < DEFAULT_MAX_PADS; i++)
     {
         BIT256_CLEAR_ALL(virtual_pending_buttons[i]);
+        virtual_action_masks[i] = 0;
         memset(virtual_pending_axes[i], 0, sizeof(virtual_pending_axes[i]));
         virtual_pending_connected[i] = false;
 
@@ -71,6 +73,16 @@ static void virtual_joypad_init_state(void)
 
     virtual_pending_connected[virtual_target_port] = true;
     virtual_frame_connected[virtual_target_port] = true;
+}
+
+void virtual_joypad_set_action_mask(unsigned port, uint32_t mask)
+{
+    if (port >= DEFAULT_MAX_PADS) return;
+    virtual_joypad_ensure_lock();
+    slock_lock(virtual_joypad_lock);
+    virtual_action_masks[port] = mask & 0xffff;
+    if (mask) virtual_pending_connected[port] = true;
+    slock_unlock(virtual_joypad_lock);
 }
 
 void virtual_joypad_set_button(unsigned id, bool down)
@@ -170,8 +182,10 @@ void virtual_joypad_commit_frame_state(void)
     for (i = 0; i < DEFAULT_MAX_PADS; i++)
     {
         memcpy(&virtual_frame_buttons[i], &virtual_pending_buttons[i], sizeof(virtual_frame_buttons[i]));
+        for (unsigned code = 0; code < 16; code++)
+            if (virtual_action_masks[i] & (1U << code)) BIT256_SET(virtual_frame_buttons[i], code);
         memcpy(virtual_frame_axes[i], virtual_pending_axes[i], sizeof(virtual_frame_axes[i]));
-        virtual_frame_connected[i] = virtual_pending_connected[i];
+        virtual_frame_connected[i] = virtual_pending_connected[i] || virtual_action_masks[i] != 0;
     }
     slock_unlock(virtual_joypad_lock);
 }
@@ -184,6 +198,7 @@ void virtual_joypad_reset(unsigned port)
     virtual_joypad_ensure_lock();
     slock_lock(virtual_joypad_lock);
     BIT256_CLEAR_ALL(virtual_pending_buttons[port]);
+    virtual_action_masks[port] = 0;
     memset(virtual_pending_axes[port], 0, sizeof(virtual_pending_axes[port]));
     BIT256_CLEAR_ALL(virtual_frame_buttons[port]);
     memset(virtual_frame_axes[port], 0, sizeof(virtual_frame_axes[port]));

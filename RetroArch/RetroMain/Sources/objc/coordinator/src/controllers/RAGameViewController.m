@@ -72,7 +72,9 @@
 }
 
 - (void)dealloc {
-    apple_platform = nil;
+    // UIKit may retain an old page beyond dismissal and into the next game.
+    if (apple_platform == self)
+        apple_platform = nil;
 }
 
 -(BOOL)prefersHomeIndicatorAutoHidden {
@@ -173,6 +175,12 @@
 }
 
 #pragma mark - Interface
+
+- (void)releasePlatformOwnership {
+    NSAssert([NSThread isMainThread], @"Platform ownership must be released on the main thread");
+    if (apple_platform == self)
+        apple_platform = nil;
+}
 
 - (UIView *)toolbarView {
     return nil;

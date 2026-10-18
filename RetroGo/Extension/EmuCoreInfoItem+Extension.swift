@@ -78,6 +78,7 @@ extension EmuCoreInfoItem {
         case "melondsds": return .ds
         case "mesen": return .nes
         case "mesen-s": return .snes
+        case "mgba": return .gba
         case "mupen64plus-next": return .n64
         case "nestopia": return .nes
         case "pcsx-rearmed": return .psx

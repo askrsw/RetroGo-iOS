@@ -24,6 +24,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RAMacroInputEngine.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -34,6 +35,7 @@ typedef NS_ENUM(NSInteger, RAInputBindingTargetKind) {
     RAInputBindingTargetKindJoypadSingle    = 1, // one RetroArch joypad code
     RAInputBindingTargetKindJoypadComposite = 2, // multiple joypad codes (+ turbo flag)
     RAInputBindingTargetKindSystemAction    = 3, // fast-forward / mute ...
+    RAInputBindingTargetKindMacro           = 4,
 };
 
 typedef NS_ENUM(NSInteger, RAInputSystemActionCode) {
@@ -56,7 +58,7 @@ typedef NS_ENUM(NSInteger, RAInputPhysicalSourceKindCode) {
 @property(nonatomic, assign) NSInteger sourceCode;
 @end
 
-/// Target descriptor: supports single joypad, composite joypad, and system action.
+/// Target descriptor: single joypad, composite joypad, system action or macro snapshot.
 @interface RAInputBindingTarget : NSObject <NSSecureCoding>
 @property(nonatomic, assign) RAInputBindingTargetKind targetKind;
 
@@ -69,6 +71,9 @@ typedef NS_ENUM(NSInteger, RAInputPhysicalSourceKindCode) {
 
 /// valid when targetKind == SystemAction
 @property(nonatomic, assign) RAInputSystemActionCode systemActionCode;
+/// Independent action snapshot; identifiers in actionId retain the layout provenance.
+@property(nonatomic, copy) NSArray<RAMacroInputStep *> *macroSteps;
+@property(nonatomic, copy) NSString *displayName;
 @end
 
 /// One binding row for one player.
@@ -86,7 +91,7 @@ typedef NS_ENUM(NSInteger, RAInputPhysicalSourceKindCode) {
 
 /// Whole profile for one game row in sqlite.
 @interface RAInputBindingProfile : NSObject <NSSecureCoding>
-@property(nonatomic, assign) NSInteger version; // start at 1
+@property(nonatomic, assign) NSInteger version; // 1: legacy; 2: macro snapshots and display names
 @property(nonatomic, copy) NSArray<RAInputPlayerBinding *> *players;
 
 /// archive -> NSData (sqlite BLOB)

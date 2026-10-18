@@ -45,6 +45,8 @@ final class GamePageViewController: RAGameViewController {
     private(set) var isLandscapeLocked = false
     /// The orientation the control layout editor shows; overrides the landscape lock while it runs.
     private(set) var layoutEditingOrientation: UIInterfaceOrientationMask?
+    private var layoutEditingReturnOrientation: UIInterfaceOrientation?
+    private var layoutEditingRestoration: (mask: UIInterfaceOrientationMask, completion: () -> Void)?
 
     let romItem: RetroRomFileItem?
     let romUrl: URL?
@@ -62,6 +64,12 @@ final class GamePageViewController: RAGameViewController {
 
     private var myLoadingView: GamePageLoadingView?
     private var loaded = false
+    private var closeRequested = false
+    private var closeFinished = false
+    private var hasLeftPresentation = false
+    private var pauseSessionID: UUID?
+
+    var isGameReady: Bool { loaded && !closeRequested }
 
     init(romUrl: URL?, core: EmuCoreInfoItem) {
         self.romItem   = nil
@@ -169,12 +177,27 @@ final class GamePageViewController: RAGameViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        myOverlayView.isUserInteractionEnabled = false
         AppStoreProFeatureGate.resetFastForwardNotice()
         configSession.configRetroArch()
         GameHapticEngine.shared.start(level: configSession.getOverlayHapticLevel())
 
-        RetroArchX.shared().start(romUrl?.path(percentEncoded: false), core: core) { [unowned self] success in
+        // Keep the render owner alive until loading (and any cancelled-load
+        // teardown) completes. A dismissed page must never leave an orphan core.
+        RetroArchX.shared().start(romUrl?.path(percentEncoded: false), core: core) { [self] success in
+            guard success, !closeRequested else {
+                finishClosing()
+                return
+            }
             loaded = true
+            // RetroArchX delivers completion on the main thread, but its ObjC
+            // block type does not express MainActor isolation to Swift.
+            pauseSessionID = MainActor.assumeIsolated {
+                GamePauseCoordinator.shared.beginSession(
+                    applicationIsActive: UIApplication.shared.applicationState == .active
+                )
+            }
+            myOverlayView.isUserInteractionEnabled = true
             myLoadingView?.uninstall()
             myLoadingView = nil
 
@@ -229,8 +252,13 @@ final class GamePageViewController: RAGameViewController {
         super.viewWillAppear(animated)
 
         if !loaded {
-            myLoadingView = GamePageLoadingView(frame: .zero)
-            myLoadingView?.install()
+            if myLoadingView == nil, !closeFinished {
+                myLoadingView = GamePageLoadingView(frame: .zero)
+                if closeRequested {
+                    myLoadingView?.messageLabel.text = Bundle.localizedString(forKey: "gamepage_game_closing")
+                }
+                myLoadingView?.install()
+            }
         }
 
         // Apply persisted orientation lock on entry.
@@ -244,16 +272,19 @@ final class GamePageViewController: RAGameViewController {
 
     /// Shows this platform's control layouts; editing one returns to the list when done.
     func showOverlayLayoutList() {
-        guard !RANetplayCoordinator.shared.isNetplayEnabled, !overlayLayoutEditController.isEditing else { return }
+        guard isGameReady, presentedViewController == nil,
+              !RANetplayCoordinator.shared.isNetplayEnabled, !overlayLayoutEditController.isEditing else { return }
         let list = GameOverlayLayoutListViewController(session: myOverlayView.layoutSession)
         let card = GameOverlayLayoutListCardController(listController: list)
         list.editHandler = { [weak self, weak card] request in
+            guard let card else { return }
             // Keeps the game paused from the list closing until the editor takes over.
             let bridge = GamePauseCoordinator.shared.acquire(reason: "overlay-layout-list-to-edit")
-            card?.close { [weak self] in
+            let closing = card.close { [weak self] in
                 self?.editOverlayLayout(request)
                 bridge?.release()
             }
+            if !closing { bridge?.release() }
         }
         present(card, animated: true)
     }
@@ -262,8 +293,7 @@ final class GamePageViewController: RAGameViewController {
         let target: GameOverlayLayoutEditController.Target
         switch request {
         case .create:
-            // A new layout starts from what the game shows now.
-            target = .create(from: myOverlayView.layoutSession.resolvedLayout().item?.data ?? GameOverlayLayoutData())
+            target = .create
         case .edit(let item):
             target = .edit(item)
         }
@@ -280,15 +310,24 @@ final class GamePageViewController: RAGameViewController {
     override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         coordinator.animate(alongsideTransition: nil) { [weak self] _ in
-            guard let self, overlayLayoutEditController.isEditing else { return }
-            // The paused game still shows its frame at the old size; let it draw a few at the new one,
-            // so the controls are edited against the real picture.
-            GamePauseCoordinator.shared.runFramesWhilePaused(keepMuted: myToolbarView.isGameMuted)
+            guard let self else { return }
+            // Commit the base controller's final video constraints before running frames.
+            view.layoutIfNeeded()
+            if layoutEditingRestoration != nil {
+                // Let UIKit finish its rotation transaction before presenting another card.
+                DispatchQueue.main.async { [weak self] in self?.completeLayoutEditingRestoration() }
+            } else if isGameReady, overlayLayoutEditController.isEditing {
+                GamePauseCoordinator.shared.runFramesWhilePaused(keepMuted: myToolbarView.isGameMuted)
+            }
         }
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+
+        if isBeingDismissed || isMovingFromParent {
+            closeGame()
+        }
 
         // Restore free rotation for all other pages.
         AppDelegate.setOrientationLock(.allButUpsideDown)
@@ -299,23 +338,81 @@ final class GamePageViewController: RAGameViewController {
 
         // The game is over once the page is gone, however it was closed.
         if isBeingDismissed || isMovingFromParent {
-            GameHapticEngine.shared.stop()
+            hasLeftPresentation = true
+            if Self.instance === self { GameHapticEngine.shared.stop() }
+            releaseLaunchReservationIfClosed()
         }
     }
 
     /// Applies the current (runtime) landscape-lock state to the app-wide mask
     /// and this VC's `supportedInterfaceOrientations`.
-    func applyOrientationLock() {
-        AppDelegate.setOrientationLock(supportedInterfaceOrientations)
+    func applyOrientationLock(requestedOrientation: UIInterfaceOrientationMask? = nil,
+                              onGeometryError: ((Error) -> Void)? = nil) {
         setNeedsUpdateOfSupportedInterfaceOrientations()
+        AppDelegate.setOrientationLock(supportedInterfaceOrientations,
+                                       requestedOrientation: requestedOrientation, onGeometryError: onGeometryError)
     }
 
     /// Turns the screen for the control layout editor (portrait or landscape); nil gives
     /// rotation back to the device and the landscape lock.
     func setLayoutEditingOrientation(_ mask: UIInterfaceOrientationMask?) {
         guard layoutEditingOrientation != mask else { return }
+        if layoutEditingOrientation == nil, mask != nil {
+            layoutEditingReturnOrientation = view.window?.windowScene?.interfaceOrientation
+        }
         layoutEditingOrientation = mask
         applyOrientationLock()
+    }
+
+    /// Finish rotation before presenting the layout list, keeping the editor's pause
+    /// owner alive through the handoff. A geometry request itself is asynchronous.
+    func restoreLayoutEditingOrientation(completion: @escaping () -> Void) {
+        guard let scene = view.window?.windowScene, layoutEditingOrientation != nil else {
+            setLayoutEditingOrientation(nil)
+            completion()
+            return
+        }
+        let target: UIInterfaceOrientationMask
+        if isLandscapeLocked {
+            target = .landscape
+        } else {
+            switch UIDevice.current.orientation {
+            case .portrait: target = .portrait
+            case .landscapeLeft, .landscapeRight: target = .landscape
+            default:
+                switch layoutEditingReturnOrientation ?? scene.interfaceOrientation {
+                case .landscapeLeft, .landscapeRight: target = .landscape
+                default: target = .portrait
+                }
+            }
+        }
+        layoutEditingOrientation = nil
+        layoutEditingReturnOrientation = nil
+        layoutEditingRestoration = (target, completion)
+        applyOrientationLock(requestedOrientation: target) { [weak self] error in
+            RetroGoLogger.game.error("Failed to restore layout editing orientation: \(error)")
+            self?.completeLayoutEditingRestoration(force: true)
+        }
+        // No transition callback is sent if the requested orientation already matches.
+        if target.contains(UIInterfaceOrientationMask(rawValue: 1 << scene.interfaceOrientation.rawValue)),
+           transitionCoordinator == nil {
+            completeLayoutEditingRestoration()
+        }
+    }
+
+    private func completeLayoutEditingRestoration(force: Bool = false) {
+        guard let restoration = layoutEditingRestoration else { return }
+        if !force, let orientation = view.window?.windowScene?.interfaceOrientation {
+            let current = UIInterfaceOrientationMask(rawValue: 1 << orientation.rawValue)
+            guard restoration.mask.contains(current),
+                  (view.bounds.width < view.bounds.height) == orientation.isPortrait else { return }
+        }
+        layoutEditingRestoration = nil
+        view.layoutIfNeeded()
+        if isGameReady {
+            GamePauseCoordinator.shared.runFramesWhilePaused(keepMuted: myToolbarView.isGameMuted)
+        }
+        restoration.completion()
     }
 
     /// Toggles the runtime landscape lock (called by the toolbar button).
@@ -332,17 +429,102 @@ final class GamePageViewController: RAGameViewController {
         if Thread.isMainThread {
             inGameInfoView.showMessage(message)
         } else {
-            DispatchQueue.main.async { [unowned self] in
-                inGameInfoView.showMessage(message)
+            DispatchQueue.main.async { [weak self] in
+                self?.inGameInfoView.showMessage(message)
             }
         }
+    }
+
+    /// A core cannot abort arbitrary ROM loading safely. Keep the page/render
+    /// owner until the cancelled load has returned and RetroArch has unloaded it.
+    func closeGame() {
+        guard !closeRequested else { return }
+        let wasReady = loaded
+        closeRequested = true
+        endPauseSession()
+        myToolbarView.closeButton.isEnabled = false
+        myToolbarView.isUserInteractionEnabled = false
+        myOverlayView.isUserInteractionEnabled = false
+        NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
+
+        if RetroArchX.shared().gameTransitionInProgress {
+            myLoadingView?.messageLabel.text = Bundle.localizedString(forKey: "gamepage_game_closing")
+            RetroArchX.shared().stop()
+            return
+        }
+
+        if wasReady {
+            // Do not touch cheats or save states during a background core load.
+            RetroArchX.shared().clearCheats()
+            mameCheatSession?.endSession()
+            if AppSettings.shared.autoSaveLoadState {
+                let name = RetroRomGameStateItem.getAutoSaveStateName(romItem: romItem)
+                _ = RetroRomFileManager.shared.saveState(rawName: name, showName: nil, sha256: romItem?.sha256, romKey: romItem?.key, autoSave: true)
+                romItem?.pulseImage = !(romItem?.pulseImage ?? false)
+            }
+            RetroArchX.shared().stop()
+        }
+        finishClosing()
+    }
+
+    private func finishClosing() {
+        guard !closeFinished else { return }
+        closeRequested = true
+        closeFinished = true
+        endPauseSession()
+        myLoadingView?.uninstall()
+        myLoadingView = nil
+        GameHapticEngine.shared.stop()
+        myOverlayView.endGame()
+        releasePlatformOwnership()
+        NotificationCenter.default.removeObserver(self)
+        if isBeingPresented, let transitionCoordinator {
+            transitionCoordinator.animate(alongsideTransition: nil) { [weak self] _ in
+                self?.dismissClosedPage()
+            }
+            return
+        }
+        dismissClosedPage()
+    }
+
+    private func dismissClosedPage() {
+        if hasLeftPresentation {
+            releaseLaunchReservationIfClosed()
+        } else if presentingViewController != nil, !isBeingDismissed {
+            dismiss(animated: true) { [weak self] in self?.releaseLaunchReservationIfClosed() }
+        } else if !isBeingDismissed {
+            releaseLaunchReservationIfClosed()
+        }
+    }
+
+    /// Rejected UIKit presentations never reach the normal disappearance path.
+    fileprivate func verifyPresentationWasAccepted() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, !closeRequested, presentingViewController == nil, !isBeingPresented else { return }
+            RetroGoLogger.game.notice("Closing unpresented game page for core \(self.core.coreId, privacy: .public)")
+            closeGame()
+        }
+    }
+
+    /// A finished session must not reserve launch until ARC releases its page.
+    private func releaseLaunchReservationIfClosed() {
+        guard closeFinished, Self.instance === self else { return }
+        Self.instance = nil
+        RetroGoLogger.game.debug("Released closed game page launch reservation for core \(self.core.coreId, privacy: .public)")
+    }
+
+    private func endPauseSession() {
+        guard let id = pauseSessionID else { return }
+        pauseSessionID = nil
+        GamePauseCoordinator.shared.endSession(id)
     }
 }
 
 extension GamePageViewController {
     @objc
     private func appWillResignActive() {
-        if Self.instance == self {
+        if Self.instance == self, isGameReady {
+            NotificationCenter.default.post(name: .overlayMacroCancel, object: nil)
             if let startDate = startDate {
                 let diff = Date().timeIntervalSince(startDate)
                 let seconds = Int(diff.rounded(.toNearestOrAwayFromZero))
@@ -356,18 +538,22 @@ extension GamePageViewController {
                 romItem?.pulseImage = !(romItem?.pulseImage ?? false)
             }
 
-            RetroArchX.shared().pause()
+            if let id = pauseSessionID {
+                GamePauseCoordinator.shared.setApplicationActive(false, for: id)
+            }
         }
     }
 
     @objc
     private func appWillBecomeActive() {
-        if Self.instance == self {
+        if Self.instance == self, isGameReady {
             if self.startDate == nil {
                 startDate = Date()
             }
 
-            RetroArchX.shared().resume()
+            if let id = pauseSessionID {
+                GamePauseCoordinator.shared.setApplicationActive(true, for: id)
+            }
         }
     }
 
@@ -403,18 +589,22 @@ enum GameLaunchBackgroundPreparation {
 
 extension RetroArchX {
     static func playGame(romUrl: URL?, core: EmuCoreInfoItem) {
+        guard !shared().gameTransitionInProgress, GamePageViewController.instance == nil else { return }
         guard MainActor.assumeIsolated({ GameFreePlayQuota.allowLaunch(core: core) }) else { return }
         CoreBiosLaunchCheck.run(core: core) {
+            guard !shared().gameTransitionInProgress, GamePageViewController.instance == nil else { return }
             guard let currentViewController = UIViewController.currentActive() else {
                 return
             }
             let controller = GamePageViewController(romUrl: romUrl, core: core)
             controller.modalPresentationStyle = .fullScreen
             currentViewController.present(controller, animated: true)
+            controller.verifyPresentationWasAccepted()
         }
     }
 
     static func playGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
+        guard !shared().gameTransitionInProgress, GamePageViewController.instance == nil else { return }
         guard MainActor.assumeIsolated({ GameFreePlayQuota.allowLaunch(core: core) }) else { return }
         // Cores that need a BIOS are checked for it, MAME sets for missing files.
         CoreBiosLaunchCheck.run(core: core) {
@@ -425,6 +615,7 @@ extension RetroArchX {
     }
 
     private static func presentGame(romItem: RetroRomFileItem, core: EmuCoreInfoItem) {
+        guard !shared().gameTransitionInProgress, GamePageViewController.instance == nil else { return }
         guard let currentViewController = UIViewController.currentActive() else {
             return
         }
@@ -432,6 +623,7 @@ extension RetroArchX {
         let controller = GamePageViewController(romItem: romItem, core: core)
         controller.modalPresentationStyle = .fullScreen
         currentViewController.present(controller, animated: true)
+        controller.verifyPresentationWasAccepted()
 
         // CRC32 + cheat-template binding are launch-adjacent conveniences, not
         // launch requirements. Keep them on a serial utility queue so playing a

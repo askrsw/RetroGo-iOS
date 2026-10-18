@@ -64,6 +64,23 @@ extension GameConfigBindingSettingPresenting {
 
     func setBindingBubbleActive(_ active: Bool, for actionId: String) {
         bindingBubble(for: actionId)?.isActive = active
+        bindingBubble(for: actionId)?.zPosition = active ? 1000 : 0
+    }
+
+    /// Bubbles can extend outside a control's hit region, especially in a rotated fan.
+    /// Keep them in a separate layer and select the binding directly, without emitting input.
+    func configureBindingBubble(for actionId: String, in layer: SKNode, onSelect: @escaping () -> Void) {
+        guard let bubble = bindingBubble(for: actionId) else { return }
+        if bubble.parent !== layer {
+            bubble.removeFromParent()
+            layer.addChild(bubble)
+        }
+        bubble.zPosition = bubble.isActive ? 1000 : 0
+        bubble.isHidden = isHidden
+        bubble.touchChanged = { touching in
+            if touching { onSelect() }
+        }
+        updateBindingBubbleLayout(for: actionId)
     }
 
     func updateBindingBubbleLayout(for actionId: String) {
@@ -72,8 +89,12 @@ extension GameConfigBindingSettingPresenting {
             return
         }
 
+        let host = bubble.parent ?? self
+        let origin = host.convert(CGPoint.zero, from: self)
+        let horizontal = host.convert(CGPoint(x: 1, y: 0), from: self)
+        bubble.zRotation = atan2(horizontal.y - origin.y, horizontal.x - origin.x)
         bubble.updateLayout(
-            anchor: anchor,
+            anchor: host.convert(anchor, from: self),
             preferredPosition: bindingBubblePreferredPosition(for: actionId),
             maxWidth: bindingBubbleMaxWidth(for: actionId)
         )
@@ -129,6 +150,7 @@ private var bindingBubbleStoreKey: UInt8 = 0
 
 extension GameOverlayActionButton: GameConfigBindingSettingPresenting {
     func bindingActionIds() -> [String] {
+        if element.type == .combo || element.type == .macro { return [element.id] }
         if element.binds.count == 1 {
             return [element.binds[0].rawValue]
         }
@@ -138,6 +160,9 @@ extension GameOverlayActionButton: GameConfigBindingSettingPresenting {
     }
 
     func bindingJoypadCode(for actionId: String) -> RetroArchJoypadCode {
+        if (element.type == .combo || element.type == .macro), actionId == element.id {
+            return element.binds.first?.code ?? .none
+        }
         if element.binds.count == 1, bindingActionIds().contains(actionId) {
             return element.binds[0].code
         }

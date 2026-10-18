@@ -151,13 +151,25 @@ final class RetroRomCoreManager {
         }
 
         let ext = (romPath as NSString).pathExtension.lowercased()
-        let cores = getExtOpenCores(ext: ext)
-        return cores.first
+        return defaultCore(forExtension: ext)
     }
 
     func getRunningCore(_ url: URL) -> EmuCoreInfoItem? {
         let ext = url.pathExtension.lowercased()
+        return defaultCore(forExtension: ext)
+    }
+
+    private func defaultCore(forExtension ext: String) -> EmuCoreInfoItem? {
         let cores = getExtOpenCores(ext: ext)
-        return cores.first
+        if ext == "mds" {
+            // Preserve native MDS readers ahead of descriptor-conversion fallbacks.
+            let nativeCores = cores.filter { core in
+                (core.extensions ?? []).contains { $0.lowercased() == ext }
+            }
+            if !nativeCores.isEmpty {
+                return GameFreePlayQuota.preferredDefaultCore(in: nativeCores)
+            }
+        }
+        return GameFreePlayQuota.preferredDefaultCore(in: cores)
     }
 }

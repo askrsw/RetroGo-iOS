@@ -40,10 +40,90 @@ struct GameOverlayLayoutResolver {
     private(set) var scaleFactor: CGFloat = 1.0
     private(set) var contentOffset: CGPoint = .zero
     private(set) var polarAnchor: CGPoint = .zero
-    private(set) var fourButtonPolarAnchor: CGPoint = .zero
 
     init(config: GamePageOverlayConfig) {
         self.config = config
+    }
+
+    /// Freeze retired non-polar group transforms into independent button geometry.
+    static func migrateIndependentGroups(_ source: GameOverlayLayoutData, config: GamePageOverlayConfig) -> GameOverlayLayoutData {
+        var data = source
+        for portrait in [true, false] {
+            guard var orientation = data.orientation(portrait: portrait) else { continue }
+            var resolver = Self(config: config)
+            let reference = portrait ? config.portraitRefSize : config.landscapeRefSize
+            resolver.update(size: CGSize(width: reference.width, height: reference.height))
+            resolver.layoutData = data
+            let fanNames = Set(resolver.fanSlotElements.compactMap(\.group))
+            for (name, group) in orientation.groups where !fanNames.contains(name) {
+                let pivot = resolver.groupPivot(name, usePolarLayout: false)
+                let scale = group.scale ?? 1
+                for element in config.elements where element.group == name && orientation.elements[element.id]?.layout == nil && !group.isEmpty {
+                    let rect = resolver.resolveRect(element, usePolarLayout: false)
+                    let center = CGPoint(x: pivot.x + (rect.midX - pivot.x) * scale + group.offsetX,
+                                         y: pivot.y + (rect.midY - pivot.y) * scale + group.offsetY)
+                    var custom = orientation.elements[element.id] ?? .init()
+                    custom.layout = resolver.plainInsets(for: Self.rect(center: center, size: CGSize(width: rect.width * scale, height: rect.height * scale)))
+                    custom.scale = (custom.scale ?? 1) * scale
+                    orientation.elements[element.id] = custom
+                }
+                orientation.groups.removeValue(forKey: name)
+            }
+            data.setOrientation(orientation, portrait: portrait)
+        }
+        return data
+    }
+    var fanSlotElements: [GamePageOverlayElement] {
+        config.elements.filter { $0.group != nil && !$0.isHidden && basePolarLayout(for: $0) != nil }
+    }
+    func occupant(of slotId: String) -> GamePageOverlayElement? {
+        let slots = fanSlotElements
+        guard let index = slots.firstIndex(where: { $0.id == slotId }) else { return nil }
+        func assignedId(_ slot: GamePageOverlayElement) -> String {
+            customOrientation()?.slots?[slot.id] ?? (customElement(for: slot)?.layout == nil ? slot.id : "")
+        }
+        let id = assignedId(slots[index])
+        guard !id.isEmpty else { return nil }
+        // Deterministic protection against duplicate references in imported data.
+        guard !slots.prefix(index).contains(where: { assignedId($0) == id }) else { return nil }
+        return config.elements.first { $0.id == id && Self.canEnterFan($0) && !$0.isHidden }
+    }
+    func slot(for element: GamePageOverlayElement) -> GamePageOverlayElement? {
+        fanSlotElements.first { occupant(of: $0.id)?.id == element.id }
+    }
+    func fanGroup(for element: GamePageOverlayElement) -> String? { slot(for: element)?.group }
+
+    /// The shell belongs to the bundle slots, not to their current occupants.
+    /// Screen adaptation and the user's group scale apply exactly once.
+    func fanDiameter(in group: String) -> CGFloat? {
+        guard let reference = fanReferenceDiameter(in: group) else { return nil }
+        return reference * scaleFactor * CGFloat(customOrientation()?.groups[group]?.scale ?? 1)
+    }
+
+    private func fanReferenceDiameter(in group: String) -> CGFloat? {
+        fanSlotElements.filter { $0.group == group }
+            .map { CGFloat(min($0.geometry.size.width, $0.geometry.size.height)) }.max()
+    }
+    static func canEnterFan(_ element: GamePageOverlayElement) -> Bool {
+        switch element.type {
+        case .combo, .macro: return true
+        case .button:
+            return !element.binds.isEmpty && element.binds.allSatisfy { !["UP", "DOWN", "LEFT", "RIGHT", "START", "SELECT"].contains($0.rawValue) }
+        default: return false
+        }
+    }
+    /// The placeholder uses bundle geometry even when no button occupies it.
+    func slotRect(_ id: String) -> CGRect? {
+        guard let element = fanSlotElements.first(where: { $0.id == id }) else { return nil }
+        var copy = self
+        var data = layoutData ?? .init()
+        var orientation = customOrientation() ?? .init()
+        orientation.slots = Dictionary(uniqueKeysWithValues: fanSlotElements.map { ($0.id, $0.id) })
+        orientation.elements[element.id]?.layout = nil
+        orientation.elements[element.id]?.scale = nil
+        data.setOrientation(orientation, portrait: mode == .portrait)
+        copy.layoutData = data
+        return copy.resolveRect(element, usePolarLayout: true)
     }
 
     mutating func update(size: CGSize, contentOffset: CGPoint = .zero) {
@@ -52,26 +132,25 @@ struct GameOverlayLayoutResolver {
         self.mode = size.width < size.height ? .portrait : .landscape
         self.scaleFactor = resolveScaleFactor()
         self.polarAnchor = resolvePolarAnchor(mode == .portrait ? config.portraitPolarAnchor : config.landscapePolarAnchor)
-        let fourButtonInsets = mode == .portrait ? config.fourButtonPortraitPolarAnchor : config.fourButtonLandscapePolarAnchor
-        self.fourButtonPolarAnchor = fourButtonInsets.map(resolvePolarAnchor) ?? polarAnchor
     }
 
     /// Frame of an element: the JSON layout, then the custom layout's group
     /// transform, then the element's own position and size.
-    func resolveRect(_ element: GamePageOverlayElement, usePolarLayout: Bool, fourButtonLayout: Bool = false) -> CGRect {
-        let custom = customElement(for: element, fourButtonLayout: fourButtonLayout)
-        let elementScale = CGFloat(custom?.scale ?? 1)
+    func resolveRect(_ element: GamePageOverlayElement, usePolarLayout: Bool) -> CGRect {
+        let custom = customElement(for: element)
+        let memberGroup = fanGroup(for: element)
+        let elementScale = memberGroup == nil ? CGFloat(custom?.scale ?? 1) : 1
 
         // An element given its own position leaves the arc and its group.
-        if let insets = custom?.layout {
+        if slot(for: element) == nil, let insets = custom?.layout {
             return resolvePlainRect(size: scaledSize(element, multiplier: elementScale), insets: insets)
         }
 
-        var rect = resolveBuiltInRect(element, usePolarLayout: usePolarLayout, fourButtonLayout: fourButtonLayout)
+        var rect = resolveBuiltInRect(element, usePolarLayout: usePolarLayout)
 
-        if let groupName = element.group,
-           let group = customOrientation(fourButtonLayout: fourButtonLayout)?.groups[groupName], !group.isEmpty {
-            let pivot = groupPivot(groupName, usePolarLayout: usePolarLayout, fourButtonLayout: fourButtonLayout)
+        if let groupName = memberGroup,
+           let group = customOrientation()?.groups[groupName], !group.isEmpty {
+            let pivot = groupPivot(groupName, usePolarLayout: usePolarLayout)
             let groupScale = CGFloat(group.scale ?? 1)
             // Offsets are in reference units, +y up like the scene.
             let center = CGPoint(
@@ -85,27 +164,24 @@ struct GameOverlayLayoutResolver {
             rect = Self.rect(center: CGPoint(x: rect.midX, y: rect.midY),
                              size: CGSize(width: rect.width * elementScale, height: rect.height * elementScale))
         }
+        if let memberGroup, let diameter = fanDiameter(in: memberGroup) {
+            rect = Self.rect(center: CGPoint(x: rect.midX, y: rect.midY),
+                             size: CGSize(width: diameter, height: diameter))
+        }
         return rect
     }
 
     /// Whether the custom layout hides the element; only extension buttons can be hidden.
     /// Combos are hidden unless the layout shows them, the built-in layout included.
-    func isHiddenByCustomLayout(_ element: GamePageOverlayElement, fourButtonLayout: Bool = false) -> Bool {
+    func isHiddenByCustomLayout(_ element: GamePageOverlayElement) -> Bool {
         guard element.isHideableInCustomLayout else { return false }
-        return customElement(for: element, fourButtonLayout: fourButtonLayout)?.hidden ?? element.isHiddenByDefaultInCustomLayout
+        return customElement(for: element)?.hidden ?? element.isHiddenByDefaultInCustomLayout
     }
 
-    /// Opacity of the whole overlay, clamped so the controls never vanish.
-    var customOpacity: CGFloat {
-        guard let opacity = layoutData?.opacity else { return 1 }
-        return min(1, max(Self.minimumOpacity, CGFloat(opacity)))
-    }
-
-    static let minimumOpacity: CGFloat = 0.2
 
     /// Whether the custom layout gives the element its own position, outside the arc and its group.
-    func hasCustomPosition(_ element: GamePageOverlayElement, fourButtonLayout: Bool = false) -> Bool {
-        customElement(for: element, fourButtonLayout: fourButtonLayout)?.layout != nil
+    func hasCustomPosition(_ element: GamePageOverlayElement) -> Bool {
+        slot(for: element) == nil && customElement(for: element)?.layout != nil
     }
 
     /// Plain-layout insets that place an element at `rect`, measured in reference
@@ -121,10 +197,11 @@ struct GameOverlayLayoutResolver {
         return GamePageOverlayInsets(top: top, left: left, bottom: bottom, right: right, centerX: nil, centerY: nil)
     }
 
-    func resolveRotation(_ element: GamePageOverlayElement, usePolarLayout: Bool, rotatesWithPolarLayout: Bool, fourButtonLayout: Bool = false) -> CGFloat {
+    func resolveRotation(_ element: GamePageOverlayElement, usePolarLayout: Bool, rotatesWithPolarLayout: Bool) -> CGFloat {
+        if slot(for: element) == nil, let rotation = customElement(for: element)?.rotation { return CGFloat(rotation * .pi / 180) }
         guard usePolarLayout,
               rotatesWithPolarLayout,
-              customElement(for: element, fourButtonLayout: fourButtonLayout)?.layout == nil,
+              !hasCustomPosition(element),
               let polar = polarLayout(for: element) else {
             return 0
         }
@@ -138,16 +215,20 @@ struct GameOverlayLayoutResolver {
 }
 
 private extension GameOverlayLayoutResolver {
-    /// The custom layout for the current orientation and arcade 4/6-button layout.
-    func customOrientation(fourButtonLayout: Bool) -> GameOverlayLayoutData.Orientation? {
-        layoutData?.orientation(portrait: mode == .portrait, fourButton: fourButtonLayout)
+    /// The custom layout for the current orientation.
+    func customOrientation() -> GameOverlayLayoutData.Orientation? {
+        layoutData?.orientation(portrait: mode == .portrait)
     }
 
-    func customElement(for element: GamePageOverlayElement, fourButtonLayout: Bool) -> GameOverlayLayoutData.Element? {
-        customOrientation(fourButtonLayout: fourButtonLayout)?.elements[element.id]
+    func customElement(for element: GamePageOverlayElement) -> GameOverlayLayoutData.Element? {
+        customOrientation()?.elements[element.id]
     }
 
     func scaledSize(_ element: GamePageOverlayElement, multiplier: CGFloat = 1) -> CGSize {
+        if let group = fanGroup(for: element), let reference = fanReferenceDiameter(in: group) {
+            let diameter = reference * scaleFactor * multiplier
+            return CGSize(width: diameter, height: diameter)
+        }
         let elementSize = element.geometry.size
         return CGSize(
             width: CGFloat(elementSize.width) * scaleFactor * multiplier,
@@ -155,20 +236,26 @@ private extension GameOverlayLayoutResolver {
         )
     }
 
-    func resolveBuiltInRect(_ element: GamePageOverlayElement, usePolarLayout: Bool, fourButtonLayout: Bool) -> CGRect {
+    func resolveBuiltInRect(_ element: GamePageOverlayElement, usePolarLayout: Bool) -> CGRect {
         let size = scaledSize(element)
         if usePolarLayout, let polar = polarLayout(for: element) {
             return resolvePolarRect(size: size, polar: polar,
-                                    anchor: fourButtonLayout ? fourButtonPolarAnchor : polarAnchor)
+                                    anchor: polarAnchor)
         }
-        return resolvePlainRect(size: size, insets: plainLayout(for: element))
+        return resolvePlainRect(size: size, insets: plainLayout(for: slot(for: element) ?? element))
     }
 
     /// Center of the group's built-in bounds; scaling about it keeps the group in place.
-    func groupPivot(_ groupName: String, usePolarLayout: Bool, fourButtonLayout: Bool) -> CGPoint {
+    func groupPivot(_ groupName: String, usePolarLayout: Bool) -> CGPoint {
         let bounds = config.elements
-            .filter { $0.group == groupName && !(fourButtonLayout && $0.isSixButtonOnly) }
-            .map { resolveBuiltInRect($0.arcadeLayoutElement(fourButtons: fourButtonLayout), usePolarLayout: usePolarLayout, fourButtonLayout: fourButtonLayout) }
+            .filter { $0.group == groupName }
+            .map { element in
+                let size = CGSize(width: element.geometry.size.width * scaleFactor, height: element.geometry.size.height * scaleFactor)
+                if usePolarLayout, let polar = basePolarLayout(for: element) {
+                    return resolvePolarRect(size: size, polar: polar, anchor: polarAnchor)
+                }
+                return resolvePlainRect(size: size, insets: plainLayout(for: element))
+            }
             .reduce(CGRect.null) { $0.union($1) }
         guard !bounds.isNull else { return .zero }
         return CGPoint(x: bounds.midX, y: bounds.midY)
@@ -284,19 +371,22 @@ private extension GameOverlayLayoutResolver {
     }
 
     func polarLayout(for element: GamePageOverlayElement) -> GamePageOverlayPolar? {
+        guard let slot = slot(for: element), let base = basePolarLayout(for: slot), let name = slot.group else { return nil }
+        guard let fan = customOrientation()?.groups[name]?.fan else { return base }
+        let members = fanSlotElements.filter { $0.group == name }.compactMap(basePolarLayout)
+        guard let inner = members.map(\.radius).min(), let first = members.map(\.theta).min(), let last = members.map(\.theta).max() else { return base }
+        return fan.adjusted(base, centerTheta: (first + last) / 2, innerRadius: inner)
+    }
+
+    func basePolarLayout(for element: GamePageOverlayElement) -> GamePageOverlayPolar? {
         mode == .portrait ? element.geometry.polarPortraitLayout : element.geometry.polarLandscapeLayout
     }
 }
 
+
 protocol GameOverlaySceneLayouting: AnyObject {
     var overlayLayoutResolver: GameOverlayLayoutResolver { get set }
     var usePolarLayout: Bool { get }
-    /// Arcade four-button layout: polar elements use the config's four-button anchor.
-    var usesFourButtonLayout: Bool { get }
-}
-
-extension GameOverlaySceneLayouting {
-    var usesFourButtonLayout: Bool { false }
 }
 
 extension GameOverlaySceneLayouting where Self: SKScene {
@@ -308,15 +398,14 @@ extension GameOverlaySceneLayouting where Self: SKScene {
     }
 
     func resolveOverlayRect(_ element: GamePageOverlayElement) -> CGRect {
-        overlayLayoutResolver.resolveRect(element, usePolarLayout: usePolarLayout, fourButtonLayout: usesFourButtonLayout)
+        overlayLayoutResolver.resolveRect(element, usePolarLayout: usePolarLayout)
     }
 
     func resolveOverlayRotation(_ element: GamePageOverlayElement, rotatesWithPolarLayout: Bool) -> CGFloat {
         overlayLayoutResolver.resolveRotation(
             element,
             usePolarLayout: usePolarLayout,
-            rotatesWithPolarLayout: rotatesWithPolarLayout,
-            fourButtonLayout: usesFourButtonLayout
+            rotatesWithPolarLayout: rotatesWithPolarLayout
         )
     }
 }

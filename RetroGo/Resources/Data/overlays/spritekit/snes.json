@@ -6,6 +6,7 @@
     "portrait_polar_anchor": { "right": 35, "bottom": 150 },
     "landscape_polar_anchor": { "right": 35, "bottom": 50 },
     "retroarch_source": "gamepads/Named_Overlays/Nintendo - Super Nintendo Entertainment System.cfg",
+    "recommended_combo": { "binds": ["A", "B"], "is_turbo": true },
     "elements": [
         {
             "id": "left-dpad",
@@ -86,14 +87,6 @@
                 "title": "Y",
                 "binds": ["Y"],
                 "is_native": true
-            }
-        },
-        {
-            "id": "a-b",
-            "type": "combo",
-            "meta": {
-                "binds": ["A", "B"],
-                "is_turbo": true
             }
         },
         {

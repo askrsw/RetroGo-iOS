@@ -128,9 +128,16 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 @property(nonatomic, assign, readwrite) RAInputActionKind kind;
 @property(nonatomic, copy, readwrite) NSArray<NSNumber *> *outputJoypadCodes;
 @property(nonatomic, assign, readwrite) BOOL turboEnabled;
+@property(nonatomic, copy, readwrite) NSArray<RAMacroInputStep *> *macroSteps;
 @end
 
 @implementation RAInputActionDescriptor
+
++ (instancetype)macroActionWithIdentifier:(NSString *)identifier displayName:(NSString *)displayName steps:(NSArray<RAMacroInputStep *> *)steps {
+    RAInputActionDescriptor *descriptor = [[self alloc] initWithIdentifier:identifier displayName:displayName kind:RAInputActionKindMacro];
+    descriptor.macroSteps = steps;
+    return descriptor;
+}
 
 + (instancetype)joypadOutputActionWithIdentifier:(NSString *)identifier displayName:(NSString *)displayName outputJoypadCodes:(NSArray<NSNumber *> *)outputJoypadCodes turboEnabled:(BOOL)turboEnabled {
     RAInputActionDescriptor *descriptor = [[RAInputActionDescriptor alloc] initWithIdentifier:identifier displayName:displayName kind:RAInputActionKindJoypadOutput];
@@ -164,6 +171,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
         _kind = kind;
         _outputJoypadCodes = @[];
         _turboEnabled = NO;
+        _macroSteps = @[];
     }
     return self;
 }
@@ -172,6 +180,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
     RAInputActionDescriptor *descriptor = [[[self class] allocWithZone:zone] initWithIdentifier:self.identifier displayName:self.displayName kind:self.kind];
     descriptor.outputJoypadCodes = self.outputJoypadCodes;
     descriptor.turboEnabled = self.turboEnabled;
+    descriptor.macroSteps = self.macroSteps;
     return descriptor;
 }
 
@@ -294,6 +303,8 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 
     os_unfair_lock d_stateLock;
     _Atomic(bool) d_pendingReconcile;
+    NSMutableDictionary<NSString *, RAMacroInputEngine *> *d_macroEngines;
+    NSMutableDictionary<NSString *, NSNumber *> *d_outputMasks;
 }
 
 + (instancetype)shared {
@@ -310,6 +321,9 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
     if (self) {
         atomic_store_explicit(&d_pendingReconcile, false, memory_order_relaxed);
         d_stateLock = OS_UNFAIR_LOCK_INIT;
+        d_macroEngines = [NSMutableDictionary dictionary];
+        d_outputMasks = [NSMutableDictionary dictionary];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(cancelMacrosForNotification:) name:@"RetroGo.overlayMacroCancel" object:nil];
 
         _actionDescriptors = [NSMutableDictionary dictionary];
         _actionIdentifierBySourceIdentifier = [NSMutableDictionary dictionary];
@@ -331,6 +345,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 }
 
 - (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     mfi_joypad_stop_button_event_monitor();
     mfi_joypad_set_axis_suppression_callback(NULL, NULL);
     mfi_joypad_set_button_suppression_callback(NULL, NULL);
@@ -649,6 +664,8 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             [self applyInputBindingProfile:d_activeBindingProfile coreCapabilities:d_activeCoreCapabilities useLock:NO];
         }
 
+        for (RAMacroInputEngine *engine in d_macroEngines.allValues) [engine advanceFrame];
+
         if (self.turboPeriodFrames == 0 || self.turboDutyFrames == 0) {
             return;
         }
@@ -663,7 +680,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             NSInteger playerIndex = self.activePlayerIndexByActionIdentifier[actionIdentifier].integerValue;
             NSUInteger frameIndex = self.turboFrameIndexByActionIdentifier[actionIdentifier].unsignedIntegerValue;
             BOOL outputDown = frameIndex < self.turboDutyFrames;
-            [self emitExtendedJoypadCodes:descriptor.outputJoypadCodes playerIndex:playerIndex down:outputDown];
+            [self emitDescriptor:descriptor playerIndex:playerIndex down:outputDown];
             self.lastJoypadOutputByActionIdentifier[actionIdentifier] = @(outputDown);
 
             NSUInteger nextFrameIndex = (frameIndex + 1) % self.turboPeriodFrames;
@@ -677,6 +694,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 - (void)resetRuntimeState:(BOOL)useLock {
     [self ra_lockState:useLock];
     @try {
+        [self cancelMacrosUseLock:NO];
         NSArray<NSString *> *pressedSourceIdentifiers = self.pressedSourceIdentifiers.allObjects;
         for (NSString *sourceIdentifier in pressedSourceIdentifiers) {
             NSString *actionIdentifier = self.actionIdentifierBySourceIdentifier[sourceIdentifier];
@@ -687,6 +705,8 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
         [self.lastJoypadOutputByActionIdentifier removeAllObjects];
         [self.turboFrameIndexByActionIdentifier removeAllObjects];
         [self.activePlayerIndexByActionIdentifier removeAllObjects];
+        [d_outputMasks removeAllObjects];
+        for (unsigned port = 0; port < MAX_USERS; port++) virtual_joypad_set_action_mask(port, 0);
     } @finally {
         [self ra_unlockState:useLock];
     }
@@ -700,13 +720,26 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
         switch (descriptor.kind) {
         case RAInputActionKindJoypadOutput:
             if (descriptor.turboEnabled) {
-                self.turboFrameIndexByActionIdentifier[descriptor.identifier] = @0;
-                [self tickFrame:NO];
+                [self emitDescriptor:descriptor playerIndex:playerIndex down:YES];
+                self.turboFrameIndexByActionIdentifier[descriptor.identifier] = @(self.turboPeriodFrames > 0 ? 1 % self.turboPeriodFrames : 0);
             } else {
-                [self emitExtendedJoypadCodes:descriptor.outputJoypadCodes playerIndex:playerIndex down:YES];
+                [self emitDescriptor:descriptor playerIndex:playerIndex down:YES];
                 self.lastJoypadOutputByActionIdentifier[descriptor.identifier] = @(YES);
             }
             break;
+        case RAInputActionKindMacro: {
+            RAMacroInputEngine *engine = d_macroEngines[descriptor.identifier];
+            if (engine.isPlaying) { [engine cancel]; break; }
+            __weak RAInputActionManager *weakSelf = self;
+            NSString *identifier = descriptor.identifier;
+            engine = [[RAMacroInputEngine alloc] initWithOutput:^(uint32_t mask) {
+                // Engine callbacks run synchronously under the manager's state lock.
+                [weakSelf setOutputMask:mask actionIdentifier:identifier playerIndex:playerIndex];
+            }];
+            d_macroEngines[identifier] = engine;
+            [engine playSteps:descriptor.macroSteps];
+            break;
+        }
         case RAInputActionKindFastForward:
             if(playerIndex == 0) {
                 [self emitFastForward:YES];
@@ -728,13 +761,16 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
         {
             NSInteger playerIndex = self.activePlayerIndexByActionIdentifier[descriptor.identifier].integerValue;
             if (descriptor.turboEnabled || self.lastJoypadOutputByActionIdentifier[descriptor.identifier] != nil) {
-                [self emitExtendedJoypadCodes:descriptor.outputJoypadCodes playerIndex:playerIndex down:NO];
+                [self emitDescriptor:descriptor playerIndex:playerIndex down:NO];
             }
             [self.lastJoypadOutputByActionIdentifier removeObjectForKey:descriptor.identifier];
             [self.turboFrameIndexByActionIdentifier removeObjectForKey:descriptor.identifier];
             [self.activePlayerIndexByActionIdentifier removeObjectForKey:descriptor.identifier];
             break;
         }
+        case RAInputActionKindMacro:
+            // A physical tap starts a complete macro; another press cancels it.
+            break;
         case RAInputActionKindFastForward:
             {
                 NSInteger playerIndex = self.activePlayerIndexByActionIdentifier[descriptor.identifier].integerValue;
@@ -762,22 +798,50 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             return;
         }
 
+        [d_macroEngines[actionIdentifier] cancel];
+        [d_macroEngines removeObjectForKey:actionIdentifier];
         [self releaseAction:descriptor useLock:NO];
     } @finally {
         [self ra_unlockState:useLock];
     }
 }
 
-- (void)emitExtendedJoypadCodes:(NSArray<NSNumber *> *)joypadCodes playerIndex:(NSInteger)playerIndex down:(BOOL)down {
-    if (playerIndex < 0) return;
-
-    for (NSNumber *value in joypadCodes) {
-        enum RetroArchJoypadCode code = (enum RetroArchJoypadCode)value.intValue;
-        if (code == RetroArchJoypadCodeNone) {
-            continue;
-        }
-        virtual_joypad_set_button_for_port((unsigned)playerIndex, (unsigned)code, down);
+- (void)emitDescriptor:(RAInputActionDescriptor *)descriptor playerIndex:(NSInteger)playerIndex down:(BOOL)down {
+    uint32_t mask = 0;
+    if (down) for (NSNumber *value in descriptor.outputJoypadCodes) {
+        if (value.integerValue >= 0 && value.integerValue < 16) mask |= 1U << value.unsignedIntValue;
     }
+    [self setOutputMask:mask actionIdentifier:descriptor.identifier playerIndex:playerIndex];
+}
+
+- (void)setOutputMask:(uint32_t)mask actionIdentifier:(NSString *)identifier playerIndex:(NSInteger)port {
+    if (port < 0 || port >= MAX_USERS) return;
+    d_outputMasks[identifier] = @(mask);
+    uint32_t merged = 0;
+    for (NSString *key in d_outputMasks) {
+        if (self.activePlayerIndexByActionIdentifier[key].integerValue == port) merged |= d_outputMasks[key].unsignedIntValue;
+    }
+    virtual_joypad_set_action_mask((unsigned)port, merged);
+}
+
+- (void)cancelMacrosUseLock:(BOOL)useLock {
+    [self ra_lockState:useLock];
+    @try {
+        for (RAMacroInputEngine *engine in d_macroEngines.allValues) [engine cancel];
+        [d_macroEngines removeAllObjects];
+    } @finally { [self ra_unlockState:useLock]; }
+}
+
+- (void)cancelMacrosForNotification:(NSNotification *)notification {
+    [self cancelMacrosUseLock:YES];
+}
+
+- (void)acceptCurrentBindingsUseLock:(BOOL)useLock {
+    [self ra_lockState:useLock];
+    @try {
+        // A controller reconnect must rebuild the latest edited mapping.
+        d_activeBindingProfile = [self exportInputBindingProfileUseLock:NO];
+    } @finally { [self ra_unlockState:useLock]; }
 }
 
 - (void)emitFastForward:(BOOL)enabled {
@@ -1189,7 +1253,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
     [self ra_lockState:useLock];
     @try {
         RAInputBindingProfile *profile = [[RAInputBindingProfile alloc] init];
-        profile.version = 1;
+        profile.version = 2;
 
         NSMutableArray<RAInputPlayerBinding *> *players = [NSMutableArray array];
 
@@ -1257,7 +1321,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                 addEntryIfNeeded(source, target, @"");
             }
 
-            // 2) Extended actions (overlay only), exclude default:auto
+            // 2) Extended actions (including custom snapshots), exclude default:auto
             [self.sourceIdentifierByActionIdentifier enumerateKeysAndObjectsUsingBlock:^(NSString *actionId, NSString *sourceIdentifier, BOOL *stop) {
                 if (actionId.length == 0 || sourceIdentifier.length == 0) return;
                 if ([actionId hasPrefix:@"default:auto:"]) return;
@@ -1268,14 +1332,16 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                 NSString *overlayPrefix   = [NSString stringWithFormat:@"player:%ld:overlay:", (long)port];
                 BOOL isOverlay   = [actionId hasPrefix:overlayPrefix];
 
-                // The overlay only exports "extended actions": fast-forward / combo / turbo (including single-key turbo)
+                // Export extended actions, including single-key custom actions and macros.
                 BOOL shouldExportOverlay = NO;
                 if (isOverlay) {
                     if (descriptor.kind == RAInputActionKindFastForward) {
                         shouldExportOverlay = YES;
+                    } else if (descriptor.kind == RAInputActionKindMacro) {
+                        shouldExportOverlay = YES;
                     } else if (descriptor.kind == RAInputActionKindJoypadOutput) {
                         NSUInteger outputCount = descriptor.outputJoypadCodes.count;
-                        shouldExportOverlay = descriptor.turboEnabled || outputCount > 1;
+                        shouldExportOverlay = outputCount > 0;
                     }
                 }
 
@@ -1300,6 +1366,15 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 
                 RAInputBindingTarget *target = [[RAInputBindingTarget alloc] init];
 
+                target.displayName = descriptor.displayName;
+                target.macroSteps = descriptor.macroSteps;
+                if (descriptor.kind == RAInputActionKindMacro) {
+                    target.targetKind = RAInputBindingTargetKindMacro;
+                    target.joypadCodes = @[];
+                    addEntryIfNeeded(source, target, actionId);
+                    return;
+                }
+
                 if (descriptor.kind == RAInputActionKindFastForward) {
                     target.targetKind = RAInputBindingTargetKindSystemAction;
                     target.joypadCodes = @[];
@@ -1319,10 +1394,8 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                 }
                 if (codes.count == 0) return;
 
-                BOOL shouldBeComposite = descriptor.turboEnabled || (codes.count > 1);
-                target.targetKind = shouldBeComposite
-                    ? RAInputBindingTargetKindJoypadComposite
-                    : RAInputBindingTargetKindJoypadSingle;
+                // Preserve extended single-key actions and their identity.
+                target.targetKind = RAInputBindingTargetKindJoypadComposite;
                 target.joypadCodes = codes;
                 target.turboEnabled = descriptor.turboEnabled;
                 target.systemActionCode = RAInputSystemActionCodeUnknown;
@@ -1428,6 +1501,16 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                 }
 
                 switch (target.targetKind) {
+                case RAInputBindingTargetKindMacro: {
+                    if (!entry.actionId.length) break;
+                    // Validate archived steps before binding/suppressing a physical source.
+                    RAMacroInputEngine *validator = [[RAMacroInputEngine alloc] initWithOutput:^(uint32_t mask) {}];
+                    if (![validator playSteps:target.macroSteps]) break;
+                    RAInputActionDescriptor *descriptor = [RAInputActionDescriptor macroActionWithIdentifier:entry.actionId displayName:target.displayName ?: entry.actionId steps:target.macroSteps];
+                    [self setActionDescriptor:descriptor useLock:NO];
+                    [self bindPhysicalSource:source toActionIdentifier:descriptor.identifier useLock:NO];
+                    break;
+                }
                 case RAInputBindingTargetKindJoypadSingle: {
                     if (target.joypadCodes.count != 1) {
                         break;
@@ -1444,7 +1527,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                     NSMutableArray<NSNumber *> *codes = [NSMutableArray array];
                     for (NSNumber *n in target.joypadCodes) {
                         enum RetroArchJoypadCode c = (enum RetroArchJoypadCode)n.intValue;
-                        if (c != RetroArchJoypadCodeNone) {
+                        if (c >= 0 && c < 16) {
                             [codes addObject:@((int)c)];
                         }
                     }
@@ -1457,7 +1540,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                         actionId = [NSString stringWithFormat:@"player:%ld:overlay:unknown:%ld", (long)port, (long)idx];
                     }
                     RAInputActionDescriptor *descriptor =
-                    [RAInputActionDescriptor joypadOutputActionWithIdentifier:actionId displayName:actionId outputJoypadCodes:codes turboEnabled:target.turboEnabled];
+                    [RAInputActionDescriptor joypadOutputActionWithIdentifier:actionId displayName:target.displayName.length ? target.displayName : actionId outputJoypadCodes:codes turboEnabled:target.turboEnabled];
                     [self setActionDescriptor:descriptor useLock:NO];
                     [self bindPhysicalSource:source toActionIdentifier:descriptor.identifier useLock:NO];
                     break;

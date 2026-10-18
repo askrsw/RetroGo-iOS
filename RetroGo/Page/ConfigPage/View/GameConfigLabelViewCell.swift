@@ -56,12 +56,14 @@ final class GameConfigLabelViewCell: GameConfigBaseViewCell {
     override func configUI() {
         super.configUI()
 
-        label.setContentCompressionResistancePriority(.required, for: .horizontal)
+        // Preserve the row title; long values yield the remaining width.
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         label.setContentHuggingPriority(.required, for: .horizontal)
 
         label.font = UIFont.boldSystemFont(ofSize: UIFont.labelFontSize)
         label.textAlignment = .right
-        label.lineBreakMode = .byTruncatingMiddle
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         contentView.addSubview(label)
         label.snp.makeConstraints { make in
             make.leading.greaterThanOrEqualTo(tipLabel.snp.trailing).offset(12)

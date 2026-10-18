@@ -1283,6 +1283,28 @@ static void core_performance_counter_stop(struct retro_perf_counter *perf)
 }
 
 
+static bool retrogo_core_camera_allowed(const char *library_name,
+      const content_state_t *content)
+{
+   const struct retro_game_info *game;
+
+   if (!string_is_equal(library_name, "mGBA"))
+      return true;
+
+   /* mGBA requests a camera for every GB game. Only Pocket Camera
+    * cartridges (header type 0xFC) need access to the host camera.
+    * Inspect the same content buffer passed to retro_load_game, including
+    * frontend decompression and patching, rather than the original path. */
+   if (!content || !content->content_list
+         || content->content_list->size != 1
+         || !content->content_list->game_info)
+      return false;
+
+   game = &content->content_list->game_info[0];
+   return game->data && game->size > 0x147
+         && ((const uint8_t *)game->data)[0x147] == 0xFC;
+}
+
 bool runloop_environment_cb(unsigned cmd, void *data)
 {
    unsigned p;
@@ -2421,6 +2443,10 @@ bool runloop_environment_cb(unsigned cmd, void *data)
          camera_driver_state_t *camera_st = camera_state_get_ptr();
 
          RARCH_LOG("[Environ] GET_CAMERA_INTERFACE.\n");
+         if (!cb || !retrogo_core_camera_allowed(
+                  sys_info->info.library_name, content_state_get_ptr()))
+            return false;
+
          cb->start                        = driver_camera_start;
          cb->stop                         = driver_camera_stop;
 
@@ -3962,6 +3988,11 @@ void runloop_event_deinit_core(void)
       video_st->frame_delay_target = 0;
 
    driver_uninit(DRIVERS_CMD_ALL, 0);
+
+   /* Clear core-owned callbacks only after driver teardown has used them. */
+   memset(&camera_state_get_ptr()->cb, 0,
+         sizeof(camera_state_get_ptr()->cb));
+   camera_state_get_ptr()->active = false;
 
 #ifdef HAVE_CONFIGFILE
    if (runloop_st->flags & RUNLOOP_FLAG_OVERRIDES_ACTIVE)

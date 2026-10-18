@@ -1,0 +1,1148 @@
+{
+  "coreId": "mgba",
+  "format": "libretro-core-options-v2",
+  "groups": [
+    {
+      "description": {
+        "en": "Configure base hardware selection / BIOS parameters.",
+        "zh-Hans": "模拟机型与 BIOS 设置。"
+      },
+      "id": "system",
+      "options": [
+        {
+          "categoryId": "system",
+          "defaultValue": "Autodetect",
+          "description": {
+            "en": "Runs loaded content with a specific Game Boy model. 'Autodetect' will select the most appropriate model for the current game.",
+            "zh-Hans": "指定运行 GB/GBC 游戏时模拟的机型。「自动检测」会为当前游戏选择合适的机型。"
+          },
+          "key": "mgba_gb_model",
+          "restartRequired": true,
+          "title": {
+            "en": "Game Boy Model",
+            "zh-Hans": "模拟机型（GB）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Autodetect": {
+              "en": "Autodetect",
+              "zh-Hans": "自动检测"
+            },
+            "Game Boy": {
+              "en": "Game Boy",
+              "zh-Hans": "Game Boy"
+            },
+            "Game Boy Advance": {
+              "en": "Game Boy Advance",
+              "zh-Hans": "Game Boy Advance"
+            },
+            "Game Boy Color": {
+              "en": "Game Boy Color",
+              "zh-Hans": "Game Boy Color"
+            },
+            "Super Game Boy": {
+              "en": "Super Game Boy",
+              "zh-Hans": "Super Game Boy"
+            },
+            "Super Game Boy Color": {
+              "en": "Super Game Boy Color",
+              "zh-Hans": "Super Game Boy Color"
+            }
+          },
+          "values": [
+            "Autodetect",
+            "Game Boy",
+            "Super Game Boy",
+            "Game Boy Color",
+            "Super Game Boy Color",
+            "Game Boy Advance"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "ON",
+          "description": {
+            "en": "Use the official BIOS/bootloader when available. Add the corresponding file in the core's BIOS settings first.",
+            "zh-Hans": "可用时使用对应机型的官方 BIOS 或引导程序。需要先在核心 BIOS 中添加对应文件。"
+          },
+          "key": "mgba_use_bios",
+          "restartRequired": true,
+          "title": {
+            "en": "Use Official BIOS",
+            "zh-Hans": "使用官方 BIOS"
+          },
+          "type": "select",
+          "valueLabels": {
+            "OFF": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "ON": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "ON",
+            "OFF"
+          ]
+        },
+        {
+          "categoryId": "system",
+          "defaultValue": "OFF",
+          "description": {
+            "en": "When using an official BIOS/bootloader, skip the start-up logo animation. This setting is ignored when 'Use BIOS File if Found' is disabled.",
+            "zh-Hans": "使用官方 BIOS 时跳过开机标志动画。仅在启用「使用官方 BIOS」且已添加对应文件时有效。"
+          },
+          "key": "mgba_skip_bios",
+          "restartRequired": true,
+          "title": {
+            "en": "Skip BIOS Intro",
+            "zh-Hans": "跳过 BIOS 开机动画"
+          },
+          "type": "select",
+          "valueLabels": {
+            "OFF": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "ON": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "OFF",
+            "ON"
+          ],
+          "visibleWhen": [
+            {
+              "mgba_use_bios": [
+                "ON"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "System",
+        "zh-Hans": "系统"
+      }
+    },
+    {
+      "description": {
+        "en": "Configure DMG palette / SGB borders / color correction / LCD ghosting effects.",
+        "zh-Hans": "GB 调色板、SGB 边框、色彩校正与 LCD 残影效果。"
+      },
+      "id": "video",
+      "options": [
+        {
+          "categoryId": "video",
+          "defaultValue": "Grayscale",
+          "description": {
+            "en": "Selects which palette is used for Game Boy games that are not Game Boy Color or Super Game Boy compatible, or if the model is forced to Game Boy.",
+            "zh-Hans": "设置黑白 GB 游戏的配色。适用于没有使用 GBC/SGB 专属配色的游戏，或强制使用 Game Boy 机型时。"
+          },
+          "key": "mgba_gb_colors",
+          "restartRequired": false,
+          "title": {
+            "en": "Default Game Boy Palette",
+            "zh-Hans": "默认调色板（GB）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "DMG Green": {
+              "en": "DMG Green",
+              "zh-Hans": "DMG Green"
+            },
+            "GB Light": {
+              "en": "GB Light",
+              "zh-Hans": "GB Light"
+            },
+            "GB Pocket": {
+              "en": "GB Pocket",
+              "zh-Hans": "GB Pocket"
+            },
+            "GBC Blue ←": {
+              "en": "GBC Blue ←",
+              "zh-Hans": "GBC Blue ←"
+            },
+            "GBC Brown ↑": {
+              "en": "GBC Brown ↑",
+              "zh-Hans": "GBC Brown ↑"
+            },
+            "GBC Dark Blue ←A": {
+              "en": "GBC Dark Blue ←A",
+              "zh-Hans": "GBC Dark Blue ←A"
+            },
+            "GBC Dark Brown ↑B": {
+              "en": "GBC Dark Brown ↑B",
+              "zh-Hans": "GBC Dark Brown ↑B"
+            },
+            "GBC Dark Green →A": {
+              "en": "GBC Dark Green →A",
+              "zh-Hans": "GBC Dark Green →A"
+            },
+            "GBC Gray ←B": {
+              "en": "GBC Gray ←B",
+              "zh-Hans": "GBC Gray ←B"
+            },
+            "GBC Green →": {
+              "en": "GBC Green →",
+              "zh-Hans": "GBC Green →"
+            },
+            "GBC Orange ↓A": {
+              "en": "GBC Orange ↓A",
+              "zh-Hans": "GBC Orange ↓A"
+            },
+            "GBC Pale Yellow ↓": {
+              "en": "GBC Pale Yellow ↓",
+              "zh-Hans": "GBC Pale Yellow ↓"
+            },
+            "GBC Red ↑A": {
+              "en": "GBC Red ↑A",
+              "zh-Hans": "GBC Red ↑A"
+            },
+            "GBC Reverse →B": {
+              "en": "GBC Reverse →B",
+              "zh-Hans": "GBC Reverse →B"
+            },
+            "GBC Yellow ↓B": {
+              "en": "GBC Yellow ↓B",
+              "zh-Hans": "GBC Yellow ↓B"
+            },
+            "Grayscale": {
+              "en": "Grayscale",
+              "zh-Hans": "Grayscale"
+            },
+            "SGB 1-A": {
+              "en": "SGB 1-A",
+              "zh-Hans": "SGB 1-A"
+            },
+            "SGB 1-B": {
+              "en": "SGB 1-B",
+              "zh-Hans": "SGB 1-B"
+            },
+            "SGB 1-C": {
+              "en": "SGB 1-C",
+              "zh-Hans": "SGB 1-C"
+            },
+            "SGB 1-D": {
+              "en": "SGB 1-D",
+              "zh-Hans": "SGB 1-D"
+            },
+            "SGB 1-E": {
+              "en": "SGB 1-E",
+              "zh-Hans": "SGB 1-E"
+            },
+            "SGB 1-F": {
+              "en": "SGB 1-F",
+              "zh-Hans": "SGB 1-F"
+            },
+            "SGB 1-G": {
+              "en": "SGB 1-G",
+              "zh-Hans": "SGB 1-G"
+            },
+            "SGB 1-H": {
+              "en": "SGB 1-H",
+              "zh-Hans": "SGB 1-H"
+            },
+            "SGB 2-A": {
+              "en": "SGB 2-A",
+              "zh-Hans": "SGB 2-A"
+            },
+            "SGB 2-B": {
+              "en": "SGB 2-B",
+              "zh-Hans": "SGB 2-B"
+            },
+            "SGB 2-C": {
+              "en": "SGB 2-C",
+              "zh-Hans": "SGB 2-C"
+            },
+            "SGB 2-D": {
+              "en": "SGB 2-D",
+              "zh-Hans": "SGB 2-D"
+            },
+            "SGB 2-E": {
+              "en": "SGB 2-E",
+              "zh-Hans": "SGB 2-E"
+            },
+            "SGB 2-F": {
+              "en": "SGB 2-F",
+              "zh-Hans": "SGB 2-F"
+            },
+            "SGB 2-G": {
+              "en": "SGB 2-G",
+              "zh-Hans": "SGB 2-G"
+            },
+            "SGB 2-H": {
+              "en": "SGB 2-H",
+              "zh-Hans": "SGB 2-H"
+            },
+            "SGB 3-A": {
+              "en": "SGB 3-A",
+              "zh-Hans": "SGB 3-A"
+            },
+            "SGB 3-B": {
+              "en": "SGB 3-B",
+              "zh-Hans": "SGB 3-B"
+            },
+            "SGB 3-C": {
+              "en": "SGB 3-C",
+              "zh-Hans": "SGB 3-C"
+            },
+            "SGB 3-D": {
+              "en": "SGB 3-D",
+              "zh-Hans": "SGB 3-D"
+            },
+            "SGB 3-E": {
+              "en": "SGB 3-E",
+              "zh-Hans": "SGB 3-E"
+            },
+            "SGB 3-F": {
+              "en": "SGB 3-F",
+              "zh-Hans": "SGB 3-F"
+            },
+            "SGB 3-G": {
+              "en": "SGB 3-G",
+              "zh-Hans": "SGB 3-G"
+            },
+            "SGB 3-H": {
+              "en": "SGB 3-H",
+              "zh-Hans": "SGB 3-H"
+            },
+            "SGB 4-A": {
+              "en": "SGB 4-A",
+              "zh-Hans": "SGB 4-A"
+            },
+            "SGB 4-B": {
+              "en": "SGB 4-B",
+              "zh-Hans": "SGB 4-B"
+            },
+            "SGB 4-C": {
+              "en": "SGB 4-C",
+              "zh-Hans": "SGB 4-C"
+            },
+            "SGB 4-D": {
+              "en": "SGB 4-D",
+              "zh-Hans": "SGB 4-D"
+            },
+            "SGB 4-E": {
+              "en": "SGB 4-E",
+              "zh-Hans": "SGB 4-E"
+            },
+            "SGB 4-F": {
+              "en": "SGB 4-F",
+              "zh-Hans": "SGB 4-F"
+            },
+            "SGB 4-G": {
+              "en": "SGB 4-G",
+              "zh-Hans": "SGB 4-G"
+            },
+            "SGB 4-H": {
+              "en": "SGB 4-H",
+              "zh-Hans": "SGB 4-H"
+            }
+          },
+          "values": [
+            "Grayscale",
+            "DMG Green",
+            "GB Pocket",
+            "GB Light",
+            "GBC Brown ↑",
+            "GBC Red ↑A",
+            "GBC Dark Brown ↑B",
+            "GBC Pale Yellow ↓",
+            "GBC Orange ↓A",
+            "GBC Yellow ↓B",
+            "GBC Blue ←",
+            "GBC Dark Blue ←A",
+            "GBC Gray ←B",
+            "GBC Green →",
+            "GBC Dark Green →A",
+            "GBC Reverse →B",
+            "SGB 1-A",
+            "SGB 1-B",
+            "SGB 1-C",
+            "SGB 1-D",
+            "SGB 1-E",
+            "SGB 1-F",
+            "SGB 1-G",
+            "SGB 1-H",
+            "SGB 2-A",
+            "SGB 2-B",
+            "SGB 2-C",
+            "SGB 2-D",
+            "SGB 2-E",
+            "SGB 2-F",
+            "SGB 2-G",
+            "SGB 2-H",
+            "SGB 3-A",
+            "SGB 3-B",
+            "SGB 3-C",
+            "SGB 3-D",
+            "SGB 3-E",
+            "SGB 3-F",
+            "SGB 3-G",
+            "SGB 3-H",
+            "SGB 4-A",
+            "SGB 4-B",
+            "SGB 4-C",
+            "SGB 4-D",
+            "SGB 4-E",
+            "SGB 4-F",
+            "SGB 4-G",
+            "SGB 4-H"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "0",
+          "description": {
+            "en": "Use the palettes for Game Boy games that have presets on the Game Boy Color or Super Game Boy.",
+            "zh-Hans": "为具有 GBC 或 SGB 预设配色的 GB 游戏使用对应配色。「默认 GB 配色」使用所选的默认调色板。"
+          },
+          "key": "mgba_gb_colors_preset",
+          "restartRequired": true,
+          "title": {
+            "en": "Hardware Preset Game Boy Palettes",
+            "zh-Hans": "使用硬件预设配色（GB）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "Default Game Boy preset",
+              "zh-Hans": "默认 GB 配色"
+            },
+            "1": {
+              "en": "Game Boy Color presets only",
+              "zh-Hans": "仅 GBC 预设"
+            },
+            "2": {
+              "en": "Super Game Boy presets only",
+              "zh-Hans": "仅 SGB 预设"
+            },
+            "3": {
+              "en": "Any available presets",
+              "zh-Hans": "所有可用预设"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "ON",
+          "description": {
+            "en": "Display Super Game Boy borders when running Super Game Boy enhanced games.",
+            "zh-Hans": "运行支持 Super Game Boy 增强功能的游戏时，显示游戏自带的边框画面。"
+          },
+          "key": "mgba_sgb_borders",
+          "restartRequired": true,
+          "title": {
+            "en": "Show Super Game Boy Borders",
+            "zh-Hans": "显示 SGB 边框"
+          },
+          "type": "select",
+          "valueLabels": {
+            "OFF": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "ON": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "ON",
+            "OFF"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "OFF",
+          "description": {
+            "en": "Adjusts output colors to match the display of real GBA/GBC hardware.",
+            "zh-Hans": "调整画面颜色，模拟真实 GBA/GBC 屏幕的色彩表现。「自动」根据当前模拟机型选择校正方式。"
+          },
+          "key": "mgba_color_correction",
+          "restartRequired": false,
+          "title": {
+            "en": "Color Correction",
+            "zh-Hans": "色彩校正"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "GBA": {
+              "en": "Game Boy Advance",
+              "zh-Hans": "Game Boy Advance"
+            },
+            "GBC": {
+              "en": "Game Boy Color",
+              "zh-Hans": "Game Boy Color"
+            },
+            "OFF": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            }
+          },
+          "values": [
+            "OFF",
+            "GBA",
+            "GBC",
+            "Auto"
+          ]
+        },
+        {
+          "categoryId": "video",
+          "defaultValue": "OFF",
+          "description": {
+            "en": "Simulates LCD ghosting effects. 'Simple' performs a 50:50 mix of the current and previous frames. 'Smart' attempts to detect screen flickering, and only performs a 50:50 mix on affected pixels. 'LCD Ghosting' mimics natural LCD response times by combining multiple buffered frames. 'Simple' or 'Smart' blending is required when playing games that aggressively exploit LCD ghosting for transparency effects (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, the Boktai series...).",
+            "zh-Hans": "模拟 LCD 残影。「简单」将当前帧与上一帧等比例混合；「智能」只混合检测到闪烁的像素；「LCD 残影」通过多帧模拟液晶响应。部分游戏（如《F-Zero》《太阳少年》系列）依赖交替闪烁实现半透明效果，可尝试简单或智能混合。"
+          },
+          "key": "mgba_interframe_blending",
+          "restartRequired": false,
+          "title": {
+            "en": "Interframe Blending",
+            "zh-Hans": "帧混合"
+          },
+          "type": "select",
+          "valueLabels": {
+            "OFF": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "lcd_ghosting": {
+              "en": "LCD Ghosting (Accurate)",
+              "zh-Hans": "LCD 残影（精确）"
+            },
+            "lcd_ghosting_fast": {
+              "en": "LCD Ghosting (Fast)",
+              "zh-Hans": "LCD 残影（快速）"
+            },
+            "mix": {
+              "en": "Simple",
+              "zh-Hans": "简单"
+            },
+            "mix_smart": {
+              "en": "Smart",
+              "zh-Hans": "智能"
+            }
+          },
+          "values": [
+            "OFF",
+            "mix",
+            "mix_smart",
+            "lcd_ghosting",
+            "lcd_ghosting_fast"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Video",
+        "zh-Hans": "视频"
+      }
+    },
+    {
+      "description": {
+        "en": "Configure audio filtering.",
+        "zh-Hans": "音频滤波设置。"
+      },
+      "id": "audio",
+      "options": [
+        {
+          "categoryId": "audio",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Enables a low pass audio filter to reduce the 'harshness' of generated audio.",
+            "zh-Hans": "削减高频成分，让声音更柔和，减轻刺耳感。"
+          },
+          "key": "mgba_audio_low_pass_filter",
+          "restartRequired": false,
+          "title": {
+            "en": "Low Pass Filter",
+            "zh-Hans": "低通滤波"
+          },
+          "type": "bool",
+          "valueLabels": {
+            "disabled": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "enabled": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "disabled",
+            "enabled"
+          ]
+        },
+        {
+          "categoryId": "audio",
+          "defaultValue": "60",
+          "description": {
+            "en": "Specifies the cut-off frequency of the low pass audio filter. A higher value increases the perceived 'strength' of the filter, since a wider range of the high frequency spectrum is attenuated.",
+            "zh-Hans": "数值越大，削减的高频越多，声音越柔和，也会更闷。"
+          },
+          "key": "mgba_audio_low_pass_range",
+          "restartRequired": false,
+          "title": {
+            "en": "Low Pass Filter Strength",
+            "zh-Hans": "低通滤波强度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "10": {
+              "en": "10%",
+              "zh-Hans": "10%"
+            },
+            "15": {
+              "en": "15%",
+              "zh-Hans": "15%"
+            },
+            "20": {
+              "en": "20%",
+              "zh-Hans": "20%"
+            },
+            "25": {
+              "en": "25%",
+              "zh-Hans": "25%"
+            },
+            "30": {
+              "en": "30%",
+              "zh-Hans": "30%"
+            },
+            "35": {
+              "en": "35%",
+              "zh-Hans": "35%"
+            },
+            "40": {
+              "en": "40%",
+              "zh-Hans": "40%"
+            },
+            "45": {
+              "en": "45%",
+              "zh-Hans": "45%"
+            },
+            "5": {
+              "en": "5%",
+              "zh-Hans": "5%"
+            },
+            "50": {
+              "en": "50%",
+              "zh-Hans": "50%"
+            },
+            "55": {
+              "en": "55%",
+              "zh-Hans": "55%"
+            },
+            "60": {
+              "en": "60%",
+              "zh-Hans": "60%"
+            },
+            "65": {
+              "en": "65%",
+              "zh-Hans": "65%"
+            },
+            "70": {
+              "en": "70%",
+              "zh-Hans": "70%"
+            },
+            "75": {
+              "en": "75%",
+              "zh-Hans": "75%"
+            },
+            "80": {
+              "en": "80%",
+              "zh-Hans": "80%"
+            },
+            "85": {
+              "en": "85%",
+              "zh-Hans": "85%"
+            },
+            "90": {
+              "en": "90%",
+              "zh-Hans": "90%"
+            },
+            "95": {
+              "en": "95%",
+              "zh-Hans": "95%"
+            }
+          },
+          "values": [
+            "5",
+            "10",
+            "15",
+            "20",
+            "25",
+            "30",
+            "35",
+            "40",
+            "45",
+            "50",
+            "55",
+            "60",
+            "65",
+            "70",
+            "75",
+            "80",
+            "85",
+            "90",
+            "95"
+          ],
+          "visibleWhen": [
+            {
+              "mgba_audio_low_pass_filter": [
+                "enabled"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Audio",
+        "zh-Hans": "音频"
+      }
+    },
+    {
+      "description": {
+        "en": "Configure controller / sensor input and controller rumble settings.",
+        "zh-Hans": "方向输入、模拟光照与手柄震动设置。"
+      },
+      "id": "input",
+      "options": [
+        {
+          "categoryId": "input",
+          "defaultValue": "no",
+          "description": {
+            "en": "Enabling this will allow pressing / quickly alternating / holding both left and right (or up and down) directions at the same time. This may cause movement-based glitches.",
+            "zh-Hans": "允许同时按住左右或上下方向。可能引发移动异常，通常建议关闭。"
+          },
+          "key": "mgba_allow_opposing_directions",
+          "restartRequired": false,
+          "title": {
+            "en": "Allow Opposing Directions",
+            "zh-Hans": "允许相反方向同时输入"
+          },
+          "type": "select",
+          "valueLabels": {
+            "no": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "yes": {
+              "en": "On",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "no",
+            "yes"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "0",
+          "description": {
+            "en": "Set simulated sunlight intensity for games with a cartridge solar sensor, such as the Boktai series. Higher values mean stronger sunlight. L3/R3 can also adjust the level.",
+            "zh-Hans": "调整《太阳少年》系列等光感卡带游戏中模拟的阳光强度。数值越大，光照越强，也可通过 L3/R3 调整。"
+          },
+          "key": "mgba_solar_sensor_level",
+          "restartRequired": false,
+          "title": {
+            "en": "Solar Sensor Level",
+            "zh-Hans": "光感强度"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ]
+        },
+        {
+          "categoryId": "input",
+          "defaultValue": "OFF",
+          "description": {
+            "en": "Enabling this will allow compatible games with the Game Boy Player boot logo to make the controller rumble. Due to how Nintendo decided this feature should work, it may cause glitches such as flickering or lag in some of these games.",
+            "zh-Hans": "让支持 Game Boy Player 的 GBA 游戏触发手柄震动。需要支持震动的手柄；部分游戏可能出现闪烁或卡顿。"
+          },
+          "key": "mgba_force_gbp",
+          "restartRequired": true,
+          "title": {
+            "en": "Game Boy Player Rumble",
+            "zh-Hans": "Game Boy Player 震动"
+          },
+          "type": "select",
+          "valueLabels": {
+            "OFF": {
+              "en": "OFF",
+              "zh-Hans": "关"
+            },
+            "ON": {
+              "en": "ON",
+              "zh-Hans": "开"
+            }
+          },
+          "values": [
+            "OFF",
+            "ON"
+          ]
+        }
+      ],
+      "title": {
+        "en": "Input",
+        "zh-Hans": "输入"
+      }
+    },
+    {
+      "description": {
+        "en": "Configure idle loop removal / frameskipping parameters.",
+        "zh-Hans": "空闲循环优化与跳帧设置。"
+      },
+      "id": "performance",
+      "options": [
+        {
+          "categoryId": "performance",
+          "defaultValue": "Remove Known",
+          "description": {
+            "en": "Reduce system load by optimizing so-called 'idle-loops' - sections in the code where nothing happens, but the CPU runs at full speed (like a car revving in neutral). Improves performance, and should be enabled on low-end hardware.",
+            "zh-Hans": "跳过游戏程序中仅用于等待的空闲循环，降低模拟负载。「移除已知循环」较保守；「检测并移除」会尝试识别更多循环。遇到兼容性问题可选择「不移除」。"
+          },
+          "key": "mgba_idle_optimization",
+          "restartRequired": true,
+          "title": {
+            "en": "Idle Loop Optimization",
+            "zh-Hans": "空闲循环优化"
+          },
+          "type": "select",
+          "valueLabels": {
+            "Detect and Remove": {
+              "en": "Detect and Remove",
+              "zh-Hans": "检测并移除"
+            },
+            "Don't Remove": {
+              "en": "Don't Remove",
+              "zh-Hans": "不移除"
+            },
+            "Remove Known": {
+              "en": "Remove Known",
+              "zh-Hans": "移除已知循环"
+            }
+          },
+          "values": [
+            "Remove Known",
+            "Detect and Remove",
+            "Don't Remove"
+          ]
+        },
+        {
+          "categoryId": "performance",
+          "defaultValue": "disabled",
+          "description": {
+            "en": "Skip frames to avoid audio buffer under-run (crackling). Improves performance at the expense of visual smoothness. 'Auto' skips frames when advised by the frontend. 'Auto (Threshold)' utilises the 'Frameskip Threshold (%)' setting. 'Fixed Interval' utilises the 'Frameskip Interval' setting.",
+            "zh-Hans": "减少绘制帧数以降低负载，代价是画面不够流畅。「自动」根据音频缓冲状态跳帧；「自动（阈值）」使用设定的缓冲阈值；「固定间隔」按固定数量跳过帧。"
+          },
+          "key": "mgba_frameskip",
+          "restartRequired": true,
+          "title": {
+            "en": "Frameskip",
+            "zh-Hans": "跳帧"
+          },
+          "type": "select",
+          "valueLabels": {
+            "auto": {
+              "en": "Auto",
+              "zh-Hans": "自动"
+            },
+            "auto_threshold": {
+              "en": "Auto (Threshold)",
+              "zh-Hans": "自动（阈值）"
+            },
+            "disabled": {
+              "en": "Off",
+              "zh-Hans": "关"
+            },
+            "fixed_interval": {
+              "en": "Fixed Interval",
+              "zh-Hans": "固定间隔"
+            }
+          },
+          "values": [
+            "disabled",
+            "auto",
+            "auto_threshold",
+            "fixed_interval"
+          ]
+        },
+        {
+          "categoryId": "performance",
+          "defaultValue": "33",
+          "description": {
+            "en": "When 'Frameskip' is set to 'Auto (Threshold)', specifies the audio buffer occupancy threshold (percentage) below which frames will be skipped. Higher values reduce the risk of crackling by causing frames to be dropped more frequently.",
+            "zh-Hans": "使用「自动（阈值）」跳帧时，音频缓冲占用率低于此百分比就跳过画面帧。数值越大，越容易触发跳帧，以减少爆音风险。"
+          },
+          "key": "mgba_frameskip_threshold",
+          "restartRequired": false,
+          "title": {
+            "en": "Frameskip Threshold",
+            "zh-Hans": "跳帧阈值（%）"
+          },
+          "type": "select",
+          "valueLabels": {
+            "15": {
+              "en": "15",
+              "zh-Hans": "15"
+            },
+            "18": {
+              "en": "18",
+              "zh-Hans": "18"
+            },
+            "21": {
+              "en": "21",
+              "zh-Hans": "21"
+            },
+            "24": {
+              "en": "24",
+              "zh-Hans": "24"
+            },
+            "27": {
+              "en": "27",
+              "zh-Hans": "27"
+            },
+            "30": {
+              "en": "30",
+              "zh-Hans": "30"
+            },
+            "33": {
+              "en": "33",
+              "zh-Hans": "33"
+            },
+            "36": {
+              "en": "36",
+              "zh-Hans": "36"
+            },
+            "39": {
+              "en": "39",
+              "zh-Hans": "39"
+            },
+            "42": {
+              "en": "42",
+              "zh-Hans": "42"
+            },
+            "45": {
+              "en": "45",
+              "zh-Hans": "45"
+            },
+            "48": {
+              "en": "48",
+              "zh-Hans": "48"
+            },
+            "51": {
+              "en": "51",
+              "zh-Hans": "51"
+            },
+            "54": {
+              "en": "54",
+              "zh-Hans": "54"
+            },
+            "57": {
+              "en": "57",
+              "zh-Hans": "57"
+            },
+            "60": {
+              "en": "60",
+              "zh-Hans": "60"
+            }
+          },
+          "values": [
+            "15",
+            "18",
+            "21",
+            "24",
+            "27",
+            "30",
+            "33",
+            "36",
+            "39",
+            "42",
+            "45",
+            "48",
+            "51",
+            "54",
+            "57",
+            "60"
+          ],
+          "visibleWhen": [
+            {
+              "mgba_frameskip": [
+                "auto_threshold"
+              ]
+            }
+          ]
+        },
+        {
+          "categoryId": "performance",
+          "defaultValue": "0",
+          "description": {
+            "en": "With fixed-interval frameskip, set how many frames are skipped after each rendered frame. 0 renders every frame; 1 renders one in two frames; 2 renders one in three frames.",
+            "zh-Hans": "使用固定间隔跳帧时，每绘制一帧后跳过的帧数。0 表示不跳帧，1 表示每两帧绘制一帧，2 表示每三帧绘制一帧。"
+          },
+          "key": "mgba_frameskip_interval",
+          "restartRequired": false,
+          "title": {
+            "en": "Frameskip Interval",
+            "zh-Hans": "跳帧间隔"
+          },
+          "type": "select",
+          "valueLabels": {
+            "0": {
+              "en": "0",
+              "zh-Hans": "0"
+            },
+            "1": {
+              "en": "1",
+              "zh-Hans": "1"
+            },
+            "10": {
+              "en": "10",
+              "zh-Hans": "10"
+            },
+            "2": {
+              "en": "2",
+              "zh-Hans": "2"
+            },
+            "3": {
+              "en": "3",
+              "zh-Hans": "3"
+            },
+            "4": {
+              "en": "4",
+              "zh-Hans": "4"
+            },
+            "5": {
+              "en": "5",
+              "zh-Hans": "5"
+            },
+            "6": {
+              "en": "6",
+              "zh-Hans": "6"
+            },
+            "7": {
+              "en": "7",
+              "zh-Hans": "7"
+            },
+            "8": {
+              "en": "8",
+              "zh-Hans": "8"
+            },
+            "9": {
+              "en": "9",
+              "zh-Hans": "9"
+            }
+          },
+          "values": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10"
+          ],
+          "visibleWhen": [
+            {
+              "mgba_frameskip": [
+                "fixed_interval"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": {
+        "en": "Performance",
+        "zh-Hans": "性能"
+      }
+    }
+  ],
+  "schemaVersion": 1,
+  "source": {
+    "coreName": "mGBA",
+    "coreVersion": "0.10-dev",
+    "generator": "RetroGo runtime export (core_option_manager)",
+    "languages": [
+      "en",
+      "zh-Hans"
+    ]
+  },
+  "version": 1
+}

@@ -42,6 +42,7 @@ static NSString *RAInputBindingTargetKindString(RAInputBindingTargetKind kind) {
         case RAInputBindingTargetKindJoypadSingle:    return @"joypad_single";
         case RAInputBindingTargetKindJoypadComposite: return @"joypad_composite";
         case RAInputBindingTargetKindSystemAction:    return @"system_action";
+        case RAInputBindingTargetKindMacro:           return @"macro";
         case RAInputBindingTargetKindUnknown:
         default:                                      return @"unknown";
     }
@@ -158,6 +159,8 @@ static NSString *RAInputPhysicalSourceCodeString(RAInputPhysicalSourceKindCode k
     [coder encodeObject:self.joypadCodes forKey:@"joypadCodes"];
     [coder encodeBool:self.turboEnabled forKey:@"turboEnabled"];
     [coder encodeInteger:self.systemActionCode forKey:@"systemActionCode"];
+    [coder encodeObject:self.macroSteps forKey:@"macroSteps"];
+    [coder encodeObject:self.displayName forKey:@"displayName"];
 }
 
 - (instancetype)initWithCoder:(NSCoder *)coder {
@@ -167,6 +170,14 @@ static NSString *RAInputPhysicalSourceCodeString(RAInputPhysicalSourceKindCode k
         _joypadCodes = [coder decodeObjectOfClasses:classes forKey:@"joypadCodes"] ?: @[];
         _turboEnabled = [coder decodeBoolForKey:@"turboEnabled"];
         _systemActionCode = [coder decodeIntegerForKey:@"systemActionCode"];
+        if ([coder containsValueForKey:@"macroSteps"]) {
+            _macroSteps = [coder decodeObjectOfClasses:[NSSet setWithObjects:NSArray.class, RAMacroInputStep.class, nil] forKey:@"macroSteps"];
+        }
+        if ([coder containsValueForKey:@"displayName"]) {
+            _displayName = [coder decodeObjectOfClass:NSString.class forKey:@"displayName"];
+        }
+        _macroSteps = _macroSteps ?: @[];
+        _displayName = _displayName ?: @"";
     }
     return self;
 }
