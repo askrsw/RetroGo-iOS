@@ -10,7 +10,6 @@
     "handheld/lcd-grid-v2.slangp",
     "pixel-art-scaling/sharp-bilinear-simple.slangp",
     "edge-smoothing/xbrz/xbrz-freescale.slangp",
-    "handheld/gameboy.slangp",
     "ntsc/ntsc-256px-composite.slangp",
     "sharpen/rca_sharpen.slangp",
     "edge-smoothing/fsr/retrogo-fsr.slangp"
@@ -77,40 +76,8 @@
       "sha256": "545f35fc2edf17756a3b14d75c7beb9cb91c9a5a143daa825d5fa5625c505341"
     },
     {
-      "path": "handheld/gameboy.slangp",
-      "sha256": "b095716947f03bd6b14d8f91d17f417a6cbec2fcbc1dd014b52ec382ad6543c1"
-    },
-    {
       "path": "handheld/lcd-grid-v2.slangp",
       "sha256": "a643c521fc44fadaff27658ee980ffc3df0703265d812da70de5fb3ee42abf1d"
-    },
-    {
-      "path": "handheld/shaders/gameboy/resources/background.png",
-      "sha256": "1509dbddab4779cf12a4279323524fe81ee7448cb9041b9a8d2dd98e4b8630b0"
-    },
-    {
-      "path": "handheld/shaders/gameboy/resources/palette.png",
-      "sha256": "9865e419eafb484e1b3cfdf99241d71a183e5f23871295fa1822337a22aca9fc"
-    },
-    {
-      "path": "handheld/shaders/gameboy/shader-files/gb-pass0.slang",
-      "sha256": "8c47b5f6dd91f67e7983e6fb9725d0f47b32516aeeaf2fa6ca4aa72692b004e5"
-    },
-    {
-      "path": "handheld/shaders/gameboy/shader-files/gb-pass1.slang",
-      "sha256": "8e493671a2fec9fc15b45a5e9a05705757183eea8ab421524882200201d1c8a7"
-    },
-    {
-      "path": "handheld/shaders/gameboy/shader-files/gb-pass2.slang",
-      "sha256": "df0ad0677368dd632f23cf89710d4b739389a99dd523ce981d549a89e276588b"
-    },
-    {
-      "path": "handheld/shaders/gameboy/shader-files/gb-pass3.slang",
-      "sha256": "32faa1abd209038e3b15c79fa79516f1464b9094d33b6951c7d2656be9fd99a8"
-    },
-    {
-      "path": "handheld/shaders/gameboy/shader-files/gb-pass4.slang",
-      "sha256": "00dcd1b9f20545b61bd1ea74165e0e65d16078464d4018da91dbfa9719901a59"
     },
     {
       "path": "handheld/shaders/lcd-cgwg/lcd-grid-v2.slang",

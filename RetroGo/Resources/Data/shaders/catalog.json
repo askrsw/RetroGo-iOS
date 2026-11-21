@@ -63,13 +63,6 @@
     "parameters": {}
   },
   {
-    "id": "builtin.gameboy",
-    "name": "Game Boy",
-    "path": "handheld/gameboy.slangp",
-    "imported": false,
-    "parameters": {}
-  },
-  {
     "id": "builtin.ntsc",
     "name": "NTSC Composite",
     "path": "ntsc/ntsc-256px-composite.slangp",

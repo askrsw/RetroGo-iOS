@@ -97,7 +97,7 @@ enum GameShaderStore {
     }
 
     static func available(_ selection: GameShaderSelection?) -> GameShaderSelection? {
-        guard let preset = selection?.preset, preset.imported else { return selection }
+        guard let preset = selection?.preset, !preset.isLibrary else { return selection }
         return (try? GameShaderCatalog.url(for: preset)) == nil ? nil : selection
     }
 

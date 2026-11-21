@@ -62,6 +62,5 @@ extension GameShaderParameter {
         "edge-smoothing/xbrz/xbrz-freescale.slangp": ["blend_none", "blend_normal", "blend_dominant"],
         "sharpen/rca_sharpen.slangp": ["RCAS_STRENGTH", "RCAS_DENOISE"],
         "edge-smoothing/fsr/retrogo-fsr.slangp": ["FSR_SHARPENING", "FSR_FILMGRAIN", "FSR_GRAINCOLOR", "FSR_GRAINPDF"],
-        "handheld/gameboy.slangp": ["color_toggle", "baseline_alpha", "grey_balance", "response_time", "video_scale", "blending_mode", "adjacent_texel_alpha_blending", "contrast", "screen_light", "pixel_opacity", "bg_smoothing", "shadow_opacity", "shadow_offset_x", "shadow_offset_y", "screen_offset_x", "screen_offset_y"],
     ]
 }
