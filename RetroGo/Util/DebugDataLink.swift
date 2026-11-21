@@ -34,10 +34,8 @@ enum DebugDataLink {
     static func sync() {
         let fm = FileManager.default
 
-        guard
-            let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?.appendingPathComponent("data", isDirectory: true),
-            let documents = fm.urls(for: .documentDirectory, in: .userDomainMask).first
-        else { return }
+        let appSupport = URL(fileURLWithPath: AppConfig.shared.dataFolder, isDirectory: true)
+        guard let documents = fm.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
 
         let linkURL = documents.appendingPathComponent("retrogo_app_support_link", isDirectory: true)
 

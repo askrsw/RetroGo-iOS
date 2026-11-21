@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.15.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">版本 1.15.0</p-title>
+        <p-paragraph fontsize="13">
+            发布于 <i>2026 年 11 月 22 日</i>。
+        </p-paragraph>
+        <p-list id="v1.15.0" style="number">
+            <p-item>新增<b>游戏 Shader</b>，内置 CRT 显像管、扫描线和掌机 LCD 网格等经典效果。在「视频」设置中选择预设，使用 Vulkan 或 Metal 即可在游戏中预览并微调参数。可为全部游戏、某个核心或单个游戏分别设置。</p-item>
+            <p-item>支持<b>导入 Slang Shader</b>。选择包含预设和依赖文件的文件夹，即可在「我的 Shader」中浏览和使用。</p-item>
+            <p-item>新增<b>「拉伸铺满屏幕」</b>。当游戏画面和屏幕方向一致时，可拉伸画面填满可用区域，游戏中调整即可生效。</p-item>
+            <p-item>新增<b>「音频」</b>分组。进入游戏时，其他 App 播放的音乐或播客默认可以继续播放。游戏音量可在 0%–200% 之间独立调节。</p-item>
+            <p-item><b>实体手柄快进</b>可在「按键映射」里选择「按住」或「切换」。按住快进键可临时加速，松开后恢复。选择「切换」后，按一下开启快进，再按一下关闭。已有映射默认使用「按住」。</p-item>
+            <p-item>修复打开设置后启动游戏或切换屏幕方向时的异常，以及取消侧滑返回时「按键映射」预览短暂错位的问题。</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.14.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">版本 1.14.0</p-title>
         <p-paragraph fontsize="13">

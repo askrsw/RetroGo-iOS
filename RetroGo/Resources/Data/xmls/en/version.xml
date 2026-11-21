@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <p-contents>
+    <p-section id="version-1.15.0" bottompadding="10" toppadding="5">
+        <p-title level="3" underline="false">Version 1.15.0</p-title>
+        <p-paragraph fontsize="13">
+            Released on <i>November 22, 2026</i>.
+        </p-paragraph>
+        <p-list id="v1.15.0" style="number">
+            <p-item><b>Game shaders</b> add classic CRT effects, scanlines, handheld LCD grids, and more. Choose a preset in Video settings, preview it in-game with Vulkan or Metal, and fine-tune its parameters. Settings can apply to all games, a core, or an individual game.</p-item>
+            <p-item><b>Import your own Slang shaders.</b> Pick a folder containing the presets and their supporting files, then browse the results under My Shaders.</p-item>
+            <p-item><b>Stretch to Fill Screen</b> fills the available area when the game image and screen have the same orientation. You can change it during gameplay.</p-item>
+            <p-item>The new <b>Audio</b> section lets music and podcasts from other apps keep playing alongside the game. This is enabled by default. Adjust game volume independently from 0% to 200%.</p-item>
+            <p-item><b>Controller fast-forward</b> now supports Hold and Toggle in Button Mapping. Hold the mapped button to fast-forward until you release it, or press once to start and again to stop. Existing mappings default to Hold.</p-item>
+            <p-item>Fixed issues when launching a game after opening settings or rotating the device. Fixed the Button Mapping preview shifting when you cancel a swipe back.</p-item>
+        </p-list>
+    </p-section>
     <p-section id="version-1.14.0" bottompadding="10" toppadding="5">
         <p-title level="3" underline="false">Version 1.14.0</p-title>
         <p-paragraph fontsize="13">
