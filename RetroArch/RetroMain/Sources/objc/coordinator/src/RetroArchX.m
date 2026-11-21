@@ -43,6 +43,7 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <tasks/task_content.h>
 #include <core/ra_core_options.h>
+#include <gfx/video_driver.h>
 #include <utils/retrogo_log.h>
 
 #define SHOW_CORE_ROM_TYPE_INFO 0
@@ -278,7 +279,12 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (d_cancelGameStart || !load_ret) {
+            // The threaded video wrapper can exist even if its renderer failed to initialize.
+            BOOL videoReady = load_ret && video_driver_get_ptr() != NULL;
+            if (load_ret && !videoReady) {
+                RETROGO_LOGE(GAME, "Video driver failed to initialize for core %{public}@", core.coreId);
+            }
+            if (d_cancelGameStart || !videoReady) {
                 // Loading cannot be interrupted safely. Retain the render owner
                 // and the transition reservation until teardown has finished.
                 // No runner has started; unload on a background execution domain.
@@ -366,10 +372,14 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         return YES;
     }
 
+    // The input-only dummy does not own a render view. Its runner's stop
+    // clears apple_platform, which may already belong to the incoming game.
+    __typeof__(apple_platform) renderOwner = apple_platform;
     BOOL ret = YES;
     if (d_gameLogicRuner != nil) {
         ret = [d_gameLogicRuner stop];
         d_gameLogicRuner = nil;
+        apple_platform = renderOwner;
     }
 
     drivers_deinit_input_only();
