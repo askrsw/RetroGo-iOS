@@ -180,6 +180,7 @@ final class GamePageViewController: RAGameViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(updateVideoStretch), name: .stretchVideoToFillChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateGameAudioVolume), name: .gameAudioVolumeChanged, object: nil)
 
         myOverlayView.isUserInteractionEnabled = false
         AppStoreProFeatureGate.resetFastForwardNotice()
@@ -627,6 +628,12 @@ extension GamePageViewController {
     private func gameRumbleEnabledChanged() {
         guard Self.instance == self else { return }
         RetroArchX.shared().setPhoneRumbleEnabled(configSession.getGameRumbleEnabled())
+    }
+
+    @objc
+    private func updateGameAudioVolume() {
+        guard Self.instance === self, isGameReady else { return }
+        RetroArchX.shared().updateGameAudioVolume(configSession.getGameAudioVolume())
     }
 
     @objc

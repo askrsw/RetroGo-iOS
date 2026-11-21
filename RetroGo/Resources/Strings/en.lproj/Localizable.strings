@@ -324,6 +324,11 @@
 "configpage_video_driver_desc" = "Vulkan is recommended for best stability and compatibility. Metal and GL are experimental and may have performance or compatibility issues. Changes take effect the next time you open the game.";
 "configpage_video_driver_forbiden_desc" = "Core %@ does not support custom video drivers.";
 "configpage_audio_driver" = "Audio Driver";
+"configpage_audio_driver_desc" = "Changes take effect the next time you open the game.";
+"configpage_audio_section_header" = "Audio";
+"configpage_game_audio_volume" = "Game Volume";
+"configpage_keep_other_audio_playing" = "Keep Other Audio Playing";
+"configpage_keep_other_audio_playing_desc" = "Let music and podcasts from other apps keep playing alongside game audio. Changes take effect the next time you open the game.";
 "configpage_auto_enable_cheats" = "Auto-Enable Cheats";
 "configpage_auto_enable_cheats_desc" = "When enabled, RetroGo restores cheats that were left enabled the next time this game starts. If a cheat makes this game crash or behave incorrectly, turn this off for this game; cheats will stay off on launch, but you can still enable them manually from the Cheats page.";
 "configpage_game_fast_multiplier" = "Fast Multiplier";

@@ -282,6 +282,7 @@ extension GameConfigViewController {
             switch entry.ui {
             case .label: return makeCell(GameConfigTitleViewCell.self, entry: entry)
             case .switch: return makeCell(GameConfigSwitchViewCell.self, entry: entry)
+            case .percentageSlider: return makeCell(GameConfigPercentageSliderCell.self, entry: entry)
             case .segmentcontrol: return makeCell(GameConfigSegmentViewCell.self, entry: entry)
             case .list: return makeCell(GameConfigLabelViewCell.self, entry: entry)
             case .controller: return makeCell(GameConfigLabelViewCell.self, entry: entry)

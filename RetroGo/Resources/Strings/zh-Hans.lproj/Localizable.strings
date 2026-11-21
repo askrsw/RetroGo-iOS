@@ -326,6 +326,11 @@
 "configpage_video_driver_desc" = "推荐使用 Vulkan，兼容性和稳定性更好。Metal 和 GL 为实验性选项，可能有性能或兼容性问题。更改将在下次打开游戏时生效。";
 "configpage_video_driver_forbiden_desc" = "核心 %@ 不支持自定义视频驱动";
 "configpage_audio_driver" = "音频驱动";
+"configpage_audio_driver_desc" = "更改将在下次打开游戏时生效。";
+"configpage_audio_section_header" = "音频";
+"configpage_game_audio_volume" = "游戏音量";
+"configpage_keep_other_audio_playing" = "保留其他 App 的声音";
+"configpage_keep_other_audio_playing_desc" = "开启后，其他 App 的音乐或播客可与游戏声音同时播放。更改将在下次打开游戏时生效。";
 "configpage_auto_enable_cheats" = "自动启用金手指";
 "configpage_auto_enable_cheats_desc" = "开启后，进入游戏时会自动恢复上次已开启的金手指。若某个游戏因金手指导致崩溃或异常，请在该游戏设置中关闭此项；之后进入游戏时金手指会保持关闭，你仍可在金手指页面手动开启。";
 "configpage_game_fast_multiplier" = "游戏快进倍数";

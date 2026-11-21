@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL logicThread;
 @property(nonatomic, copy)   NSString *videoDriver;
 @property(nonatomic, copy)   NSString *audioDriver;
+@property(nonatomic, assign) BOOL keepOtherAudioPlaying;
+@property(nonatomic, assign) NSInteger gameAudioVolume;
 @property(nonatomic, assign) double fastForwardMultiplier;
 @property(nonatomic, assign) BOOL   muteOnFastForward;
 @property(nonatomic, assign) int    overlayTouchPlayer;
@@ -87,6 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSDictionary<NSString *, id> *)debugCurrentCoreOptionsSnapshot;
 - (void)setFastForwardMultiplier:(double)multiplier;
 - (void)setMuteOnFastForward:(BOOL)value;
+- (void)updateGameAudioVolume:(NSInteger)volume;
 /// Whether the phone rumbles when the game asks for it, for the player on the on-screen controls.
 - (void)setPhoneRumbleEnabled:(BOOL)enabled;
 

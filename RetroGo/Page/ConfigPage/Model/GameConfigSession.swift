@@ -136,6 +136,8 @@ final class GameConfigSession {
             config.coreOptionsCoreId = core.coreId
             config.coreOptions = [:]
         }
+        config.keepOtherAudioPlaying = getKeepOtherAudioPlaying()
+        config.gameAudioVolume = getGameAudioVolume()
         RetroArchX.shared().config(config)
         RetroArchX.shared().setPhoneRumbleEnabled(getGameRumbleEnabled())
 
@@ -179,6 +181,7 @@ final class GameConfigSession {
         }
 
         array.append((section: .video, entries: makeVideoConfigEntries()))
+        array.append((section: .audio, entries: makeAudioConfigEntries()))
 
         let overlayEntries = makeOverlayConfigEntries()
         if overlayEntries.count > 0 {
@@ -241,6 +244,29 @@ extension GameConfigSession {
 
     func getAudioDriver() -> String {
         config.audioDriver
+    }
+
+    func getKeepOtherAudioPlaying() -> Bool {
+        resolvedValue(column: Self.keepOtherAudioPlaying) ?? true
+    }
+
+    @discardableResult
+    func setKeepOtherAudioPlaying(_ enabled: Bool) -> Bool {
+        setOptionalValue(column: Self.keepOtherAudioPlaying, value: enabled)
+    }
+
+    static let maximumGameAudioVolume = 200
+
+    func getGameAudioVolume() -> Int {
+        min(Self.maximumGameAudioVolume, max(0, resolvedValue(column: Self.gameAudioVolume) ?? 100))
+    }
+
+    @discardableResult
+    func setGameAudioVolume(_ volume: Int) -> Bool {
+        let clampedVolume = min(Self.maximumGameAudioVolume, max(0, volume))
+        guard setOptionalValue(column: Self.gameAudioVolume, value: clampedVolume) else { return false }
+        NotificationCenter.default.post(name: .gameAudioVolumeChanged, object: nil)
+        return true
     }
 
     @discardableResult
@@ -827,6 +853,10 @@ extension GameConfigSession {
     static let gameRumbleEnabled = SQLite.Expression<Bool?>("game_rumble_enabled")
     static let portDevice = SQLite.Expression<String?>("port_device")
 
+    // v11
+    static let keepOtherAudioPlaying = SQLite.Expression<Bool?>("keep_other_audio_playing")
+    static let gameAudioVolume = SQLite.Expression<Int?>("game_audio_volume")
+
     /*
      * key, configScope, updateAt
      * v3: threadEnabled, fastForwardMultiplier
@@ -839,6 +869,7 @@ extension GameConfigSession {
      * v10: per-player mapping choices in input_binding_layout_choice (separate table)
      * v11: shader_config stores one optional Shader selection and its parameters per scope (RetroRomPersistence+v11).
      *      stretch_video_to_fill allows live stretching when the orientations match.
+     *      keepOtherAudioPlaying and gameAudioVolume control mixing and core output gain.
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

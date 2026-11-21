@@ -1186,13 +1186,9 @@ extension RetroRomPersistence {
                 return false
             }
 
-            if version >= 11 { return true }
             switch version {
                 case 0:
                     try databaseV11(db: db)
-                    return true
-                case 10:
-                    try migrationV10ToV11(db: db)
                     return true
                 case 1:
                     try migrationV1ToV2(db: db)
@@ -1264,6 +1260,9 @@ extension RetroRomPersistence {
                     return true
                 case 9:
                     try migrationV9ToV10(db: db)
+                    try migrationV10ToV11(db: db)
+                    return true
+                case 10:
                     try migrationV10ToV11(db: db)
                     return true
                 default:

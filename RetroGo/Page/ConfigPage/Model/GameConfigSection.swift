@@ -31,6 +31,7 @@ enum GameConfigSection: Hashable {
     case disc
     case restartRequired
     case video
+    case audio
     case overlay
     case controller
 }
@@ -60,6 +61,8 @@ extension GameConfigSection {
         switch self {
             case .video:
                 return shaderText("video")
+            case .audio:
+                return Bundle.localizedString(forKey: "configpage_audio_section_header")
             case .disc:
                 return Bundle.localizedString(forKey: "configpage_disc_section_header")
             case .overlay:

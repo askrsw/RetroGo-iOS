@@ -28,6 +28,7 @@
 #import "../input/RAInputActionManager.h"
 #import "../input/virtual_joypad.h"
 #import "../input/RAPhoneRumble.h"
+#import <AVFAudio/AVAudioSession.h>
 
 #include <gfx/video_driver.h>
 #include <gfx/video_thread_wrapper.h>
@@ -51,6 +52,16 @@
 #include <utils/retrogo_log.h>
 
 static char coreOptionConfigurationKey;
+
+static void applyGameAudioVolume(NSInteger volume) {
+    settings_t *settings = config_get_ptr();
+    if (!settings) return;
+
+    const float gain = (float)MIN(200, MAX(0, volume)) / 100.0f;
+    const float decibels = gain > 0.0f ? 20.0f * log10f(gain) : -INFINITY;
+    settings->floats.audio_volume = isfinite(decibels) ? decibels : -80.0f;
+    audio_set_float(AUDIO_ACTION_VOLUME_GAIN, decibels);
+}
 
 @interface RAInputDevice()
 @property(nonatomic, readwrite, assign) NSInteger slot;
@@ -92,6 +103,14 @@ static char coreOptionConfigurationKey;
 }
 
 - (void)config:(RAConfig *)cfg {
+    // Choose the session category before the audio output driver starts.
+    NSError *audioSessionError = nil;
+    AVAudioSessionCategory category = cfg.keepOtherAudioPlaying
+        ? AVAudioSessionCategoryAmbient : AVAudioSessionCategorySoloAmbient;
+    if (![[AVAudioSession sharedInstance] setCategory:category error:&audioSessionError]) {
+        RETROGO_LOGE(GAME, "Failed to configure game audio session (%{public}ld)", (long)audioSessionError.code);
+    }
+
     @synchronized (self) {
         NSDictionary *pending = cfg.coreOptions && cfg.coreOptionsCoreId
             ? @{ @"coreId": cfg.coreOptionsCoreId, @"values": [cfg.coreOptions copy] } : nil;
@@ -122,6 +141,7 @@ static char coreOptionConfigurationKey;
         settings->bools.video_force_aspect = true;
         settings->uints.video_aspect_ratio_idx = ASPECT_RATIO_CORE;
         [self p_writeCString:settings->arrays.audio_driver cap:sizeof(settings->arrays.audio_driver) value:cfg.audioDriver];
+        applyGameAudioVolume(cfg.gameAudioVolume);
         [self setMuteOnFastForward:cfg.muteOnFastForward];
 
         // settings_t outlives the game: start every launch from the standard RetroPad,
@@ -312,6 +332,14 @@ static char coreOptionConfigurationKey;
 
     settings->bools.audio_fastforward_mute = value;
     [self p_applyFastForwardMuteState:value];
+}
+
+- (void)updateGameAudioVolume:(NSInteger)volume {
+    NSAssert(NSThread.isMainThread, @"Game volume updates must be requested on the main thread");
+    [self.gameLogicRunner suspendGameLoopAndPerformSync:^NSObject * {
+        applyGameAudioVolume(volume);
+        return nil;
+    } runOnLogicThread:YES];
 }
 
 - (NSArray<NSString *> *)availableVideoDrivers {
