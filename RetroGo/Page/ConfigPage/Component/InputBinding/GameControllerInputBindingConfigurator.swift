@@ -250,11 +250,21 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
         super.viewWillDisappear(animated)
         manager.physicalSourcePressHandler = nil
         let leaving = isMovingFromParent || isBeingDismissed || (navigationController?.isBeingDismissed ?? false)
-        if leaving && !didRestoreOnExit {
-            didRestoreOnExit = true
-            // Editing a different layout is a preview; restore the game's actual chosen scheme.
-            (GamePageViewController.instance?.configSession ?? session)?.refreshInputBindingProfile(apply: true)
+        guard leaving, !didRestoreOnExit else { return }
+        if let coordinator = transitionCoordinator, coordinator.initiallyInteractive,
+           coordinator.animate(alongsideTransition: nil, completion: { context in
+               if !context.isCancelled { self.restoreBindingsAfterExit() }
+           }) {
+            return
         }
+        restoreBindingsAfterExit()
+    }
+
+    private func restoreBindingsAfterExit() {
+        guard !didRestoreOnExit else { return }
+        didRestoreOnExit = true
+        // Restore the game's chosen scheme once the editor has actually left.
+        (GamePageViewController.instance?.configSession ?? session)?.refreshInputBindingProfile(apply: true)
     }
 
     private func updateLayoutCell() {
