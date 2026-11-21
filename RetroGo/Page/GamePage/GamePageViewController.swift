@@ -359,7 +359,7 @@ final class GamePageViewController: RAGameViewController {
     /// Applies the current (runtime) landscape-lock state to the app-wide mask
     /// and this VC's `supportedInterfaceOrientations`.
     func applyOrientationLock(requestedOrientation: UIInterfaceOrientationMask? = nil,
-                              onGeometryError: ((Error) -> Void)? = nil) {
+                              onGeometryError: (@MainActor (Error) -> Void)? = nil) {
         setNeedsUpdateOfSupportedInterfaceOrientations()
         AppDelegate.setOrientationLock(supportedInterfaceOrientations,
                                        requestedOrientation: requestedOrientation, onGeometryError: onGeometryError)
