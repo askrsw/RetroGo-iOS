@@ -929,6 +929,10 @@
 "configpage_binding_edit" = "编辑映射";
 "configpage_binding_layout_link_footer" = "每位玩家可独立选择一套布局的物理按键映射，不影响其他玩家或屏幕按键布局。点击“编辑映射”可配置此布局中当前玩家的物理按键。";
 "configpage_binding_current_layout" = "当前布局：%@";
+"configpage_binding_fast_forward_mode" = "快进方式";
+"configpage_binding_fast_forward_hold" = "按住";
+"configpage_binding_fast_forward_toggle" = "切换";
+"configpage_binding_fast_forward_footer" = "选择「按住」时，按住手柄快进键加速，松开后恢复正常速度。选择「切换」时，按一下开启快进，再按一下关闭。";
 "configpage_binding_layout_upgrade" = "隐藏按键保留已有绑定，重新显示后才能修改。v1.14.0 升级了手柄映射，以前的映射可能需要重新设置。";
 "configpage_binding_layout_instructions" = "点击下方按键或气泡，再按下手柄按键或推动摇杆。气泡显示已占用的物理按键。当前修改仅作用于此布局的映射。";
 

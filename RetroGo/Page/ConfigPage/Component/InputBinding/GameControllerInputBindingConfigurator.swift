@@ -38,6 +38,7 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
     private var canvasHeight: CGFloat = 440
     private var canvasReferenceSize: CGSize = .zero
     private var canvasFittingWidth: CGFloat = 0
+    private var fastForwardToggle: Bool?
     private let manager = RAInputActionManager.shared()
 
     let session: GameConfigSession?
@@ -94,36 +95,56 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
         showSelectedLayout()
     }
 
-    override func numberOfSections(in tableView: UITableView) -> Int { 2 }
+    override func numberOfSections(in tableView: UITableView) -> Int { 3 }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { 1 }
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        section == 2 && fastForwardToggle == nil ? 0 : 1
+    }
 
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard section != 0 else { return nil }
+        if section == 2, fastForwardToggle != nil { return UIView() }
+        guard section == 1 else { return nil }
         let header = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as! RGSectionHeaderView
         header.text = Bundle.localizedString(forKey: "configpage_button_mapping")
-        header.topInset = section == 1 ? 22 : 12
+        header.topInset = 22
         return header
     }
 
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        section == 0 ? .leastNormalMagnitude : UITableView.automaticDimension
+        if section == 1 { return UITableView.automaticDimension }
+        if section == 2, fastForwardToggle != nil { return 20 }
+        return .leastNormalMagnitude
     }
 
     override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let key: String
+        switch section {
+        case 0: key = "configpage_binding_layout_instructions"
+        case 1: key = "configpage_binding_layout_upgrade"
+        case 2 where fastForwardToggle != nil: key = "configpage_binding_fast_forward_footer"
+        default: return nil
+        }
         let footer = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionFooterView.className) as! RGSectionFooterView
-        footer.text = Bundle.localizedString(forKey: section == 0 ? "configpage_binding_layout_instructions" : "configpage_binding_layout_upgrade")
+        footer.text = Bundle.localizedString(forKey: key)
         return footer
     }
 
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        indexPath.section == 0 ? UITableView.automaticDimension : canvasHeight + 16
+        indexPath.section == 1 ? canvasHeight + 16 : UITableView.automaticDimension
+    }
+
+    override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        section == 2 && fastForwardToggle == nil ? .leastNormalMagnitude : UITableView.automaticDimension
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
         if indexPath.section == 0 {
             configureLayoutCell(cell)
+            return cell
+        }
+        if indexPath.section == 2 {
+            configureFastForwardCell(cell)
             return cell
         }
         cell.selectionStyle = .none
@@ -148,6 +169,40 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
         cell.contentConfiguration = content
         cell.accessoryType = .none
         cell.selectionStyle = .none
+    }
+
+    private func configureFastForwardCell(_ cell: UITableViewCell) {
+        let title = Bundle.localizedString(forKey: "configpage_binding_fast_forward_mode")
+        var content = cell.defaultContentConfiguration()
+        content.text = title
+        cell.contentConfiguration = content
+        cell.selectionStyle = .none
+
+        let control = UISegmentedControl(items: [
+            Bundle.localizedString(forKey: "configpage_binding_fast_forward_hold"),
+            Bundle.localizedString(forKey: "configpage_binding_fast_forward_toggle")
+        ])
+        control.accessibilityLabel = title
+        control.selectedSegmentIndex = fastForwardToggle == true ? 1 : 0
+        control.addTarget(self, action: #selector(fastForwardModeChanged(_:)), for: .valueChanged)
+        cell.accessoryView = control
+    }
+
+    @objc private func fastForwardModeChanged(_ control: UISegmentedControl) {
+        Vibration.selection.vibrate()
+        overlayView?.setFastForwardToggle(control.selectedSegmentIndex == 1)
+        control.selectedSegmentIndex = fastForwardToggle == true ? 1 : 0
+    }
+
+    private func updateFastForwardMode() {
+        let toggle = overlayView?.fastForwardToggle
+        let needsReload = (toggle == nil) != (fastForwardToggle == nil)
+        fastForwardToggle = toggle
+        if needsReload {
+            tableView.reloadSections(IndexSet(integer: 2), with: .none)
+        } else if let control = tableView.cellForRow(at: IndexPath(row: 0, section: 2))?.accessoryView as? UISegmentedControl {
+            control.selectedSegmentIndex = toggle == true ? 1 : 0
+        }
     }
 
 
@@ -226,6 +281,7 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
             // Never overwrite an unreadable profile with a blank mapping.
             showSaveError()
             updateLayoutCell()
+            updateFastForwardMode()
             return
         }
         let scene = GameConfigBindingOverlayScene(size: skView.bounds.size,
@@ -245,6 +301,7 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
         view.setNeedsLayout()
         updateLayoutCell()
         updateResetButton()
+        updateFastForwardMode()
     }
 
     private func persistChanges() {
@@ -252,6 +309,7 @@ final class GameControllerInputBindingConfigurator: UITableViewController {
             try bindings.savePlayer(manager.exportInputBindingProfileUseLock(true), port: playerIndex, data: selectedLayout?.data)
             manager.acceptCurrentBindingsUseLock(true)
             updateResetButton()
+            updateFastForwardMode()
         } catch {
             RetroGoLogger.game.error("Failed to save layout controller mapping: \(String(describing: error))")
             DispatchQueue.main.async { [weak self] in

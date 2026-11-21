@@ -103,6 +103,8 @@ typedef void (^RAInputTopologyChangedHandler)(void);
 - (void)tickFrame:(BOOL)useLock;
 - (void)cancelMacrosUseLock:(BOOL)useLock;
 - (void)acceptCurrentBindingsUseLock:(BOOL)useLock;
+- (nullable NSNumber *)fastForwardToggleForActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;
+- (BOOL)setFastForwardToggle:(BOOL)toggle forActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;
 
 - (void)beginCoreTeardownGuard;
 - (void)endCoreTeardownGuard;

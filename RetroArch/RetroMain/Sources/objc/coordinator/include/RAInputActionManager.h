@@ -104,6 +104,8 @@ typedef void (^RAInputTopologyChangedHandler)(void);
 - (void)unbindActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;
 - (void)cancelMacrosUseLock:(BOOL)useLock;
 - (void)acceptCurrentBindingsUseLock:(BOOL)useLock;
+- (nullable NSNumber *)fastForwardToggleForActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;
+- (BOOL)setFastForwardToggle:(BOOL)toggle forActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;
 - (void)bindPhysicalSourceIdentifier:(NSString *)sourceIdentifier toActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;
 - (void)bindPhysicalSource:(RAInputPhysicalSource *)source toActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;
 - (nullable NSString *)physicalSourceIdentifierForActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock;

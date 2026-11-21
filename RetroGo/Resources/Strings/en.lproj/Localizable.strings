@@ -927,6 +927,10 @@
 "configpage_binding_edit" = "Edit Mapping";
 "configpage_binding_layout_link_footer" = "Each player independently chooses a layout’s controller mappings. This does not change other players or the on-screen layout. Tap Edit Mapping to configure this player’s inputs in that layout.";
 "configpage_binding_current_layout" = "Current Layout: %@";
+"configpage_binding_fast_forward_mode" = "Fast-Forward Mode";
+"configpage_binding_fast_forward_hold" = "Hold";
+"configpage_binding_fast_forward_toggle" = "Toggle";
+"configpage_binding_fast_forward_footer" = "In Hold mode, hold the controller button to fast-forward and release it to resume normal speed. In Toggle mode, press once to start fast-forwarding and again to stop.";
 "configpage_binding_layout_upgrade" = "Hidden buttons keep saved bindings. Show them to make changes. Controller mapping was updated in v1.14.0; previous mappings may need to be set up again.";
 "configpage_binding_layout_instructions" = "Tap a button or bubble below, then press a controller button or stick direction. Bubbles show assigned controller inputs. Changes apply only to this layout’s mappings.";
 

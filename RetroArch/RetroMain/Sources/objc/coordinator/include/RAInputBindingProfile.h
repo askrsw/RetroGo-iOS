@@ -71,6 +71,7 @@ typedef NS_ENUM(NSInteger, RAInputPhysicalSourceKindCode) {
 
 /// valid when targetKind == SystemAction
 @property(nonatomic, assign) RAInputSystemActionCode systemActionCode;
+@property(nonatomic, assign) BOOL fastForwardToggle;
 /// Independent action snapshot; identifiers in actionId retain the layout provenance.
 @property(nonatomic, copy) NSArray<RAMacroInputStep *> *macroSteps;
 @property(nonatomic, copy) NSString *displayName;
