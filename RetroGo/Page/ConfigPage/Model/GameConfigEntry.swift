@@ -71,6 +71,7 @@ final class GameConfigEntry: NSObject {
 
     var enabled: Bool = true
     var opensCoreOptions = false
+    var opensShaders = false
     /// Opens the control layout list (in game) or the layout manager (from the settings pages).
     var opensOverlayLayouts = false
     var desc: String?
@@ -317,6 +318,53 @@ extension GameConfigSession {
         return entries
     }
 
+    func makeVideoConfigEntries() -> [GameConfigEntry] {
+        var entries: [GameConfigEntry] = []
+        do {
+            let title = Bundle.localizedString(forKey: "configpage_video_driver")
+            let entry = GameConfigEntry(type: .string, ui: .list, title: title)
+            entry.getListArray = { [weak self] in
+                guard let self = self else { return (list: [], selected: nil) }
+                return getAvailableVideoDrivers()
+            }
+            entry.getListSelectedTitle = { [weak self] in
+                return self?.getVideoDriverTitle()
+            }
+            entry.setListSelectedValue = { [weak self] value in
+                guard let self = self, let driver = value as? String else { return }
+                setVideoDriver(value: driver)
+            }
+            if let core {
+                if core.isHWRender {
+                    let formatter = Bundle.localizedString(forKey: "configpage_video_driver_forbiden_desc")
+                    entry.desc = String(format: formatter, core.coreName)
+                    entry.enabled = false
+                } else {
+                    entry.desc = Bundle.localizedString(forKey: "configpage_video_driver_desc")
+                }
+            } else {
+                entry.desc = Bundle.localizedString(forKey: "configpage_video_driver_desc")
+            }
+            entries.append(entry)
+        }
+
+
+        let shader = GameConfigEntry(type: .string, ui: .list, title: shaderText("title"))
+        shader.opensShaders = true
+        shader.getListSelectedTitle = { [weak self] in
+            guard let self else { return nil }
+            do {
+                let own = try GameShaderStore.own(self)
+                let resolved = try GameShaderStore.resolved(self)
+                let title = resolved.preset?.title ?? shaderText("off")
+                return own == nil && scope != .global ? String(format: shaderText("inherited_title"), title) : title
+            } catch { return shaderText("unavailable") }
+        }
+        shader.session = self
+        entries.append(shader)
+        return entries
+    }
+
     func makeRestartRequiredConfigEntries() -> [GameConfigEntry] {
         var entries: [GameConfigEntry] = []
         if scope != .global {
@@ -377,34 +425,6 @@ extension GameConfigSession {
                 self?.setAutoEnableCheats(value: value)
             }
             entry.desc = Bundle.localizedString(forKey: "configpage_auto_enable_cheats_desc")
-            entries.append(entry)
-        }
-
-        do {
-            let title = Bundle.localizedString(forKey: "configpage_video_driver")
-            let entry = GameConfigEntry(type: .string, ui: .list, title: title)
-            entry.getListArray = { [weak self] in
-                guard let self = self else { return (list: [], selected: nil) }
-                return getAvailableVideoDrivers()
-            }
-            entry.getListSelectedTitle = { [weak self] in
-                return self?.getVideoDriverTitle()
-            }
-            entry.setListSelectedValue = { [weak self] value in
-                guard let self = self, let driver = value as? String else { return }
-                setVideoDriver(value: driver)
-            }
-            if let core {
-                if core.isHWRender {
-                    let formatter = Bundle.localizedString(forKey: "configpage_video_driver_forbiden_desc")
-                    entry.desc = String(format: formatter, core.coreName)
-                    entry.enabled = false
-                } else {
-                    entry.desc = Bundle.localizedString(forKey: "configpage_video_driver_desc")
-                }
-            } else {
-                entry.desc = Bundle.localizedString(forKey: "configpage_video_driver_desc")
-            }
             entries.append(entry)
         }
 

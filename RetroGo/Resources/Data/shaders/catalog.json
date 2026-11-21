@@ -1,0 +1,79 @@
+[
+  {
+    "id": "builtin.sharp",
+    "name": "sharp",
+    "path": "pixel-art-scaling/sharp-bilinear-simple.slangp",
+    "imported": false,
+    "parameters": {}
+  },
+  {
+    "id": "builtin.rcas",
+    "name": "RCAS",
+    "path": "sharpen/rca_sharpen.slangp",
+    "imported": false,
+    "parameters": {}
+  },
+  {
+    "id": "builtin.fsr",
+    "name": "FSR 1",
+    "path": "edge-smoothing/fsr/retrogo-fsr.slangp",
+    "imported": false,
+    "parameters": {}
+  },
+  {
+    "id": "builtin.scanline",
+    "name": "scanline",
+    "path": "scanlines/scanline.slangp",
+    "imported": false,
+    "parameters": {}
+  },
+  {
+    "id": "builtin.zfast",
+    "name": "zfast",
+    "path": "crt/zfast-crt.slangp",
+    "imported": false,
+    "parameters": {}
+  },
+  {
+    "id": "builtin.easymode",
+    "name": "easymode",
+    "path": "crt/crt-easymode.slangp",
+    "imported": false,
+    "parameters": {}
+  },
+  {
+    "id": "builtin.geom",
+    "name": "geom",
+    "path": "crt/crt-geom.slangp",
+    "imported": false,
+    "parameters": {}
+  },
+  {
+    "id": "builtin.lcd",
+    "name": "lcd",
+    "path": "handheld/lcd-grid-v2.slangp",
+    "imported": false,
+    "parameters": {}
+  },
+  {
+    "id": "builtin.xbrz",
+    "name": "xBRZ Freescale",
+    "path": "edge-smoothing/xbrz/xbrz-freescale.slangp",
+    "imported": false,
+    "parameters": {}
+  },
+  {
+    "id": "builtin.gameboy",
+    "name": "Game Boy",
+    "path": "handheld/gameboy.slangp",
+    "imported": false,
+    "parameters": {}
+  },
+  {
+    "id": "builtin.ntsc",
+    "name": "NTSC Composite",
+    "path": "ntsc/ntsc-256px-composite.slangp",
+    "imported": false,
+    "parameters": {}
+  }
+]

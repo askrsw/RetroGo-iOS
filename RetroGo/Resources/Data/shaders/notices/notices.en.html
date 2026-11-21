@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Shader Credits &amp; Licenses</title>
+    <style>
+        :root { color-scheme: dark; }
+        body { font: 16px -apple-system, sans-serif; background: #1c1c1e; color: #eee; padding: 16px; overflow-wrap: anywhere; }
+        h1 { font-size: 22px; }
+        h2 { font-size: 18px; margin-top: 28px; }
+        h3 { font-size: 15px; margin-top: 24px; }
+        li + li { margin-top: 6px; }
+        pre { white-space: pre-wrap; font: 13px ui-monospace, monospace; }
+        a { color: #aaa0ff; }
+    </style>
+</head>
+<body>
+    <h1>Featured Shaders</h1>
+    <p>These credits cover the 11 shaders bundled with RetroGo and their dependencies. The upstream files come from the App Store release of RetroArch 1.21.0.</p>
+    <p><a href="https://github.com/libretro/slang-shaders">Libretro slang-shaders</a></p>
+    <ul>
+        <li>Sharp Bilinear</li>
+        <li>RCAS Adaptive Sharpening</li>
+        <li>FSR 1 Upscaling</li>
+        <li>Scanlines</li>
+        <li>zfast CRT</li>
+        <li>CRT Easymode</li>
+        <li>CRT Geom</li>
+        <li>LCD Grid v2</li>
+        <li>xBRZ Freescale</li>
+        <li>Game Boy</li>
+        <li>NTSC Composite · NES</li>
+    </ul>
+    <p>RetroGo preserves the upstream files and their notices. The FSR 1 preset supplied by RetroGo references the upstream preset and turns off film grain by default.</p>
+    <p>Rights inquiries can be sent to <a href="mailto:askrsw@163.com?subject=RetroGo%20Shader%20Rights">askrsw@163.com</a>.</p>
+    <h2>Source notices</h2>
+    <p>The notices below come from the bundled source files. No explicit license was found in the bundled files for Scanlines, LCD Grid v2, NTSC Composite, or the two Game Boy textures.</p>
+<h3>crt/shaders/crt-easymode.slang</h3><pre>/*
+    CRT Shader by EasyMode
+    License: GPL
+
+    A flat CRT shader ideally for 1080p or higher displays.
+
+    Recommended Settings:
+
+    Video
+    - Aspect Ratio:  4:3
+    - Integer Scale: Off
+
+    Shader
+    - Filter: Nearest
+    - Scale:  Don&#x27;t Care
+
+    Example RGB Mask Parameter Settings:
+
+    Aperture Grille (Default)
+    - Dot Width:  1
+    - Dot Height: 1
+    - Stagger:    0
+
+    Lottes&#x27; Shadow Mask
+    - Dot Width:  2
+    - Dot Height: 1
+    - Stagger:    3
+*/</pre>
+<h3>crt/shaders/crt-geom.slang</h3><pre>/*
+    CRT-interlaced
+
+    Copyright (C) 2010-2012 cgwg, Themaister and DOLLS
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 2 of the License, or (at your option)
+    any later version.
+
+    (cgwg gave their consent to have the original version of this shader
+    distributed under the GPL in this message:
+
+    http://board.byuu.org/viewtopic.php?p=26075#p26075
+
+    &quot;Feel free to distribute my shaders under the GPL. After all, the
+    barrel distortion code was taken from the Curvature shader, which is
+    under the GPL.&quot;
+    )
+    This shader variant is pre-configured with screen curvature
+*/</pre>
+<h3>crt/shaders/zfast_crt/zfast_crt_impl.inc</h3><pre>/*
+    zfast_crt_standard - A simple, fast CRT shader.
+
+    Copyright (C) 2017 Greg Hogan (SoltanGris42)
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the Free
+    Software Foundation; either version 2 of the License, or (at your option)
+    any later version.
+
+
+Notes:  This shader does scaling with a weighted linear filter for adjustable
+	sharpness on the x and y axes based on the algorithm by Inigo Quilez here:
+	http://http://www.iquilezles.org/www/articles/texture/texture.htm
+	but modified to be somewhat sharper.  Then a scanline effect that varies
+	based on pixel brighness is applied along with a monochrome aperture mask.
+	This shader runs at 60fps on the Raspberry Pi 3 hardware at 2mpix/s
+	resolutions (1920x1080 or 1600x1200).
+*/</pre>
+<h3>edge-smoothing/fsr/shaders/ffx_a.h</h3><pre>//==============================================================================================================================
+//
+//                                               [A] SHADER PORTABILITY 1.20210629
+//
+//==============================================================================================================================
+// FidelityFX Super Resolution Sample
+//
+// Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files(the &quot;Software&quot;), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//------------------------------------------------------------------------------------------------------------------------------
+// MIT LICENSE
+// ===========
+// Copyright (c) 2014 Michal Drobot (for concepts used in &quot;FLOAT APPROXIMATIONS&quot;).
+// -----------
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
+// files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy,
+// modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+// -----------
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+// Software.
+// -----------
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//------------------------------------------------------------------------------------------------------------------------------
+// ABOUT
+// =====
+// Common central point for high-level shading language and C portability for various shader headers.
+//------------------------------------------------------------------------------------------------------------------------------
+// DEFINES
+// =======
+// A_CPU ..... Include the CPU related code.
+// A_GPU ..... Include the GPU related code.
+// A_GLSL .... Using GLSL.
+// A_HLSL .... Using HLSL.
+// A_HLSL_6_2  Using HLSL 6.2 with new &#x27;uint16_t&#x27; and related types (requires &#x27;-enable-16bit-types&#x27;).
+// A_NO_16_BIT_CAST Don&#x27;t use instructions that are not availabe in SPIR-V (needed for running A_HLSL_6_2 on Vulkan)
+// A_GCC ..... Using a GCC compatible compiler (else assume MSVC compatible compiler by default).
+// =======
+// A_BYTE .... Support 8-bit integer.
+// A_HALF .... Support 16-bit integer and floating point.
+// A_LONG .... Support 64-bit integer.
+// A_DUBL .... Support 64-bit floating point.
+// =======
+// A_WAVE .... Support wave-wide operations.
+//------------------------------------------------------------------------------------------------------------------------------
+// To get #include &quot;ffx_a.h&quot; working in GLSL use &#x27;#extension GL_GOOGLE_include_directive:require&#x27;.
+//------------------------------------------------------------------------------------------------------------------------------
+// SIMPLIFIED TYPE SYSTEM
+// ======================
+//  - All ints will be unsigned with exception of when signed is required.
+//  - Type naming simplified and shortened &quot;A&lt;type&gt;&lt;#components&gt;&quot;,
+//     - H = 16-bit float (half)
+//     - F = 32-bit float (float)
+//     - D = 64-bit float (double)
+//     - P = 1-bit integer (predicate, not using bool because &#x27;B&#x27; is used for byte)
+//     - B = 8-bit integer (byte)
+//     - W = 16-bit integer (word)
+//     - U = 32-bit integer (unsigned)
+//     - L = 64-bit integer (long)
+//  - Using &quot;AS&lt;type&gt;&lt;#components&gt;&quot; for signed when required.
+//------------------------------------------------------------------------------------------------------------------------------
+// TODO
+// ====
+//  - Make sure &#x27;ALerp*(a,b,m)&#x27; does &#x27;b*m+(-a*m+a)&#x27; (2 ops).
+//------------------------------------------------------------------------------------------------------------------------------
+// CHANGE LOG
+// ==========
+// 20200914 - Expanded wave ops and prx code.
+// 20200713 - Added [ZOL] section, fixed serious bugs in sRGB and Rec.709 color conversion code, etc.
+//==============================================================================================================================
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//                                                           COMMON
+//==============================================================================================================================</pre>
+<h3>edge-smoothing/fsr/shaders/ffx_fsr1.h</h3><pre>//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//
+//
+//                    AMD FidelityFX SUPER RESOLUTION [FSR 1] ::: SPATIAL SCALING &amp; EXTRAS - v1.20210629
+//
+//
+//------------------------------------------------------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------
+// FidelityFX Super Resolution Sample
+//
+// Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files(the &quot;Software&quot;), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and / or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//------------------------------------------------------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------
+// ABOUT
+// =====
+// FSR is a collection of algorithms relating to generating a higher resolution image.
+// This specific header focuses on single-image non-temporal image scaling, and related tools.
+// 
+// The core functions are EASU and RCAS:
+//  [EASU] Edge Adaptive Spatial Upsampling ....... 1x to 4x area range spatial scaling, clamped adaptive elliptical filter.
+//  [RCAS] Robust Contrast Adaptive Sharpening .... A non-scaling variation on CAS.
+// RCAS needs to be applied after EASU as a separate pass.
+// 
+// Optional utility functions are:
+//  [LFGA] Linear Film Grain Applicator ........... Tool to apply film grain after scaling.
+//  [SRTM] Simple Reversible Tone-Mapper .......... Linear HDR {0 to FP16_MAX} to {0 to 1} and back.
+//  [TEPD] Temporal Energy Preserving Dither ...... Temporally energy preserving dithered {0 to 1} linear to gamma 2.0 conversion.
+// See each individual sub-section for inline documentation.
+//------------------------------------------------------------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------
+// FUNCTION PERMUTATIONS
+// =====================
+// *F() ..... Single item computation with 32-bit.
+// *H() ..... Single item computation with 16-bit, with packing (aka two 16-bit ops in parallel) when possible.
+// *Hx2() ... Processing two items in parallel with 16-bit, easier packing.
+//            Not all interfaces in this file have a *Hx2() form.
+//==============================================================================================================================
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//
+//                                        FSR - [EASU] EDGE ADAPTIVE SPATIAL UPSAMPLING
+//
+//------------------------------------------------------------------------------------------------------------------------------
+// EASU provides a high quality spatial-only scaling at relatively low cost.
+// Meaning EASU is appropiate for laptops and other low-end GPUs.
+// Quality from 1x to 4x area scaling is good.
+//------------------------------------------------------------------------------------------------------------------------------
+// The scalar uses a modified fast approximation to the standard lanczos(size=2) kernel.
+// EASU runs in a single pass, so it applies a directionally and anisotropically adaptive radial lanczos.
+// This is also kept as simple as possible to have minimum runtime.
+//------------------------------------------------------------------------------------------------------------------------------
+// The lanzcos filter has negative lobes, so by itself it will introduce ringing.
+// To remove all ringing, the algorithm uses the nearest 2x2 input texels as a neighborhood,
+// and limits output to the minimum and maximum of that neighborhood.
+//------------------------------------------------------------------------------------------------------------------------------
+// Input image requirements:
+// 
+// Color needs to be encoded as 3 channel[red, green, blue](e.g.XYZ not supported)
+// Each channel needs to be in the range[0, 1]
+// Any color primaries are supported
+// Display / tonemapping curve needs to be as if presenting to sRGB display or similar(e.g.Gamma 2.0)
+// There should be no banding in the input
+// There should be no high amplitude noise in the input
+// There should be no noise in the input that is not at input pixel granularity
+// For performance purposes, use 32bpp formats
+//------------------------------------------------------------------------------------------------------------------------------
+// Best to apply EASU at the end of the frame after tonemapping 
+// but before film grain or composite of the UI.
+//------------------------------------------------------------------------------------------------------------------------------
+// Example of including this header for D3D HLSL :
+// 
+//  #define A_GPU 1
+//  #define A_HLSL 1
+//  #define A_HALF 1
+//  #include &quot;ffx_a.h&quot;
+//  #define FSR_EASU_H 1
+//  #define FSR_RCAS_H 1
+//  //declare input callbacks
+//  #include &quot;ffx_fsr1.h&quot;
+// 
+// Example of including this header for Vulkan GLSL :
+// 
+//  #define A_GPU 1
+//  #define A_GLSL 1
+//  #define A_HALF 1
+//  #include &quot;ffx_a.h&quot;
+//  #define FSR_EASU_H 1
+//  #define FSR_RCAS_H 1
+//  //declare input callbacks
+//  #include &quot;ffx_fsr1.h&quot;
+// 
+// Example of including this header for Vulkan HLSL :
+// 
+//  #define A_GPU 1
+//  #define A_HLSL 1
+//  #define A_HLSL_6_2 1
+//  #define A_NO_16_BIT_CAST 1
+//  #define A_HALF 1
+//  #include &quot;ffx_a.h&quot;
+//  #define FSR_EASU_H 1
+//  #define FSR_RCAS_H 1
+//  //declare input callbacks
+//  #include &quot;ffx_fsr1.h&quot;
+// 
+//  Example of declaring the required input callbacks for GLSL :
+//  The callbacks need to gather4 for each color channel using the specified texture coordinate &#x27;p&#x27;.
+//  EASU uses gather4 to reduce position computation logic and for free Arrays of Structures to Structures of Arrays conversion.
+// 
+//  AH4 FsrEasuRH(AF2 p){return AH4(textureGather(sampler2D(tex,sam),p,0));}
+//  AH4 FsrEasuGH(AF2 p){return AH4(textureGather(sampler2D(tex,sam),p,1));}
+//  AH4 FsrEasuBH(AF2 p){return AH4(textureGather(sampler2D(tex,sam),p,2));}
+//  ...
+//  The FsrEasuCon function needs to be called from the CPU or GPU to set up constants.
+//  The difference in viewport and input image size is there to support Dynamic Resolution Scaling.
+//  To use FsrEasuCon() on the CPU, define A_CPU before including ffx_a and ffx_fsr1.
+//  Including a GPU example here, the &#x27;con0&#x27; through &#x27;con3&#x27; values would be stored out to a constant buffer.
+//  AU4 con0,con1,con2,con3;
+//  FsrEasuCon(con0,con1,con2,con3,
+//    1920.0,1080.0,  // Viewport size (top left aligned) in the input image which is to be scaled.
+//    3840.0,2160.0,  // The size of the input image.
+//    2560.0,1440.0); // The output resolution.
+//==============================================================================================================================
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//_____________________________________________________________/\_______________________________________________________________
+//==============================================================================================================================
+//                                                      CONSTANT SETUP
+//==============================================================================================================================
+// Call to setup required constant values (works on CPU or GPU).</pre>
+<h3>edge-smoothing/fsr/shaders/fsr-pass0.slang</h3><pre>// SPDX-License-Identifier: Unlicense</pre>
+<h3>edge-smoothing/fsr/shaders/fsr-pass1.slang</h3><pre>// SPDX-License-Identifier: Unlicense</pre>
+<h3>edge-smoothing/xbrz/shaders/xbrz-freescale.slang</h3><pre>/*
+   Hyllian&#x27;s xBR-vertex code and texel mapping
+   
+   Copyright (C) 2011/2016 Hyllian - sergiogdb@gmail.com
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the &quot;Software&quot;), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is 
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+   THE SOFTWARE.
+
+*/
+
+// This shader also uses code and/or concepts from xBRZ as it appears
+// in the Desmume source code. The license for which is as follows:
+
+
+// ****************************************************************************
+// * This file is part of the HqMAME project. It is distributed under         *
+// * GNU General Public License: http://www.gnu.org/licenses/gpl-3.0          *
+// * Copyright (C) Zenju (zenju AT gmx DOT de) - All Rights Reserved          *
+// *                                                                          *
+// * Additionally and as a special exception, the author gives permission     *
+// * to link the code of this program with the MAME library (or with modified *
+// * versions of MAME that use the same license as MAME), and distribute      *
+// * linked combinations including the two. You must obey the GNU General     *
+// * Public License in all respects for all of the code used other than MAME. *
+// * If you modify this file, you may extend this exception to your version   *
+// * of the file, but you are not obligated to do so. If you do not wish to   *
+// * do so, delete this exception statement from your version.                *
+// ****************************************************************************</pre>
+<h3>handheld/shaders/gameboy/shader-files/gb-pass0.slang</h3><pre>///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// Gameboy Classic Shader v0.2.2                                         //
+//                                                                       //
+// Copyright (C) 2013 Harlequin : unknown92835@gmail.com                 //
+//                                                                       //
+// Modified 2/6/24 to support color output by mattakins.                 //
+//                                                                       //
+// This program is free software: you can redistribute it and/or modify  //
+// it under the terms of the GNU General Public License as published by  //
+// the Free Software Foundation, either version 3 of the License, or     //
+// (at your option) any later version.                                   //
+//                                                                       //
+// This program is distributed in the hope that it will be useful,       //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+// GNU General Public License for more details.                          //
+//                                                                       //
+// You should have received a copy of the GNU General Public License     //
+// along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;. //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////</pre>
+<h3>handheld/shaders/gameboy/shader-files/gb-pass1.slang</h3><pre>///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// Gameboy Classic Shader v0.2.2                                         //
+//                                                                       //
+// Copyright (C) 2013 Harlequin : unknown92835@gmail.com                 //
+//                                                                       //
+// This program is free software: you can redistribute it and/or modify  //
+// it under the terms of the GNU General Public License as published by  //
+// the Free Software Foundation, either version 3 of the License, or     //
+// (at your option) any later version.                                   //
+//                                                                       //
+// This program is distributed in the hope that it will be useful,       //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+// GNU General Public License for more details.                          //
+//                                                                       //
+// You should have received a copy of the GNU General Public License     //
+// along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;. //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////</pre>
+<h3>handheld/shaders/gameboy/shader-files/gb-pass2.slang</h3><pre>///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// Gameboy Classic Shader v0.2.2                                         //
+//                                                                       //
+// Copyright (C) 2013 Harlequin : unknown92835@gmail.com                 //
+//                                                                       //
+// This program is free software: you can redistribute it and/or modify  //
+// it under the terms of the GNU General Public License as published by  //
+// the Free Software Foundation, either version 3 of the License, or     //
+// (at your option) any later version.                                   //
+//                                                                       //
+// This program is distributed in the hope that it will be useful,       //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+// GNU General Public License for more details.                          //
+//                                                                       //
+// You should have received a copy of the GNU General Public License     //
+// along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;. //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////</pre>
+<h3>handheld/shaders/gameboy/shader-files/gb-pass3.slang</h3><pre>///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// Gameboy Classic Shader v0.2.2                                         //
+//                                                                       //
+// Copyright (C) 2013 Harlequin : unknown92835@gmail.com                 //
+//                                                                       //
+// This program is free software: you can redistribute it and/or modify  //
+// it under the terms of the GNU General Public License as published by  //
+// the Free Software Foundation, either version 3 of the License, or     //
+// (at your option) any later version.                                   //
+//                                                                       //
+// This program is distributed in the hope that it will be useful,       //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+// GNU General Public License for more details.                          //
+//                                                                       //
+// You should have received a copy of the GNU General Public License     //
+// along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;. //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////</pre>
+<h3>handheld/shaders/gameboy/shader-files/gb-pass4.slang</h3><pre>///////////////////////////////////////////////////////////////////////////
+//                                                                       //
+// Gameboy Classic Shader v0.2.2                                         //
+//                                                                       //
+// Copyright (C) 2013 Harlequin : unknown92835@gmail.com                 //
+//                                                                       //
+// This program is free software: you can redistribute it and/or modify  //
+// it under the terms of the GNU General Public License as published by  //
+// the Free Software Foundation, either version 3 of the License, or     //
+// (at your option) any later version.                                   //
+//                                                                       //
+// This program is distributed in the hope that it will be useful,       //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
+// GNU General Public License for more details.                          //
+//                                                                       //
+// You should have received a copy of the GNU General Public License     //
+// along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;. //
+//                                                                       //
+///////////////////////////////////////////////////////////////////////////</pre>
+<h3>pixel-art-scaling/shaders/sharp-bilinear-simple.slang</h3><pre>/*
+   Author: rsn8887 (based on TheMaister)
+   License: Public domain
+
+   This is an integer prescale filter that should be combined
+   with a bilinear hardware filtering (GL_BILINEAR filter or some such) to achieve
+   a smooth scaling result with minimum blur. This is good for pixelgraphics
+   that are scaled by non-integer factors.
+   
+   The prescale factor and texel coordinates are precalculated
+   in the vertex shader for speed.
+*/</pre>
+<h3>sharpen/shaders/rcas.slang</h3><pre>/*
+    Robust Contrast Adaptive (RCA) Sharpening v1.0, re-implemented by fishku
+
+    Copyright (c) 2021 Advanced Micro Devices, Inc. All rights reserved.
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the &quot;Software&quot;), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+
+    Changelog:
+    v1.0: Initial release.
+*/</pre>
+</body></html>

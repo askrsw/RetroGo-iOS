@@ -178,6 +178,8 @@ final class GameConfigSession {
             array.append((section: .restartRequired, entries: restartRequiredEntries))
         }
 
+        array.append((section: .video, entries: makeVideoConfigEntries()))
+
         let overlayEntries = makeOverlayConfigEntries()
         if overlayEntries.count > 0 {
             array.append((section: .overlay, entries: overlayEntries))
@@ -814,6 +816,7 @@ extension GameConfigSession {
     static let portDevice = SQLite.Expression<String?>("port_device")
 
     /*
+     * v11: shader_config stores one optional Shader selection and its parameters per scope (RetroRomPersistence+v11).
      * key, configScope, updateAt
      * v3: threadEnabled, fastForwardMultiplier
      * v4: videoDriver, audioDriver, muteOnFastForward,

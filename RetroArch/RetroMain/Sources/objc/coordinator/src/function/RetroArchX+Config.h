@@ -67,6 +67,14 @@ NS_ASSUME_NONNULL_BEGIN
 + (unsigned)appRetroLanguage;
 - (void)config:(RAConfig *)cfg;
 
+/// Main-thread renderer operations, synchronized with the game logic runner.
+- (NSString *)shaderVideoDriver;
++ (void)configureShaderCacheDirectory:(NSString *)path;
++ (nullable NSDictionary<NSString *, id> *)prepareShaderCacheSourceAtPath:(NSString *)path NS_SWIFT_NAME(prepareShaderCacheSource(atPath:));
+- (BOOL)applyShaderAtPath:(nullable NSString *)path values:(NSDictionary<NSString *, NSNumber *> *)values NS_SWIFT_NAME(applyShader(path:values:));
+- (BOOL)setShaderValue:(double)value forParameter:(NSString *)parameter NS_SWIFT_NAME(setShaderValue(_:parameter:));
+- (NSArray<NSDictionary<NSString *, id> *> *)currentShaderParameters;
+
 /// Frontend and core log levels: INFO in Debug builds, WARN in Release builds.
 /// Call after RetroArch loads its settings, which may reset them.
 - (void)applyLogLevels;

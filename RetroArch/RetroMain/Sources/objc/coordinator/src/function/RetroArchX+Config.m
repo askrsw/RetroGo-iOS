@@ -30,6 +30,9 @@
 #import "../input/RAPhoneRumble.h"
 
 #include <gfx/video_driver.h>
+#include <gfx/video_thread_wrapper.h>
+#include <gfx/video_shader_parse.h>
+#include <math.h>
 #include <utils/configuration.h>
 #include <main/runloop.h>
 #include <audio/audio_driver.h>
@@ -110,6 +113,10 @@ static char coreOptionConfigurationKey;
 
     settings_t *settings = config_get_ptr();
     if(settings != nil) {
+        // RetroGo owns Shader scope; never auto-load a previous game's RA preset.
+        settings->bools.video_shader_enable = false;
+        settings->bools.auto_shaders_enable = false;
+        runloop_state_get_ptr()->runtime_shader_preset_path[0] = '\0';
         [self p_writeCString:settings->arrays.video_driver cap:sizeof(settings->arrays.video_driver) value:cfg.videoDriver];
         [self p_writeCString:settings->arrays.audio_driver cap:sizeof(settings->arrays.audio_driver) value:cfg.audioDriver];
         [self setMuteOnFastForward:cfg.muteOnFastForward];
@@ -123,6 +130,96 @@ static char coreOptionConfigurationKey;
     ra_port_devices_set_preferred(cfg.portDevice.UTF8String);
 
     [[RAInputActionManager shared] applyInputBindingProfile:cfg.inputBindingProfile coreCapabilities:cfg.coreCaps useLock:YES];
+}
+
+- (NSString *)shaderVideoDriver {
+    NSAssert(NSThread.isMainThread, @"Shader operations require the render thread");
+    if (!self.gameLogicRunner) return @"";
+    video_driver_state_t *video = video_state_get_ptr();
+    const video_driver_t *driver = video_driver_is_threaded()
+        ? virtual_video_get_real_driver() : video->current_video;
+    return driver && driver->ident ? [NSString stringWithUTF8String:driver->ident] : @"";
+}
+
++ (void)configureShaderCacheDirectory:(NSString *)path {
+    retrogo_shader_cache_set_directory(path.UTF8String);
+}
+
++ (NSDictionary<NSString *, id> *)prepareShaderCacheSourceAtPath:(NSString *)path {
+    char artifact[PATH_MAX_LENGTH];
+    bool compiled = false;
+    if (!retrogo_shader_cache_prepare_info(path.UTF8String, artifact, sizeof(artifact), &compiled)) return nil;
+    return @{ @"path": [NSString stringWithUTF8String:artifact], @"compiled": @(compiled) };
+}
+
+- (BOOL)applyShaderAtPath:(NSString *)path values:(NSDictionary<NSString *, NSNumber *> *)values {
+    NSAssert(NSThread.isMainThread, @"Shader operations require the render thread");
+    id<RAGameLoopRunner> runner = self.gameLogicRunner;
+    if (!runner) return NO;
+    NSNumber *result = (NSNumber *)[runner suspendGameLoopAndPerformSync:^NSObject * {
+        video_driver_state_t *video = video_state_get_ptr();
+        if (!video || !video->data || !video->current_video || !video->current_video->set_shader)
+            return @NO;
+        BOOL ok = video->current_video->set_shader(video->data, RARCH_SHADER_SLANG,
+                                                   path.length ? path.UTF8String : NULL);
+        if (ok) {
+            settings_t *settings = config_get_ptr();
+            if (settings) settings->bools.video_shader_enable = path.length > 0;
+            runloop_state_t *runloop = runloop_state_get_ptr();
+            strlcpy(runloop->runtime_shader_preset_path, path.length ? path.UTF8String : "",
+                    sizeof(runloop->runtime_shader_preset_path));
+            video_shader_ctx_t context = {0};
+            if (path.length && video_shader_driver_get_current_shader(&context) && context.data) {
+                for (unsigned i = 0; i < context.data->num_parameters; i++) {
+                    struct video_shader_parameter *p = &context.data->parameters[i];
+                    NSNumber *value = values[[NSString stringWithUTF8String:p->id]];
+                    if (value && isfinite(value.doubleValue))
+                        p->current = fminf(p->maximum, fmaxf(p->minimum, value.floatValue));
+                }
+            }
+            video_driver_cached_frame();
+        }
+        return @(ok);
+    } runOnLogicThread:NO];
+    return result.boolValue;
+}
+
+- (BOOL)setShaderValue:(double)value forParameter:(NSString *)parameter {
+    NSAssert(NSThread.isMainThread, @"Shader operations require the render thread");
+    if (!self.gameLogicRunner || !isfinite(value)) return NO;
+    NSNumber *result = (NSNumber *)[self.gameLogicRunner suspendGameLoopAndPerformSync:^NSObject * {
+        video_shader_ctx_t context = {0};
+        if (!video_shader_driver_get_current_shader(&context) || !context.data) return @NO;
+        for (unsigned i = 0; i < context.data->num_parameters; i++) {
+            struct video_shader_parameter *p = &context.data->parameters[i];
+            if (strcmp(p->id, parameter.UTF8String) == 0) {
+                p->current = fminf(p->maximum, fmaxf(p->minimum, (float)value));
+                video_driver_cached_frame();
+                return @YES;
+            }
+        }
+        return @NO;
+    } runOnLogicThread:NO];
+    return result.boolValue;
+}
+
+- (NSArray<NSDictionary<NSString *,id> *> *)currentShaderParameters {
+    NSAssert(NSThread.isMainThread, @"Shader operations require the render thread");
+    if (!self.gameLogicRunner) return @[];
+    NSArray *result = (NSArray *)[self.gameLogicRunner suspendGameLoopAndPerformSync:^NSObject * {
+        video_shader_ctx_t context = {0};
+        if (!video_shader_driver_get_current_shader(&context) || !context.data) return @[];
+        NSMutableArray *parameters = [NSMutableArray array];
+        for (unsigned i = 0; i < context.data->num_parameters; i++) {
+            struct video_shader_parameter *p = &context.data->parameters[i];
+            [parameters addObject:@{@"id": [NSString stringWithUTF8String:p->id],
+                @"title": [NSString stringWithUTF8String:p->desc], @"initial": @(p->initial),
+                @"minimum": @(p->minimum), @"maximum": @(p->maximum), @"step": @(p->step),
+                @"current": @(p->current)}];
+        }
+        return parameters;
+    } runOnLogicThread:NO];
+    return result ?: @[];
 }
 
 - (void)setFastForwardMultiplier:(double)multiplier {

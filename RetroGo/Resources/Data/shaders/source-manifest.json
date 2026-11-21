@@ -1,0 +1,188 @@
+{
+  "source": "Backups/SandboxDoc-1.21.0/shaders/shaders_slang",
+  "sourceDescription": "User-provided RetroArch 1.21.0 App Store sandbox snapshot; upstream commit unknown",
+  "importedOn": "2026-10-19",
+  "presets": [
+    "scanlines/scanline.slangp",
+    "crt/zfast-crt.slangp",
+    "crt/crt-easymode.slangp",
+    "crt/crt-geom.slangp",
+    "handheld/lcd-grid-v2.slangp",
+    "pixel-art-scaling/sharp-bilinear-simple.slangp",
+    "edge-smoothing/xbrz/xbrz-freescale.slangp",
+    "handheld/gameboy.slangp",
+    "ntsc/ntsc-256px-composite.slangp",
+    "sharpen/rca_sharpen.slangp",
+    "edge-smoothing/fsr/retrogo-fsr.slangp"
+  ],
+  "files": [
+    {
+      "path": "crt/crt-easymode.slangp",
+      "sha256": "3e624916ca4e3bc8660c0b00b3abcb262b03b2699137a03d8171d936054a1fd5"
+    },
+    {
+      "path": "crt/crt-geom.slangp",
+      "sha256": "094d5133a3b6fbb4c2e6cba65141e5b850517aa3201bea7bdb41e4899087b60b"
+    },
+    {
+      "path": "crt/shaders/crt-easymode.slang",
+      "sha256": "cacb1595c7988619c29b46cc283e2140f25cf14a9d104fcf6c28f197ee4b29a3"
+    },
+    {
+      "path": "crt/shaders/crt-geom.slang",
+      "sha256": "6533ad97601445f35a1b4f25ad54974ee9983fef0337ffec11c9c372226dbb58"
+    },
+    {
+      "path": "crt/shaders/zfast_crt/zfast_crt_finemask.slang",
+      "sha256": "0214419beed4c08d991288e90f8a73700fd7da567a454ad2ffe725b3b6eea366"
+    },
+    {
+      "path": "crt/shaders/zfast_crt/zfast_crt_impl.inc",
+      "sha256": "e1006274577b85f18ed793856b46f92d5cd6f6207a98af398004644006907bf1"
+    },
+    {
+      "path": "crt/zfast-crt.slangp",
+      "sha256": "fa3a7f37344f351572e692bc317a21f89f30628c08c09adc1091e4900f1f8e11"
+    },
+    {
+      "path": "edge-smoothing/fsr/fsr.slangp",
+      "sha256": "16c1cb6e374b84d02dda763bbd77962c5eb81c807bbd63fe7ed1884645249c48"
+    },
+    {
+      "path": "edge-smoothing/fsr/retrogo-fsr.slangp",
+      "sha256": "c748b593ab9a4e64b63445a6343e0c553c38e3c3a55dbe0dd70164ce873f4a7c"
+    },
+    {
+      "path": "edge-smoothing/fsr/shaders/ffx_a.h",
+      "sha256": "f60e2722fcd13989523b9164d776ab382b3692791767f3bf8bb19967f763f3fb"
+    },
+    {
+      "path": "edge-smoothing/fsr/shaders/ffx_fsr1.h",
+      "sha256": "93c3922362ea7fc99cbcc698ca30c98de4f8c246d1fbb0b09e015ddef38ce3a5"
+    },
+    {
+      "path": "edge-smoothing/fsr/shaders/fsr-pass0.slang",
+      "sha256": "adcff139ec23810d875373ed749a3f2315f3fc2f23cbf3010a97d6b7df5f879f"
+    },
+    {
+      "path": "edge-smoothing/fsr/shaders/fsr-pass1.slang",
+      "sha256": "c9b7352a5889a74bb3b0db5423df0419a88702147689dd950c55eb5cb4693388"
+    },
+    {
+      "path": "edge-smoothing/xbrz/shaders/xbrz-freescale.slang",
+      "sha256": "5899b4f6a4c66acb228b49ce59925b41215fcebaff78daf5668eade9b9c23844"
+    },
+    {
+      "path": "edge-smoothing/xbrz/xbrz-freescale.slangp",
+      "sha256": "545f35fc2edf17756a3b14d75c7beb9cb91c9a5a143daa825d5fa5625c505341"
+    },
+    {
+      "path": "handheld/gameboy.slangp",
+      "sha256": "b095716947f03bd6b14d8f91d17f417a6cbec2fcbc1dd014b52ec382ad6543c1"
+    },
+    {
+      "path": "handheld/lcd-grid-v2.slangp",
+      "sha256": "a643c521fc44fadaff27658ee980ffc3df0703265d812da70de5fb3ee42abf1d"
+    },
+    {
+      "path": "handheld/shaders/gameboy/resources/background.png",
+      "sha256": "1509dbddab4779cf12a4279323524fe81ee7448cb9041b9a8d2dd98e4b8630b0"
+    },
+    {
+      "path": "handheld/shaders/gameboy/resources/palette.png",
+      "sha256": "9865e419eafb484e1b3cfdf99241d71a183e5f23871295fa1822337a22aca9fc"
+    },
+    {
+      "path": "handheld/shaders/gameboy/shader-files/gb-pass0.slang",
+      "sha256": "8c47b5f6dd91f67e7983e6fb9725d0f47b32516aeeaf2fa6ca4aa72692b004e5"
+    },
+    {
+      "path": "handheld/shaders/gameboy/shader-files/gb-pass1.slang",
+      "sha256": "8e493671a2fec9fc15b45a5e9a05705757183eea8ab421524882200201d1c8a7"
+    },
+    {
+      "path": "handheld/shaders/gameboy/shader-files/gb-pass2.slang",
+      "sha256": "df0ad0677368dd632f23cf89710d4b739389a99dd523ce981d549a89e276588b"
+    },
+    {
+      "path": "handheld/shaders/gameboy/shader-files/gb-pass3.slang",
+      "sha256": "32faa1abd209038e3b15c79fa79516f1464b9094d33b6951c7d2656be9fd99a8"
+    },
+    {
+      "path": "handheld/shaders/gameboy/shader-files/gb-pass4.slang",
+      "sha256": "00dcd1b9f20545b61bd1ea74165e0e65d16078464d4018da91dbfa9719901a59"
+    },
+    {
+      "path": "handheld/shaders/lcd-cgwg/lcd-grid-v2.slang",
+      "sha256": "dc77b29530e5b771f12a5a2dd68c390805139bc25d84a30dead021fd38e581c5"
+    },
+    {
+      "path": "ntsc/ntsc-256px-composite.slangp",
+      "sha256": "c67f11793a6f9b5d91b53f0cfe0608a8451b335099e69c42a8ff2ffa8e7d4404"
+    },
+    {
+      "path": "ntsc/shaders/maister/ntsc-decode-filter-3phase.inc",
+      "sha256": "1bd8cc8fea48aa89229c4492792aea1e012625cdb5528943c2c9d6bbe1fe9723"
+    },
+    {
+      "path": "ntsc/shaders/maister/ntsc-param.inc",
+      "sha256": "2a51928ef0630a06dadb90131ba45191cebf2526176f05db9d00cffc86eda167"
+    },
+    {
+      "path": "ntsc/shaders/maister/ntsc-pass1-composite-3phase.slang",
+      "sha256": "3d888897b88ef56512b950ce3295298e6ab6f0c5e63983de46c400fb9bff2c03"
+    },
+    {
+      "path": "ntsc/shaders/maister/ntsc-pass1-encode-demodulate.inc",
+      "sha256": "5ca33bce0416e8860f08086dd9254338c763ade078a3ffb7a5045be9330f0b55"
+    },
+    {
+      "path": "ntsc/shaders/maister/ntsc-pass1-vertex.inc",
+      "sha256": "9e02fddbd36d90c43363063f77a06eb042eb028761643f2c0291dbac3b3bd3c8"
+    },
+    {
+      "path": "ntsc/shaders/maister/ntsc-pass2-3phase-gamma.slang",
+      "sha256": "2d3c5c8b6a84c4c6628286572c8a540484cebbf824116bba8847cfc908ec27c6"
+    },
+    {
+      "path": "ntsc/shaders/maister/ntsc-pass2-decode.inc",
+      "sha256": "cdd7aed4686af2818747d1ba45d60d8fc50e92d331e2c96245da5be8cdd2a3cb"
+    },
+    {
+      "path": "ntsc/shaders/maister/ntsc-pass2-vertex.inc",
+      "sha256": "a1fc926e7db323457ba7edc4b017d9efc93d1410346c254aea81283c7e51f8d4"
+    },
+    {
+      "path": "ntsc/shaders/maister/ntsc-rgbyuv.inc",
+      "sha256": "a62e7aa91aafd8b4bc1e8abd136229ded0e7d92982bc255ea570989df812bfca"
+    },
+    {
+      "path": "pixel-art-scaling/shaders/sharp-bilinear-simple.slang",
+      "sha256": "936698d1995e01bfe83307c5226b695e8135205d97932ba1f533c130fb86da5e"
+    },
+    {
+      "path": "pixel-art-scaling/sharp-bilinear-simple.slangp",
+      "sha256": "310b6193f770baef6a7485fbc7115b5bdf9e237203aaa1ebe39e154b6895a50d"
+    },
+    {
+      "path": "scanlines/scanline.slangp",
+      "sha256": "33768f5bbce0b53ada4fc73dc5ff13e6dfba6990b4d8fe27e87ece50024a2623"
+    },
+    {
+      "path": "scanlines/shaders/scanline.slang",
+      "sha256": "da370348885169d437a53af3e64a064adb4019ff52eabc9ae1a282fc96170ba0"
+    },
+    {
+      "path": "sharpen/rca_sharpen.slangp",
+      "sha256": "9c67921f21319449f966c7a5ae2869afa52391a95f449b50e1566dda1c1b2286"
+    },
+    {
+      "path": "sharpen/shaders/rcas.slang",
+      "sha256": "f6bd6ac826e1f4947dba10c1fb4565a7cc75dce73669787bb5940f3d2c8d9508"
+    }
+  ],
+  "updatedOn": "2026-10-23",
+  "localPresets": [
+    "edge-smoothing/fsr/retrogo-fsr.slangp"
+  ]
+}

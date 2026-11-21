@@ -30,6 +30,7 @@ enum GameConfigSection: Hashable {
     case title
     case disc
     case restartRequired
+    case video
     case overlay
     case controller
 }
@@ -47,6 +48,8 @@ extension GameConfigSection {
             }
         case .restartRequired:
             return Bundle.localizedString(forKey: "configpage_restart_required_section_footer")
+        case .video:
+            return shaderText("video_footer")
         case .disc:
             return Bundle.localizedString(forKey: "configpage_disc_section_footer")
         default:
@@ -57,6 +60,8 @@ extension GameConfigSection {
 
     func getSectionHeaderText(session: GameConfigSession) -> String? {
         switch self {
+            case .video:
+                return shaderText("video")
             case .disc:
                 return Bundle.localizedString(forKey: "configpage_disc_section_header")
             case .overlay:

@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+        A52420261024000000000032 /* GameShaderNoticesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52420261024000000000031; };
+		A52420261024000000000002 /* GameShaderFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52420261024000000000001 /* GameShaderFolder.swift */; };
+		A52320261023000000000012 /* GameShaderCompiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52320261023000000000011 /* GameShaderCompiler.swift */; };
+		A51920261019000000000002 /* GameShaderPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51920261019000000000001 /* GameShaderPreset.swift */; };
+		A51920261019000000000004 /* GameShaderParameter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51920261019000000000003 /* GameShaderParameter.swift */; };
+		A51920261019000000000006 /* GameShaderStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51920261019000000000005 /* GameShaderStore.swift */; };
+		A51920261019000000000008 /* GameShaderCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51920261019000000000007 /* GameShaderCatalog.swift */; };
+		A5192026101900000000000A /* GameShaderRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51920261019000000000009 /* GameShaderRuntime.swift */; };
+		A5192026101900000000000C /* GameShaderSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5192026101900000000000B /* GameShaderSession.swift */; };
+		A5192026101900000000000E /* GameShaderParameterCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5192026101900000000000D /* GameShaderParameterCell.swift */; };
+		A51920261019000000000012 /* GameShaderParameterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51920261019000000000011 /* GameShaderParameterViewController.swift */; };
+		A51920261019000000000014 /* GameShaderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A51920261019000000000013 /* GameShaderViewController.swift */; };
 		AB0106A12F8B000000C0FFEE /* RetroGoLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0106A22F8B000000C0FFEE /* RetroGoLogger.swift */; };
 		AB0A1DD52FB71C7800503077 /* GamePauseCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */; };
 		AB0AF4BD2FD9B74400257A18 /* ODRResourceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */; };
@@ -235,6 +247,7 @@
 		C01920260919000000000002 /* GameCoreOptionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01920260919000000000004 /* GameCoreOptionViewController.swift */; };
 		C02120260921000000000001 /* emu.mame.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = C02120260921000000000002 /* emu.mame.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C8864B4831E948E3AC1D7943 /* RetroRomPersistence+v10.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A25882CA4B54EA9BD32D2B3 /* RetroRomPersistence+v10.swift */; };
+		A52320261023000000000002 /* RetroRomPersistence+v11.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52320261023000000000001 /* RetroRomPersistence+v11.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -281,7 +294,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+        A52420261024000000000031 /* GameShaderNoticesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderNoticesViewController.swift; sourceTree = "<group>"; };
+		A52420261024000000000001 /* GameShaderFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderFolder.swift; sourceTree = "<group>"; };
+		A52320261023000000000011 /* GameShaderCompiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderCompiler.swift; sourceTree = "<group>"; };
 		9A25882CA4B54EA9BD32D2B3 /* RetroRomPersistence+v10.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RetroRomPersistence+v10.swift"; sourceTree = "<group>"; };
+		A52320261023000000000001 /* RetroRomPersistence+v11.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RetroRomPersistence+v11.swift"; sourceTree = "<group>"; };
+		A51920261019000000000001 /* GameShaderPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderPreset.swift; sourceTree = "<group>"; };
+		A51920261019000000000003 /* GameShaderParameter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderParameter.swift; sourceTree = "<group>"; };
+		A51920261019000000000005 /* GameShaderStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderStore.swift; sourceTree = "<group>"; };
+		A51920261019000000000007 /* GameShaderCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderCatalog.swift; sourceTree = "<group>"; };
+		A51920261019000000000009 /* GameShaderRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderRuntime.swift; sourceTree = "<group>"; };
+		A5192026101900000000000B /* GameShaderSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderSession.swift; sourceTree = "<group>"; };
+		A5192026101900000000000D /* GameShaderParameterCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderParameterCell.swift; sourceTree = "<group>"; };
+		A51920261019000000000011 /* GameShaderParameterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderParameterViewController.swift; sourceTree = "<group>"; };
+		A51920261019000000000013 /* GameShaderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameShaderViewController.swift; sourceTree = "<group>"; };
 		AB0106A22F8B000000C0FFEE /* RetroGoLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RetroGoLogger.swift; sourceTree = "<group>"; };
 		AB0A1DD42FB71C7800503077 /* GamePauseCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamePauseCoordinator.swift; sourceTree = "<group>"; };
 		AB0AF4BC2FD9B74400257A18 /* ODRResourceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ODRResourceViewController.swift; sourceTree = "<group>"; };
@@ -529,6 +555,25 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A51920261019000000000100 /* GameShader */ = {
+			isa = PBXGroup;
+			children = (
+                A52420261024000000000031 /* GameShaderNoticesViewController.swift */,
+				A51920261019000000000001 /* GameShaderPreset.swift */,
+				A52420261024000000000001 /* GameShaderFolder.swift */,
+				A51920261019000000000003 /* GameShaderParameter.swift */,
+				A51920261019000000000005 /* GameShaderStore.swift */,
+				A51920261019000000000007 /* GameShaderCatalog.swift */,
+				A51920261019000000000009 /* GameShaderRuntime.swift */,
+				A52320261023000000000011 /* GameShaderCompiler.swift */,
+				A5192026101900000000000B /* GameShaderSession.swift */,
+				A5192026101900000000000D /* GameShaderParameterCell.swift */,
+				A51920261019000000000011 /* GameShaderParameterViewController.swift */,
+				A51920261019000000000013 /* GameShaderViewController.swift */,
+			);
+			path = GameShader;
+			sourceTree = "<group>";
+		};
 		AB19A0032FE9000000A1B2C3 /* MameRomSet */ = {
 			isa = PBXGroup;
 			children = (
@@ -667,6 +712,7 @@
 		AB55BC7A2F3B8BB100569A84 /* GamePage */ = {
 			isa = PBXGroup;
 			children = (
+				A51920261019000000000100 /* GameShader */,
 				AB8905D42FD34CE500CA9DEC /* GameCheat */,
 				AB77608B2FCF61280026D6F6 /* GameToolbar */,
 				AB9CDD6F2F70422B002E6A55 /* GameOverlay */,
@@ -770,6 +816,7 @@
 				AB2C0243D36005BAD467BBC7 /* RetroRomPersistence+v8.swift */,
 				AC0F1A012FF9000000F1A001 /* RetroRomPersistence+v9.swift */,
 				9A25882CA4B54EA9BD32D2B3 /* RetroRomPersistence+v10.swift */,
+				A52320261023000000000001 /* RetroRomPersistence+v11.swift */,
 			);
 			path = Store;
 			sourceTree = "<group>";
@@ -1330,6 +1377,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+                A52420261024000000000032 /* GameShaderNoticesViewController.swift in Sources */,
+				A51920261019000000000002 /* GameShaderPreset.swift in Sources */,
+				A52420261024000000000002 /* GameShaderFolder.swift in Sources */,
+				A51920261019000000000004 /* GameShaderParameter.swift in Sources */,
+				A51920261019000000000006 /* GameShaderStore.swift in Sources */,
+				A51920261019000000000008 /* GameShaderCatalog.swift in Sources */,
+				A5192026101900000000000A /* GameShaderRuntime.swift in Sources */,
+				A52320261023000000000012 /* GameShaderCompiler.swift in Sources */,
+				A5192026101900000000000C /* GameShaderSession.swift in Sources */,
+				A5192026101900000000000E /* GameShaderParameterCell.swift in Sources */,
+				A51920261019000000000012 /* GameShaderParameterViewController.swift in Sources */,
+				A51920261019000000000014 /* GameShaderViewController.swift in Sources */,
 				C01920260919000000000001 /* GameCoreOptionCatalog.swift in Sources */,
 				C01920260919000000000002 /* GameCoreOptionViewController.swift in Sources */,
 				AB94AAC62FBDA2640046B830 /* DiscoverGameDetailViewController.swift in Sources */,
@@ -1434,6 +1493,7 @@
 				AB2C32206C7713DE2C6E2066 /* RetroRomPersistence+v8.swift in Sources */,
 				AC0F1A022FF9000000F1A001 /* RetroRomPersistence+v9.swift in Sources */,
 				C8864B4831E948E3AC1D7943 /* RetroRomPersistence+v10.swift in Sources */,
+				A52320261023000000000002 /* RetroRomPersistence+v11.swift in Sources */,
 				AB2CC16E6B788A3F13425E40 /* MameCheatDefinition.swift in Sources */,
 				AB2CEB5B5E02F2A4E604B28B /* MameCheatLibrary.swift in Sources */,
 				AB2C72D76691A7C247FFA5B9 /* MameCheatLibraryViewController.swift in Sources */,

@@ -46,6 +46,7 @@ final class ODRResourceViewController: UIViewController {
         case base
         case languagePacks
         case cache
+        case shaderCache
     }
 
     private let loader = OnDemandResourceLoader.shared
@@ -53,6 +54,7 @@ final class ODRResourceViewController: UIViewController {
     private let languagePacks = OnDemandResourceLoader.languagePacks
     private lazy var tableView = configUI()
     private var coverCacheSize: Int64?
+    private var shaderCacheSize: Int64?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,6 +71,14 @@ final class ODRResourceViewController: UIViewController {
         NotificationCenter.default.addObserver(
             self, selector: #selector(stateChanged(_:)),
             name: .activeLanguagePackDidChange, object: nil)
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(shaderCacheChanged),
+            name: GameShaderCompiler.cacheDidChange, object: nil)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        reloadShaderCacheSize()
     }
 
     deinit { NotificationCenter.default.removeObserver(self) }
@@ -230,6 +240,17 @@ final class ODRResourceViewController: UIViewController {
         }
     }
 
+    @objc private func shaderCacheChanged() { reloadShaderCacheSize() }
+
+    private func reloadShaderCacheSize() {
+        Task { [weak self] in
+            let bytes = await GameShaderCompiler.shared.cacheUsage()
+            guard let self else { return }
+            shaderCacheSize = bytes
+            tableView.reloadSections(IndexSet(integer: Section.shaderCache.rawValue), with: .none)
+        }
+    }
+
     private func confirmClearCoverCache() {
         let alert = UIAlertController(
             title: Bundle.localizedString(forKey: "odr_cache_delete_confirm_title"),
@@ -259,12 +280,22 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
         switch Section(rawValue: section) {
         case .base:          return baseResources.count
         case .languagePacks: return languagePacks.count
-        case .cache:         return 1
+        case .cache, .shaderCache: return 1
         case nil:            return 0
         }
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if Section(rawValue: indexPath.section) == .shaderCache {
+            let cell = tableView.dequeueReusableCell(withIdentifier: ODRResourceCell.reuseID, for: indexPath) as! ODRResourceCell
+            cell.configure(
+                icon: IconRender.shared.settingsIcon(symbol: "slider.horizontal.3", background: .mainColor, size: CGSize(width: 28, height: 28)),
+                title: Bundle.localizedString(forKey: "odr_shader_cache_title"),
+                desc: Bundle.localizedString(forKey: "odr_shader_cache_desc"),
+                status: shaderCacheSize.map { sizeString($0) } ?? Bundle.localizedString(forKey: "odr_cache_calculating"),
+                accessory: .none)
+            return cell
+        }
         guard let r = resource(at: indexPath) else {
             return cacheCell(tableView, indexPath: indexPath)
         }
@@ -302,6 +333,7 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        guard Section(rawValue: indexPath.section) != .shaderCache else { return }
         guard let r = resource(at: indexPath) else {
             guard (coverCacheSize ?? 0) > 0 else { return }
             Vibration.selection.vibrate()
@@ -320,6 +352,7 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
     /// Swipe-to-delete for installed optional resources and the cover cache.
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath)
     -> UISwipeActionsConfiguration? {
+        guard Section(rawValue: indexPath.section) != .shaderCache else { return nil }
         guard let r = resource(at: indexPath) else {
             guard (coverCacheSize ?? 0) > 0 else { return nil }
             let action = UIContextualAction(
@@ -346,6 +379,7 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
         case .base:          key = "odr_section_base"
         case .languagePacks: key = "odr_section_langpack"
         case .cache:         key = "odr_section_cache"
+        case .shaderCache:   key = "odr_shader_cache_section"
         case nil:            return nil
         }
         let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionHeaderView.className) as? RGSectionHeaderView
@@ -364,6 +398,7 @@ extension ODRResourceViewController: UITableViewDataSource, UITableViewDelegate 
         case .base:          key = "odr_page_footer"
         case .languagePacks: key = "odr_langpack_footer"
         case .cache:         key = "odr_cache_footer"
+        case .shaderCache:   key = "odr_shader_cache_footer"
         case nil:            return nil
         }
         let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: RGSectionFooterView.className) as? RGSectionFooterView
