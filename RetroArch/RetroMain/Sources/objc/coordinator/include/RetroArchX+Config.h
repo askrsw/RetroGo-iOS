@@ -68,6 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)config:(RAConfig *)cfg;
 
 /// Main-thread renderer operations, synchronized with the game logic runner.
+- (void)updateVideoStretch:(BOOL)enabled landscape:(BOOL)landscape NS_SWIFT_NAME(updateVideoStretch(_:landscape:));
 - (NSString *)shaderVideoDriver;
 + (void)configureShaderCacheDirectory:(NSString *)path;
 + (nullable NSDictionary<NSString *, id> *)prepareShaderCacheSourceAtPath:(NSString *)path NS_SWIFT_NAME(prepareShaderCacheSource(atPath:));

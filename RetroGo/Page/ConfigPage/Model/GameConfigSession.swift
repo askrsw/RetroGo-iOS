@@ -228,6 +228,17 @@ extension GameConfigSession {
         return setOptionalValue(column: Self.videoDriver, value: value)
     }
 
+    func getStretchVideoToFill() -> Bool {
+        resolvedValue(column: Self.stretchVideoToFill) ?? true
+    }
+
+    @discardableResult
+    func setStretchVideoToFill(_ enabled: Bool) -> Bool {
+        guard setOptionalValue(column: Self.stretchVideoToFill, value: enabled) else { return false }
+        NotificationCenter.default.post(name: .stretchVideoToFillChanged, object: nil)
+        return true
+    }
+
     func getAudioDriver() -> String {
         config.audioDriver
     }
@@ -792,6 +803,7 @@ extension GameConfigSession {
     static let configScope      = SQLite.Expression<String>("scope")
     static let threadEnabled    = SQLite.Expression<Bool?>("thread_enabled")
     static let fastForwardMultiplier = SQLite.Expression<Double?>("fast_forward_multiplier")
+    static let stretchVideoToFill = SQLite.Expression<Bool?>("stretch_video_to_fill")
 
     // v4
     static let videoDriver         = SQLite.Expression<String?>("video_driver")
@@ -816,7 +828,6 @@ extension GameConfigSession {
     static let portDevice = SQLite.Expression<String?>("port_device")
 
     /*
-     * v11: shader_config stores one optional Shader selection and its parameters per scope (RetroRomPersistence+v11).
      * key, configScope, updateAt
      * v3: threadEnabled, fastForwardMultiplier
      * v4: videoDriver, audioDriver, muteOnFastForward,
@@ -826,6 +837,8 @@ extension GameConfigSession {
      * v7: coreOptions
      * v9: overlayHapticLevel, gameRumbleEnabled, portDevice
      * v10: per-player mapping choices in input_binding_layout_choice (separate table)
+     * v11: shader_config stores one optional Shader selection and its parameters per scope (RetroRomPersistence+v11).
+     *      stretch_video_to_fill allows live stretching when the orientations match.
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

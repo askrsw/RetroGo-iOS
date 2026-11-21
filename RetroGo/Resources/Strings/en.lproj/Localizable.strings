@@ -321,7 +321,7 @@
 "configpage_game_thread_desc" = "Runs game logic on a separate thread. This may improve smoothness and fast-forward performance, but some cores or devices may have compatibility issues.";
 "configpage_game_thread_forbiden_desc" = "Core %@ does not support enabling a separate game logic thread.";
 "configpage_video_driver" = "Video Driver";
-"configpage_video_driver_desc" = "Vulkan is recommended for best stability and compatibility. Metal and GL are experimental and may have performance or compatibility issues.";
+"configpage_video_driver_desc" = "Vulkan is recommended for best stability and compatibility. Metal and GL are experimental and may have performance or compatibility issues. Changes take effect the next time you open the game.";
 "configpage_video_driver_forbiden_desc" = "Core %@ does not support custom video drivers.";
 "configpage_audio_driver" = "Audio Driver";
 "configpage_auto_enable_cheats" = "Auto-Enable Cheats";
@@ -929,7 +929,8 @@
 // Shader
 "shader_title" = "Shader";
 "shader_video" = "Video";
-"shader_video_footer" = "Video driver changes take effect the next time you open the game. Shader changes can be previewed during gameplay.";
+"configpage_stretch_video_to_fill" = "Stretch to Fill Screen";
+"configpage_stretch_video_to_fill_desc" = "Stretches the game image to fill the available area when the game and screen orientations match. Takes effect immediately.";
 "shader_off" = "Off";
 "shader_default" = "Default";
 "shader_inherit" = "Follow Parent Settings";

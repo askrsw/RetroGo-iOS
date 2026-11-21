@@ -323,7 +323,7 @@
 "configpage_game_thread_desc" = "将游戏逻辑放到独立线程运行，可能提升流畅度与快进表现，但部分核心或设备上可能出现兼容性问题。";
 "configpage_game_thread_forbiden_desc" = "核心 %@ 不支持开启独立游戏线程。";
 "configpage_video_driver" = "视频驱动";
-"configpage_video_driver_desc" = "Vulkan 兼容性与稳定性最佳（推荐）；Metal、GL 为实验性选项，可能有性能或兼容性问题。";
+"configpage_video_driver_desc" = "推荐使用 Vulkan，兼容性和稳定性更好。Metal 和 GL 为实验性选项，可能有性能或兼容性问题。更改将在下次打开游戏时生效。";
 "configpage_video_driver_forbiden_desc" = "核心 %@ 不支持自定义视频驱动";
 "configpage_audio_driver" = "音频驱动";
 "configpage_auto_enable_cheats" = "自动启用金手指";
@@ -931,7 +931,8 @@
 // Shader
 "shader_title" = "Shader";
 "shader_video" = "视频";
-"shader_video_footer" = "视频驱动在下次打开游戏时生效。Shader 可在游戏中预览。";
+"configpage_stretch_video_to_fill" = "拉伸铺满屏幕";
+"configpage_stretch_video_to_fill_desc" = "游戏画面与屏幕方向一致时，拉伸画面以填满可用区域。立即生效。";
 "shader_off" = "关闭";
 "shader_default" = "默认";
 "shader_inherit" = "跟随上级设置";

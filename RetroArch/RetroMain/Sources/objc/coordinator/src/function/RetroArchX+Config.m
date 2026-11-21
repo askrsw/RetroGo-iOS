@@ -38,6 +38,7 @@
 #include <audio/audio_driver.h>
 #include <input/input_driver.h>
 #include <defines/input_defines.h>
+#include <defines/video_defines.h>
 #include <string.h>
 #include <core/ra_core_options.h>
 #include <core/ra_port_devices.h>
@@ -118,6 +119,8 @@ static char coreOptionConfigurationKey;
         settings->bools.auto_shaders_enable = false;
         runloop_state_get_ptr()->runtime_shader_preset_path[0] = '\0';
         [self p_writeCString:settings->arrays.video_driver cap:sizeof(settings->arrays.video_driver) value:cfg.videoDriver];
+        settings->bools.video_force_aspect = true;
+        settings->uints.video_aspect_ratio_idx = ASPECT_RATIO_CORE;
         [self p_writeCString:settings->arrays.audio_driver cap:sizeof(settings->arrays.audio_driver) value:cfg.audioDriver];
         [self setMuteOnFastForward:cfg.muteOnFastForward];
 
@@ -130,6 +133,30 @@ static char coreOptionConfigurationKey;
     ra_port_devices_set_preferred(cfg.portDevice.UTF8String);
 
     [[RAInputActionManager shared] applyInputBindingProfile:cfg.inputBindingProfile coreCapabilities:cfg.coreCaps useLock:YES];
+}
+
+- (void)updateVideoStretch:(BOOL)enabled landscape:(BOOL)landscape {
+    NSAssert(NSThread.isMainThread, @"Video stretch updates require the render thread");
+    id<RAGameLoopRunner> runner = self.gameLogicRunner;
+    if (!runner) return;
+
+    [runner suspendGameLoopAndPerformSync:^NSObject * {
+        settings_t *settings = config_get_ptr();
+        if (!settings || !video_state_get_ptr()->data) return nil;
+
+        const float aspect = video_driver_get_core_aspect();
+        const bool stretch = enabled && isfinite(aspect) && aspect > 0.0f &&
+            (landscape ? aspect > 1.0f : aspect < 1.0f);
+        const unsigned ratio = stretch ? ASPECT_RATIO_FULL : ASPECT_RATIO_CORE;
+        if (settings->bools.video_force_aspect == !stretch &&
+            settings->uints.video_aspect_ratio_idx == ratio) return nil;
+
+        settings->bools.video_force_aspect = !stretch;
+        settings->uints.video_aspect_ratio_idx = ratio;
+        video_driver_set_aspect_ratio();
+        video_driver_cached_frame();
+        return nil;
+    } runOnLogicThread:NO];
 }
 
 - (NSString *)shaderVideoDriver {

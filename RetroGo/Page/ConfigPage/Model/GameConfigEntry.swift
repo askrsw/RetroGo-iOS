@@ -349,6 +349,12 @@ extension GameConfigSession {
         }
 
 
+        let stretch = GameConfigEntry(type: .bool, ui: .switch, title: Bundle.localizedString(forKey: "configpage_stretch_video_to_fill"))
+        stretch.getBoolValue = { [weak self] in self?.getStretchVideoToFill() ?? true }
+        stretch.setBoolValue = { [weak self] enabled in self?.setStretchVideoToFill(enabled) }
+        stretch.desc = Bundle.localizedString(forKey: "configpage_stretch_video_to_fill_desc")
+        entries.append(stretch)
+
         let shader = GameConfigEntry(type: .string, ui: .list, title: shaderText("title"))
         shader.opensShaders = true
         shader.getListSelectedTitle = { [weak self] in

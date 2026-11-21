@@ -2457,7 +2457,7 @@ static void metal_set_aspect_ratio(void *data, unsigned aspect_ratio_idx)
 {
    MetalDriver *md = (__bridge MetalDriver *)data;
 
-   md.keepAspect = YES;
+   md.keepAspect = config_get_ptr()->bools.video_force_aspect;
    [md setNeedsResize];
 }
 

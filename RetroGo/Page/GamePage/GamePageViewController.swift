@@ -179,6 +179,7 @@ final class GamePageViewController: RAGameViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        NotificationCenter.default.addObserver(self, selector: #selector(updateVideoStretch), name: .stretchVideoToFillChanged, object: nil)
 
         myOverlayView.isUserInteractionEnabled = false
         AppStoreProFeatureGate.resetFastForwardNotice()
@@ -202,6 +203,7 @@ final class GamePageViewController: RAGameViewController {
             }
             myOverlayView.isUserInteractionEnabled = true
             MainActor.assumeIsolated {
+                updateVideoStretch()
                 if let id = pauseSessionID {
                     GameShaderRuntime.shared.begin(settings: configSession, id: id)
                 }
@@ -322,6 +324,7 @@ final class GamePageViewController: RAGameViewController {
             guard let self else { return }
             // Commit the base controller's final video constraints before running frames.
             view.layoutIfNeeded()
+            updateVideoStretch()
             if shaderPresentationCompletion != nil {
                 DispatchQueue.main.async { [weak self] in self?.completeShaderPresentationRotation() }
             }
@@ -624,6 +627,21 @@ extension GamePageViewController {
     private func gameRumbleEnabledChanged() {
         guard Self.instance == self else { return }
         RetroArchX.shared().setPhoneRumbleEnabled(configSession.getGameRumbleEnabled())
+    }
+
+    @objc
+    private func updateVideoStretch() {
+        guard Self.instance === self, isGameReady else { return }
+        let orientation = view.window?.windowScene?.interfaceOrientation
+        let landscape: Bool
+        if let orientation, orientation.isLandscape || orientation.isPortrait {
+            landscape = orientation.isLandscape
+        } else {
+            let size = view.bounds.size
+            guard size.width != size.height else { return }
+            landscape = size.width > size.height
+        }
+        RetroArchX.shared().updateVideoStretch(configSession.getStretchVideoToFill(), landscape: landscape)
     }
 
     @objc

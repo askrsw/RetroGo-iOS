@@ -48,8 +48,6 @@ extension GameConfigSection {
             }
         case .restartRequired:
             return Bundle.localizedString(forKey: "configpage_restart_required_section_footer")
-        case .video:
-            return shaderText("video_footer")
         case .disc:
             return Bundle.localizedString(forKey: "configpage_disc_section_footer")
         default:
