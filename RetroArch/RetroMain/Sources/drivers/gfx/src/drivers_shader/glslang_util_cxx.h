@@ -53,7 +53,8 @@ struct glslang_output
    glslang_meta meta;
 };
 
-bool glslang_compile_shader(const char *shader_path, glslang_output *output);
+bool glslang_compile_shader(const char *shader_path, glslang_output *output, bool require_cache = false,
+      std::string *artifact = nullptr, bool *compiled = nullptr);
 
 /* Helpers for internal use. */
 bool glslang_parse_meta(const struct string_list *lines, glslang_meta *meta);

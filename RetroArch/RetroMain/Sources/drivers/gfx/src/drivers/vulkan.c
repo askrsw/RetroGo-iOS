@@ -4969,8 +4969,14 @@ static bool vulkan_frame(void *data, const void *frame,
 static void vulkan_set_aspect_ratio(void *data, unsigned aspect_ratio_idx)
 {
    vk_t *vk = (vk_t*)data;
-   if (vk)
-      vk->flags |= VK_FLAG_KEEP_ASPECT | VK_FLAG_SHOULD_RESIZE;
+   if (!vk)
+      return;
+
+   if (config_get_ptr()->bools.video_force_aspect)
+      vk->flags |= VK_FLAG_KEEP_ASPECT;
+   else
+      vk->flags &= ~VK_FLAG_KEEP_ASPECT;
+   vk->flags |= VK_FLAG_SHOULD_RESIZE;
 }
 
 static void vulkan_apply_state_changes(void *data)

@@ -43,7 +43,9 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import <tasks/task_content.h>
 #include <core/ra_core_options.h>
+#include <gfx/video_driver.h>
 #include <utils/retrogo_log.h>
+#include <stdatomic.h>
 
 #define SHOW_CORE_ROM_TYPE_INFO 0
 
@@ -63,6 +65,10 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     BOOL d_gameStarting;
     BOOL d_cancelGameStart;
     BOOL d_gameStopping;
+    BOOL d_overlayFastForwardEnabled;
+    BOOL d_controllerFastForwardEnabled;
+    // Odd only while a real game is running. Queued controller events carry this generation.
+    atomic_uint_fast64_t d_controllerFastForwardGeneration;
 }
 
 @synthesize gameLogicRunner    = d_gameLogicRuner;
@@ -83,6 +89,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         d_initialized = NO;
         d_dummyCoreRunning = NO;
         d_inputDriverOnlyRunning = NO;
+        atomic_init(&d_controllerFastForwardGeneration, 0);
         d_emuPrevFrameActions = [NSMutableDictionary dictionary];
 
         d_emuPrevFrameActions[@"RAInputActionManager.tick"] = ^{
@@ -278,7 +285,12 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (d_cancelGameStart || !load_ret) {
+            // The threaded video wrapper can exist even if its renderer failed to initialize.
+            BOOL videoReady = load_ret && video_driver_get_ptr() != NULL;
+            if (load_ret && !videoReady) {
+                RETROGO_LOGE(GAME, "Video driver failed to initialize for core %{public}@", core.coreId);
+            }
+            if (d_cancelGameStart || !videoReady) {
                 // Loading cannot be interrupted safely. Retain the render owner
                 // and the transition reservation until teardown has finished.
                 // No runner has started; unload on a background execution domain.
@@ -309,6 +321,7 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
                     [d_gameLogicRuner start];
                 }
                 d_gameLogicRuner.statsLoggingEnabled = YES;
+                atomic_fetch_add(&d_controllerFastForwardGeneration, 1);
             }
 
             if (completion) {
@@ -366,10 +379,14 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
         return YES;
     }
 
+    // The input-only dummy does not own a render view. Its runner's stop
+    // clears apple_platform, which may already belong to the incoming game.
+    __typeof__(apple_platform) renderOwner = apple_platform;
     BOOL ret = YES;
     if (d_gameLogicRuner != nil) {
         ret = [d_gameLogicRuner stop];
         d_gameLogicRuner = nil;
+        apple_platform = renderOwner;
     }
 
     drivers_deinit_input_only();
@@ -419,6 +436,11 @@ NSString * const RetroArchXReadyNotification = @"retro_arch_x_ready";
     }
     if (d_gameStopping) return YES;
     d_gameStopping = YES;
+    if (atomic_load(&d_controllerFastForwardGeneration) & 1) {
+        atomic_fetch_add(&d_controllerFastForwardGeneration, 1);
+    }
+    d_controllerFastForwardEnabled = NO;
+    d_overlayFastForwardEnabled = NO;
 
     EmuCoreInfoItem *runningCore = [self currentCoreItem];
     NSString *coreId = runningCore.coreId.lowercaseString ?: @"";
@@ -627,18 +649,27 @@ bool get_screenshot_data(uint8_t **png_data, uint64_t *png_data_size);
 }
 
 - (void)setFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier {
-    if (self.currentCoreItem == nil || d_gameLogicRuner == nil) {
-        return;
-    }
+    NSAssert(NSThread.isMainThread, @"Overlay fast-forward must be updated on the main thread");
+    if (!(atomic_load(&d_controllerFastForwardGeneration) & 1)) return;
+    BOOL wasEnabled = d_overlayFastForwardEnabled || d_controllerFastForwardEnabled;
+    d_overlayFastForwardEnabled = enabled;
+    BOOL isEnabled = d_overlayFastForwardEnabled || d_controllerFastForwardEnabled;
+    if (isEnabled != wasEnabled) [d_gameLogicRuner setFastForwardEnabled:isEnabled multiplier:multiplier];
+}
 
-    if (![NSThread isMainThread]) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [d_gameLogicRuner setFastForwardEnabled:enabled multiplier:multiplier];
-        });
-        return;
-    } else {
-        [d_gameLogicRuner setFastForwardEnabled:enabled multiplier:multiplier];
-    }
+- (BOOL)setControllerFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier {
+    uint_fast64_t generation = atomic_load(&d_controllerFastForwardGeneration);
+    if (!(generation & 1)) return NO;
+
+    // Input callbacks can hold the input lock. Never wait for the runner from that lock.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (generation != atomic_load(&d_controllerFastForwardGeneration)) return;
+        BOOL wasEnabled = d_overlayFastForwardEnabled || d_controllerFastForwardEnabled;
+        d_controllerFastForwardEnabled = enabled;
+        BOOL isEnabled = d_overlayFastForwardEnabled || d_controllerFastForwardEnabled;
+        if (isEnabled != wasEnabled) [d_gameLogicRuner setFastForwardEnabled:isEnabled multiplier:multiplier];
+    });
+    return YES;
 }
 
 - (NSString *)addEmuPrevFrameAction:(RetroArchXEmuFrameAction)action {

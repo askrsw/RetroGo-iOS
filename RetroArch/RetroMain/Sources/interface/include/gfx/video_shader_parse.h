@@ -292,6 +292,10 @@ const char *video_shader_get_preset_extension(enum rarch_shader_type type);
 
 void video_shader_toggle(settings_t *settings, bool write);
 
+/* CPU-only SPIR-V preparation. Does not access the current video driver or game. */
+void retrogo_shader_cache_set_directory(const char *path);
+bool retrogo_shader_cache_prepare_info(const char *path, char *artifact, size_t size, bool *compiled);
+
 RETRO_END_DECLS
 
 #endif

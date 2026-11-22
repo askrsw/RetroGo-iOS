@@ -84,6 +84,7 @@ NS_ENUM(unsigned, RetroArchJoypadAxis) {
 - (void)sendJoypadCode:(enum RetroArchJoypadCode)code down:(BOOL)down;
 - (void)sendJoypadAxis:(enum RetroArchJoypadAxis)axis value:(CGFloat)value;
 - (void)setFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier;
+- (BOOL)setControllerFastForwardEnabled:(BOOL)enabled multiplier:(double)multiplier;
 - (NSString *)addEmuPrevFrameAction:(RetroArchXEmuFrameAction)action;
 - (void)removeEmuPrevFrameActionForToken:(NSString *)token;
 

@@ -159,6 +159,9 @@ static NSString *RAInputPhysicalSourceCodeString(RAInputPhysicalSourceKindCode k
     [coder encodeObject:self.joypadCodes forKey:@"joypadCodes"];
     [coder encodeBool:self.turboEnabled forKey:@"turboEnabled"];
     [coder encodeInteger:self.systemActionCode forKey:@"systemActionCode"];
+    if (self.systemActionCode == RAInputSystemActionCodeFastForward && self.fastForwardToggle) {
+        [coder encodeBool:YES forKey:@"fastForwardToggle"];
+    }
     [coder encodeObject:self.macroSteps forKey:@"macroSteps"];
     [coder encodeObject:self.displayName forKey:@"displayName"];
 }
@@ -170,6 +173,8 @@ static NSString *RAInputPhysicalSourceCodeString(RAInputPhysicalSourceKindCode k
         _joypadCodes = [coder decodeObjectOfClasses:classes forKey:@"joypadCodes"] ?: @[];
         _turboEnabled = [coder decodeBoolForKey:@"turboEnabled"];
         _systemActionCode = [coder decodeIntegerForKey:@"systemActionCode"];
+        _fastForwardToggle = _systemActionCode == RAInputSystemActionCodeFastForward &&
+            [coder containsValueForKey:@"fastForwardToggle"] && [coder decodeBoolForKey:@"fastForwardToggle"];
         if ([coder containsValueForKey:@"macroSteps"]) {
             _macroSteps = [coder decodeObjectOfClasses:[NSSet setWithObjects:NSArray.class, RAMacroInputStep.class, nil] forKey:@"macroSteps"];
         }

@@ -4952,8 +4952,11 @@ static void gl2_set_aspect_ratio(void *data, unsigned aspect_ratio_idx)
    if (!gl)
       return;
 
-   gl->flags        |= (GL2_FLAG_KEEP_ASPECT
-                     |  GL2_FLAG_SHOULD_RESIZE);
+   if (config_get_ptr()->bools.video_force_aspect)
+      gl->flags |= GL2_FLAG_KEEP_ASPECT;
+   else
+      gl->flags &= ~GL2_FLAG_KEEP_ASPECT;
+   gl->flags |= GL2_FLAG_SHOULD_RESIZE;
 #if defined(HAVE_ODROIDGO2)
    if (config_get_ptr()->bools.video_ctx_scaling)
       gl->flags     &= ~GL2_FLAG_KEEP_ASPECT;

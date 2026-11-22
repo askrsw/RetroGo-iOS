@@ -44,6 +44,8 @@ extension NSNotification.Name {
     static let overlayTurboSpeedChanged = NSNotification.Name(rawValue: "notif_overlayTurboSpeedChanged")
     static let overlayHapticLevelChanged = NSNotification.Name(rawValue: "notif_overlayHapticLevelChanged")
     static let gameRumbleEnabledChanged = NSNotification.Name(rawValue: "notif_gameRumbleEnabledChanged")
+    static let stretchVideoToFillChanged = NSNotification.Name(rawValue: "notif_stretchVideoToFillChanged")
+    static let gameAudioVolumeChanged = NSNotification.Name(rawValue: "notif_gameAudioVolumeChanged")
     /// Posted with the overlay name (`object`) when a custom layout or a layout choice of that platform changes.
     static let overlayLayoutChanged = NSNotification.Name(rawValue: "notif_overlayLayoutChanged")
     /// Posted whenever the current game's cheat list changes (toggle/add/edit/

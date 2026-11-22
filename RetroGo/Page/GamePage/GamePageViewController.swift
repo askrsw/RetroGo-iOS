@@ -47,6 +47,9 @@ final class GamePageViewController: RAGameViewController {
     private(set) var layoutEditingOrientation: UIInterfaceOrientationMask?
     private var layoutEditingReturnOrientation: UIInterfaceOrientation?
     private var layoutEditingRestoration: (mask: UIInterfaceOrientationMask, completion: () -> Void)?
+    private var shaderPresentationActive = false
+    private var shaderReturnOrientation: UIInterfaceOrientation?
+    private var shaderPresentationCompletion: ((Error?) -> Void)?
 
     let romItem: RetroRomFileItem?
     let romUrl: URL?
@@ -176,6 +179,8 @@ final class GamePageViewController: RAGameViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        NotificationCenter.default.addObserver(self, selector: #selector(updateVideoStretch), name: .stretchVideoToFillChanged, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateGameAudioVolume), name: .gameAudioVolumeChanged, object: nil)
 
         myOverlayView.isUserInteractionEnabled = false
         AppStoreProFeatureGate.resetFastForwardNotice()
@@ -198,6 +203,12 @@ final class GamePageViewController: RAGameViewController {
                 )
             }
             myOverlayView.isUserInteractionEnabled = true
+            MainActor.assumeIsolated {
+                updateVideoStretch()
+                if let id = pauseSessionID {
+                    GameShaderRuntime.shared.begin(settings: configSession, id: id)
+                }
+            }
             myLoadingView?.uninstall()
             myLoadingView = nil
 
@@ -265,6 +276,7 @@ final class GamePageViewController: RAGameViewController {
         applyOrientationLock()
     }
 
+
     /// Whether this core has on-screen controls whose layout can be edited.
     var canEditOverlayLayout: Bool {
         myOverlayView.overlayScene != nil
@@ -313,6 +325,10 @@ final class GamePageViewController: RAGameViewController {
             guard let self else { return }
             // Commit the base controller's final video constraints before running frames.
             view.layoutIfNeeded()
+            updateVideoStretch()
+            if shaderPresentationCompletion != nil {
+                DispatchQueue.main.async { [weak self] in self?.completeShaderPresentationRotation() }
+            }
             if layoutEditingRestoration != nil {
                 // Let UIKit finish its rotation transaction before presenting another card.
                 DispatchQueue.main.async { [weak self] in self?.completeLayoutEditingRestoration() }
@@ -347,7 +363,7 @@ final class GamePageViewController: RAGameViewController {
     /// Applies the current (runtime) landscape-lock state to the app-wide mask
     /// and this VC's `supportedInterfaceOrientations`.
     func applyOrientationLock(requestedOrientation: UIInterfaceOrientationMask? = nil,
-                              onGeometryError: ((Error) -> Void)? = nil) {
+                              onGeometryError: (@MainActor (Error) -> Void)? = nil) {
         setNeedsUpdateOfSupportedInterfaceOrientations()
         AppDelegate.setOrientationLock(supportedInterfaceOrientations,
                                        requestedOrientation: requestedOrientation, onGeometryError: onGeometryError)
@@ -422,7 +438,57 @@ final class GamePageViewController: RAGameViewController {
     }
 
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        layoutEditingOrientation ?? (isLandscapeLocked ? .landscape : .allButUpsideDown)
+        if shaderPresentationActive { return .portrait }
+        return layoutEditingOrientation ?? (isLandscapeLocked ? .landscape : .allButUpsideDown)
+    }
+
+    /// Keep the portrait override alive for the whole Shader navigation stack.
+    func beginShaderPresentation(completion: @escaping (Error?) -> Void) {
+        shaderReturnOrientation = view.window?.windowScene?.interfaceOrientation
+        shaderPresentationActive = true
+        shaderPresentationCompletion = completion
+        applyOrientationLock(requestedOrientation: .portrait) { [weak self] error in
+            guard let self, let completion = shaderPresentationCompletion else { return }
+            shaderPresentationCompletion = nil
+            RetroGoLogger.game.error("Failed to enter Shader portrait presentation: \(error)")
+            endShaderPresentation()
+            completion(error)
+        }
+        completeShaderPresentationRotation()
+    }
+
+    private func completeShaderPresentationRotation() {
+        guard shaderPresentationActive, transitionCoordinator == nil,
+              view.window?.windowScene?.interfaceOrientation == .portrait,
+              view.bounds.width < view.bounds.height,
+              let completion = shaderPresentationCompletion else { return }
+        shaderPresentationCompletion = nil
+        view.layoutIfNeeded()
+        if isGameReady {
+            GamePauseCoordinator.shared.runFramesWhilePaused(keepMuted: myToolbarView.isGameMuted)
+        }
+        completion(nil)
+    }
+
+    func endShaderPresentation() {
+        guard shaderPresentationActive else { return }
+        let target: UIInterfaceOrientationMask
+        if isLandscapeLocked {
+            target = .landscape
+        } else {
+            switch UIDevice.current.orientation {
+            case .portrait: target = .portrait
+            case .landscapeLeft, .landscapeRight: target = .landscape
+            default:
+                target = shaderReturnOrientation?.isLandscape == true ? .landscape : .portrait
+            }
+        }
+        shaderPresentationActive = false
+        shaderReturnOrientation = nil
+        shaderPresentationCompletion = nil
+        applyOrientationLock(requestedOrientation: target) { error in
+            RetroGoLogger.game.error("Failed to restore Shader presentation orientation: \(error)")
+        }
     }
 
     override func showInGameMessage(_ message: EmuInGameMessage) {
@@ -516,6 +582,7 @@ final class GamePageViewController: RAGameViewController {
     private func endPauseSession() {
         guard let id = pauseSessionID else { return }
         pauseSessionID = nil
+        GameShaderRuntime.shared.end(id: id)
         GamePauseCoordinator.shared.endSession(id)
     }
 }
@@ -561,6 +628,27 @@ extension GamePageViewController {
     private func gameRumbleEnabledChanged() {
         guard Self.instance == self else { return }
         RetroArchX.shared().setPhoneRumbleEnabled(configSession.getGameRumbleEnabled())
+    }
+
+    @objc
+    private func updateGameAudioVolume() {
+        guard Self.instance === self, isGameReady else { return }
+        RetroArchX.shared().updateGameAudioVolume(configSession.getGameAudioVolume())
+    }
+
+    @objc
+    private func updateVideoStretch() {
+        guard Self.instance === self, isGameReady else { return }
+        let orientation = view.window?.windowScene?.interfaceOrientation
+        let landscape: Bool
+        if let orientation, orientation.isLandscape || orientation.isPortrait {
+            landscape = orientation.isLandscape
+        } else {
+            let size = view.bounds.size
+            guard size.width != size.height else { return }
+            landscape = size.width > size.height
+        }
+        RetroArchX.shared().updateVideoStretch(configSession.getStretchVideoToFill(), landscape: landscape)
     }
 
     @objc

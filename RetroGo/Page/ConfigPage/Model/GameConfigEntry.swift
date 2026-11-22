@@ -32,7 +32,7 @@ enum GameConfigEntryType {
 }
 
 enum GameConfigEntryUIType {
-    case label, `switch`, segmentcontrol, list, controller
+    case label, `switch`, segmentcontrol, list, controller, percentageSlider
 }
 
 typealias GameConfigGetStringValue = () -> String
@@ -71,6 +71,7 @@ final class GameConfigEntry: NSObject {
 
     var enabled: Bool = true
     var opensCoreOptions = false
+    var opensShaders = false
     /// Opens the control layout list (in game) or the layout manager (from the settings pages).
     var opensOverlayLayouts = false
     var desc: String?
@@ -83,6 +84,10 @@ final class GameConfigEntry: NSObject {
 
     var getBoolValue: GameConfigGetBoolValue?
     var setBoolValue: GameConfigSetBoolValue?
+
+    var getPercentage: (() -> Int)?
+    var setPercentage: ((Int) -> Bool)?
+    var maximumPercentage = 100
 
     var getSegmentArray: GameConfigGetSegmentArray?
     var getSegmentSelectedIndex: GameConfigGetSegmentSelectedIndex?
@@ -317,6 +322,59 @@ extension GameConfigSession {
         return entries
     }
 
+    func makeVideoConfigEntries() -> [GameConfigEntry] {
+        var entries: [GameConfigEntry] = []
+        do {
+            let title = Bundle.localizedString(forKey: "configpage_video_driver")
+            let entry = GameConfigEntry(type: .string, ui: .list, title: title)
+            entry.getListArray = { [weak self] in
+                guard let self = self else { return (list: [], selected: nil) }
+                return getAvailableVideoDrivers()
+            }
+            entry.getListSelectedTitle = { [weak self] in
+                return self?.getVideoDriverTitle()
+            }
+            entry.setListSelectedValue = { [weak self] value in
+                guard let self = self, let driver = value as? String else { return }
+                setVideoDriver(value: driver)
+            }
+            if let core {
+                if core.isHWRender {
+                    let formatter = Bundle.localizedString(forKey: "configpage_video_driver_forbiden_desc")
+                    entry.desc = String(format: formatter, core.coreName)
+                    entry.enabled = false
+                } else {
+                    entry.desc = Bundle.localizedString(forKey: "configpage_video_driver_desc")
+                }
+            } else {
+                entry.desc = Bundle.localizedString(forKey: "configpage_video_driver_desc")
+            }
+            entries.append(entry)
+        }
+
+
+        let stretch = GameConfigEntry(type: .bool, ui: .switch, title: Bundle.localizedString(forKey: "configpage_stretch_video_to_fill"))
+        stretch.getBoolValue = { [weak self] in self?.getStretchVideoToFill() ?? true }
+        stretch.setBoolValue = { [weak self] enabled in self?.setStretchVideoToFill(enabled) }
+        stretch.desc = Bundle.localizedString(forKey: "configpage_stretch_video_to_fill_desc")
+        entries.append(stretch)
+
+        let shader = GameConfigEntry(type: .string, ui: .list, title: shaderText("title"))
+        shader.opensShaders = true
+        shader.getListSelectedTitle = { [weak self] in
+            guard let self else { return nil }
+            do {
+                let own = try GameShaderStore.own(self)
+                let resolved = try GameShaderStore.resolved(self)
+                let title = resolved.preset?.title ?? shaderText("off")
+                return own == nil && scope != .global ? String(format: shaderText("inherited_title"), title) : title
+            } catch { return shaderText("unavailable") }
+        }
+        shader.session = self
+        entries.append(shader)
+        return entries
+    }
+
     func makeRestartRequiredConfigEntries() -> [GameConfigEntry] {
         var entries: [GameConfigEntry] = []
         if scope != .global {
@@ -380,52 +438,33 @@ extension GameConfigSession {
             entries.append(entry)
         }
 
-        do {
-            let title = Bundle.localizedString(forKey: "configpage_video_driver")
-            let entry = GameConfigEntry(type: .string, ui: .list, title: title)
-            entry.getListArray = { [weak self] in
-                guard let self = self else { return (list: [], selected: nil) }
-                return getAvailableVideoDrivers()
-            }
-            entry.getListSelectedTitle = { [weak self] in
-                return self?.getVideoDriverTitle()
-            }
-            entry.setListSelectedValue = { [weak self] value in
-                guard let self = self, let driver = value as? String else { return }
-                setVideoDriver(value: driver)
-            }
-            if let core {
-                if core.isHWRender {
-                    let formatter = Bundle.localizedString(forKey: "configpage_video_driver_forbiden_desc")
-                    entry.desc = String(format: formatter, core.coreName)
-                    entry.enabled = false
-                } else {
-                    entry.desc = Bundle.localizedString(forKey: "configpage_video_driver_desc")
-                }
-            } else {
-                entry.desc = Bundle.localizedString(forKey: "configpage_video_driver_desc")
-            }
-            entries.append(entry)
-        }
-
-        do {
-            let title = Bundle.localizedString(forKey: "configpage_audio_driver")
-            let entry = GameConfigEntry(type: .string, ui: .list, title: title)
-            entry.getListArray = { [weak self] in
-                guard let self = self else { return (list: [], selected: nil) }
-                return getAvailableAudioDrivers()
-            }
-            entry.getListSelectedTitle = { [weak self] in
-                return self?.getAudioDriverTitle()
-            }
-            entry.setListSelectedValue = { [weak self] value in
-                guard let self = self, let driver = value as? String else { return }
-                setAudioDriver(value: driver)
-            }
-            entries.append(entry)
-        }
-
         return entries
+    }
+
+    func makeAudioConfigEntries() -> [GameConfigEntry] {
+        let driver = GameConfigEntry(type: .string, ui: .list, title: Bundle.localizedString(forKey: "configpage_audio_driver"))
+        driver.getListArray = { [weak self] in self?.getAvailableAudioDrivers() ?? (list: [], selected: nil) }
+        driver.getListSelectedTitle = { [weak self] in self?.getAudioDriverTitle() }
+        driver.setListSelectedValue = { [weak self] value in
+            guard let self, let value = value as? String else { return }
+            setAudioDriver(value: value)
+        }
+        driver.desc = Bundle.localizedString(forKey: "configpage_audio_driver_desc")
+
+        let keepOtherAudio = GameConfigEntry(type: .bool, ui: .switch, title: Bundle.localizedString(forKey: "configpage_keep_other_audio_playing"))
+        keepOtherAudio.getBoolValue = { [weak self] in self?.getKeepOtherAudioPlaying() ?? true }
+        keepOtherAudio.setBoolValue = { [weak self] enabled in
+            Vibration.selection.vibrate()
+            self?.setKeepOtherAudioPlaying(enabled)
+        }
+        keepOtherAudio.desc = Bundle.localizedString(forKey: "configpage_keep_other_audio_playing_desc")
+
+        let volume = GameConfigEntry(type: .int, ui: .percentageSlider, title: Bundle.localizedString(forKey: "configpage_game_audio_volume"))
+        volume.maximumPercentage = Self.maximumGameAudioVolume
+        volume.getPercentage = { [weak self] in self?.getGameAudioVolume() ?? 100 }
+        volume.setPercentage = { [weak self] in self?.setGameAudioVolume($0) ?? false }
+
+        return [driver, keepOtherAudio, volume]
     }
 
     func makeDiscConfigEntries() -> [GameConfigEntry] {

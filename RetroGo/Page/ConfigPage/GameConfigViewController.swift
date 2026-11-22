@@ -122,11 +122,45 @@ final class GameConfigViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // The layout row shows the chosen layout's name, which the layout list may have changed.
-        configData.flatMap(\.entries).filter(\.opensOverlayLayouts).forEach { $0.refresh.toggle() }
+        configData.flatMap(\.entries).filter { $0.opensOverlayLayouts || $0.opensShaders }.forEach { $0.refresh.toggle() }
     }
 }
 
 extension GameConfigViewController {
+    func openShaders() {
+        do {
+            let shaderSession = try GameShaderSession(settings: session)
+            let live = shaderSession.isLive
+            let controller = GameShaderViewController(session: shaderSession, modal: live)
+            if live, let gamePage = GamePageViewController.instance {
+                let navigation = GameShaderNavigationController(rootViewController: controller)
+                navigation.gamePage = gamePage
+                navigation.onClose = { try? shaderSession.cancel() }
+                navigation.isModalInPresentation = true
+                GameShaderAppearance.configureSheet(navigation)
+                let host = navigationController ?? self
+                host.dismiss(animated: true) {
+                    gamePage.beginShaderPresentation { error in
+                        guard let error else {
+                            gamePage.present(navigation, animated: true)
+                            return
+                        }
+                        try? shaderSession.cancel()
+                        let alert = UIAlertController(title: shaderText("title"), message: error.localizedDescription, preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: shaderText("ok"), style: .default) { _ in Vibration.selection.vibrate() })
+                        gamePage.present(alert, animated: true)
+                    }
+                }
+            } else {
+                navigationController?.pushViewController(controller, animated: true)
+            }
+        } catch {
+            let alert = UIAlertController(title: shaderText("title"), message: error.localizedDescription, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: shaderText("ok"), style: .default) { _ in Vibration.selection.vibrate() })
+            present(alert, animated: true)
+        }
+    }
+
     /// In game the list opens over the game, where layouts can be edited and
     /// previewed; from the settings pages it manages the platform's layouts.
     func openOverlayLayouts() {
@@ -248,6 +282,7 @@ extension GameConfigViewController {
             switch entry.ui {
             case .label: return makeCell(GameConfigTitleViewCell.self, entry: entry)
             case .switch: return makeCell(GameConfigSwitchViewCell.self, entry: entry)
+            case .percentageSlider: return makeCell(GameConfigPercentageSliderCell.self, entry: entry)
             case .segmentcontrol: return makeCell(GameConfigSegmentViewCell.self, entry: entry)
             case .list: return makeCell(GameConfigLabelViewCell.self, entry: entry)
             case .controller: return makeCell(GameConfigLabelViewCell.self, entry: entry)
@@ -347,6 +382,10 @@ extension GameConfigViewController: UITableViewDelegate {
         Vibration.selection.vibrate()
 
         guard let entry = dataSource.itemIdentifier(for: indexPath) else { return }
+        if entry.opensShaders {
+            openShaders()
+            return
+        }
         if entry.opensOverlayLayouts {
             openOverlayLayouts()
             return

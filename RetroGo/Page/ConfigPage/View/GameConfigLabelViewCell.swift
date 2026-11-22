@@ -28,6 +28,7 @@ import SnapKit
 
 final class GameConfigLabelViewCell: GameConfigBaseViewCell {
     private let label = UILabel(frame: .zero)
+    private var labelLeadingConstraint: NSLayoutConstraint?
     private var refreshObservation: NSKeyValueObservation?
 
     override var constrainTipLabelVertically: Bool {
@@ -36,6 +37,12 @@ final class GameConfigLabelViewCell: GameConfigBaseViewCell {
 
     override func updateUI(aniamted: Bool) {
         super.updateUI(aniamted: aniamted)
+
+        labelLeadingConstraint?.isActive = false
+        let titleEnd = descButton?.trailingAnchor ?? tipLabel.trailingAnchor
+        let leading = label.leadingAnchor.constraint(greaterThanOrEqualTo: titleEnd, constant: 12)
+        leading.isActive = true
+        labelLeadingConstraint = leading
 
         guard let entry else { return }
         switch entry.ui {
@@ -66,7 +73,6 @@ final class GameConfigLabelViewCell: GameConfigBaseViewCell {
         label.lineBreakMode = .byTruncatingTail
         contentView.addSubview(label)
         label.snp.makeConstraints { make in
-            make.leading.greaterThanOrEqualTo(tipLabel.snp.trailing).offset(12)
             make.trailing.equalToSuperview().offset(-20)
             make.centerY.equalTo(tipLabel.snp.centerY)
             make.top.greaterThanOrEqualToSuperview().offset(8)

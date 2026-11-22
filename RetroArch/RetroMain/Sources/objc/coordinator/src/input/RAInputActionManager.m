@@ -46,6 +46,9 @@
 - (RAInputActionHandlingResult)handlePhysicalSource:(RAInputPhysicalSource *)source pressed:(BOOL)pressed useLock:(BOOL)useLock;
 - (void)markPendingReconcile;
 - (void)notifyTopologyChanged;
+- (BOOL)emitFastForward:(BOOL)enabled;
+- (void)stopFastForwardForActionIdentifier:(NSString *)actionIdentifier;
+- (void)clearFastForwardActions;
 @end
 
 static NSInteger RAInputActionManagerResolvePlayerPort(unsigned physicalSlot) {
@@ -128,6 +131,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 @property(nonatomic, assign, readwrite) RAInputActionKind kind;
 @property(nonatomic, copy, readwrite) NSArray<NSNumber *> *outputJoypadCodes;
 @property(nonatomic, assign, readwrite) BOOL turboEnabled;
+@property(nonatomic, assign) BOOL fastForwardToggle;
 @property(nonatomic, copy, readwrite) NSArray<RAMacroInputStep *> *macroSteps;
 @end
 
@@ -180,6 +184,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
     RAInputActionDescriptor *descriptor = [[[self class] allocWithZone:zone] initWithIdentifier:self.identifier displayName:self.displayName kind:self.kind];
     descriptor.outputJoypadCodes = self.outputJoypadCodes;
     descriptor.turboEnabled = self.turboEnabled;
+    descriptor.fastForwardToggle = self.fastForwardToggle;
     descriptor.macroSteps = self.macroSteps;
     return descriptor;
 }
@@ -305,6 +310,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
     _Atomic(bool) d_pendingReconcile;
     NSMutableDictionary<NSString *, RAMacroInputEngine *> *d_macroEngines;
     NSMutableDictionary<NSString *, NSNumber *> *d_outputMasks;
+    NSMutableSet<NSString *> *d_fastForwardActions;
 }
 
 + (instancetype)shared {
@@ -323,7 +329,8 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
         d_stateLock = OS_UNFAIR_LOCK_INIT;
         d_macroEngines = [NSMutableDictionary dictionary];
         d_outputMasks = [NSMutableDictionary dictionary];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(cancelMacrosForNotification:) name:@"RetroGo.overlayMacroCancel" object:nil];
+        d_fastForwardActions = [NSMutableSet set];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(cancelTransientActionsForNotification:) name:@"RetroGo.overlayMacroCancel" object:nil];
 
         _actionDescriptors = [NSMutableDictionary dictionary];
         _actionIdentifierBySourceIdentifier = [NSMutableDictionary dictionary];
@@ -394,7 +401,13 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             return;
         }
 
-        self.actionDescriptors[descriptor.identifier] = [descriptor copy];
+        RAInputActionDescriptor *replacement = [descriptor copy];
+        if (replacement.kind == RAInputActionKindFastForward) {
+            // Rebinding the same action keeps the mode of its existing physical binding.
+            NSNumber *boundToggle = [self fastForwardToggleForActionIdentifier:descriptor.identifier useLock:NO];
+            if (boundToggle) replacement.fastForwardToggle = boundToggle.boolValue;
+        }
+        self.actionDescriptors[descriptor.identifier] = replacement;
     } @finally {
         [self ra_unlockState:useLock];
     }
@@ -411,6 +424,30 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
         [self.actionDescriptors removeObjectForKey:actionIdentifier];
         [self.lastJoypadOutputByActionIdentifier removeObjectForKey:actionIdentifier];
         [self.turboFrameIndexByActionIdentifier removeObjectForKey:actionIdentifier];
+    } @finally {
+        [self ra_unlockState:useLock];
+    }
+}
+
+- (nullable NSNumber *)fastForwardToggleForActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock {
+    [self ra_lockState:useLock];
+    @try {
+        RAInputActionDescriptor *descriptor = self.actionDescriptors[actionIdentifier];
+        if (!descriptor || descriptor.kind != RAInputActionKindFastForward ||
+            !self.sourceIdentifierByActionIdentifier[actionIdentifier]) return nil;
+        return @(descriptor.fastForwardToggle);
+    } @finally {
+        [self ra_unlockState:useLock];
+    }
+}
+
+- (BOOL)setFastForwardToggle:(BOOL)toggle forActionIdentifier:(NSString *)actionIdentifier useLock:(BOOL)useLock {
+    [self ra_lockState:useLock];
+    @try {
+        if (![self fastForwardToggleForActionIdentifier:actionIdentifier useLock:NO]) return NO;
+        [self stopFastForwardForActionIdentifier:actionIdentifier];
+        self.actionDescriptors[actionIdentifier].fastForwardToggle = toggle;
+        return YES;
     } @finally {
         [self ra_unlockState:useLock];
     }
@@ -695,6 +732,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
     [self ra_lockState:useLock];
     @try {
         [self cancelMacrosUseLock:NO];
+        [self clearFastForwardActions];
         NSArray<NSString *> *pressedSourceIdentifiers = self.pressedSourceIdentifiers.allObjects;
         for (NSString *sourceIdentifier in pressedSourceIdentifiers) {
             NSString *actionIdentifier = self.actionIdentifierBySourceIdentifier[sourceIdentifier];
@@ -741,8 +779,12 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             break;
         }
         case RAInputActionKindFastForward:
-            if(playerIndex == 0) {
-                [self emitFastForward:YES];
+            if (playerIndex == 0) {
+                if (descriptor.fastForwardToggle && [d_fastForwardActions containsObject:descriptor.identifier]) {
+                    [self stopFastForwardForActionIdentifier:descriptor.identifier];
+                } else if ([self emitFastForward:YES]) {
+                    [d_fastForwardActions addObject:descriptor.identifier];
+                }
             } else {
                 [self.activePlayerIndexByActionIdentifier removeObjectForKey:descriptor.identifier];
             }
@@ -772,14 +814,11 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
             // A physical tap starts a complete macro; another press cancels it.
             break;
         case RAInputActionKindFastForward:
-            {
-                NSInteger playerIndex = self.activePlayerIndexByActionIdentifier[descriptor.identifier].integerValue;
-                if (playerIndex == 0) {
-                    [self emitFastForward:NO];
-                }
-                [self.activePlayerIndexByActionIdentifier removeObjectForKey:descriptor.identifier];
-                break;
+            if (!descriptor.fastForwardToggle) {
+                [self stopFastForwardForActionIdentifier:descriptor.identifier];
             }
+            [self.activePlayerIndexByActionIdentifier removeObjectForKey:descriptor.identifier];
+            break;
         }
     } @finally {
         [self ra_unlockState:useLock];
@@ -800,6 +839,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 
         [d_macroEngines[actionIdentifier] cancel];
         [d_macroEngines removeObjectForKey:actionIdentifier];
+        [self stopFastForwardForActionIdentifier:actionIdentifier];
         [self releaseAction:descriptor useLock:NO];
     } @finally {
         [self ra_unlockState:useLock];
@@ -832,8 +872,14 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
     } @finally { [self ra_unlockState:useLock]; }
 }
 
-- (void)cancelMacrosForNotification:(NSNotification *)notification {
-    [self cancelMacrosUseLock:YES];
+- (void)cancelTransientActionsForNotification:(NSNotification *)notification {
+    [self ra_lockState:YES];
+    @try {
+        [self cancelMacrosUseLock:NO];
+        [self clearFastForwardActions];
+    } @finally {
+        [self ra_unlockState:YES];
+    }
 }
 
 - (void)acceptCurrentBindingsUseLock:(BOOL)useLock {
@@ -844,7 +890,20 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
     } @finally { [self ra_unlockState:useLock]; }
 }
 
-- (void)emitFastForward:(BOOL)enabled {
+- (void)stopFastForwardForActionIdentifier:(NSString *)actionIdentifier {
+    if ([d_fastForwardActions containsObject:actionIdentifier]) {
+        [d_fastForwardActions removeObject:actionIdentifier];
+        if (d_fastForwardActions.count == 0) [self emitFastForward:NO];
+    }
+}
+
+- (void)clearFastForwardActions {
+    if (d_fastForwardActions.count == 0) return;
+    [d_fastForwardActions removeAllObjects];
+    [self emitFastForward:NO];
+}
+
+- (BOOL)emitFastForward:(BOOL)enabled {
     double value = enabled ? 2.0 : 1.0;
     if (enabled) {
         RAInputFastForwardMultiplierProvider provider = self.fastForwardMultiplierProvider;
@@ -858,11 +917,11 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
 
         /* A provider answering 1x means fast-forward is not available (it needs Pro). */
         if (provider != nil && value <= 1.0) {
-            return;
+            return NO;
         }
     }
 
-    [[RetroArchX shared] setFastForwardEnabled:enabled multiplier:value];
+    return [[RetroArchX shared] setControllerFastForwardEnabled:enabled multiplier:value];
 }
 
 - (BOOL)bindJoypadCode:(enum RetroArchJoypadCode)joypadCode toPhysicalSource:(RAInputPhysicalSource *)source forPort:(int)port useLock:(BOOL)useLock {
@@ -1380,6 +1439,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                     target.joypadCodes = @[];
                     target.turboEnabled = NO;
                     target.systemActionCode = RAInputSystemActionCodeFastForward;
+                    target.fastForwardToggle = descriptor.fastForwardToggle;
                     addEntryIfNeeded(source, target, actionId);
                     return;
                 }
@@ -1559,6 +1619,7 @@ static void RAInputActionManagerMFITopologyChangedCallback(void *userdata) {
                         }
                         RAInputActionDescriptor *descriptor =
                         [RAInputActionDescriptor fastForwardActionWithIdentifier:actionId displayName:actionId];
+                        descriptor.fastForwardToggle = target.fastForwardToggle;
                         [self setActionDescriptor:descriptor useLock:NO];
                         [self bindPhysicalSource:source toActionIdentifier:descriptor.identifier useLock:NO];
                     } else if (target.systemActionCode == RAInputSystemActionCodeMute) {

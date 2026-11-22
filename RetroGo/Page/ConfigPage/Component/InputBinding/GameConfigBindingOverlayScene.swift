@@ -148,6 +148,24 @@ final class GameConfigBindingOverlayScene: SKScene, GameOverlaySceneLayouting {
         inputActionManager.exportInputBindingProfileUseLock(true)
     }
 
+    private var editableFastForwardActionIdentifier: String? {
+        guard playerIndex == 0, !isReadOnly, let fastButton, !fastButton.isHidden,
+              let actionId = fastButton.bindingActionIds().first else { return nil }
+        return inputActionIdentifier(for: fastButton.element, actionId: actionId)
+    }
+
+    var fastForwardToggle: Bool? {
+        guard let identifier = editableFastForwardActionIdentifier else { return nil }
+        return inputActionManager.fastForwardToggle(forActionIdentifier: identifier, useLock: true)?.boolValue
+    }
+
+    func setFastForwardToggle(_ toggle: Bool) {
+        guard let identifier = editableFastForwardActionIdentifier,
+              shouldAllowBindingChange?() != false,
+              inputActionManager.setFastForwardToggle(toggle, forActionIdentifier: identifier, useLock: true) else { return }
+        isDirty = true
+    }
+
     func resumeBindingCapture() {
         guard !isReadOnly else { return }
         activeBinding = nil

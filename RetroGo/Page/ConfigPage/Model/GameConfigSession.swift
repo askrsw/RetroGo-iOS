@@ -136,6 +136,8 @@ final class GameConfigSession {
             config.coreOptionsCoreId = core.coreId
             config.coreOptions = [:]
         }
+        config.keepOtherAudioPlaying = getKeepOtherAudioPlaying()
+        config.gameAudioVolume = getGameAudioVolume()
         RetroArchX.shared().config(config)
         RetroArchX.shared().setPhoneRumbleEnabled(getGameRumbleEnabled())
 
@@ -177,6 +179,9 @@ final class GameConfigSession {
         if restartRequiredEntries.count > 0 {
             array.append((section: .restartRequired, entries: restartRequiredEntries))
         }
+
+        array.append((section: .video, entries: makeVideoConfigEntries()))
+        array.append((section: .audio, entries: makeAudioConfigEntries()))
 
         let overlayEntries = makeOverlayConfigEntries()
         if overlayEntries.count > 0 {
@@ -226,8 +231,42 @@ extension GameConfigSession {
         return setOptionalValue(column: Self.videoDriver, value: value)
     }
 
+    func getStretchVideoToFill() -> Bool {
+        resolvedValue(column: Self.stretchVideoToFill) ?? true
+    }
+
+    @discardableResult
+    func setStretchVideoToFill(_ enabled: Bool) -> Bool {
+        guard setOptionalValue(column: Self.stretchVideoToFill, value: enabled) else { return false }
+        NotificationCenter.default.post(name: .stretchVideoToFillChanged, object: nil)
+        return true
+    }
+
     func getAudioDriver() -> String {
         config.audioDriver
+    }
+
+    func getKeepOtherAudioPlaying() -> Bool {
+        resolvedValue(column: Self.keepOtherAudioPlaying) ?? true
+    }
+
+    @discardableResult
+    func setKeepOtherAudioPlaying(_ enabled: Bool) -> Bool {
+        setOptionalValue(column: Self.keepOtherAudioPlaying, value: enabled)
+    }
+
+    static let maximumGameAudioVolume = 200
+
+    func getGameAudioVolume() -> Int {
+        min(Self.maximumGameAudioVolume, max(0, resolvedValue(column: Self.gameAudioVolume) ?? 100))
+    }
+
+    @discardableResult
+    func setGameAudioVolume(_ volume: Int) -> Bool {
+        let clampedVolume = min(Self.maximumGameAudioVolume, max(0, volume))
+        guard setOptionalValue(column: Self.gameAudioVolume, value: clampedVolume) else { return false }
+        NotificationCenter.default.post(name: .gameAudioVolumeChanged, object: nil)
+        return true
     }
 
     @discardableResult
@@ -790,6 +829,7 @@ extension GameConfigSession {
     static let configScope      = SQLite.Expression<String>("scope")
     static let threadEnabled    = SQLite.Expression<Bool?>("thread_enabled")
     static let fastForwardMultiplier = SQLite.Expression<Double?>("fast_forward_multiplier")
+    static let stretchVideoToFill = SQLite.Expression<Bool?>("stretch_video_to_fill")
 
     // v4
     static let videoDriver         = SQLite.Expression<String?>("video_driver")
@@ -813,6 +853,10 @@ extension GameConfigSession {
     static let gameRumbleEnabled = SQLite.Expression<Bool?>("game_rumble_enabled")
     static let portDevice = SQLite.Expression<String?>("port_device")
 
+    // v11
+    static let keepOtherAudioPlaying = SQLite.Expression<Bool?>("keep_other_audio_playing")
+    static let gameAudioVolume = SQLite.Expression<Int?>("game_audio_volume")
+
     /*
      * key, configScope, updateAt
      * v3: threadEnabled, fastForwardMultiplier
@@ -823,6 +867,9 @@ extension GameConfigSession {
      * v7: coreOptions
      * v9: overlayHapticLevel, gameRumbleEnabled, portDevice
      * v10: per-player mapping choices in input_binding_layout_choice (separate table)
+     * v11: shader_config stores one optional Shader selection and its parameters per scope (RetroRomPersistence+v11).
+     *      stretch_video_to_fill allows live stretching when the orientations match.
+     *      keepOtherAudioPlaying and gameAudioVolume control mixing and core output gain.
      */
     static let romConfigTable   = SQLite.Table("romconfig")
 

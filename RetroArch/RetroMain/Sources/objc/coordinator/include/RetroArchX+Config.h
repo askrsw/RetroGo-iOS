@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL logicThread;
 @property(nonatomic, copy)   NSString *videoDriver;
 @property(nonatomic, copy)   NSString *audioDriver;
+@property(nonatomic, assign) BOOL keepOtherAudioPlaying;
+@property(nonatomic, assign) NSInteger gameAudioVolume;
 @property(nonatomic, assign) double fastForwardMultiplier;
 @property(nonatomic, assign) BOOL   muteOnFastForward;
 @property(nonatomic, assign) int    overlayTouchPlayer;
@@ -66,6 +68,15 @@ NS_ASSUME_NONNULL_BEGIN
 // RETRO_LANGUAGE_* matching the App language (English or Simplified Chinese).
 + (unsigned)appRetroLanguage;
 - (void)config:(RAConfig *)cfg;
+
+/// Main-thread renderer operations, synchronized with the game logic runner.
+- (void)updateVideoStretch:(BOOL)enabled landscape:(BOOL)landscape NS_SWIFT_NAME(updateVideoStretch(_:landscape:));
+- (NSString *)shaderVideoDriver;
++ (void)configureShaderCacheDirectory:(NSString *)path;
++ (nullable NSDictionary<NSString *, id> *)prepareShaderCacheSourceAtPath:(NSString *)path NS_SWIFT_NAME(prepareShaderCacheSource(atPath:));
+- (BOOL)applyShaderAtPath:(nullable NSString *)path values:(NSDictionary<NSString *, NSNumber *> *)values NS_SWIFT_NAME(applyShader(path:values:));
+- (BOOL)setShaderValue:(double)value forParameter:(NSString *)parameter NS_SWIFT_NAME(setShaderValue(_:parameter:));
+- (NSArray<NSDictionary<NSString *, id> *> *)currentShaderParameters;
 - (BOOL)prepareCoreOptionsForCoreId:(NSString *)coreId;
 - (void)clearCoreOptionConfiguration;
 // Applies a value to the running core from its next frame; also kept for re-registration.
@@ -74,6 +85,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSDictionary<NSString *, id> *)debugCurrentCoreOptionsSnapshot;
 - (void)setFastForwardMultiplier:(double)multiplier;
 - (void)setMuteOnFastForward:(BOOL)value;
+- (void)updateGameAudioVolume:(NSInteger)volume;
 /// Whether the phone rumbles when the game asks for it, for the player on the on-screen controls.
 - (void)setPhoneRumbleEnabled:(BOOL)enabled;
 

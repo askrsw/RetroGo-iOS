@@ -30,6 +30,27 @@ final class AppConfig {
     static let shared = AppConfig()
     private init() { }
 
+    /// Private app data; exposed through a Documents symlink in Debug builds only.
+    var dataFolder: String { FileManager.default.applicationSupportFolder + "/data/" }
+
+    var shaderFolder: String { dataFolder + "shaders/" }
+    var shaderImportsFolder: String { shaderFolder + "imports/" }
+    var shaderNoticesURL: URL {
+        bundledShaderFolder.appendingPathComponent("notices", isDirectory: true)
+            .appendingPathComponent("notices.\(Bundle.currentSimpleLanguageKey()).html")
+    }
+    /// Bump manually when the Shader compiler, compile options or cache format becomes incompatible.
+    var shaderCacheVersion: Int { 1 }
+    var shaderCacheFolder: String { shaderFolder + "cache/spirv/v\(shaderCacheVersion)/" }
+    var shaderCacheByteLimit: Int { 256 * 1024 * 1024 }
+    var bundledShaderFolder: URL {
+        Bundle.main.bundleURL.appendingPathComponent("Data/shaders", isDirectory: true)
+    }
+    var bundledShaderSourceFolder: URL {
+        bundledShaderFolder.appendingPathComponent("shaders_slang", isDirectory: true)
+    }
+    var bundledShaderCatalogURL: URL { bundledShaderFolder.appendingPathComponent("catalog.json") }
+
     private(set) lazy var statesFolder = { () -> String in
         let folder = FileManager.default.applicationSupportFolder + "/data/states/"
         if FileManager.default.createDirectoryIfNotExists(atPath: folder) {

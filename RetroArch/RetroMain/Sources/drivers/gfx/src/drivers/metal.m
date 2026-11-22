@@ -14,6 +14,7 @@
  */
 
 #include <Foundation/Foundation.h>
+#include <utils/retrogo_log.h>
 #include <Metal/Metal.h>
 #include <MetalKit/MetalKit.h>
 #include <QuartzCore/QuartzCore.h>
@@ -1781,6 +1782,9 @@ typedef struct MTLALIGN(16)
    [self _freeVideoShader:_shader];
    _shader                      = nil;
 
+   if (path.length == 0)
+      return YES;
+
    struct video_shader *shader  = (struct video_shader *)calloc(1, sizeof(*shader));
    settings_t        *settings  = config_get_ptr();
    const char *dir_video_shader = settings->paths.directory_video_shader;
@@ -1856,7 +1860,7 @@ typedef struct MTLALIGN(16)
          /* Vertex descriptor */
          @try
          {
-            NSError *err;
+            NSError *err = nil;
             MTLVertexDescriptor *vd      = [MTLVertexDescriptor new];
             vd.attributes[0].offset      = offsetof(VertexSlang, position);
             vd.attributes[0].format      = MTLVertexFormatFloat4;
@@ -1896,12 +1900,14 @@ typedef struct MTLALIGN(16)
                   return NO;
                }
 #if DEBUG
-               RARCH_WARN("[Metal] Warnings compiling vertex shader: %s.\n", err.localizedDescription.UTF8String);
+               RETROGO_LOGD(GAME, "Metal vertex shader compiler diagnostics at pass %{public}u: %s", i,
+                     [err.localizedDescription componentsSeparatedByCharactersInSet:NSCharacterSet.newlineCharacterSet].firstObject.UTF8String);
 #endif
             }
 
             psd.vertexFunction = [lib newFunctionWithName:@"main0"];
 
+            err = nil;
             lib = [_context.device newLibraryWithSource:fs_src options:nil error:&err];
             if (err != nil)
             {
@@ -1912,10 +1918,13 @@ typedef struct MTLALIGN(16)
                   return NO;
                }
 #if DEBUG
-               RARCH_WARN("[Metal] Warnings compiling fragment shader: %s.\n", err.localizedDescription.UTF8String);
+               RETROGO_LOGD(GAME, "Metal fragment shader compiler diagnostics at pass %{public}u: %s", i,
+                     [err.localizedDescription componentsSeparatedByCharactersInSet:NSCharacterSet.newlineCharacterSet].firstObject.UTF8String);
 #endif
             }
             psd.fragmentFunction = [lib newFunctionWithName:@"main0"];
+
+            err = nil;
 
             STRUCT_ASSIGN(_engine.pass[i]._state,
                           [_context.device newRenderPipelineStateWithDescriptor:psd error:&err]);
@@ -2360,9 +2369,8 @@ static bool metal_set_shader(void *data,
          path = NULL;
       }
 
-      /* TODO/FIXME - actually return to stock shader */
       if (string_is_empty(path))
-         return true;
+         return [md.frameView setShaderFromPath:nil];
 
       if ([md.frameView setShaderFromPath:[NSString stringWithUTF8String:path]])
          return true;
@@ -2449,7 +2457,7 @@ static void metal_set_aspect_ratio(void *data, unsigned aspect_ratio_idx)
 {
    MetalDriver *md = (__bridge MetalDriver *)data;
 
-   md.keepAspect = YES;
+   md.keepAspect = config_get_ptr()->bools.video_force_aspect;
    [md setNeedsResize];
 }
 

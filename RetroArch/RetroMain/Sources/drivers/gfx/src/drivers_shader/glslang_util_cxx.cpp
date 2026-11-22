@@ -26,6 +26,8 @@
 
 #include "glslang_util.h"
 #include "glslang_util_cxx.h"
+#include "retrogo_slang_cache.hpp"
+#include <utils/retrogo_log.h>
 #if defined(HAVE_GLSLANG)
 #include "glslang.hpp"
 #endif
@@ -206,30 +208,46 @@ bool glslang_parse_meta(const struct string_list *lines, glslang_meta *meta)
    return true;
 }
 
-bool glslang_compile_shader(const char *shader_path, glslang_output *output)
+bool glslang_compile_shader(const char *shader_path, glslang_output *output, bool require_cache,
+      std::string *artifact, bool *compiled)
 {
+   if (compiled) *compiled = false;
+   if (artifact) artifact->clear();
 #if defined(HAVE_GLSLANG)
    struct string_list lines;
+   std::string vertex, fragment, cache_path, source;
 
    if (!string_list_initialize(&lines))
       return false;
 
-   RARCH_LOG("[Slang] Compiling shader: \"%s\".\n", shader_path);
-
    if (!glslang_read_shader_file(shader_path, &lines, true, false))
       goto error;
+   vertex = build_stage_source(&lines, "vertex");
+   fragment = build_stage_source(&lines, "fragment");
+   for (size_t i = 0; i < lines.size; i++) { source.append(lines.elems[i].data); source.append("\n"); }
+   cache_path = retrogo_slang_cache::path(retrogo_slang_cache::identity(vertex, fragment, source));
+   if (artifact) *artifact = cache_path;
+   if (retrogo_slang_cache::load(cache_path, *output))
+   {
+      string_list_deinitialize(&lines);
+      RETROGO_LOGD(GAME, "Shader SPIR-V cache hit for %s", shader_path);
+      return true;
+   }
+   if (require_cache && cache_path.empty()) goto error;
+   RARCH_LOG("[Slang] Compiling shader: \"%s\".\n", shader_path);
+   if (compiled) *compiled = true;
    output->meta = glslang_meta{};
    if (!glslang_parse_meta(&lines, &output->meta))
       goto error;
 
-   if (!glslang::compile_spirv(build_stage_source(&lines, "vertex"),
+   if (!glslang::compile_spirv(vertex,
             glslang::StageVertex, &output->vertex))
    {
       RARCH_ERR("[Slang] Failed to compile vertex shader stage.\n");
       goto error;
    }
 
-   if (!glslang::compile_spirv(build_stage_source(&lines, "fragment"),
+   if (!glslang::compile_spirv(fragment,
             glslang::StageFragment, &output->fragment))
    {
       RARCH_ERR("[Slang] Failed to compile fragment shader stage.\n");
@@ -237,7 +255,12 @@ bool glslang_compile_shader(const char *shader_path, glslang_output *output)
    }
 
    string_list_deinitialize(&lines);
-
+   if (!retrogo_slang_cache::store(cache_path, *output))
+   {
+      RETROGO_LOGD(GAME, "Shader SPIR-V cache write unavailable for %s", shader_path);
+      return !require_cache;
+   }
+   RETROGO_LOGD(GAME, "Shader SPIR-V cache stored for %s", shader_path);
    return true;
 
 error:
@@ -245,4 +268,18 @@ error:
 #endif
 
    return false;
+}
+
+extern "C" void retrogo_shader_cache_set_directory(const char *path)
+{
+   std::lock_guard<std::mutex> lock(retrogo_slang_cache::directory_mutex);
+   retrogo_slang_cache::directory = path ? path : "";
+}
+
+extern "C" bool retrogo_shader_cache_prepare_info(const char *path, char *artifact, size_t size, bool *compiled)
+{
+   glslang_output output;
+   std::string file;
+   if (!path || !artifact || !size || !glslang_compile_shader(path, &output, true, &file, compiled)) return false;
+   return strlcpy(artifact, file.c_str(), size) < size;
 }
